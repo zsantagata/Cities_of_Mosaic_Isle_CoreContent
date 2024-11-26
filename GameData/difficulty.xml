@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- only one of these should exist and its name should be "default" -->
+  <difficulty name="default">
+	<mDifficultyMin>0.0</mDifficultyMin> <!-- must be below 1.0, and cannot be negative -->
+	<mDifficultyMax>4.0</mDifficultyMax> <!-- must be above 1.0 -->
+  
+	<!-- in order not to confuse players, a standard is set here: higher values mean "things are more difficult". -->
+	<mDifficultyInternalNames> <!-- this is a list of labels that will have a difficulty slider associated with them.  Scripts will access the current difficulty value by these names (capitalization ignored).  The options menu will feed these names into translationstrings to get the displayed text. -->
+		<i1>resource gathering</i1>
+		<i1>resource refining</i1>
+		<i1>resource degradation</i1>
+		<i1>pop resource consumption</i1> <!-- TODO: implement this -->
+		
+		<i1>services quality</i1>
+		
+		<i1>base housing quality</i1>
+		<i1>goods and services housing quality</i1>
+		
+		<i1>illness danger</i1> <!-- both the chance of getting illnesses, and of dying from them -->
+		<i1>wound danger</i1> <!-- both the chance of getting wounds, and of dying from them -->
+		<i1>birth risks</i1>
+		
+		<i1>foe combat power</i1>
+		
+		<i1>travel danger</i1> <!-- mostly event-based -->
+		<i1>wanderer danger</i1> <!-- event-based -->
+		<!-- the following two are meant for foreign-sourced delegations.  Player delegations should look to "travel danger" generally, or other more specific difficulties, not these. -->
+		<i1>non-hostile delegation danger</i1> <!-- event-based (but also a factor in seizing goods) -->
+		<i1>hostile delegation danger</i1> <!-- minorly event-based -->
+		
+		<i1>racial strife danger</i1> <!-- event-based -->
+		<i1>internal strife danger</i1> <!-- event-based -->
+		<i1>impersonal world danger</i1> <!-- event-based -->
+		
+		<i1>base happiness expectation</i1>
+		<i1>base foreign opinion expectation</i1> <!-- TODO -->
+		
+		<i1>pop health decay</i1>
+		<i1>happiness decay</i1>
+		<i1>industry skill decay</i1>
+		<i1>soldier skill decay</i1>
+	</mDifficultyInternalNames>
+  
+	<mDifficultyPresetNamesAndValues> <!-- this is a list of labels and values associated with them.  These are difficulty presets so a player does not need to worry about setting each difficulty if they do not want. -->
+		<i1><a>Very Easy</a><b>0.6</b></i1>
+		<i1><a>Easy</a><b>0.87</b></i1>
+		<i1><a>Normal</a><b>1.0</b></i1>
+		<i1><a>Hard</a><b>1.12</b></i1>
+		<i1><a>Very Hard</a><b>1.4</b></i1>
+	</mDifficultyPresetNamesAndValues>
+  
+  </difficulty>
+  
+  <!-- the display text for internal difficulty names will be fetched by the name "options_difficulty_" + name + "_text" --> 
+  <translatedstrings name="default">
+	<mTranslationStrings kind="add">
+	<i1><a>options_difficulty_resource gathering_text</a>
+	<b>Resource Gathering Difficulty: [0]%</b></i1>
+	<i1><a>options_difficulty_resource refining_text</a>
+	<b>Resource Refining Difficulty: [0]%</b></i1>
+	<i1><a>options_difficulty_resource degradation_text</a>
+	<b>Resource Decay: [0]%</b></i1>
+	<i1><a>options_difficulty_pop resource consumption_text</a>
+	<b>Pop Resource Consumption: [0]%</b></i1>
+	
+	<i1><a>options_difficulty_services quality_text</a>
+	<b>Services Work Difficulty: [0]%</b></i1>
+	
+	<i1><a>options_difficulty_base housing quality_text</a>
+	<b>Housing Base Quality Expectation: [0]%</b></i1>
+	<i1><a>options_difficulty_goods and services housing quality_text</a>
+	<b>Housing Goods and Services Expectation: [0]%</b></i1>
+	
+	<i1><a>options_difficulty_illness danger_text</a>
+	<b>Illness Danger: [0]%</b></i1>
+	<i1><a>options_difficulty_wound danger_text</a>
+	<b>Wound Danger: [0]%</b></i1>
+	<i1><a>options_difficulty_birth risks_text</a>
+	<b>Birth Risks: [0]%</b></i1>
+	
+	<i1><a>options_difficulty_foe combat power_text</a>
+	<b>Foe Combat Power: [0]%</b></i1>
+	
+	<i1><a>options_difficulty_travel danger_text</a>
+	<b>Travel Danger: [0]%</b></i1>
+	<i1><a>options_difficulty_wanderer danger_text</a>
+	<b>Wanderer Danger: [0]%</b></i1>
+	<i1><a>options_difficulty_non-hostile delegation danger_text</a>
+	<b>Non-Hostile Delegation Danger: [0]%</b></i1>
+	<i1><a>options_difficulty_hostile delegation danger_text</a>
+	<b>Hostile Delegation Danger: [0]%</b></i1>
+	
+	<i1><a>options_difficulty_racial strife danger_text</a>
+	<b>Racial Strife Danger: [0]%</b></i1>
+	<i1><a>options_difficulty_internal strife danger_text</a>
+	<b>Internal Strife Danger: [0]%</b></i1>
+	<i1><a>options_difficulty_impersonal world danger_text</a>
+	<b>Impersonal World Danger: [0]%</b></i1>
+	
+	<i1><a>options_difficulty_base happiness expectation_text</a>
+	<b>Happiness Expectation: [0]%</b></i1>
+	<i1><a>options_difficulty_base foreign opinion expectation_text</a>
+	<b>Foreign Opinion Suspicion: [0]%</b></i1>
+	
+	<i1><a>options_difficulty_pop health decay_text</a>
+	<b>Pop Health Decay: [0]%</b></i1>
+	<i1><a>options_difficulty_happiness decay_text</a>
+	<b>Happiness Decay: [0]%</b></i1>
+	<i1><a>options_difficulty_industry skill decay_text</a>
+	<b>Industry Skill Decay: [0]%</b></i1>
+	<i1><a>options_difficulty_soldier skill decay_text</a>
+	<b>Soldier Skill Decay: [0]%</b></i1>
+	
+	
+	<i1><a>options_difficulty_preset_Very Easy_text</a>
+	<b>Preset: Very Easy (60%)</b></i1>
+	<i1><a>options_difficulty_preset_Easy_text</a>
+	<b>Preset: Easy (87%)</b></i1>
+	<i1><a>options_difficulty_preset_Normal_text</a>
+	<b>Preset: Normal (100%)</b></i1>
+	<i1><a>options_difficulty_preset_Hard_text</a>
+	<b>Preset: Hard (112%)</b></i1>
+	<i1><a>options_difficulty_preset_Very Hard_text</a>
+	<b>Preset: Very Hard (140%)</b></i1>
+	
+	</mTranslationStrings>
+  </translatedstrings>
+</core_data>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script getDesireTotalOfResourceCollection</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which handles (some of, not all) checks to see if a foreign community's foreign-foreign delegations of a provided type are blocked from being created -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunity,
+	IFResourcePool inResourcePool, //can be null
+	Dictionary<IFResource, Tuple<double, double>> inResourceCollection //can be null
+	-->
+	
+	<!-- output:
+	double outDesireTotal
+	-->
+	<i1><a>getDesireTotalOfResourceCollection</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity), typeof(IFResourcePool), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("getDesireTotalOfResourceCollection custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		if(inCommunity == null)
+		{
+		  throw new ArgumentException("getDesireTotalOfResourceCollection custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+		}
+		IFResourcePool inResourcePool = (IFResourcePool)inArguments[1];
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inResourceCollection = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)inArguments[2];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		double outDesireTotal = 0.0d;
+
+		List&lt;double&gt; resourceDesireValues = new List&lt;double&gt;();
+		if(customScripts.runCustomScriptCheckTypes("getResourceDesireValues", new List&lt;object&gt;() { inCommunity }, out List&lt;object&gt; returnDesireVals, false, typeof(List&lt;double&gt;)))
+		{
+			double maxQual = consts.getResourceQualityMax();
+			double minQual = consts.getResourceQualityMin();
+			
+			double resourceDesireMaxQual = customConsts.getDoubleConst("foreign_community resource_desire max_qual mult", out bool success);
+			if(!success) resourceDesireMaxQual = 2.25d;
+			double resourceDesireMinQual = customConsts.getDoubleConst("foreign_community resource_desire min_qual mult", out success);
+			if(!success) resourceDesireMinQual = 0.45d;
+		
+			resourceDesireValues = (List&lt;double&gt;)returnDesireVals[0];
+			if(inResourcePool != null)
+			{
+				Int64 totalCountOfResources = getAPI().getTotalCountOfMO("resources");
+				for(int moid = 1; moid &lt; totalCountOfResources; moid++)
+				{
+					IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+					if(res == null)
+						continue;
+						
+					double qual_mult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (inResourcePool.getResourceQuality(res) - minQual) / (maxQual - minQual));
+					outDesireTotal += qual_mult * inResourcePool.getResourceQuantity(res) * resourceDesireValues[moid];
+				}
+			}
+			
+			if(inResourceCollection != null)
+			{
+				foreach(var kvpair in inResourceCollection)
+				{
+					double qual_mult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (kvpair.Value.Item2 - minQual) / (maxQual - minQual));
+					outDesireTotal += qual_mult * kvpair.Value.Item1 * resourceDesireValues[(int)kvpair.Key.getMOID()];
+				}
+			}
+		}
+
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outDesireTotal };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

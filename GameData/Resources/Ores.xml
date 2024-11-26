@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igResource name="Antimony Ore">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Ores/Antimony Ore</full_path>
+	  <body_text>Antimony Ore.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>2</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>metal ore</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:ore</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:rocky</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Copper Ore">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Ores/Copper Ore</full_path>
+	  <body_text>Copper Ore.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>9</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>metal ore</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:ore</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:rocky</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Galena Ore">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Ores/Galena Ore</full_path>
+	  <body_text>Galena Ore.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mResourceQualities>0x80</mResourceQualities> <!-- breaks down immediately -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Lead Ore</a>
+		<b>0.75</b>
+	  </i1>
+	  <i2>
+	    <a>Silver Ore</a>
+		<b>0.10</b>
+	  </i2>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>metal ore</i1>
+		<i1>immediate breakdown</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:ore</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:rocky</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Gold Ore">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Ores/Gold Ore</full_path>
+	  <body_text>Gold Ore.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>18</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>metal ore</i1>
+		<i1>rare metal ore</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:ore</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:rocky</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Iron Ore">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Ores/Iron Ore</full_path>
+	  <body_text>Iron Ore.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>22</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>metal ore</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:ore</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:rocky</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Lead Ore">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Ores/Lead Ore</full_path>
+	  <body_text>Lead Ore.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>25</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>metal ore</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:ore</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:rocky</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Nickel Ore">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Ores/Nickel Ore</full_path>
+	  <body_text>Nickel Ore.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>35</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>metal ore</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:ore</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:rocky</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Silver Ore">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Ores/Silver Ore</full_path>
+	  <body_text>Silver Ore.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>42</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>metal ore</i1>
+		<i1>rare metal ore</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:ore</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:rocky</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Tin Ore">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Ores/Tin Ore</full_path>
+	  <body_text>Tin Ore.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>45</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>metal ore</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:ore</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:rocky</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Zinc Ore">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Ores/Zinc Ore</full_path>
+	  <body_text>Zinc Ore.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>52</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>metal ore</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:ore</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:rocky</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  
+</core_data>

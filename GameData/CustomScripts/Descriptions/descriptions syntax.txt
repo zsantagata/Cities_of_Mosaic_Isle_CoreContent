@@ -1,0 +1,73 @@
+Many events will want to describe things.  These things and descriptions are not unique to a single event (if they were, they could be handled by the one event).  I want to have a common way of describing things which should have their description be similar to other descriptions of them.  I also want to have a common way of describing things which should have multiple, varying descriptions for flavor.  Neither of these things should be beholden to a single event, but *whether nor not to engage in these things* should be (e.g. an event can ask for a description of a biome, or not, but the event itself does not describe the biome).
+
+Because this involves text descriptions, events should request this by marking spots in their report or resolution text, so translation or text modification only has one place to change.  Because this involves text descriptions, the descriptions need to be translatable.  Because this involves text descriptions, the descriptions need to be extensible.
+
+Therefore, there will be two stages: MARKUP and REPLACEMENT
+
+MARKUP:
+The event in question will have sections to their report/resolution text meant to be replaced.  These will be in the customConsts before_replace_text that the event fetches.
+Individual replacements in the text, like [0] [1] and so on, should be replaced first, before calling the overall description script.
+These sections will be bounded by the characters []
+These sections will have no spaces after the [ and the first part of the section will indicate the kind of item to be replaced.
+The following are a complete list of the different kinds of items that could be replaced:
+one_building
+one_buildingkind
+one_community
+one_delegation
+one_resourcepool
+one_pop
+one_race
+one_biome
+one_industry
+one_resource
+one_listofresources
+mult_building
+mult_buildingkind
+mult_community
+mult_pop
+mult_race
+mult_biome
+mult_industry
+mult_resource
+
+Options may be available for the above.  Options are after the kind.  Options are separated by the kind by the character | and only one may exist.  Some kinds require an option.  Many options are appended by either _phrase or _sentence to indicate whether the replacement is a phrase in a sentence or a full sentence.  Options that are _phrase will indicate what part of the sentence they are (noun, adjective, etc.).  Sentences can include references to phrases, but phrases should not include either sentences or other phrases.  The difference between name_noun_list and name_noun_phrase is that name_noun_phrase is meant to be able to be used in a sentence, while name_noun_list should stand on its own.
+NOTE TO SELF: name_noun_phrase can include "the", but other noun phrases should not include "the"
+The following are a complete list of the different kinds of items that could be replaced:
+DONE! one_building - NOT REQUIRED, default=name_noun_phrase - activity_sentence|shape_sentence|status_adj_phrase
+DONE! one_buildingkind - REQUIRED - shapetop_noun_phrase|shapeside_noun_phrase|shapemiddle_noun_phrase|shapebottom_noun_phrase
+DONE! one_community - NOT REQUIRED, default=name_noun_phrase - rand_adj_phrase|race_adj_phrase|strengths_adj_phrase|location_adj_phrase|servantrelation_adj_phrase|flavor_sentence
+DONE! one_delegation - NOT REQUIRED, default=name_noun_phrase - rand_adj_phrase|kind_adj_phrase|race_adj_phrase|health_adj_phrase|arrivingflavor_sentence
+DONE! one_resourcepool - REQUIRED - no_qualities_list|yes_qualities_list
+DONE! one_pop - NOT REQUIRED, default=name_noun_phrase - personal_3ppronoun_phrase|self_3ppronoun_phrase|possessive_3ppronoun_adj_phrase|possessive_3ppronoun_noun_phrase|target_3ppronoun_phrase|health_adj_phrase|race_adj_phrase|sex_adj_phrase|loyalty_adj_phrase|soldier_adj_phrase|rand_adj_phrase|emotion_aggressive_sentence|emotion_fear_sentence|emotion_tricky_sentence|emotion_pleading_sentence|emotion_tired_sentence|emotion_calm_sentence|randflavor_sentence
+//NOTE TO SELF: for grammar purposes (in-universe, for physical evolution reasons), all pops have multiple visual organs, multiple hearing organs, one smelling organ, one tasting organ.  expression body parts are singular nouns, land travel body parts are plural nouns ("fins", "legs", "feet", "wings"), outer noun is singular ("skin", "scaly hide"), decorative is plural
+DONE! one_race - REQUIRED - bodypartvision_noun_phrase|bodyparthearing_noun_phrase|bodypartsmelling_noun_phrase|bodyparttaste_noun_phrase|bodypartexpression_noun_phrase|bodypartgraspsingle_noun_phrase|bodypartlandtravel_noun_phrase|bodypartwatertravel_noun_phrase|bodypartouter_noun_phrase|bodypartdecorative_noun_phrase|race_nonname_adj_phrase
+DONE! one_biome - NOT REQUIRED, default=name_noun_phrase - weather_adj_phrase|weather_noun_phrase|landscape_adj_phrase|ground_noun_phrase|fluid_noun_phrase|farabove_noun_phrase|exposurerisk_adj_phrase|exposurerisk_noun_phrase|resourcedegradesource_noun_phrase|resourcedegradesource_adj_phrase|florafaunaflavor_sentence|weatherflavor_sentence|randflavor_sentence
+DONE! one_industry - NONE, default=name_noun_phrase
+DONE! one_resource - NOT REQUIRED, default=name_noun_phrase - property_adj_phrase|use_adj_phrase|use_noun_phrase|qual_low_adj_phrase|qual_high_adj_phrase|degrade_noun_phrase|rand_adj_phrase
+DONE! one_listofresources - REQUIRED - no_qualities_list|yes_qualities_list
+DONE! mult_building - NOT REQUIRED, default=name_noun_list - statuscount_noun_list|count_phrase
+DONE! mult_buildingkind - NOT REQUIRED, default=name_noun_list - count_phrase
+DONE! mult_community - NOT REQUIRED, default=name_noun_list - servantrelationreduce_noun_phrase|count_phrase
+DONE! mult_pop - NOT REQUIRED, default=name_noun_list - count_phrase|rand_adj_phrase|health_adj_phrase|race_adj_phrase|sex_adj_phrase|loyalty_adj_phrase|soldier_adj_phrase|emotion_aggressive_sentence|emotion_fear_sentence|emotion_tricky_sentence|emotion_pleading_sentence|emotion_tired_sentence|emotion_calm_sentence
+DONE! mult_race - NOT REQUIRED, default=name_noun_list - count_phrase
+DONE! mult_biome - NOT REQUIRED, default=name_noun_list - count_phrase
+DONE! mult_industry - NOT REQUIRED, default=name_noun_list - count_phrase
+DONE! mult_resource - NOT REQUIRED, default=name_noun_list - count_phrase
+
+note that every mult_ can have an additional option, |uniquify , which will remove duplicate IDs
+
+After the kind and option (if an option is present) is specified, the character : (the colon) must appear, and afterwards a list of UIDs or MOIDs (depending on the kind) separated only by commas should appear.  When there is only one ID, no commas are necessary.  Then, the markup concludes with the ] character.
+
+EXAMPLES:
+[one_race|bodypartsmelling_noun_phrase:3]
+[mult_community|servantrelationreduce_noun_phrase:15,18,26,27,28,29]
+blah[one_industry:1]
+
+REPLACEMENT:
+a top-level script will take in the following inputs:
+a string of text with markup
+a List<Dictionary<IFResource, Tuple<double, double>>> of list of resources which is only considered if there is a kind of _listofresources.  The "ID" in the markup will be the index.
+
+the top level script will, using a while loop, detect the first instance of markup and isolate it.  Then, based on the kind, it sends the markup to a unique-per-kind script that returns a non-markup string.  The top level script replaces the instance of the markup in the string, then continues.  If there are no more instances of markup, the while loop stops, and the resulting string is returned.
+
+unique-per-kind scripts will change the IDs (MOIDs or UIDs) into a list of the actual objects (and possibly uniquify them if that option is set) and provide them to unique-per-kind-per-option scripts to do the actual text generation

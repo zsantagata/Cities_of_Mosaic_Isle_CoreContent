@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>foreignai sampleforeignai senddelegation war low_mil_strength_factor min</a> <b>double</b> <c>0.05</c></i1> <!-- as a community sends towards minimum mil strength, the daily probability of sending a war delegation approaches this -->
+			<i1><a>foreignai sampleforeignai senddelegation raiding low_mil_strength_factor min</a> <b>double</b> <c>0.1</c></i1> <!-- as a community sends towards minimum mil strength, the daily probability of sending a raiding delegation approaches this -->
+			
+			<i1><a>foreignai sampleforeignai senddelegation war low_econ_strength_factor min</a> <b>double</b> <c>0.05</c></i1> <!-- as a community sends towards minimum econ strength, the daily probability of sending a war delegation approaches this -->
+			<i1><a>foreignai sampleforeignai senddelegation raiding low_econ_strength_factor max</a> <b>double</b> <c>3.0</c></i1> <!-- as a community sends towards minimum econ strength, the daily probability of sending a raiding delegation approaches this -->
+			<i1><a>foreignai sampleforeignai senddelegation trade low_econ_strength_factor min</a> <b>double</b> <c>0.3</c></i1> <!-- as a community sends towards minimum econ strength, the daily probability of sending a trade delegation approaches this -->
+			<i1><a>foreignai sampleforeignai senddelegation emigration low_econ_strength_factor max</a> <b>double</b> <c>2.5</c></i1> <!-- as a community sends towards minimum econ strength, the daily probability of sending an emigration delegation approaches this -->
+			
+			<i1><a>foreignai sampleforeignai senddelegation mil_strength_diff_for_servant_revolt max</a> <b>double</b> <c>0.1</c></i1> <!-- if a master community's mil strength is higher than a servant's by more than this, the servant will never send a war delegation to the master -->
+			<i1><a>foreignai sampleforeignai senddelegation emigration_factor_race_care mult</a> <b>double</b> <c>2.5</c></i1> <!-- a community's probability of sending an emigration delegation is multiplied by (((1 - this) * (min race care value + 1.0d) / 2) + this) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script sampleforeignai_delegationprob</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which handles the probability that a community wants to send a delegation of a specific kind at all -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunity,
+	IFDelegation.eDelegationType inDelegationType
+	-->
+	
+	<!-- output:
+	double outFAISpecificMult
+	-->
+	<i1><a>sampleForeignAI_delegationProb</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity), typeof(IFDelegation.eDelegationType)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("sampleForeignAI_delegationProb custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		if(inCommunity == null)
+		{
+		  throw new ArgumentException("sampleForeignAI_delegationProb custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+		}
+		IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[1];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		//calc multiplier specific to this foreign AI:
+		double outFAISpecificMult = 1.0d;
+		//a normal community will send fewer war delegations as its economic strength and/or military strength are lower
+		//a normal community will send fewer raiding delegations as its economic strength is higher and military strength is lower
+		//a normal community will send fewer trade delegations as its economic strength is lower, ignoring military strength
+		//a normal community will send fewer emigration delegations as its economic strength is higher, ignoring military strength
+		
+		//a normal servant community will only send war delegations to their master, and only if the master's military strength is not much higher than the servant's
+		
+		//a normal community will send more emigration delegations as it has races with low race care values in its community
+		
+		double econStrengthMax = consts.getEconStrengthMax();
+		double milStrengthMax = consts.getMilStrengthMax();
+		double econStrengthProportion = inCommunity.getEconStrength() / econStrengthMax;
+		double milStrengthProportion = inCommunity.getMilStrength() / milStrengthMax;
+		
+		//custom consts:
+		double warLowMilMin = customConsts.getDoubleConst("foreignai sampleforeignai senddelegation war low_mil_strength_factor min", out bool success);
+		if(!success) warLowMilMin = 0.05d;
+		double raidingLowMilMin = customConsts.getDoubleConst("foreignai sampleforeignai senddelegation raiding low_mil_strength_factor min", out success);
+		if(!success) raidingLowMilMin = 0.1d;
+		
+		double warLowEconMin = customConsts.getDoubleConst("foreignai sampleforeignai senddelegation war low_econ_strength_factor min", out success);
+		if(!success) warLowEconMin = 0.05d;
+		double raidingLowEconMax = customConsts.getDoubleConst("foreignai sampleforeignai senddelegation raiding low_econ_strength_factor max", out success);
+		if(!success) raidingLowEconMax = 3.0d;
+		double tradeLowEconMin = customConsts.getDoubleConst("foreignai sampleforeignai senddelegation trade low_econ_strength_factor min", out success);
+		if(!success) tradeLowEconMin = 0.3d;
+		double emigrationLowEconMax = customConsts.getDoubleConst("foreignai sampleforeignai senddelegation emigration low_econ_strength_factor max", out success);
+		if(!success) emigrationLowEconMax = 2.5d;
+		
+		double servantRevoltDiffMin = customConsts.getDoubleConst("foreignai sampleforeignai senddelegation mil_strength_diff_for_servant_revolt max", out success);
+		if(!success) servantRevoltDiffMin = 0.1d;
+		double emigrationFactorRaceCareMult = customConsts.getDoubleConst("foreignai sampleforeignai senddelegation emigration_factor_race_care mult", out success);
+		if(!success) emigrationFactorRaceCareMult = 2.5d;
+		
+		if(inDelegationType == IFDelegation.eDelegationType.cWar)
+		{
+			outFAISpecificMult *= warLowMilMin + (1.0d - warLowMilMin) * (milStrengthProportion / milStrengthMax);
+			outFAISpecificMult *= warLowEconMin + (1.0d - warLowEconMin) * (econStrengthProportion / econStrengthMax);
+			if(inCommunity.hasMasterCommunity())
+			{
+				double masterMilProportion = inCommunity.getMasterCommunity().getMilStrength();
+				if(masterMilProportion - milStrengthProportion &gt; servantRevoltDiffMin)
+				{
+					outFAISpecificMult = 0.0d;
+				}
+			}
+		}
+		else if(inDelegationType == IFDelegation.eDelegationType.cRaiding)
+		{
+			outFAISpecificMult *= raidingLowMilMin + (1.0d - raidingLowMilMin) * (milStrengthProportion / milStrengthMax);
+			outFAISpecificMult *= 1.0d + (raidingLowEconMax - 1.0d) * ((econStrengthMax - econStrengthProportion) / econStrengthMax);
+		}
+		else if(inDelegationType == IFDelegation.eDelegationType.cTrade)
+		{
+			outFAISpecificMult *= tradeLowEconMin + (1.0d - tradeLowEconMin) * (econStrengthProportion / econStrengthMax);
+		}
+		else if(inDelegationType == IFDelegation.eDelegationType.cEmigration)
+		{
+			outFAISpecificMult *= 1.0d + (emigrationLowEconMax - 1.0d) * ((econStrengthMax - econStrengthProportion) / econStrengthMax);
+			
+			//find the lowest race care value and bound it between -1.0d and 1.0d
+			List&lt;double&gt; raceCareValues = new List&lt;double&gt;();
+			if(customScripts.runCustomScriptCheckTypes("getRaceCareValues", new List&lt;object&gt;() { inCommunity, null },
+									out List&lt;object&gt; outRaceCareValues, true, typeof(List&lt;double&gt;)))
+			{
+				raceCareValues = (List&lt;double&gt;)outRaceCareValues[0];
+			}
+			double minRaceCareValue = 1.0d;
+			foreach(double val in raceCareValues)
+			{
+				if(val &lt; minRaceCareValue)
+					minRaceCareValue = val;
+			}
+			minRaceCareValue = Math.Max(-1.0d, minRaceCareValue);
+			
+			double raceCareValueMult = emigrationFactorRaceCareMult + ((1.0d - emigrationFactorRaceCareMult) * (minRaceCareValue + 1.0d) / 2.0d);
+			addDebugMessage(inScriptInstance, "prob of sending emigration delegation will be multiplied by " + raceCareValueMult + " from lowest race care value of " + minRaceCareValue);
+			outFAISpecificMult *= raceCareValueMult;
+		}
+		
+		return new List&lt;object&gt;() { outFAISpecificMult };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

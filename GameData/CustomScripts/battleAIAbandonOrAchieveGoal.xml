@@ -1,0 +1,1994 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>battleAIAbandonOrAchieveGoal abandon_threshold default</a> <b>double</b> <c>0.5</c></i1> <!-- in the absence of an explicit abandon threshold, this value is used -->
+			<i1><a>battleAIAbandonOrAchieveGoal reach_threshold default</a> <b>double</b> <c>0.5</c></i1> <!-- in the absence of an explicit success threshold, this value is used -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script battleaiabandonorachievegoal</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleairebelsachievegoal</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleairebelsabandongoal</a> <b>int</b> <c>1</c></i1>
+			
+			<i1><a>log_script_custom script battleaiwargoalcheck_hurt_loyal_all</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_hurt_loyal_races</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_hurt_loyal_leaders</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_hurt_neutral_communities</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_hurt_neutral_races</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_hurt_pops_specific</a> <b>int</b> <c>1</c></i1>
+			
+			<i1><a>log_script_custom script battleaiwargoalcheck_destroy_buildings_all</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_destroy_buildings_industries</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_destroy_buildings_buildingkinds</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_destroy_buildings_housing_all</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_destroy_buildings_housing_races</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_destroy_buildings_housing_leaders</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_destroy_buildings_housing_neutral_communities</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_destroy_buildings_specific</a> <b>int</b> <c>1</c></i1>
+			
+			<i1><a>log_script_custom script battleaiwargoalcheck_abduct_pops_all</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_abduct_pops_races</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_abduct_pops_leaders</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_abduct_pops_specific</a> <b>int</b> <c>1</c></i1>
+			
+			<i1><a>rebel suppression happiness name before_replace_text</a> <b>string</b>
+			<c>Rebel Suppression</c></i1>
+			<i1><a>rebel suppression happiness description before_replace_text</a> <b>string</b>
+			<c>Rebels have been defeated in combat by the community's loyal pops on [0], and did not achieve their goals.  Other troublemakers are intimidated, for now.</c></i1>
+			
+			<i1><a>log_script_custom script battleaiwargoalcheck_steal_resources_all</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script battleaiwargoalcheck_steal_resources_specific</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of custom scripts which handle the calculations of whether or not a hostile community has achieved or abandoned its wargoal.  Also some scripts about what happens to Rebels when they achieve or abandon their wargoal -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- abandon or achieve goal has one input: IFCommunity inEnemyCommunity.  It has no outputs. -->
+	<!-- this script is called by other scripts which want to update the abandon-or-achieve-or-continue action of enemy pops on the map -->
+	<i1><a>battleAIAbandonOrAchieveGoal</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIAbandonOrAchieveGoal custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIAbandonOrAchieveGoal custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  
+	  Int64 enemyCommunityUID = (Int64)inEnemyCommunity.getUID();
+	  Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+	  
+	  //fetch the wargoal:
+	  string wargoal = variableHandler.getString("battleAI_battleGoal_community" + enemyCommunityUID, out bool success);
+	  if(!success)
+	  {
+		//nothing to do/check.  Base scripts will consider an empty wargoal as an abandoned wargoal.
+		return null;
+	  }
+	  
+	  //check if the wargoal has already been marked as abandoned:
+	  Int64 existingAbandonInt = variableHandler.getInt("battleAI_abandonedBattleGoal_community" + enemyCommunityUID, out success);
+	  if(success)
+	  {
+		if(existingAbandonInt != 0L)
+		{
+			//already abandoned, nothing more to do/check.
+			return null;
+		}
+	  }
+	  else
+	  {
+		existingAbandonInt = 0L;
+	    variableHandler.storeIntVariable(currentDate, "battleAI_abandonedBattleGoal_community" + enemyCommunityUID, 0L);
+	  }
+	  
+	  //first, check abandonment threshold: find all pops on local map from the target community and count how many are hurt/dead:
+	  HashSet&lt;IFPop&gt; enemyPopsOfCommunityOnLocalMap = new HashSet&lt;IFPop&gt;(getAPI().getPopsWithinLocalCommunityMap());
+	  enemyPopsOfCommunityOnLocalMap = new HashSet&lt;IFPop&gt;(enemyPopsOfCommunityOnLocalMap.Intersect(inEnemyCommunity.getPopsLoyalToCommunity()));
+	  Int64 hurtCount = 0;
+	  if(enemyPopsOfCommunityOnLocalMap.Count == 0)
+	  {
+		//nothing to do/check
+		return null;
+	  }
+	  
+	  foreach(IFPop pop in enemyPopsOfCommunityOnLocalMap)
+	  {
+		if(pop.isWounded() || pop.isDead())
+		{
+			hurtCount++;
+		}
+	  }
+	  
+	  double abandonThreshold = variableHandler.getDouble("battleAI_abandonBattleGoalThreshold_community" + enemyCommunityUID, out success);
+	  if(!success)
+	  {
+		abandonThreshold = customConsts.getDoubleConst("battleAIAbandonOrAchieveGoal abandon_threshold default", out success);
+		if(!success) abandonThreshold = 0.5d;
+	  }
+	  
+	  if(abandonThreshold * enemyPopsOfCommunityOnLocalMap.Count &lt;= hurtCount)
+	  {
+		//the threshold has been reached, so set it true and set achieved false:
+		addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has suffered too many wounds/deaths and is abandoning their wargoal");
+		variableHandler.storeIntVariable(currentDate, "battleAI_abandonedBattleGoal_community" + enemyCommunityUID, 1L);
+		variableHandler.storeIntVariable(currentDate, "battleAI_reachedBattleGoal_community" + enemyCommunityUID, 0L);
+		//if the enemy community is rebels, call the abandon rebels script:
+		if(inEnemyCommunity.isRebels())
+		{
+			customScripts.runCustomScript("battleAIRebelsAbandonGoal", new List&lt;object&gt;() { abandonThreshold, (Int64)enemyPopsOfCommunityOnLocalMap.Count } , out _);
+		}
+		return null;
+	  }
+	  
+	  //the abandonment threshold has not yet been reached.  Check if the wargoal has already been marked as achieved:
+	  Int64 existingAchievedInt = variableHandler.getInt("battleAI_reachedBattleGoal_community" + enemyCommunityUID, out success);
+	  if(!success)
+	  {
+		existingAchievedInt = 0L;
+		variableHandler.storeIntVariable(currentDate, "battleAI_reachedBattleGoal_community" + enemyCommunityUID, 0L);
+	  }
+	  else if(existingAchievedInt != 0L)
+	  {
+		//the goal has been achieved, nothing more to do here:
+		return null;
+	  }
+	  
+	  //The following are the possible battle goals, and what counts towards their completion:
+		/*
+		"hurt_loyal_all" //the wounded/dead loyal pops on the local map
+		"hurt_loyal_races" //the wounded/dead loyal pops of certain races on the local map
+		"hurt_loyal_leaders" //the wounded/dead loyal leader pops on the local map
+		"hurt_neutral_communities" //the wounded/dead pops of certain neutral communities on the local map
+		"hurt_neutral_races" //the wounded/dead neutral pops of certain races on the local map
+		"hurt_pops_specific" //the wounded/dead targeted pops on the local map
+		"destroy_buildings_all" //the destroyed buildings on the local map
+		"destroy_buildings_industries" //the destroyed workplaces of certain industries on the local map
+		"destroy_buildings_buildingkinds" //the destroyed buildings of certain buildingkinds on the local map
+		"destroy_buildings_housing_all" //the destroyed housing on the local map
+		"destroy_buildings_housing_races" //the proportion of houseless pops of certain races on the local map
+		"destroy_buildings_housing_leaders" //the proportion of houseless leaders on the local map
+		"destroy_buildings_housing_neutral_communities" //the proportion of houseless neutrals of certain communities on the local map
+		"destroy_buildings_specific" //the destroyed targeted buildings on the local map
+		"abduct_pops_all" //the number of successful abductions in comparison to Min(attacker count, target count)
+		"abduct_pops_races" //the number of successful abductions in comparison to Min(attacker count, target count)
+		"abduct_pops_leaders" //the number of successful abductions in comparison to Min(attacker count, target count)
+		"abduct_pops_specific" //the number of successful abductions in comparison to Min(attacker count, target count)
+		"steal_resources_all" //the number of successful thefts in comparison to attacker count, while resources exist to steal
+		"steal_resources_specific" //the number of successful thefts in comparison to attacker count, while certain resources exist to steal
+		*/
+	  //to make things easier, checking of a wargoal is contained in its own function, named after the wargoal.  This should make it easier to change a wargoal's calculation, or add a new one.
+	
+	  double successThreshold = variableHandler.getDouble("battleAI_reachBattleGoalThreshold_community" + enemyCommunityUID, out success);
+	  if(!success)
+	  {
+		successThreshold = customConsts.getDoubleConst("battleAIAbandonOrAchieveGoal reach_threshold default", out success);
+		if(!success) successThreshold = 0.5d;
+	  }
+	  customScripts.runCustomScript("battleAIWargoalCheck_" + wargoal.ToLower(), new List&lt;object&gt;() {inEnemyCommunity, successThreshold} , out _);
+
+	  //re-check for rebels:
+	  if(inEnemyCommunity.isRebels())
+	  {
+		existingAchievedInt = variableHandler.getInt("battleAI_reachedBattleGoal_community" + enemyCommunityUID, out success);
+		if(success &amp;&amp; (existingAchievedInt != 0))
+		{
+			customScripts.runCustomScript("battleAIRebelsAchieveGoal", new List&lt;object&gt;() { } , out _);
+		}
+	  }
+
+	  return null;
+	</b>
+	</i1>
+	
+	
+	<!-- rebels achieve goal has no inputs.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal when Rebels have newly achieved their wargoal.  Unlike other kinds of enemies, who should always leave the map when their wargoal has been achieved, Rebels can possibly revert to loyal pops once again. -->
+	<i1><a>battleAIRebelsAchieveGoal</a>
+	<b>
+	  //no inputs
+	  var customScripts = getAPI().getCustomScripts();
+		
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  IFCommunity rebelsCommunity = getAPI().getRebelsCommunity();
+	  IFCommunity localCommunity = getAPI().getLocalCommunity();
+	  
+	  bool rebelsShouldFlee = false;
+	  Int64 rebelsShouldFleeInt = variableHandler.getInt("battleAIWargoal_rebelsFleeInsteadOfConverting", out bool success);
+	  if(!success) rebelsShouldFleeInt = 0;
+	  rebelsShouldFlee = (rebelsShouldFleeInt != 0);
+	  
+	  if(!rebelsShouldFlee)
+	  {
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			if(!pop.isDead() &amp;&amp; pop.getCommunity() == rebelsCommunity)
+			{
+				addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " is converting back to loyal");
+				pop.setCommunity(localCommunity);
+				//if the pop is in the damage building, fighting, steal from building, etc. states then they will complete.  That's okay.
+				pop.setPathfindingRecalculationUrgent();
+			}
+		}
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- rebels abandon goal has no inputs.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal when Rebels have newly abandoned their wargoal.  Unlike other kinds of enemies, who should always leave the map when their wargoal has been achieved, Rebels can possibly revert to loyal pops once again. -->
+	<i1><a>battleAIRebelsAbandonGoal</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(double), typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_loyal_all custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  double inAbandonThreshold = (double)inArguments[0];
+	  Int64 inTotalEnemyCount = (Int64)inArguments[1];
+		
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  IFCommunity rebelsCommunity = getAPI().getRebelsCommunity();
+	  IFCommunity localCommunity = getAPI().getLocalCommunity();
+	  
+	  bool rebelsShouldFlee = false;
+	  Int64 rebelsShouldFleeInt = variableHandler.getInt("battleAIWargoal_rebelsFleeInsteadOfConverting", out bool success);
+	  if(!success) rebelsShouldFleeInt = 0;
+	  rebelsShouldFlee = (rebelsShouldFleeInt != 0);
+	  
+	  HashSet&lt;IFRace&gt; allRacesOfLoyalPops = new HashSet&lt;IFRace&gt;();
+	  
+	  if(!rebelsShouldFlee)
+	  {
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			if(!pop.isDead() &amp;&amp; pop.getCommunity() == localCommunity)
+			{
+				allRacesOfLoyalPops.Add(pop.getRace());
+			}
+			else if(!pop.isDead() &amp;&amp; pop.getCommunity() == rebelsCommunity)
+			{
+				addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " is converting back to loyal");
+				pop.setCommunity(localCommunity);
+				//if the pop is in the fighting state then they will complete.  That's okay.
+				//however the damage building and steal from building states should not complete:
+				if(pop.getPathfindingState() == "enemydamagingbuilding" || pop.getPathfindingState() == "enemystealingfrombuilding")
+				{
+					pop.forcePathfindingState("idle", true);
+				}
+				pop.setPathfindingRecalculationUrgent();
+			}
+		}
+	  }
+	  
+	  //no matter what, all races get a happiness bonus relating to the count of rebels and the abandon threshold:
+	  double happinessTotal = inAbandonThreshold * inTotalEnemyCount; //the happiness bonus is the direct count of enemies that needed to be defeated
+	  string todayDateString = getAPI().getCalendar().getFormattedDate(getAPI().getCalendar().getCurrentDate());
+	  foreach(IFRace race in allRacesOfLoyalPops)
+	  {
+	    string name = customConsts.getStringConst("rebel suppression happiness name before_replace_text", out success);
+		if(!success) name = "Rebel Suppression";
+	    string description = customConsts.getStringConst("rebel suppression happiness name before_replace_text", out success);
+		if(!success) description = "Rebels have been defeated in combat by the community's loyal pops on [0], and did not achieve their goals.  Other troublemakers are intimidated, for now.";
+		
+		description = description.Replace("[0]", todayDateString);
+	  
+		localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(race, name, description, happinessTotal, false);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	
+	<!-- wargoal checking hurt_loyal_all has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_hurt_loyal_all</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_loyal_all custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_loyal_all custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+	  {
+		if(pop.getCommunity() == getAPI().getLocalCommunity())
+		{
+			totalCount++;
+			if(pop.isDead() || pop.isWounded())
+			{
+				achievedCount++;
+			}
+		}
+	  }
+	  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking hurt_loyal_races has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_hurt_loyal_races</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_loyal_races custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_loyal_races custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //first, fetch the target races:
+	  HashSet&lt;Int64&gt; targetedRaceMOIDs = new HashSet&lt;Int64&gt;();
+	  IFConnectedVariable raceListCV = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_races");
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  if(raceListCV == null)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  foreach(IFConnectedVariable target in raceListCV.getLowers())
+		  {
+			targetedRaceMOIDs.Add(target.getVariableAsInt());
+		  }
+		  achievedCount = 0;
+		  totalCount = 0;
+		  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		  {
+			if(pop.getCommunity() == getAPI().getLocalCommunity())
+			{
+				if(targetedRaceMOIDs.Contains((Int64)pop.getRace().getMOID()))
+				{
+					totalCount++;
+					if(pop.isDead() || pop.isWounded())
+					{
+						achievedCount++;
+					}
+				}
+			}
+		  }
+		  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking hurt_loyal_leaders has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_hurt_loyal_leaders</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_loyal_leaders custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_loyal_leaders custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  IFLeaderCollection leaders = getAPI().getLocalCommunity().getLeaderCollection();
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+	  {
+		if(pop.getCommunity() == getAPI().getLocalCommunity())
+		{
+			if(leaders.getLeaderFlagsForPop(pop) != IFLeaderCollection.eLeaderFlags.cNone)
+			{
+				totalCount++;
+				if(pop.isDead() || pop.isWounded())
+				{
+					achievedCount++;
+				}
+			}
+		}
+	  }
+	  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking hurt_neutral_communities has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_hurt_neutral_communities</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_neutral_communities custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_neutral_communities custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //first, fetch the target communities:
+	  HashSet&lt;Int64&gt; targetedCommunityUIDs = new HashSet&lt;Int64&gt;();
+	  IFConnectedVariable communityListCV = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_communities");
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  if(communityListCV == null)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  foreach(IFConnectedVariable target in communityListCV.getLowers())
+		  {
+			targetedCommunityUIDs.Add(target.getVariableAsInt());
+		  }
+		  achievedCount = 0;
+		  totalCount = 0;
+		  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		  {
+			if((pop.getCommunity() != getAPI().getLocalCommunity()) &amp;&amp; (!getAPI().isHostileCommunity(pop.getCommunity())))
+			{
+				if(targetedCommunityUIDs.Contains((Int64)pop.getCommunity().getUID()))
+				{
+					totalCount++;
+					if(pop.isDead() || pop.isWounded())
+					{
+						achievedCount++;
+					}
+				}
+			}
+		  }
+		  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking hurt_neutral_races has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_hurt_neutral_races</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_neutral_races custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_neutral_races custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //first, fetch the target races:
+	  HashSet&lt;Int64&gt; targetedRaceMOIDs = new HashSet&lt;Int64&gt;();
+	  IFConnectedVariable raceListCV = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_races");
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  if(raceListCV == null)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  foreach(IFConnectedVariable target in raceListCV.getLowers())
+		  {
+			targetedRaceMOIDs.Add(target.getVariableAsInt());
+		  }
+		  achievedCount = 0;
+		  totalCount = 0;
+		  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		  {
+			if((pop.getCommunity() != getAPI().getLocalCommunity()) &amp;&amp; (!getAPI().isHostileCommunity(pop.getCommunity())))
+			{
+				if(targetedRaceMOIDs.Contains((Int64)pop.getRace().getMOID()))
+				{
+					totalCount++;
+					if(pop.isDead() || pop.isWounded())
+					{
+						achievedCount++;
+					}
+				}
+			}
+		  }
+		  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking hurt_pops_specific has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_hurt_pops_specific</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_pops_specific custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_hurt_pops_specific custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //first, fetch the target races:
+	  HashSet&lt;Int64&gt; targetedPopUIDs = new HashSet&lt;Int64&gt;();
+	  IFConnectedVariable popListCV = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_specific");
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  if(popListCV == null)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  foreach(IFConnectedVariable target in popListCV.getLowers())
+		  {
+			targetedPopUIDs.Add(target.getVariableAsInt());
+		  }
+		  achievedCount = 0;
+		  totalCount = 0;
+		  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		  {
+			if(targetedPopUIDs.Contains((Int64)pop.getUID()))
+			{
+				totalCount++;
+				if(pop.isDead() || pop.isWounded())
+				{
+					achievedCount++;
+				}
+			}
+		  }
+		  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	
+	
+	
+	<!-- wargoal checking destroy_buildings_all has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_destroy_buildings_all</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_all custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_all custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  foreach(IFBuilding building in getAPI().getLocalCommunity().getDomesticComponent().getMap().getAllBuildingsOnMap())
+	  {
+		totalCount++;
+		if(building.isBuildingDestroyed())
+		{
+			achievedCount++;
+		}
+	  }
+	  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking destroy_buildings_industries has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_destroy_buildings_industries</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_industries custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_industries custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //first, fetch the target industries:
+	  HashSet&lt;Int64&gt; targetedIndustryMOIDs = new HashSet&lt;Int64&gt;();
+	  IFConnectedVariable industryListCV = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_industries");
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  if(industryListCV == null)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  foreach(IFConnectedVariable target in industryListCV.getLowers())
+		  {
+			targetedIndustryMOIDs.Add(target.getVariableAsInt());
+		  }
+		  achievedCount = 0;
+		  totalCount = 0;
+		  foreach(IFBuilding building in getAPI().getLocalCommunity().getDomesticComponent().getMap().getAllBuildingsOnMap())
+		  {
+			if(building.isWorkplace() &amp;&amp; targetedIndustryMOIDs.Contains(building.getBuildingKind().getIndustry().getMOID()))
+			{
+				totalCount++;
+				if(building.isBuildingDestroyed())
+				{
+					achievedCount++;
+				}
+			}
+		  }
+		  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking destroy_buildings_buildingkinds has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_destroy_buildings_buildingkinds</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_buildingkinds custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_buildingkinds custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //first, fetch the target buildingKinds:
+	  HashSet&lt;Int64&gt; targetedBKMOIDs = new HashSet&lt;Int64&gt;();
+	  IFConnectedVariable bkListCV = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_buildingkinds");
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  if(bkListCV == null)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  foreach(IFConnectedVariable target in bkListCV.getLowers())
+		  {
+			targetedBKMOIDs.Add(target.getVariableAsInt());
+		  }
+		  achievedCount = 0;
+		  totalCount = 0;
+		  foreach(IFBuilding building in getAPI().getLocalCommunity().getDomesticComponent().getMap().getAllBuildingsOnMap())
+		  {
+			if(targetedBKMOIDs.Contains(building.getBuildingKind().getMOID()))
+			{
+				totalCount++;
+				if(building.isBuildingDestroyed())
+				{
+					achievedCount++;
+				}
+			}
+		  }
+		  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking destroy_buildings_housing_all has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_destroy_buildings_housing_all</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_housing_all custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_housing_all custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  foreach(IFBuilding building in getAPI().getLocalCommunity().getDomesticComponent().getMap().getAllBuildingsOnMap())
+	  {
+		if(building.isHousing())
+		{
+			totalCount++;
+			if(building.isBuildingDestroyed())
+			{
+				achievedCount++;
+			}
+		}
+	  }
+	  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking destroy_buildings_housing_races has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_destroy_buildings_housing_races</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_housing_races custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_housing_races custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  HashSet&lt;Int64&gt; targetedRaceMOIDs = new HashSet&lt;Int64&gt;();
+	  IFConnectedVariable raceListCV = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_races");
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  if(raceListCV == null)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  foreach(IFConnectedVariable target in raceListCV.getLowers())
+		  {
+			targetedRaceMOIDs.Add(target.getVariableAsInt());
+		  }
+		  achievedCount = 0;
+		  totalCount = 0;
+		  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		  {
+			if(targetedRaceMOIDs.Contains(pop.getRace().getMOID()))
+			{
+				totalCount++;
+				if(!pop.hasHomeBuilding())
+				{
+					achievedCount++;
+				}
+			}
+		  }
+		  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking destroy_buildings_housing_leaders has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_destroy_buildings_housing_leaders</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_housing_leaders custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_housing_leaders custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  IFLeaderCollection leaders = getAPI().getLocalCommunity().getLeaderCollection();
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+	  {
+		if(pop.getCommunity() == getAPI().getLocalCommunity())
+		{
+			if(leaders.getLeaderFlagsForPop(pop) != IFLeaderCollection.eLeaderFlags.cNone)
+			{
+				totalCount++;
+				if(!pop.hasHomeBuilding())
+				{
+					achievedCount++;
+				}
+			}
+		}
+	  }
+	  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking destroy_buildings_housing_neutral_communities has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_destroy_buildings_housing_neutral_communities</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_housing_neutral_communities custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_housing_neutral_communities custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //first, fetch the target communities:
+	  HashSet&lt;Int64&gt; targetedCommunityUIDs = new HashSet&lt;Int64&gt;();
+	  IFConnectedVariable communityListCV = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_communities");
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  if(communityListCV == null)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  foreach(IFConnectedVariable target in communityListCV.getLowers())
+		  {
+			targetedCommunityUIDs.Add(target.getVariableAsInt());
+		  }
+		  achievedCount = 0;
+		  totalCount = 0;
+		  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		  {
+			if((pop.getCommunity() != getAPI().getLocalCommunity()) &amp;&amp; (!getAPI().isHostileCommunity(pop.getCommunity())))
+			{
+				if(targetedCommunityUIDs.Contains((Int64)pop.getCommunity().getUID()))
+				{
+					totalCount++;
+					if(!pop.hasHomeBuilding())
+					{
+						achievedCount++;
+					}
+				}
+			}
+		  }
+		  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking destroy_buildings_specific has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_destroy_buildings_specific</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_specific custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_destroy_buildings_specific custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //first, fetch the target buildings:
+	  HashSet&lt;Int64&gt; targetedBuildingUIDs = new HashSet&lt;Int64&gt;();
+	  IFConnectedVariable buildingListCV = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_specific");
+	  Int64 achievedCount = 0;
+	  Int64 totalCount = 0;
+	  if(buildingListCV == null)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  foreach(IFConnectedVariable target in buildingListCV.getLowers())
+		  {
+			targetedBuildingUIDs.Add(target.getVariableAsInt());
+		  }
+		  achievedCount = 0;
+		  totalCount = 0;
+		  foreach(IFBuilding building in getAPI().getLocalCommunity().getDomesticComponent().getMap().getAllBuildingsOnMap())
+		  {
+			if(targetedBuildingUIDs.Contains((Int64)building.getUID()))
+			{
+				totalCount++;
+				if(building.isBuildingDestroyed())
+				{
+					achievedCount++;
+				}
+			}
+		  }
+		  newlyAchieved = (totalCount * inAchieveThreshold &lt;= achievedCount) &amp;&amp; ((achievedCount != 0) || (totalCount == 0));
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; totalCount=" + totalCount + " achievedCount = " + achievedCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	
+	
+	
+	<!-- wargoal checking abduct_pops_all has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_abduct_pops_all</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_abduct_pops_all custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_abduct_pops_all custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //for abduct wargoals, check the count of enemy pops on map to determine how many have "gotten away" already.  Compare this against the minimum between starting attackers and starting targets
+	  Int64 starting_attacker_pop_count = variableHandler.getInt("battleAI_startingAttackerCount_community" + inEnemyCommunity.getUID(), out bool success);
+	  Int64 startingTargetCount = 0;
+	  Int64 thresholdCount = 0;
+	  Int64 currentCount = 0;
+	  if(!success)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  startingTargetCount = variableHandler.getInt("battleAI_startingTargetsToAbductCount_community" + inEnemyCommunity.getUID(), out success);
+		  thresholdCount = (starting_attacker_pop_count &gt; startingTargetCount ? startingTargetCount : starting_attacker_pop_count);
+		  if(!success)
+		  {
+			  newlyAchieved = true;
+		  }
+		  else
+		  {
+			  currentCount = 0;
+			  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+			  {
+				if(pop.getCommunity() == inEnemyCommunity) //include dead and wounded pops here; only discount those who have successfully left the map
+				{
+					currentCount++;
+				}
+			  }
+			  newlyAchieved = (thresholdCount * inAchieveThreshold &lt;= (starting_attacker_pop_count - currentCount));
+		  }
+	  }
+	  
+	  if(!newlyAchieved)
+	  {
+		//abduct wargoals need to check that there is any pop left on the map to abduct:
+		newlyAchieved = true;
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			if(!getAPI().isHostileCommunity(pop.getCommunity()) &amp;&amp; !pop.isDead())
+			{
+				//check that the pop is one of the desired abductees:
+				//(for abduct_pops_all they always are)
+				newlyAchieved = false;
+				break;
+			}
+		}
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; starting_attacker_pop_count=" + starting_attacker_pop_count + " thresholdCount=" + thresholdCount + " currentCount = " + currentCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking abduct_pops_races has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_abduct_pops_races</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_abduct_pops_races custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_abduct_pops_races custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //for abduct wargoals, check the count of enemy pops on map to determine how many have "gotten away" already.  Compare this against the minimum between starting attackers and starting targets
+	  Int64 starting_attacker_pop_count = variableHandler.getInt("battleAI_startingAttackerCount_community" + inEnemyCommunity.getUID(), out bool success);
+	  Int64 startingTargetCount = 0;
+	  Int64 thresholdCount = 0;
+	  Int64 currentCount = 0;
+	  if(!success)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  startingTargetCount = variableHandler.getInt("battleAI_startingTargetsToAbductCount_community" + inEnemyCommunity.getUID(), out success);
+		  thresholdCount = (starting_attacker_pop_count &gt; startingTargetCount ? startingTargetCount : starting_attacker_pop_count);
+		  if(!success)
+		  {
+			  newlyAchieved = true;
+		  }
+		  else
+		  {
+			  currentCount = 0;
+			  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+			  {
+				if(pop.getCommunity() == inEnemyCommunity)
+				{
+					currentCount++;
+				}
+			  }
+			  newlyAchieved = (thresholdCount * inAchieveThreshold &lt;= (starting_attacker_pop_count - currentCount));
+		  }
+	  }
+	  
+	  if(!newlyAchieved)
+	  {
+		//abduct wargoals need to check that there is any pop left on the map to abduct:
+		newlyAchieved = true;
+		IFConnectedVariable cvOfRaces = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_races");
+		if(cvOfRaces != null)
+		{
+			HashSet&lt;Int64&gt; raceMOIDs = new HashSet&lt;Int64&gt;();
+			foreach(var lowerUIDCV in cvOfRaces.getLowers())
+			{
+				raceMOIDs.Add(lowerUIDCV.getVariableAsInt());
+			}
+			foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+			{
+				if(!getAPI().isHostileCommunity(pop.getCommunity()) &amp;&amp; !pop.isDead())
+				{
+					//check that the pop is one of the desired abductees:
+					if(raceMOIDs.Contains((Int64)pop.getRace().getMOID()))
+					{
+						newlyAchieved = false;
+						break;
+					}
+				}
+			}
+		}
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; starting_attacker_pop_count=" + starting_attacker_pop_count + " thresholdCount=" + thresholdCount + " currentCount = " + currentCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking abduct_pops_leaders has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_abduct_pops_leaders</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_abduct_pops_leaders custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_abduct_pops_leaders custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //for abduct wargoals, check the count of enemy pops on map to determine how many have "gotten away" already.  Compare this against the minimum between starting attackers and starting targets
+	  Int64 starting_attacker_pop_count = variableHandler.getInt("battleAI_startingAttackerCount_community" + inEnemyCommunity.getUID(), out bool success);
+	  Int64 startingTargetCount = 0;
+	  Int64 thresholdCount = 0;
+	  Int64 currentCount = 0;
+	  if(!success)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  startingTargetCount = variableHandler.getInt("battleAI_startingTargetsToAbductCount_community" + inEnemyCommunity.getUID(), out success);
+		  thresholdCount = (starting_attacker_pop_count &gt; startingTargetCount ? startingTargetCount : starting_attacker_pop_count);
+		  if(!success)
+		  {
+			  newlyAchieved = true;
+		  }
+		  else
+		  {
+			  currentCount = 0;
+			  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+			  {
+				if(pop.getCommunity() == inEnemyCommunity)
+				{
+					currentCount++;
+				}
+			  }
+			  newlyAchieved = (thresholdCount * inAchieveThreshold &lt;= (starting_attacker_pop_count - currentCount));
+		  }
+	  }
+	  
+	  if(!newlyAchieved)
+	  {
+		//abduct wargoals need to check that there is any pop left on the map to abduct:
+		newlyAchieved = true;
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			if(!getAPI().isHostileCommunity(pop.getCommunity()) &amp;&amp; !pop.isDead())
+			{
+				//check that the pop is one of the desired abductees:
+				if(pop.getCommunity().getLeaderCollection().getLeaderFlagsForPop(pop) != IFLeaderCollection.eLeaderFlags.cNone)
+				{
+					newlyAchieved = false;
+					break;
+				}
+			}
+		}
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; starting_attacker_pop_count=" + starting_attacker_pop_count + " thresholdCount=" + thresholdCount + " currentCount = " + currentCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking abduct_pops_specific has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_abduct_pops_specific</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_abduct_pops_specific custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_abduct_pops_specific custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //for abduct wargoals, check the count of enemy pops on map to determine how many have "gotten away" already.  Compare this against the minimum between starting attackers and starting targets
+	  Int64 starting_attacker_pop_count = variableHandler.getInt("battleAI_startingAttackerCount_community" + inEnemyCommunity.getUID(), out bool success);
+	  Int64 startingTargetCount = 0;
+	  Int64 thresholdCount = 0;
+	  Int64 currentCount = 0;
+	  if(!success)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  startingTargetCount = variableHandler.getInt("battleAI_startingTargetsToAbductCount_community" + inEnemyCommunity.getUID(), out success);
+		  thresholdCount = (starting_attacker_pop_count &gt; startingTargetCount ? startingTargetCount : starting_attacker_pop_count);
+		  if(!success)
+		  {
+			  newlyAchieved = true;
+		  }
+		  else
+		  {
+			  currentCount = 0;
+			  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+			  {
+				if(pop.getCommunity() == inEnemyCommunity)
+				{
+					currentCount++;
+				}
+			  }
+			  newlyAchieved = (thresholdCount * inAchieveThreshold &lt;= (starting_attacker_pop_count - currentCount));
+		  }
+	  }
+	  
+	  if(!newlyAchieved)
+	  {
+		//abduct wargoals need to check that there is any pop left on the map to abduct:
+		newlyAchieved = true;
+		IFConnectedVariable cvOfUIDs = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_specific");
+		if(cvOfUIDs != null)
+		{
+			HashSet&lt;Int64&gt; popUIDs = new HashSet&lt;Int64&gt;();
+			foreach(var lowerUIDCV in cvOfUIDs.getLowers())
+			{
+				popUIDs.Add(lowerUIDCV.getVariableAsInt());
+			}
+			foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+			{
+				if(!getAPI().isHostileCommunity(pop.getCommunity()) &amp;&amp; !pop.isDead())
+				{
+					//check that the pop is one of the desired abductees:
+					if(popUIDs.Contains((Int64)pop.getUID()))
+					{
+						newlyAchieved = false;
+						break;
+					}
+				}
+			}
+		}
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; starting_attacker_pop_count=" + starting_attacker_pop_count + " thresholdCount=" + thresholdCount + " currentCount = " + currentCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	
+	
+	
+	
+	<!-- wargoal checking steal_resources_all has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_steal_resources_all</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_steal_resources_all custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_steal_resources_all custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //for steal wargoals, check the count of enemy pops on map to determine how many have "gotten away" already.  Compare this against starting attackers
+	  //also check that there are any resources left to steal
+	  IFResourcePool resPool = getAPI().getLocalCommunity().getResourcePool();
+	  double thresholdResourceCount = customConsts.getDoubleConst("steal_from_building leave_remaining_amount", out bool success);
+	  if(!success) thresholdResourceCount = 0.01d;
+	  bool enoughResourcesToSteal = false;
+	  Int64 starting_attacker_pop_count = 0;
+	  Int64 currentCount = 0;
+	  for(int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+	  {
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+		if(res != null)
+		{
+			if(resPool.getResourceQuantity(res) &gt; thresholdResourceCount)
+			{
+				enoughResourcesToSteal = true;
+				break;
+			}
+		}
+	  }
+	  if(!enoughResourcesToSteal)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  starting_attacker_pop_count = variableHandler.getInt("battleAI_startingAttackerCount_community" + inEnemyCommunity.getUID(), out success);
+		  if(!success)
+		  {
+			newlyAchieved = true;
+		  }
+		  else
+		  {
+			  currentCount = 0;
+			  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+			  {
+				if(pop.getCommunity() == inEnemyCommunity)
+				{
+					currentCount++;
+				}
+			  }
+			  newlyAchieved = (starting_attacker_pop_count * inAchieveThreshold &lt;= (starting_attacker_pop_count - currentCount));
+		  }
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; starting_attacker_pop_count=" + starting_attacker_pop_count + " currentCount = " + currentCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- wargoal checking steal_resources_specific has two inputs: IFCommunity inEnemyCommunity, double inAchieveThreshold.  It has no outputs. -->
+	<!-- this script is called by battleAIAbandonOrAchieveGoal -->
+	<i1><a>battleAIWargoalCheck_steal_resources_specific</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_steal_resources_specific custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  double inAchieveThreshold = (double)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIWargoalCheck_steal_resources_specific custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: bound inAchieveThreshold by 0.0d and 1.0d
+	  if(inAchieveThreshold &lt; 0.0d)
+	  {
+		inAchieveThreshold = 0.0d;
+	  }
+	  else if(inAchieveThreshold &gt; 1.0d)
+	  {
+		inAchieveThreshold = 1.0d;
+	  }
+	  
+	  bool newlyAchieved = false;
+	  //here, actually check:
+	  //for steal wargoals, check the count of enemy pops on map to determine how many have "gotten away" already.  Compare this against starting attackers
+	  //also check that there are any resources left to steal
+	  //fetch the target resources:
+	  IFConnectedVariable resListCV = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyCommunity.getUID() + "_specific");
+	  Int64 starting_attacker_pop_count = 0;
+	  Int64 currentCount = 0;
+	  if(resListCV == null)
+	  {
+		newlyAchieved = true;
+	  }
+	  else
+	  {
+		  HashSet&lt;Int64&gt; targetedResourceMOIDs = new HashSet&lt;Int64&gt;();
+		  foreach(IFConnectedVariable target in resListCV.getLowers())
+		  {
+			targetedResourceMOIDs.Add(target.getVariableAsInt());
+		  }
+		  IFResourcePool resPool = getAPI().getLocalCommunity().getResourcePool();
+		  bool enoughResourcesToSteal = false;
+		  double thresholdResourceCount = customConsts.getDoubleConst("steal_from_building leave_remaining_amount", out bool success);
+		  if(!success) thresholdResourceCount = 0.01d;
+		  for(int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+		  {
+			if(!targetedResourceMOIDs.Contains((Int64)i)) continue;
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+			if(res != null)
+			{
+				if(resPool.getResourceQuantity(res) &gt; thresholdResourceCount)
+				{
+					enoughResourcesToSteal = true;
+					break;
+				}
+			}
+		  }
+		  if(!enoughResourcesToSteal)
+		  {
+			newlyAchieved = true;
+		  }
+		  else
+		  {
+			  starting_attacker_pop_count = variableHandler.getInt("battleAI_startingAttackerCount_community" + inEnemyCommunity.getUID(), out success);
+			  if(!success)
+			  {
+				newlyAchieved = true;
+			  }
+			  else
+			  {
+				  currentCount = 0;
+				  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+				  {
+					if(pop.getCommunity() == inEnemyCommunity)
+					{
+						currentCount++;
+					}
+				  }
+				  newlyAchieved = (starting_attacker_pop_count * inAchieveThreshold &lt;= (starting_attacker_pop_count - currentCount));
+			  }
+		  }
+	  }
+	
+	  if(newlyAchieved)
+	  {
+	    addDebugMessage(inScriptInstance, "enemy community " + inEnemyCommunity.getDebugName() + " has now achieved its wargoal; starting_attacker_pop_count=" + starting_attacker_pop_count + " currentCount = " + currentCount + " inAchieveThreshold = " + inAchieveThreshold);
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_reachedBattleGoal_community" + inEnemyCommunity.getUID(), 1L);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

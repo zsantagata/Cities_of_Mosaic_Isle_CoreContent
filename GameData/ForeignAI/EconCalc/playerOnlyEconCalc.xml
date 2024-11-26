@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<!-- TODO explain each bit of the xml files and mod loading and how it works -->
+<!-- attributes: a moddableObject delcaration NEEDS name= attribute.  If and only if kind= attribute is "remove", the moddableObject is deleted.  This shifts the ordering of moddableObjects of that type (no in-game effect).  The default object cannot be removed.  When the kind=attribute is "remove", none of the declared elements matter. -->
+<!-- however note that spritesheets cannot be deleted, or have their list elements deleted/replaced/added to; they can only have their information overwritten by redeclaring the spritesheet -->
+<!-- lists: for list-type (including lists of tuples) moddable qualities, if the kind= attribute does not exist, or is "overwrite", previous items/default items in the list are discarded and new items added.  If the kind= attribute is "remove", then items are being removed from previous items/default items in the list (exact match for the first tuple-item).  If the kind= attribute is "add", then items are appended to the previously-declared/default-declared list.  If the kind= attribute is "replace", then the first item in the tuple list which has the same first inner-element (always a name or a reference to an MO) will have its other inner-elements replaced with the values provided.  When a non-tuple list is marked "replace", no action is taken (rethink what you're trying to do). -->
+<!-- default: if the name of an object is default, as are all objects in this file, then the object is not one that should exist during play.  Instead, the object is a fallback object.  Furthermore, when declaring a non-default object, if any element is not declared, the value contained by the default object is used. -->
+<!-- this means a modder could change the default values if they wanted to speed up the declaration of a group of similar objects.  However, remember: unless and until the default values in this file are restored, the changes will continue to other objects declared in the future if they do not declare all elements.  If this is not desired behavior, then it is the modder's responsibility to re-establish the values here in this file at the end of their files or mod. -->
+<core_data>
+	<!-- if these custom consts are 0, then the debug messages from these scripts are not logged.  Otherwise, they are logged. -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- logging consts related to this file's scripts must have this format or they won't work: -->
+			<!-- log_script_econcalc [type]script [calc name] -->
+			<i1><a>log_script_econcalc setupresourcesproducable playeronlyeconcalc</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_econcalc resourceadd playeronlyeconcalc</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_econcalc resourceconsume playeronlyeconcalc</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_econcalc popcountchange playeronlyeconcalc</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_econcalc econstrength playeronlyeconcalc</a> <b>int</b> <c>1</c></i1>
+			
+			<!-- other consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<!-- following this format will prevent name collisions: -->
+			<!-- econStrength [calc name] [variable] -->
+			<i1><a>econstrength playeronlyeconcalc pop_count econ_strength_proportion</a> <b>double</b> <c>0.3</c></i1> <!-- pop count comprises approximately this much of economic strength -->
+			<i1><a>econstrength playeronlyeconcalc industry_skill econ_strength_proportion</a> <b>double</b> <c>0.1</c></i1> <!-- industry skill comprises approximately this much of economic strength -->
+			<i1><a>econstrength playeronlyeconcalc industry_leaders econ_strength_proportion</a> <b>double</b> <c>0.05</c></i1> <!-- industry leaders comprises approximately this much of economic strength -->
+			<i1><a>econstrength playeronlyeconcalc buildings econ_strength_proportion</a> <b>double</b> <c>0.125</c></i1> <!-- buildings comprises approximately this much of economic strength -->
+			<i1><a>econstrength playeronlyeconcalc resources econ_strength_proportion</a> <b>double</b> <c>0.425</c></i1> <!-- resources comprises approximately this much of economic strength -->
+			
+			<i1><a>econstrength playeronlyeconcalc pop_count_contribution vertex_count</a> <b>int</b> <c>300</c></i1> <!-- this is the pop count at which the pop count contribution multiplier is equal to the below const -->
+			<i1><a>econstrength playeronlyeconcalc pop_count_contribution vertex_mult</a> <b>double</b> <c>1.0</c></i1> <!-- this is the value of the pop count contribution multiplier when pop count is equal to the above const -->
+			<i1><a>econstrength playeronlyeconcalc pop_count_contribution asymptote</a> <b>double</b> <c>1.5</c></i1> <!-- as pop count goes to infinity, pop count contribution multiplier tends to this -->
+			
+			<i1><a>econstrength playeronlyeconcalc industry_skill vertex_proportion</a> <b>double</b> <c>0.65</c></i1> <!-- this is the average industry skill at which the industry skill multiplier is equal to the below const -->
+			<i1><a>econstrength playeronlyeconcalc industry_skill vertex_mult</a> <b>double</b> <c>1.0</c></i1> <!-- this is the value of the industry skill contribution multiplier when average industry skill is equal to the above const -->
+			<i1><a>econstrength playeronlyeconcalc industry_skill asymptote</a> <b>double</b> <c>1.25</c></i1> <!-- as average industry skill goes to 1.0, industry skill contribution multiplier tends to this -->
+			
+			<i1><a>econstrength playeronlyeconcalc industry_leader vertex_proportion</a> <b>double</b> <c>0.25</c></i1> <!-- this is the average industry leader skill (over the industry skill) at which the industry leader multiplier is equal to the below const -->
+			<i1><a>econstrength playeronlyeconcalc industry_leader vertex_mult</a> <b>double</b> <c>1.0</c></i1> <!-- this is the value of the industry leader contribution multiplier when average industry leader skill (over the industry skill) is equal to the above const -->
+			<i1><a>econstrength playeronlyeconcalc industry_leader asymptote</a> <b>double</b> <c>1.25</c></i1> <!-- as average industry leader skill goes to 1.0 (over the industry skill), industry leader contribution multiplier tends to this -->
+			
+			<!-- buildings have three factors: count, building material, and variety -->
+			<!-- the multipliers of all these are multiplied together to become one overall building multiplier -->
+			<!-- count is measured directly: -->
+			<i1><a>econstrength playeronlyeconcalc building_count_contribution vertex_count</a> <b>int</b> <c>40</c></i1> <!-- this is the building count at which the building count contribution multiplier is equal to the below const -->
+			<i1><a>econstrength playeronlyeconcalc building_count_contribution vertex_mult</a> <b>double</b> <c>1.0</c></i1> <!-- this is the value of the building count contribution multiplier when building count is equal to the above const -->
+			<i1><a>econstrength playeronlyeconcalc building_count_contribution asymptote</a> <b>double</b> <c>2.0</c></i1> <!-- as building count goes to infinity, building count contribution multiplier tends to this -->
+			<!-- building material is measured as the average multiplier applied to building outputs as a result of the materials: -->
+			<i1><a>econstrength playeronlyeconcalc building_material_contribution vertex_proportion</a> <b>double</b> <c>1.0</c></i1> <!-- this is the average output mult at which the building material contribution multiplier is equal to the below const -->
+			<i1><a>econstrength playeronlyeconcalc building_material_contribution vertex_mult</a> <b>double</b> <c>1.0</c></i1> <!-- this is the value of the building material contribution multiplier when average output mult is equal to the above const -->
+			<i1><a>econstrength playeronlyeconcalc building_material_contribution asymptote</a> <b>double</b> <c>5.0</c></i1> <!-- as average output mult goes to infinity, building material contribution multiplier tends to this -->
+			<!-- variety is measured by the count of buildingkinds established -->
+			<i1><a>econstrength playeronlyeconcalc buildingkind_count_contribution vertex_count</a> <b>int</b> <c>18</c></i1> <!-- this is the buildingkind count at which the buildingkind count contribution multiplier is equal to the below const -->
+			<i1><a>econstrength playeronlyeconcalc buildingkind_count_contribution vertex_mult</a> <b>double</b> <c>1.0</c></i1> <!-- this is the value of the buildingkind count contribution multiplier when buildingkind count is equal to the above const -->
+			<i1><a>econstrength playeronlyeconcalc buildingkind_count_contribution asymptote</a> <b>double</b> <c>2.0</c></i1> <!-- as buildingkind count goes to infinity, buildingkind count contribution multiplier tends to this -->
+			
+			<!-- resources have three factors: quantity, quality, and variety stored -->
+			<!-- quantity and quality are multiplied together, then variety added in -->
+			<!-- quantity is measured directly: -->
+			<i1><a>econstrength playeronlyeconcalc resource_total_count_contribution vertex_count</a> <b>double</b> <c>15000</c></i1> <!-- this is the total resource count at which the resource count contribution multiplier is equal to the below const -->
+			<i1><a>econstrength playeronlyeconcalc resource_total_count_contribution vertex_mult</a> <b>double</b> <c>1.0</c></i1> <!-- this is the value of the resource count contribution multiplier when resource count is equal to the above const -->
+			<i1><a>econstrength playeronlyeconcalc resource_total_count_contribution asymptote</a> <b>double</b> <c>2.0</c></i1> <!-- as resource count goes to infinity, resource count contribution multiplier tends to this -->
+			<!-- quality is averaged over all resources: -->
+			<i1><a>econstrength playeronlyeconcalc resource_quality_contribution vertex_proportion</a> <b>double</b> <c>0.6</c></i1> <!-- this is the average resource quality at which the resource quality contribution multiplier is equal to the below const -->
+			<i1><a>econstrength playeronlyeconcalc resource_quality_contribution vertex_mult</a> <b>double</b> <c>1.0</c></i1> <!-- this is the value of the resource quality contribution multiplier when average resource quality is equal to the above const -->
+			<i1><a>econstrength playeronlyeconcalc resource_quality_contribution asymptote</a> <b>double</b> <c>2.0</c></i1> <!-- as average resource quality goes to 1.0, resource quality contribution multiplier tends to this -->
+			<!-- variety is measured by the standard deviation of resources.  Lower is more strength -->
+			<i1><a>econstrength playeronlyeconcalc resource_variety_contribution vertex_proportion</a> <b>double</b> <c>500</c></i1> <!-- this is the average resource quantity stddev at which the resource variety contribution multiplier is equal to the below const -->
+			<i1><a>econstrength playeronlyeconcalc resource_variety_contribution vertex_mult</a> <b>double</b> <c>3.0</c></i1> <!-- this is the value of the resource variety contribution addition when average resource quantity stddev is equal to the above const -->
+			<i1><a>econstrength playeronlyeconcalc resource_variety_contribution asymptote</a> <b>double</b> <c>6.0</c></i1> <!-- as average resource quantity stddev goes to 0.0, resource variety contribution multiplier tends to this -->
+			
+		</mCustomVariableList>
+	</customconsts>
+
+  <igEconStrengthCalculation name="playerOnlyEconCalc">
+	<mPlayerEconStrengthQuals>3</mPlayerEconStrengthQuals> <!-- 0x1 = player only calculation; 0x2 = player only calculation that can be chosen randomly -->
+  
+  	<mTagList>
+	</mTagList>
+	
+	<mSetupScript><!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the changing of locally producable resources.  Note that this is not called every day; this is only called if the econ calculation for a community has changed (even if the foreign AI has changed, it's only the econ calc that matters). -->
+	//for player-only calculations, this script is not called
+	return null;
+	</mSetupScript>
+	
+    <mResourceAddScript> <!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the changing of resources for the foreign community. -->
+	//for player-only calculations, this script is not called
+	return null;
+    </mResourceAddScript>
+	
+	<mResourceConsumeScript> <!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the consuming (i.e. regular removal) of resources for the foreign community. -->
+	//for player-only calculations, this script is not called
+	return null;
+	</mResourceConsumeScript>
+	
+	<mPopCountChangeScript> <!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the changing of pop counts for the foreign community.  Note that pop counts in igForeignCommunityComponent.getAdditionalUndeclaredPopCounts() can be changed directly with little other effect, but pops that are loyal to this community and alive should have at least one of those qualities change; hard code will clean up the rest. -->
+	//for player-only calculations, this script is not called
+	return null;
+	</mPopCountChangeScript>
+	
+	<mEconStrengthScript><!-- this script has one input: IFCommunity inCommunity. This script has one output: the new value of econ strength.  The value will be constrained between 0.0d and the maximum econ strength value as held by moddable game consts. -->
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	  return null;
+	}
+	
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	//player economic status might be used as a gauge for events or foreign AI to determine what should happen, such as should a delegation be sent or should pops demand a better standard of living
+	//therefore it is important to accurately measure the true economic capability of the player community
+	
+	//the player economy has the following elements:
+	//pops provide labor
+	//industry skill multiplies that labor
+	//industry leaders increase that labor
+	//that labor is applied to buildings
+	//the count, variety, and construction material of workplace buildings determine the range of possibilities for the application of labor
+	//many of these buildings can consume resources for increased production, or are required to do so
+	//these buildings either A) perform a valuable but non-fungible service, or B) produce resources
+	//resources are consumed by buildings and pops, spent in events/delegations, or stored for future use
+	
+	//therefore, the following elements contribute to the economic capability of the player community:
+	//pop count (include non-healthy pops as partial)
+	//industry skill
+	//industry leader presence and skill
+	//workplace building count, variety, and construction material
+	//resource quantity, quality, and variety stored
+	
+	//approximate proportion of these is as follows:
+	//pop count: 30%
+	//industry skill: 10%
+	//industry leaders: 5%
+	//buildings: 12.5%
+	//resources: 42.5%
+	
+	//econ strength ranges from 0 to 100.  However, a strength of 100 shouldn't be literally impossible to get, and immense strength in one of the categories should increase total economic strength.
+	//therefore, this script will allow each category to reach futher than its approximate proportion, while capping the total sum to the correct range
+	
+	//custom consts:
+	double popCountEconStrengthProp = customConsts.getDoubleConst("econstrength playeronlyeconcalc pop_count econ_strength_proportion", out bool success);
+	if(!success) popCountEconStrengthProp = 0.3d;
+	double industrySkillEconStrengthProp = customConsts.getDoubleConst("econstrength playeronlyeconcalc industry_skill econ_strength_proportion", out success);
+	if(!success) industrySkillEconStrengthProp = 0.1d;
+	double industryLeaderEconStrengthProp = customConsts.getDoubleConst("econstrength playeronlyeconcalc industry_leaders econ_strength_proportion", out success);
+	if(!success) industryLeaderEconStrengthProp = 0.05d;
+	double buildingsEconStrengthProp = customConsts.getDoubleConst("econstrength playeronlyeconcalc buildings econ_strength_proportion", out success);
+	if(!success) buildingsEconStrengthProp = 0.125d;
+	double resourcesEconStrengthProp = customConsts.getDoubleConst("econstrength playeronlyeconcalc resources econ_strength_proportion", out success);
+	if(!success) resourcesEconStrengthProp = 0.425d;
+	
+	Int64 popCountContribVertex = customConsts.getIntConst("econstrength playeronlyeconcalc pop_count_contribution vertex_count", out success);
+	if(!success) popCountContribVertex = 300;
+	double popCountContribVertexMult = customConsts.getDoubleConst("econstrength playeronlyeconcalc pop_count_contribution vertex_mult", out success);
+	if(!success) popCountContribVertexMult = 1.0d;
+	double popCountContribAsymptote = customConsts.getDoubleConst("econstrength playeronlyeconcalc pop_count_contribution asymptote", out success);
+	if(!success) popCountContribAsymptote = 1.5d;
+	
+	double industrySkillContribVertex = customConsts.getDoubleConst("econstrength playeronlyeconcalc industry_skill vertex_proportion", out success);
+	if(!success) industrySkillContribVertex = 0.65d;
+	double industrySkillContribVertexMult = customConsts.getDoubleConst("econstrength playeronlyeconcalc industry_skill vertex_mult", out success);
+	if(!success) industrySkillContribVertexMult = 1.0d;
+	double industrySkillContribAsymptote = customConsts.getDoubleConst("econstrength playeronlyeconcalc industry_skill asymptote", out success);
+	if(!success) industrySkillContribAsymptote = 1.25d;
+	
+	double industryLeaderContribVertex = customConsts.getDoubleConst("econstrength playeronlyeconcalc industry_leader vertex_proportion", out success);
+	if(!success) industryLeaderContribVertex = 0.25d;
+	double industryLeaderContribVertexMult = customConsts.getDoubleConst("econstrength playeronlyeconcalc industry_leader vertex_mult", out success);
+	if(!success) industryLeaderContribVertexMult = 1.0d;
+	double industryLeaderContribAsymptote = customConsts.getDoubleConst("econstrength playeronlyeconcalc industry_leader asymptote", out success);
+	if(!success) industryLeaderContribAsymptote = 1.25d;
+	
+	Int64 buildingCountContribVertex = customConsts.getIntConst("econstrength playeronlyeconcalc building_count_contribution vertex_count", out success);
+	if(!success) buildingCountContribVertex = 40;
+	double buildingCountContribVertexMult = customConsts.getDoubleConst("econstrength playeronlyeconcalc building_count_contribution vertex_mult", out success);
+	if(!success) buildingCountContribVertexMult = 1.0d;
+	double buildingCountContribAsymptote = customConsts.getDoubleConst("econstrength playeronlyeconcalc building_count_contribution asymptote", out success);
+	if(!success) buildingCountContribAsymptote = 2.0d;
+
+	double buildingMaterialContribVertex = customConsts.getDoubleConst("econstrength playeronlyeconcalc building_material_contribution vertex_proportion", out success);
+	if(!success) buildingMaterialContribVertex = 1.0d;
+	double buildingMaterialContribVertexMult = customConsts.getDoubleConst("econstrength playeronlyeconcalc building_material_contribution vertex_mult", out success);
+	if(!success) buildingMaterialContribVertexMult = 1.0d;
+	double buildingMaterialContribAsymptote = customConsts.getDoubleConst("econstrength playeronlyeconcalc building_material_contribution asymptote", out success);
+	if(!success) buildingMaterialContribAsymptote = 5.0d;
+
+	Int64 buildingkindCountContribVertex = customConsts.getIntConst("econstrength playeronlyeconcalc buildingkind_count_contribution vertex_count", out success);
+	if(!success) buildingkindCountContribVertex = 18;
+	double buildingkindCountContribVertexMult = customConsts.getDoubleConst("econstrength playeronlyeconcalc buildingkind_count_contribution vertex_mult", out success);
+	if(!success) buildingkindCountContribVertexMult = 1.0d;
+	double buildingkindCountContribAsymptote = customConsts.getDoubleConst("econstrength playeronlyeconcalc buildingkind_count_contribution asymptote", out success);
+	if(!success) buildingkindCountContribAsymptote = 2.0d;
+	
+	double resourceQuantityContribVertex = customConsts.getDoubleConst("econstrength playeronlyeconcalc resource_total_count_contribution vertex_count", out success);
+	if(!success) resourceQuantityContribVertex = 15000.0d;
+	double resourceQuantityContribVertexMult = customConsts.getDoubleConst("econstrength playeronlyeconcalc resource_total_count_contribution vertex_mult", out success);
+	if(!success) resourceQuantityContribVertexMult = 1.0d;
+	double resourceQuantityContribAsymptote = customConsts.getDoubleConst("econstrength playeronlyeconcalc resource_total_count_contribution asymptote", out success);
+	if(!success) resourceQuantityContribAsymptote = 2.0d;
+	
+	double resourceQualityContribVertex = customConsts.getDoubleConst("econstrength playeronlyeconcalc resource_quality_contribution vertex_proportion", out success);
+	if(!success) resourceQualityContribVertex = 0.6d;
+	double resourceQualityContribVertexMult = customConsts.getDoubleConst("econstrength playeronlyeconcalc resource_quality_contribution vertex_mult", out success);
+	if(!success) resourceQualityContribVertexMult = 1.0d;
+	double resourceQualityContribAsymptote = customConsts.getDoubleConst("econstrength playeronlyeconcalc resource_quality_contribution asymptote", out success);
+	if(!success) resourceQualityContribAsymptote = 2.0d;
+	
+	double resourceVarietyContribVertex = customConsts.getDoubleConst("econstrength playeronlyeconcalc resource_variety_contribution vertex_proportion", out success);
+	if(!success) resourceVarietyContribVertex = 500.0d;
+	double resourceVarietyContribVertexMult = customConsts.getDoubleConst("econstrength playeronlyeconcalc resource_variety_contribution vertex_mult", out success);
+	if(!success) resourceVarietyContribVertexMult = 3.0d;
+	double resourceVarietyContribAsymptote = customConsts.getDoubleConst("econstrength playeronlyeconcalc resource_variety_contribution asymptote", out success);
+	if(!success) resourceVarietyContribAsymptote = 6.0d;
+	
+	//gather the necessary information:
+	Int64 popCount = (Int64)inCommunity.getPopsLoyalToCommunity(true, false).Count;
+	
+	double averageIndustrySkill = 0.0d;
+	double averageLeaderSkill = 0.0d;
+	int totalCountOfIndustries = (int)getAPI().getTotalCountOfMO("industries");
+	IFIndustrySkills skills = inCommunity.getDomesticComponent().getIndustrySkills();
+	for(int moid = 1; moid &lt; totalCountOfIndustries; moid++)
+	{
+		IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", moid);
+		averageIndustrySkill += skills.getAverageSkill(industry);
+		averageLeaderSkill += skills.getLeaderSkill(industry);
+	}
+	averageIndustrySkill /= (totalCountOfIndustries - 1);
+	averageLeaderSkill /= (totalCountOfIndustries - 1);
+	averageLeaderSkill -= averageIndustrySkill;
+	if(averageLeaderSkill &lt; 0.0d) //this can happen if there are no industry leaders for certain industries; the leader skill is considered minimum skill
+		averageLeaderSkill = 0.0d;
+	
+	IFMap map = inCommunity.getDomesticComponent().getMap();
+	List&lt;IFBuilding&gt; allBuildings = new List&lt;IFBuilding&gt;(map.getAllBuildingsOnMap());
+	Int64 buildingCount = 0;
+	double averageMaterialImpact = 0.0d;
+	HashSet&lt;IFBuildingKind&gt; allBuildingKinds = new HashSet&lt;IFBuildingKind&gt;();
+	//when counting all buildings, only count workplaces, and don't count those destroyed:
+	foreach(IFBuilding building in allBuildings)
+	{
+		if(building.isBuildingDestroyed())
+			continue;
+		if(!building.isWorkplace())
+			continue;
+			
+		allBuildingKinds.Add(building.getBuildingKind());
+		buildingCount++;
+		averageMaterialImpact += building.getBuildingKind().getOutputMultForConstructionResource(building.getMadeOfResource());
+	}
+	if(buildingCount != 0)
+	{
+		averageMaterialImpact /= buildingCount;
+	}
+	
+	double minQual = consts.getResourceQualityMin();
+	double maxQual = consts.getResourceQualityMax();
+	double totalResourceQuantity = 0.0d;
+	double totalResourceQuality = 0.0d;
+	//standard deviation: sqrt(average of (quantity^2) - (average of quantity)^2)
+	double sumOfQuantitySquared = 0.0d;
+	int totalCountOfResources = (int)getAPI().getTotalCountOfMO("resources");
+	int actualCountOfResourceTypes = 0;
+	IFResourcePool resPool = inCommunity.getResourcePool();
+	for(int moid = 1; moid &lt; totalCountOfResources; moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res == null)
+			continue;
+		if(res.isNotInResourcePool())
+			continue;
+		
+		actualCountOfResourceTypes++;
+		double quan = resPool.getResourceQuantity(res);
+		double qual = resPool.getResourceQuality(res);
+		totalResourceQuantity += quan;
+		totalResourceQuality += quan * qual;
+		sumOfQuantitySquared += quan * quan;
+	}
+	double averageResourceQuantity = totalResourceQuantity / actualCountOfResourceTypes;
+	double averageResourceQuality = (totalResourceQuantity != 0.0d) ? totalResourceQuality / totalResourceQuantity : minQual;
+	averageResourceQuality -= minQual;
+	averageResourceQuality /= (maxQual - minQual);
+	double resourceStdDev = Math.Sqrt((sumOfQuantitySquared / actualCountOfResourceTypes) - (averageResourceQuantity * averageResourceQuantity));
+	
+	//first, calculate contribution of pop count:
+	double popCountContrib = popCountContribAsymptote * popCount / (popCount + popCountContribVertex * ((popCountContribAsymptote / popCountContribVertexMult) - 1));
+	popCountContrib *= popCountEconStrengthProp;
+	addDebugMessage(inScriptInstance, "pop count contribution to economic strength is " + popCountContrib + " of expected proportion " + popCountEconStrengthProp);
+	
+	//second, calculate contribution of industry skill:
+	double industrySkillContrib = industrySkillContribAsymptote * averageIndustrySkill / (averageIndustrySkill + industrySkillContribVertex * ((industrySkillContribAsymptote / industrySkillContribVertexMult) - 1));
+	industrySkillContrib *= industrySkillEconStrengthProp;
+	addDebugMessage(inScriptInstance, "industry skill contribution to economic strength is " + industrySkillContrib + " of expected proportion " + industrySkillEconStrengthProp);
+	
+	//third, calculate contribution of industry leaders:
+	double industryLeaderContrib = industryLeaderContribAsymptote * averageLeaderSkill / (averageLeaderSkill + industryLeaderContribVertex * ((industryLeaderContribAsymptote / industryLeaderContribVertexMult) - 1));
+	industryLeaderContrib *= industryLeaderEconStrengthProp;
+	addDebugMessage(inScriptInstance, "industry skill contribution to economic strength is " + industryLeaderContrib + " of expected proportion " + industryLeaderEconStrengthProp);
+	
+	//fourth, calculate contribution of buildings:
+	double buildingCountContrib = buildingCountContribAsymptote * buildingCount / (buildingCount + buildingCountContribVertex * ((buildingCountContribAsymptote / buildingCountContribVertexMult) - 1));
+	double buildingMaterialContrib = buildingMaterialContribAsymptote * averageMaterialImpact / (averageMaterialImpact + buildingMaterialContribVertex * ((buildingMaterialContribAsymptote / buildingMaterialContribVertexMult) - 1));
+	double buildingKindCountContrib = buildingkindCountContribAsymptote * allBuildingKinds.Count / (allBuildingKinds.Count + buildingkindCountContribVertex * ((buildingkindCountContribAsymptote / buildingkindCountContribVertexMult) - 1));
+	double buildingContrib = buildingCountContrib * buildingMaterialContrib * buildingKindCountContrib * buildingsEconStrengthProp;
+	addDebugMessage(inScriptInstance, "building contribution to economic strength is " + buildingContrib + " of expected proportion " + buildingsEconStrengthProp + " from count contrib=" + buildingCountContrib + 
+		" material contrib=" + buildingMaterialContrib + " kind contrib=" + buildingKindCountContrib);
+	
+	//fifth, calculate contribution of resources:
+	double resourceQuantityContrib = resourceQuantityContribAsymptote * totalResourceQuantity / (totalResourceQuantity + resourceQuantityContribVertex * ((resourceQuantityContribAsymptote / resourceQuantityContribVertexMult) - 1));
+	double resourceQualityContrib = resourceQualityContribAsymptote * averageResourceQuality / (averageResourceQuality + resourceQualityContribVertex * ((resourceQualityContribAsymptote / resourceQualityContribVertexMult) - 1));
+	double resourceVarietyContrib = resourceVarietyContribAsymptote * (1 - (resourceStdDev / (resourceStdDev + resourceVarietyContribVertex * ((resourceVarietyContribAsymptote / resourceVarietyContribVertexMult) - 1))));
+	double resourceContrib = resourceQuantityContrib * resourceQualityContrib * resourceVarietyContrib * resourcesEconStrengthProp;
+	addDebugMessage(inScriptInstance, "resources contribution to economic strength is " + resourceContrib + " of expected proportion " + resourcesEconStrengthProp + " from quan contrib=" + resourceQuantityContrib + 
+		" quality contrib=" + resourceQualityContrib + " variety contrib=" + resourceVarietyContrib);
+	
+	//lastly, add them all together, cap and scale the total:
+	double econStrength = popCountContrib + industrySkillContrib + industryLeaderContrib + buildingContrib + resourceContrib;
+	econStrength *= consts.getEconStrengthMax();
+	addDebugMessage(inScriptInstance, "Total econ strength=" + econStrength + " but will be limited to max " + consts.getEconStrengthMax());
+	econStrength = Math.Min(econStrength, consts.getEconStrengthMax());
+	
+	return new List&lt;object&gt;() { econStrength };
+	</mEconStrengthScript>
+
+  </igEconStrengthCalculation>
+  
+</core_data>

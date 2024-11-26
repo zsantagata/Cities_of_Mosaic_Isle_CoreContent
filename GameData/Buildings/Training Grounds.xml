@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>training_grounds output before_replace_text</a> <b>string</b>
+			<c>This Training Grounds will increase soldier skill by [0]% on average among the [1] pops training here.</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <igBuildingKind name="Training Grounds">
+    <Encyclopedia_Entry>
+	  <full_path>Buildings/Training Grounds</full_path>
+	  <body_text>Training Grounds.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mBuildingKindQualities>0x28087</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x4 = passable, 0x80 = only one per city, 0x8000 = this is a service workplace (outputs no goods), 0x20000 = workplace forces best quality (only valid for service industry buildings) -->
+	<mWidth>5</mWidth>
+    <mHeight>5</mHeight>
+
+	<mPopDaysToBuild>3</mPopDaysToBuild> <!-- values below 1 will be treated as 1 -->
+	<mBaseDurability>500</mBaseDurability>
+	
+    <mSSIDs>
+		<i>Training Grounds</i>
+	</mSSIDs>
+	
+	<mMaxWorkers>65535</mMaxWorkers>
+	<mIndustry>Military</mIndustry>
+	
+	<mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor>
+	  <i1>
+	    <a>TAG:fibrous</a>
+		<b></b>
+		<c></c>
+		<d></d>
+		<e>1.0</e>
+		<f>0.8</f>
+	  </i1>
+	  <i1>
+	    <a>TAG:leathery</a>
+		<b></b>
+		<c></c>
+		<d></d>
+		<e>1.0</e>
+		<f>0.95</f>
+	  </i1>
+	  <i1>
+	    <a>TAG:boney</a>
+		<b></b>
+		<c></c>
+		<d></d>
+		<e>1.0</e>
+		<f>0.95</f>
+	  </i1>
+	  <i1>
+	    <a>Clothes</a>
+		<b></b>
+		<c></c>
+		<d></d>
+		<e>1.0</e>
+		<f>1.0</f>
+	  </i1>
+	  <i1>
+	    <a>TAG:woody</a>
+		<b></b>
+		<c></c>
+		<d></d>
+		<e>1.0</e>
+		<f>1.0</f>
+	  </i1>
+	  <i1>
+	    <a>TAG:metallic</a>
+		<b></b>
+		<c></c>
+		<d></d>
+		<e>1.0</e>
+		<f>1.125</f>
+	  </i1>
+	  <i1>
+	    <a>TAG:woundHeal</a>
+		<b></b>
+		<c></c>
+		<d></d>
+		<e>1.0</e>
+		<f>1.3</f>
+	  </i1>
+	  <i1>
+	    <a>TAG:milEquip</a>
+		<b></b>
+		<c></c>
+		<d></d>
+		<e>1.0</e>
+		<f>1.5</f>
+	  </i1>
+	</mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor>
+	
+	<mMusteringType>0x1</mMusteringType><!-- 0 = disabled, 1 = during a real battle pops are mustered, 2 = pops immediately muster at this building if it is their muster point -->
+	<mScriptCalledDaily></mScriptCalledDaily> <!-- exactly what it says on the tin: if this building is fully constructed, this script is called daily.  First input is the building itself. -->
+	<mScriptCalledBetweenOutputCalculationAndResolution>
+		//intent: increase soldier skill of the workers
+	
+		//common to all workplace scripts:
+		if(inArguments.Length &lt; 7)
+		{
+		  return null;
+		}
+		IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+		Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInput = (Dictionary&lt;IFResource, double&gt;)inArguments[1];
+		Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)inArguments[2];
+		Dictionary&lt;IFResource, double&gt; inResourcesCreated = (Dictionary&lt;IFResource, double&gt;)inArguments[3];
+		double inQuality = (double)inArguments[4];
+		bool inWorkplaceOn = (bool)inArguments[5];
+		bool inJustPredicting = (bool)inArguments[6];
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		var customConsts = getAPI().getCustomConsts();
+		var consts = getAPI().getConsts();
+		var customScripts = getAPI().getCustomScripts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		string outPredictionText = "";
+		
+		//start of unique part of script:
+		//soldier skill increase is independent per pop.  Based on quality, and individual health, linear ramp from min to max soldier skill increase.
+		double totalSkillIncrease = 0.0d;
+		double minIncrease = customConsts.getDoubleConst("soldier_skill increase min_qual rate", out success);
+		if(!success) minIncrease = 0.002d;
+		double maxIncrease = customConsts.getDoubleConst("soldier_skill increase max_qual rate", out success);
+		if(!success) maxIncrease = 0.015d;
+		double proteinLackMult = customConsts.getDoubleConst("soldier_skill increase protein_below_threshold multiplier", out success);
+		if(!success) proteinLackMult = 0.02d;
+		double healthStatusMult = customConsts.getDoubleConst("soldier_skill increase health_status multiplier", out success);
+		if(!success) healthStatusMult = 0.5d;
+		
+		double protHealthThreshold = consts.getHealthLowThreshold();
+		double minQual = consts.getResourceQualityMin();
+		double maxQual = consts.getResourceQualityMax();
+		double minSkill = consts.getSoldierSkillMin();
+		double maxSkill = consts.getSoldierSkillMax();
+		double baseIncrease = ((maxIncrease - minIncrease) * inQuality + (minIncrease * maxQual - maxIncrease * minQual)) / (maxQual - minQual);
+		if(!inJustPredicting) addDebugMessage(inScriptInstance, "base soldier skill increase for " + inWorkplace.getDebugName() + " is " + baseIncrease + " based on quality of " + inQuality);
+	    //TODO any overall considerations for training from events
+		
+		foreach(IFPop pop in inWorkplace.getWorkplaceComponent().getWorkerPops())
+		{
+		  double popProteinHealth = pop.getProteinHealth();
+		  bool isLackingProtein = (popProteinHealth &lt; protHealthThreshold);
+		  bool isPopUnhealthy = !pop.isPopNoHealthStatus();
+		  bool isPopPregnant = pop.isPregnant(); //since isPopNoHealthStatus only checks pregnantImmobile, and we want to decrease soldier skill gain if the pop is pregnant *at all*, we need this as well
+		  double individualPopSoldierIncrease = baseIncrease * (isLackingProtein ? proteinLackMult : 1.0d) * (isPopUnhealthy || isPopPregnant ? healthStatusMult : 1.0d);
+		  //TODO any individual considerations for this pop from events
+		  if(!inJustPredicting)
+		  {
+			addDebugMessage(inScriptInstance, "soldier skill increase for pop " + pop.getDebugName() + " is " + individualPopSoldierIncrease + " (of whole range) based on: " + (isLackingProtein ? "lacking protein" : "has protein")
+				+ ", " + (isPopUnhealthy ? "pop unhealthy" : "pop healthy") + ", " + (isPopPregnant ? "pop pregnant" : "pop not pregnant"));
+		    pop.setSoldierSkill(pop.getSoldierSkill() + (individualPopSoldierIncrease * (maxSkill - minSkill)));
+		  }
+		  totalSkillIncrease += (individualPopSoldierIncrease * (maxSkill - minSkill));
+		}
+		
+		outPredictionText = customConsts.getStringConst("training_grounds output before_replace_text", out success);
+		if(!success) outPredictionText = "This Training Grounds will increase soldier skill by [0]% on average among the [1] pops training here.";
+		outPredictionText = outPredictionText
+			.Replace("[0]", getAPI().getDisplayStringForDouble(100.0d * (totalSkillIncrease - minSkill) / (maxSkill - minSkill)))
+			.Replace("[1]", inWorkplace.getWorkplaceComponent().getWorkerPops().Count.ToString());
+		
+		//outputs: generally if they do not need to be changed, don't modify the values going out, even as a "sanity/safety check".  Doing so would force changes to this script if other scripts change (from, for example, mods)
+		//force the output quality to minimum quality here to prevent housing quality calculations caring about this as a service
+		inQuality = minQual;
+		
+		toReturn.Add(inResourcesConsumedAsInput);
+		toReturn.Add(inResourcesConsumedOtherwise);
+		toReturn.Add(inResourcesCreated);
+		toReturn.Add(inQuality);
+		toReturn.Add(inWorkplaceOn);
+		toReturn.Add(outPredictionText);
+		return toReturn;
+	</mScriptCalledBetweenOutputCalculationAndResolution>
+	
+	<mOutputResourceQuanDailyFactor>0.545</mOutputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make output goods per day approximately equal to 1 for a single unskilled worker using one perfectly-average common good, for a workplace that does not work the land. -->
+	<mInputResourceQuanDailyFactor>1</mInputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make input goods per day per worker approximately equal to 1, spread over all inputs (not counting those which are required to be consumed TODO figure that out?). -->
+	
+	<mIsHousing>0</mIsHousing> <!-- bool, true if nonzero -->
+	<mIsWorkplace>1</mIsWorkplace> <!-- bool, true if nonzero -->
+	<mTagList>
+	  <i1>workers danger</i1>
+	  
+	  <!-- description tags: -->
+	  <i1>description_shape_top_noun:flags</i1>
+	  <i1>description_shape_side_noun:flagpoles</i1>
+	  <i1>description_shape_middle_noun:open spaces</i1>
+	  <i1>description_shape_bottom_noun:markings</i1>
+	</mTagList>
+  </igBuildingKind>
+  
+</core_data>

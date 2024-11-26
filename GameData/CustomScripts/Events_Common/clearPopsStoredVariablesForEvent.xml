@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script clearPopsStoredVariablesForEvent</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which clears variables related to pops associated with an instance of an event, using the variableHandler -->
+  <!-- note that this script also implements the same functionality as clearPopsWantToStayFromEvent.  That script should be used when pops start to leave but resolution text has not yet been calculated. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus,
+	Int64 inEventReportUID,
+	string inAdditionalLabel, //some events have multiple groups of pops they want to store/fetch
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>clearPopsStoredVariablesForEvent</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(string)}
+	      }, out _))
+	    {
+			throw new ArgumentException("clearPopsStoredVariablesForEvent custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		string inAdditionalLabel = (string)inArguments[2];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("clearPopsStoredVariablesForEvent custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReportUID &lt; 0)
+		{
+			throw new ArgumentException("clearPopsStoredVariablesForEvent custom script received invalid arguments: inEventReportUID cannot be negative");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//obv: fetch count of resources before clearing it
+		Int64 countOfPopsStored = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPopCount_report" + inEventReportUID, out bool success);
+		if(!success) countOfPopsStored = 0;
+		variableHandler.storeIntVariable(0, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPopCount_report" + inEventReportUID, 0);
+		
+		IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+		List&lt;IFPop&gt; allPops = new List&lt;IFPop&gt;();
+		for(int index = 0; index &lt; countOfPopsStored; index++)
+		{
+			//obv: fetch uid of pop before clearing it
+			Int64 uid = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPopUID" + index + "_report" + inEventReportUID, out success);
+			if(!success) continue;
+			variableHandler.storeIntVariable(0, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPopUID" + index + "_report" + inEventReportUID, 0);
+			
+			string variableName = "evt" + inEventStatus.getUID() + "report" + inEventReportUID + "_desireToStayOnMap_pop" + uid;
+			IFConnectedVariable cv = variableHandler.getConnectedVariable(variableName);
+			if(cv != null)
+			{
+				variableHandler.clearConnectedVariable(cv);
+			}
+			
+			//if these neutral pops are in housing or workplaces, kick them out:
+			IFPop pop = (IFPop)getAPI().getSO("pops", uid);
+			if(pop == null)
+			{
+				continue;
+			}
+			allPops.Add(pop);
+				
+			if(pop.getPopLocation() == IFPop.ePopLocation.cInHome)
+			{
+				Tuple&lt;double, double&gt; loc = map.getRandomEdgeOfBuilding(pop.getHomeBuilding());
+				pop.placePopOnMapLocation(loc.Item1, loc.Item2);
+			}
+			else if(pop.getPopLocation() == IFPop.ePopLocation.cInWorkplace)
+			{
+				Tuple&lt;double, double&gt; loc = map.getRandomEdgeOfBuilding(pop.getWorkplaceBuilding());
+				pop.placePopOnMapLocation(loc.Item1, loc.Item2);
+			}
+			//otherwise, reset the pathfinding for pops that are currently on the map:
+			else if(pop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap)
+			{
+				pop.forcePathfindingState("Idle", true);
+				pop.setPathfindingRecalculationUrgent();
+			}
+			
+			//lastly, there is a variable used for getting the events associated with the pop; remove this event from that list:
+			
+			IFConnectedVariable popToEventList = variableHandler.getConnectedVariable("eventsassociatedwith_pop" + pop.getUID());
+			if(popToEventList != null)
+			{
+				List&lt;IFConnectedVariable&gt; toRemove = new List&lt;IFConnectedVariable&gt;();
+				foreach(IFConnectedVariable connectedVarInPopList in popToEventList.getLowers())
+				{
+					if(connectedVarInPopList.getVariableAsInt() == inEventReportUID)
+					{
+						toRemove.Add(connectedVarInPopList);
+					}
+				}
+				//need to separate these loops because we cannot modify getLowers while we are iterating over it in a foreach
+				foreach(IFConnectedVariable toRemoveCV in toRemove)
+				{
+					variableHandler.clearConnectedVariable(toRemoveCV);
+				}
+				
+				if(popToEventList.getLowers().Count == 0)
+				{
+					variableHandler.clearConnectedVariable(popToEventList);
+				}
+			}
+		}
+		
+		//clear the do-not-delete mark associated with these pops from this event:
+		customScripts.runCustomScript("clearSOsDoNotDeleteMark", new List&lt;object&gt;() { allPops, null, null, inAdditionalLabel + inEventReportUID }, out _);
+		
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

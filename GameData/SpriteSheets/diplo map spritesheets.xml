@@ -1,0 +1,724 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <spritesheet name="Diplomacy Map">
+    <mSheetTypeName>WorldMap</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/map diploview SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>6944</width>
+		<height>5872</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+
+  <spritesheet name="Delegations diplomacy SS">
+    <mSheetTypeName>igDelegation</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/delegation diplomacy SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>51</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>102</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>diplomacy</i></mTagList>
+  </spritesheet>
+
+  <spritesheet name="Delegations raiding SS">
+    <mSheetTypeName>igDelegation</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/delegation raid SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>51</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>102</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>raiding</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Delegations emigration SS">
+    <mSheetTypeName>igDelegation</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/delegation emigration SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>51</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>102</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>emigration</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Delegations settlement SS">
+    <mSheetTypeName>igDelegation</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/delegation settlement SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>51</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>102</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>settlement</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Delegations trade SS">
+    <mSheetTypeName>igDelegation</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/delegation trade SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>51</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>102</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>trade</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Delegations trade SS2">
+    <mSheetTypeName>igDelegation</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/delegation trade SS2</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>51</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>102</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>trade</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Delegations trade SS3">
+    <mSheetTypeName>igDelegation</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/delegation trade SS3</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>51</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>102</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>trade</i><i>do not choose randomly</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Delegations war SS">
+    <mSheetTypeName>igDelegation</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/delegation war SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>51</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>102</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>50</height>
+		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>war</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Communities local master SS">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community local master SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>local</i><i>master</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Communities local servant SS">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community local servant SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>local</i><i>servant</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Communities local SS">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community local SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>local</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Communities master SS">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community master SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>master</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Communities related master SS">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community related master SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>related</i><i>master</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Communities related servant SS">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community related servant SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>related</i><i>servant</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Communities related SS">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community related SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>related</i></mTagList>
+  </spritesheet>
+
+  <spritesheet name="Communities servant SS">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community servant SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>servant</i></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Communities SS">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Communities SS2">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community SS2</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Communities SS3">
+    <mSheetTypeName>igCommunity</mSheetTypeName>
+	<mPath>_Previs Map Objects/Diplo_Map/community SS3</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>41</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>sprite</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>82</y_origin> <!-- the top of an image is 0 -->
+		<width>40</width>
+		<height>40</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList><i>do not choose randomly</i></mTagList>
+  </spritesheet>
+
+</core_data>

@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- trade and diplomacy delegations which do not have any resources assigned will gather their resources from the source community using these targets: -->
+			<i1><a>startdelegation trade_delegation resources_carried_per_pop min</a> <b>double</b> <c>10.0</c></i1> <!-- TODO: racial considerations -->
+			<i1><a>startdelegation trade_delegation resources_carried_per_pop max</a> <b>double</b> <c>40.0</c></i1> <!-- TODO: racial considerations -->
+			
+			<!-- these custom consts are used by other scripts, not the startDelegation script -->
+			<i1><a>startdelegation delegation pop_count_min raw_value</a> <b>int</b> <c>6</c></i1>
+			<i1><a>startdelegation delegation pop_count_max raw_value</a> <b>int</b> <c>100</c></i1>
+			<i1><a>startdelegation delegation pop_count_max proportion</a> <b>double</b> <c>0.45</c></i1>
+			<i1><a>startdelegation emigration_delegation weight_per_1p0 value</a> <b>double</b> <c>10.0</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script startdelegation</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which attempts to start a foreign-sourced delegation based on inputs -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunitySource, //may not be null
+	IFCommunity inCommunityTarget, //may not be null
+	IFDelegation.eDelegationType inDelegationType, //must be one of: war, raiding, trade, diplomacy, emigration
+	
+	//combination of inPopsOnDelegation and inTotalPops determines how pops are reified/chosen for the delegation: see fetchPopsForDelegation
+	List<IFPop> inPopsOnDelegation, //may be null or empty
+	Int64 inTotalPops, //may be 0 or negative
+	
+	Dictionary<IFResource, double> inDelegationResourcePool, //may be null or empty.  The delegation's starting resource pool will be these resources.  Quality will always be the same as the source community's resource pool.
+	bool inSpendFoodAndHStasisToMakeDelegation, //the resource pool is not consumed by the foreign delegation over the course of their journey.  Therefore, to "simulate" this, a caller can ask this script to take those resources from the source community.  Only food and hstasis will be consumed.
+	bool inSubtractResourcesUsedFromSourceCommunity, //If this is true, the resources in inDelegationResourcePool (and possibly fetched by this script for trade/diplomacy delegations) will be subtracted from the source community in this script.  Otherwise, no effect.  (inSpendFoodAndHStasisToMakeDelegation resources are spent automatically)
+	
+	bool inBypassCanForeignDelegationBeSentCheck //if this is true, the canForeignDelegationBeSent script will not be called.  Things might mess up.
+	-->
+	
+	<!-- output:
+	IFDelegation outDelegationCreated //this will be null if the delegation wasn't made
+	-->
+	<i1><a>startDelegation</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity), typeof(IFCommunity), typeof(IFDelegation.eDelegationType),
+			 typeof(List&lt;IFPop&gt;), typeof(Int64),
+			 typeof(Dictionary&lt;IFResource, double&gt;), typeof(bool), typeof(bool), typeof(bool)
+			}
+	      }, out _))
+	    {
+		  throw new ArgumentException("startDelegation custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFCommunity playerCommunity = getAPI().getLocalCommunity();
+	
+		IFCommunity inCommunitySource = (IFCommunity)inArguments[0];
+		if(inCommunitySource == null)
+		{
+		  throw new ArgumentException("startDelegation custom script received invalid arguments: inCommunitySource cannot be null");
+		  return null;
+		}
+		if(inCommunitySource == playerCommunity)
+		{
+		  throw new ArgumentException("startDelegation custom script received invalid arguments: inCommunitySource cannot be the player community");
+		  return null;
+		}
+		IFCommunity inCommunityTarget = (IFCommunity)inArguments[1];
+		if(inCommunityTarget == null)
+		{
+		  throw new ArgumentException("startDelegation custom script received invalid arguments: inCommunityTarget cannot be null");
+		  return null;
+		}
+		IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[2];
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		
+		List&lt;IFPop&gt; inPopsOnDelegation = (List&lt;IFPop&gt;)inArguments[3];
+		if(inPopsOnDelegation == null)
+		{
+			inPopsOnDelegation = new List&lt;IFPop&gt;();
+		}
+		Int64 inTotalPops = (Int64)inArguments[4];
+		Dictionary&lt;IFResource, double&gt; inDelegationResourcePool = (Dictionary&lt;IFResource, double&gt;)inArguments[5];
+		if(inDelegationResourcePool == null)
+		{
+			inDelegationResourcePool = new Dictionary&lt;IFResource, double&gt;();
+		}
+		bool inSpendFoodAndHStasisToMakeDelegation = (bool)inArguments[6];
+		bool inSubtractResourcesUsedFromSourceCommunity = (bool)inArguments[7];
+		bool inBypassCanForeignDelegationBeSentCheck = (bool)inArguments[8];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		//first: call canForeignDelegationBeSent if necessary
+		if(!inBypassCanForeignDelegationBeSentCheck)
+		{
+			bool canWeSend = false;
+			if(customScripts.runCustomScriptCheckTypes("canForeignDelegationBeSent", new List&lt;object&gt;() { inDelegationType, inCommunitySource, inCommunityTarget },
+									out List&lt;object&gt; canBeSent, true, typeof(bool)))
+			{
+				canWeSend = (bool)canBeSent[0];
+			}
+			if(!canWeSend)
+			{
+				addDebugMessage(inScriptInstance, "target " + inCommunityTarget.getDebugName() + " was ineligible, will not create delegation");
+				toReturn.Add(null);
+				return toReturn;
+			}
+		}
+
+		//second: gather pops on the delegation:
+		if((inDelegationType == IFDelegation.eDelegationType.cWar || inDelegationType == IFDelegation.eDelegationType.cRaiding) &amp;&amp; (inCommunityTarget == getAPI().getLocalCommunity()))
+		{
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("hostile delegation danger");
+			inTotalPops = (Int64)(difficulty * inTotalPops);
+		}
+		if(customScripts.runCustomScriptCheckTypes("fetchPopsForDelegation", new List&lt;object&gt;() { inCommunitySource, inCommunityTarget, inDelegationType, inPopsOnDelegation, inTotalPops },
+								out List&lt;object&gt; fullListOfPops, true, typeof(List&lt;IFPop&gt;)))
+		{
+			inPopsOnDelegation = (List&lt;IFPop&gt;)fullListOfPops[0];
+		}
+
+		//simple check: are there pops in inPopsOnDelegation?
+		if(inPopsOnDelegation.Count == 0)
+		{
+			addDebugMessage(inScriptInstance, "script could not find or generate any pops to go on the delegation");
+			toReturn.Add(null);
+			return toReturn;
+		}
+		
+		//third: if this is a trade or diplomacy delegation, and the inDelegationResourcePool is empty or null, assemble it.
+		//no matter what, fetch the qualities from the source community (use perfectly average quality if the quantity held is zero)
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; delegationStartingResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		double qualMin = consts.getResourceQualityMin();
+		double qualMax = consts.getResourceQualityMax();
+		double qualAvg = (qualMax + qualMin) / 2;
+		IFResourcePool sourceResPool = inCommunitySource.getResourcePool();
+		bool success = false;
+		if(((inDelegationType == IFDelegation.eDelegationType.cTrade) || (inDelegationType == IFDelegation.eDelegationType.cDiplomacy)) &amp;&amp; (inDelegationResourcePool.Count == 0))
+		{
+			double minResourcesCarriedPerPop = customConsts.getDoubleConst("startdelegation trade_delegation resources_carried_per_pop min", out success);
+			if(!success) minResourcesCarriedPerPop = 10.0d;
+			double maxResourcesCarriedPerPop = customConsts.getDoubleConst("startdelegation trade_delegation resources_carried_per_pop max", out success);
+			if(!success) maxResourcesCarriedPerPop = 40.0d;
+			
+			//diplomacy delegations may have fewer resources than a trade delegation would consider reasonable
+			if(inDelegationType == IFDelegation.eDelegationType.cDiplomacy)
+				minResourcesCarriedPerPop = 0.0d;
+			
+			double resourcesDesired = inPopsOnDelegation.Count * (minResourcesCarriedPerPop + getAPI().calcRand() * (maxResourcesCarriedPerPop - minResourcesCarriedPerPop));
+			
+			if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;()
+				{ inCommunitySource.getResourcePool(), false, false, null,
+				  resourcesDesired, inSubtractResourcesUsedFromSourceCommunity, false, false, false, false, false, true }, //randomize quantities
+				out List&lt;object&gt; outResourcesConsumed, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+			{
+				delegationStartingResources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)outResourcesConsumed[2];
+			}
+		}
+		else
+		{
+			foreach(var kvpair in inDelegationResourcePool)
+			{
+				bool hasAnyOfResource = sourceResPool.getResourceQuantity(kvpair.Key) &gt; 0.0d;
+				delegationStartingResources.Add(kvpair.Key, Tuple.Create(kvpair.Value, hasAnyOfResource ? sourceResPool.getResourceQuality(kvpair.Key) : qualAvg));
+			}
+			//subtract (as much as possible) the desired resources from the source community's resource pool if necessary
+			if(inSubtractResourcesUsedFromSourceCommunity)
+			{
+				foreach(var kvpair in inDelegationResourcePool)
+				{
+					double actualAmountAvailable = Math.Min(kvpair.Value, sourceResPool.getResourceQuantity(kvpair.Key));
+					delegationStartingResources[kvpair.Key] = Tuple.Create(actualAmountAvailable, delegationStartingResources[kvpair.Key].Item2);
+					sourceResPool.subtractResource(kvpair.Key, actualAmountAvailable);
+				}
+			}
+		}
+		
+		//fourth: consume food and hstasis resources if necessary
+		//if they are not available, decrease the health of the pops going on the delegation (MCal and HStasis health)
+		if(inSpendFoodAndHStasisToMakeDelegation)
+		{
+			if(getAPI().getRoundTripTimeAndKindBetweenCommunities(inCommunitySource, inCommunityTarget, inPopsOnDelegation, out _, out double arrivalDate))
+			{
+				double days_traveled = arrivalDate - getAPI().getCalendar().getCurrentDate();
+				
+				//TODO racial considerations
+				double hstasisDaysPerUnit = customConsts.getDoubleConst("popHealth_HStasis hstasis death_days value", out success);
+				if(!success) hstasisDaysPerUnit = 21.0d;
+				double desiredHStasisToSpend = days_traveled * inPopsOnDelegation.Count * (1 / hstasisDaysPerUnit);
+				
+				double min_mcal_for_health = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out success);
+				if(!success) min_mcal_for_health = 2.0d;
+				double desiredFoodToSpend = days_traveled * inPopsOnDelegation.Count * min_mcal_for_health;
+				
+				List&lt;IFResource&gt; allFood = new List&lt;IFResource&gt;();
+				List&lt;IFResource&gt; allHStasis = new List&lt;IFResource&gt;();
+				for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+				{
+					IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+					if(res != null)
+					{
+						if(!res.isNotInResourcePool())
+						{
+							if(res.isFood())
+							{
+								allFood.Add(res);
+							}
+							if(res.isHStasis())
+							{
+								allHStasis.Add(res);
+							}
+						}
+					}
+				}
+	
+				//consume food:
+				if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;()
+					{ inCommunitySource.getResourcePool(), true, false, allFood,
+					  desiredFoodToSpend, true, true, false, false, false, false, false }, //prioritize low quality resources
+					out List&lt;object&gt; outResourcesConsumedFD, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+				{
+					double actualFoodConsumed = (double)outResourcesConsumedFD[0];
+					desiredFoodToSpend -= actualFoodConsumed;
+				}
+				//consume hstasis:
+				if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;()
+					{ inCommunitySource.getResourcePool(), true, false, allHStasis,
+					  desiredHStasisToSpend, true, true, false, false, false, false, false }, //prioritize low quality resources
+					out List&lt;object&gt; outResourcesConsumedHS, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+				{
+					double actualHStasisConsumed = (double)outResourcesConsumedHS[0];
+					desiredHStasisToSpend -= actualHStasisConsumed;
+				}
+				
+				if((desiredHStasisToSpend &gt; 0.0d) || (desiredFoodToSpend &gt; 0.0d))
+				{
+					//if we have reached here with desired hstasis/food to spend, decrease the health of all pops involved for the amount missing:
+					double mcalDaysToDeath = customConsts.getDoubleConst("popHealth_MCal mcal death_days value", out success);
+					if(!success) mcalDaysToDeath = 21.0d;
+					
+					double daysNoFood = desiredFoodToSpend / (inPopsOnDelegation.Count * min_mcal_for_health);
+					double fullRangeOfMCalHealthDamage = daysNoFood / mcalDaysToDeath;
+					double fullRangeOfHStasisHealthDamage = desiredHStasisToSpend / inPopsOnDelegation.Count; //the hstasisDaysPerUnit cancels out
+					
+					double healthMin = consts.getHealthMin();
+					double healthMax = consts.getHealthMax();
+					
+					double mcalHealthDecrease = Math.Max(0.0d, fullRangeOfMCalHealthDamage * (healthMax - healthMin));
+					double hstasisHealthDecrease = Math.Max(0.0d, fullRangeOfHStasisHealthDamage * (healthMax - healthMin));
+					
+					if((mcalHealthDecrease &gt; 0) || (hstasisHealthDecrease &gt; 0))
+					{
+						foreach(IFPop pop in inPopsOnDelegation)
+						{
+							pop.setWaterHealth(healthMax);
+							pop.setProteinHealth(healthMax); //okay fine technically this should be calculated but it's not a big deal
+							pop.setMCalHealth(pop.getMCalHealth() - mcalHealthDecrease);
+							pop.setHStasisHealth(pop.getHStasisHealth() - hstasisHealthDecrease);
+							customScripts.runCustomScript("popHealth_overall", new List&lt;object&gt;() { pop }, out _);
+						}
+					}
+				}
+				//else set all pops involved to full health:
+				else
+				{
+					double healthMax = consts.getHealthMax();
+					foreach(IFPop pop in inPopsOnDelegation)
+					{
+						pop.setWaterHealth(healthMax);
+						pop.setProteinHealth(healthMax); //okay fine technically this should be calculated but it's not a big deal
+						pop.setMCalHealth(healthMax);
+						pop.setHStasisHealth(healthMax);
+						customScripts.runCustomScript("popHealth_overall", new List&lt;object&gt;() { pop }, out _);
+					}
+				}
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "path between source and target community does not exist for chosen pops");
+				toReturn.Add(null);
+				return toReturn;
+			}
+		}
+
+		//fifth: call the API and make the delegation
+		IFDelegation createdDelegation = getAPI().createDelegation(inCommunitySource, inCommunityTarget, inDelegationType, delegationStartingResources, inPopsOnDelegation);
+
+		//sixth: return the delegation
+		toReturn.Add(createdDelegation);
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <spritesheet name="PopFloatyIndicator">
+    <mSheetTypeName>PopFloatyIndicator</mSheetTypeName>
+	<mPath>_Previs Pops/Selector/Selector SS</mPath>
+	<mSpriteList>
+	  <sprite>
+	    <id>0</id>
+		<name>Selected Mustered Pop</name>
+		<frames>2</frames>
+		<y_origin>0</y_origin>
+		<width>20</width>
+		<height>30</height>
+		<fps>3.4</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>1</id>
+		<name>Mustered Pop</name>
+		<frames>2</frames>
+		<y_origin>31</y_origin>
+		<width>20</width>
+		<height>30</height>
+		<fps>3.4</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>2</id>
+		<name>Hostile Pop</name>
+		<frames>2</frames>
+		<y_origin>62</y_origin>
+		<width>20</width>
+		<height>30</height>
+		<fps>3.4</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>3</id>
+		<name>Selected Pop</name>
+		<frames>2</frames>
+		<y_origin>93</y_origin>
+		<width>20</width>
+		<height>30</height>
+		<fps>3.4</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>4</id>
+		<name>Pop Move Target Ordered</name>
+		<frames>2</frames>
+		<y_origin>124</y_origin>
+		<width>20</width>
+		<height>71</height>
+		<fps>3.4</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>4</id>
+		<name>Pop Move Target Unordered</name>
+		<frames>2</frames>
+		<y_origin>196</y_origin>
+		<width>20</width>
+		<height>71</height>
+		<fps>3.4</fps>
+	  </sprite>
+	  
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="BoxSelector">
+    <mSheetTypeName>BoxSelector</mSheetTypeName>
+	<mPath>_Previs Pops/Selector/Select Box SS</mPath>
+	<mSpriteList>
+	  <sprite>
+	    <id>0</id>
+		<name>Horizontal Box Selector</name>
+		<frames>1</frames>
+		<y_origin>0</y_origin>
+		<width>4</width>
+		<height>1</height>
+		<fps>1.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>1</id>
+		<name>Vertical Box Selector</name>
+		<frames>1</frames>
+		<y_origin>2</y_origin>
+		<width>1</width>
+		<height>4</height>
+		<fps>1.0</fps>
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  
+  
+</core_data>

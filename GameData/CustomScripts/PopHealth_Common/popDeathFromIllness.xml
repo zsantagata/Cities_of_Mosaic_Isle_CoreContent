@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+		<i1><a>popDeathFromIllness death_from_illness min_health rate</a> <b>double</b> <c>0.2</c></i1> <!-- this is the base chance for a pop to die, daily, if its overall health is at minimum -->
+		<i1><a>popDeathFromIllness death_from_illness low_health rate</a> <b>double</b> <c>0.015</c></i1> <!-- the base chance for a pop to die, daily, if it has an illness.  This is at slightly above minimum health, and reduces to the not_low_health rate as pop approaches low health threshold. -->
+		<i1><a>popDeathFromIllness death_from_illness not_low_health rate</a> <b>double</b> <c>0.005</c></i1> <!-- the base chance for a pop to die, daily, if it has an illness.  This is at low health threshold, and reduces to 0 as pop approaches max health. -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script popdeathfromillness</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which checks if a pop should die of its illness, and sets the pop dead if so -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop
+	
+	There is no output -->
+	<i1><a>popDeathFromIllness</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popDeathFromIllness custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	if(inPop.isDead() || !inPop.isIll())
+		return null;
+	  
+	//TODO any race or other non-standard considerations
+	  
+    double max_health = consts.getHealthMax();
+    double min_health = consts.getHealthMin();
+	double low_health_threshold = consts.getHealthLowThreshold();
+    double current_health = inPop.getOverallHealth();
+	double min_health_rate = customConsts.getDoubleConst("popDeathFromIllness death_from_illness min_health rate", out bool success);
+	if(!success) min_health_rate = 0.2d;
+    double low_health_rate = customConsts.getDoubleConst("popDeathFromIllness death_from_illness low_health rate", out success);
+	if(!success) low_health_rate = 0.015d;
+    double not_low_health_rate = customConsts.getDoubleConst("popDeathFromIllness death_from_illness not_low_health rate", out success);
+    if(!success) not_low_health_rate = 0.005d;
+
+    double max_item_qual = consts.getResourceQualityMax();
+    double min_item_qual = consts.getResourceQualityMin();
+    double cached_item_qual = getAPI().getVariableHandler().getDouble("pop_consumed_illHeal" + inPop.getUID(), out success);
+    if(!success)
+    {
+		cached_item_qual = min_item_qual;
+    }
+
+    //people die of illnesses even when they have access to the food, water, and environs they want.  However, consuming a tonic will moderate the effect.
+	double prob_of_death = 0.0d;
+	if(current_health == min_health)
+	{
+		prob_of_death = min_health_rate;
+	}
+	else if(current_health &lt; low_health_threshold)
+	{
+		prob_of_death = (low_health_rate - not_low_health_rate) * ((low_health_threshold - current_health) / (low_health_threshold - min_health)) + not_low_health_rate;
+	}
+	else
+	{
+		prob_of_death = not_low_health_rate * ((max_health - current_health) / (max_health - low_health_threshold));
+	}
+	
+    addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " starts with " + prob_of_death + " chance to die of illness because of current health");
+
+    if(cached_item_qual &gt; min_item_qual)
+	{
+	    prob_of_death = (prob_of_death) * ((max_item_qual - cached_item_qual) / (max_item_qual - min_item_qual));
+	    addDebugMessage(inScriptInstance, "chance to die reduced to " + prob_of_death + " because of use of illness healing item of internal quality " + cached_item_qual);
+	}
+	  
+	if(inPop.hasHomeBuilding())
+	{
+	    double prob_death_reduction = getAPI().getVariableHandler().getConnectedDouble("deathProbReduce_building" + inPop.getHomeBuilding().getUID(), out success);
+		if(success)
+		{
+			double max_death_reduction = customConsts.getDoubleConst("popHealth death_chance_reduction max", out success);
+			if(!success) max_death_reduction = 0.85d;
+			if(prob_death_reduction &gt; max_death_reduction)
+			{
+				prob_death_reduction = max_death_reduction;
+			}
+			else if(prob_death_reduction &lt; 0.0d)
+			{
+				prob_death_reduction = 0.0d;
+			}
+			prob_of_death *= (1.0d - prob_death_reduction);
+			addDebugMessage(inScriptInstance, "chance to die reduced to " + prob_of_death + " because of available buff on home building (deathProbReduce_building) of " + prob_death_reduction
+				+ " (after enforcing buff limits of 0.0 and " + max_death_reduction + ")");
+		}
+	}
+	 
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("illness danger");
+	prob_of_death *= difficulty;
+	bool now_dead = getAPI().calcProb(prob_of_death);
+	addDebugMessage(inScriptInstance, "pop is " + (now_dead ? "now" : "not") + " dead as a result of illness");
+	if(now_dead) inPop.setIsDead(true, IFPop.ePopDeathReason.cIllness);
+	  
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

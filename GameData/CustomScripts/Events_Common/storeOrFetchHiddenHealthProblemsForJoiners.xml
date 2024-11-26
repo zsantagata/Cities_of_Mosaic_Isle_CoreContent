@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script storeOrFetchHiddenHealthProblemsForJoiners</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which stores or retrieves health problems associated with potential joiners, that are not directly applied to the pops at the time the pops are generated/placed on the map -->
+  <!-- note that this script will override any stored values without notification (besides the variableHandler's default messages) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus,
+	Int64 inEventReportUID,
+	bool inStoring, //if false, fetching
+	string inAdditionalLabel, //some events have multiple groups of pops they want to store/fetch
+	Int64 inExpiryDateAssociation, //if storing, use this expiry date for the association of these problems to this event instance
+	List<Int64> inDatesOfWoundEnding, //can be null or any size, ignored if fetching
+	List<Int64> inDatesOfIllnessEnding, //can be null or any size, ignored if fetching
+	List<double> inRatiosOfPregnancyLength //can be null or any size, ignored if fetching.  Baby race = mother's race
+	-->
+	
+	<!-- output:
+	List<Int64> outDatesOfWoundEnding, //will always be filled with the correct dates whether storing or fetching.  Can be empty but will not be null.
+	List<Int64> outDatesOfIllnessEnding, //will always be filled with the correct dates whether storing or fetching.  Can be empty but will not be null.
+	List<double> outRatiosOfPregnancyLength //will always be filled with the correct values whether storing or fetching.  Can be empty but will not be null.
+	-->
+	<i1><a>storeOrFetchHiddenHealthProblemsForJoiners</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(bool), typeof(string), typeof(Int64),
+			typeof(List&lt;Int64&gt;), typeof(List&lt;Int64&gt;), typeof(List&lt;double&gt;)}
+	      }, out _))
+	    {
+			throw new ArgumentException("storeOrFetchHiddenHealthProblemsForJoiners custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		bool inStoring = (bool)inArguments[2];
+		string inAdditionalLabel = (string)inArguments[3];
+		Int64 inExpiryDateAssociation = (Int64)inArguments[4];
+		List&lt;Int64&gt; inDatesOfWoundEnding = (List&lt;Int64&gt;)inArguments[5];
+		List&lt;Int64&gt; inDatesOfIllnessEnding = (List&lt;Int64&gt;)inArguments[6];
+		List&lt;double&gt; inRatiosOfPregnancyLength = (List&lt;double&gt;)inArguments[7];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("storeOrFetchHiddenHealthProblemsForJoiners custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReportUID &lt; 0)
+		{
+			throw new ArgumentException("storeOrFetchHiddenHealthProblemsForJoiners custom script received invalid arguments: inEventReportUID cannot be negative");
+			return null;
+		}
+		if(inDatesOfWoundEnding == null)
+			inDatesOfWoundEnding = new List&lt;Int64&gt;();
+		if(inDatesOfIllnessEnding == null)
+			inDatesOfIllnessEnding = new List&lt;Int64&gt;();
+		if(inRatiosOfPregnancyLength == null)
+			inRatiosOfPregnancyLength = new List&lt;double&gt;();
+		if(inStoring &amp;&amp; (inDatesOfWoundEnding.Count == 0) &amp;&amp; (inDatesOfIllnessEnding.Count == 0) &amp;&amp; (inRatiosOfPregnancyLength.Count == 0))
+		{
+			throw new ArgumentException("storeOrFetchHiddenHealthProblemsForJoiners custom script received invalid arguments: not all of inDatesOfWoundEnding, inDatesOfIllnessEnding, inRatiosOfPregnancyLength can be null/empty when storing health problems");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		List&lt;Int64&gt; outDatesOfWoundEnding = inStoring ? new List&lt;Int64&gt;(inDatesOfWoundEnding) : new List&lt;Int64&gt;();
+		List&lt;Int64&gt; outDatesOfIllnessEnding = inStoring ? new List&lt;Int64&gt;(inDatesOfIllnessEnding) : new List&lt;Int64&gt;();
+		List&lt;double&gt; outRatiosOfPregnancyLength = inStoring ? new List&lt;double&gt;(inRatiosOfPregnancyLength) : new List&lt;double&gt;();
+		
+		if(inStoring)
+		{
+			Int64 countOfWoundsStored = inDatesOfWoundEnding.Count;
+			Int64 countOfIllnessesStored = inDatesOfIllnessEnding.Count;
+			Int64 countOfPregnanciesStored = inRatiosOfPregnancyLength.Count;
+			
+			variableHandler.storeIntVariable(inExpiryDateAssociation, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedWoundCount_report" + inEventReportUID, countOfWoundsStored);
+			variableHandler.storeIntVariable(inExpiryDateAssociation, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedIllnessesCount_report" + inEventReportUID, countOfIllnessesStored);
+			variableHandler.storeIntVariable(inExpiryDateAssociation, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPregnanciesCount_report" + inEventReportUID, countOfPregnanciesStored);
+			
+			for(int index = 0; index &lt; countOfWoundsStored; index++)
+			{
+				variableHandler.storeIntVariable(inExpiryDateAssociation, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_woundDate" + index + "_report" + inEventReportUID, inDatesOfWoundEnding[index]);
+			}
+			for(int index = 0; index &lt; countOfIllnessesStored; index++)
+			{
+				variableHandler.storeIntVariable(inExpiryDateAssociation, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_illnessDate" + index + "_report" + inEventReportUID, inDatesOfIllnessEnding[index]);
+			}
+			for(int index = 0; index &lt; countOfPregnanciesStored; index++)
+			{
+				variableHandler.storeDoubleVariable(inExpiryDateAssociation, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_pregnancyRatio" + index + "_report" + inEventReportUID, inRatiosOfPregnancyLength[index]);
+			}
+		}
+		else
+		{
+			Int64 countOfWoundsStored = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedWoundCount_report" + inEventReportUID, out bool success);
+			if(!success) countOfWoundsStored = 0;
+			Int64 countOfIllnessesStored = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedIllnessesCount_report" + inEventReportUID, out success);
+			if(!success) countOfIllnessesStored = 0;
+			Int64 countOfPregnanciesStored = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPregnanciesCount_report" + inEventReportUID, out success);
+			if(!success) countOfPregnanciesStored = 0;
+		
+			for(int index = 0; index &lt; countOfWoundsStored; index++)
+			{
+				Int64 date = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_woundDate" + index + "_report" + inEventReportUID, out success);
+				if(!success) continue;
+				
+				outDatesOfWoundEnding.Add(date);
+			}
+			for(int index = 0; index &lt; countOfIllnessesStored; index++)
+			{
+				Int64 date = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_illnessDate" + index + "_report" + inEventReportUID, out success);
+				if(!success) continue;
+				
+				outDatesOfIllnessEnding.Add(date);
+			}
+			for(int index = 0; index &lt; countOfPregnanciesStored; index++)
+			{
+				double ratio = variableHandler.getDouble("evt" + inEventStatus.getUID() + inAdditionalLabel + "_pregnancyRatio" + index + "_report" + inEventReportUID, out success);
+				if(!success) continue;
+				
+				outRatiosOfPregnancyLength.Add(ratio);
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outDatesOfWoundEnding, outDatesOfIllnessEnding, outRatiosOfPregnancyLength };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

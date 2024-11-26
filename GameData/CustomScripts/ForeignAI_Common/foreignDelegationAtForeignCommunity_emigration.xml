@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- probability of accepting a delegation: -->
+			<i1><a>foreignDelegationAtForeignCommunity_emigration accept_emigrants chance min</a><b>double</b> <c>0.025</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration accept_emigrants chance max</a><b>double</b> <c>0.95</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration accept_emigrants chance starting</a><b>double</b> <c>0.4</c></i1> <!-- before any other factors, this is the probability that the emigrants will be accepted -->
+			
+			<!-- (per-pop) race care value average impacts the probability of accepting an emigration delegation -->
+			<i1><a>foreignDelegationAtForeignCommunity_emigration racial_care per_pop min</a><b>double</b> <c>-0.5</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration racial_care per_pop max</a><b>double</b> <c>2.0</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration racial_care per_pop mult min</a><b>double</b> <c>0.05</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration racial_care per_pop mult max</a><b>double</b> <c>2.0</c></i1>
+			<!-- wounds and pregnancies decrease the individual racial care values of the pop in question -->
+			<i1><a>foreignDelegationAtForeignCommunity_emigration racial_care wound addition</a><b>double</b> <c>-0.4</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration racial_care pregnancy addition</a><b>double</b> <c>-0.4</c></i1>
+			<!-- each illness decreases the overall probability of accepting the emigration delegation -->
+			<i1><a>foreignDelegationAtForeignCommunity_emigration illness per_pop mult</a><b>double</b> <c>0.975</c></i1>
+			
+			<!-- total resources brought by the emigrants impacts the probability of accepting an emigration delegation -->
+			<i1><a>foreignDelegationAtForeignCommunity_emigration resource_value max</a><b>double</b> <c>10000.0</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration resource_value mult min</a><b>double</b> <c>1.0</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration resource_value mult max</a><b>double</b> <c>3.0</c></i1>
+			
+			<!-- econ strength of the target community impacts the probability of accepting an emigration delegation -->
+			<i1><a>foreignDelegationAtForeignCommunity_emigration econ_strength min</a><b>double</b> <c>0.05</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration econ_strength max</a><b>double</b> <c>0.8</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration econ_strength mult min</a><b>double</b> <c>0.15</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration econ_strength mult max</a><b>double</b> <c>1.5</c></i1>
+			
+			<!-- ratio of pop count of target community : emigrants impacts the probability of accepting an emigration delegation -->
+			<!-- note that the mult at "neutral" is 1.0 and tends linearly towards the min and max as the ratio does -->
+			<i1><a>foreignDelegationAtForeignCommunity_emigration pop_count_ratio min</a><b>double</b> <c>0.0</c></i1> <!-- cannot actually be achieved -->
+			<i1><a>foreignDelegationAtForeignCommunity_emigration pop_count_ratio neutral</a><b>double</b> <c>5.0</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration pop_count_ratio max</a><b>double</b> <c>25.0</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration pop_count_ratio mult min</a><b>double</b> <c>0.005</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_emigration pop_count_ratio mult max</a><b>double</b> <c>2.0</c></i1>
+			
+			<!-- communities connected by a master/servant link are more likely to have social links between them -->
+			<i1><a>foreignDelegationAtForeignCommunity_emigration master_servant_connection mult</a><b>double</b> <c>1.35</c></i1>
+			
+			<!-- communities which are experiencing food/hstasis/medicine stress are less likely to accept emigrants.  This applies per one of those stresses (so possibly up to this ^ 3) -->
+			<!-- wound heal stress and mil equip stress don't change probability of acceptance -->
+			<i1><a>foreignDelegationAtForeignCommunity_emigration resource_stress_each mult</a><b>double</b> <c>0.33</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script foreignDelegationAtForeignCommunity_emigration</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which handles emigration delegations whose source and target are neither player controlled -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+	none
+	-->
+	<i1><a>foreignDelegationAtForeignCommunity_emigration</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFDelegation)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("foreignDelegationAtForeignCommunity_emigration custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		if(inDelegation == null)
+		{
+		  throw new ArgumentException("foreignDelegationAtForeignCommunity_emigration custom script received invalid arguments: inDelegation cannot be null");
+		  return null;
+		}
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		if((inDelegation.getSourceCommunity() == localCommunity) || (inDelegation.getTargetCommunity() == localCommunity))
+		{
+		  throw new ArgumentException("foreignDelegationAtForeignCommunity_emigration custom script received invalid arguments: inDelegation's source or target community cannot be the local community");
+		  return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		//emigration delegations can either be accepted into the target community or rejected.
+		//Implicitly, migrants have some level of trust amongst each other, or else they would not have traveled together and would be in separate emigration delegations.  Therefore, they will not accept a target community's attempt to welcome only some of them/their resources.
+		//The target community will need to decide to accept or reject all the migrants and their resources.
+		
+		//Factors in favor:
+		//Racial care values of the emigrants (possibly)
+		//Resources held by the emigrants
+		//High economic strength of the target community
+		//Master/servant connection between source and target community
+		
+		//Factors against:
+		//Racial care values of the emigrants (possibly)
+		//Low economic strength of the target community
+		//Food/hstasis/medicine stress of the target community
+		//Wounds/illnesses/pregnancies of emigrants
+		//High ratio of emigrant population : local population
+		
+		//There is a probability of accepting an emigration delegation that changes based on the above factors.  The probability has max/min.
+		
+		//Also note that if there are no pops in the target community (i.e. they are all in delegations or otherwise not present at the time), the delegation is automatically accepted
+		
+		//custom consts:
+		double probMin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration accept_emigrants chance min", out bool success);
+		if(!success) probMin = 0.025d;
+		double probMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration accept_emigrants chance max", out success);
+		if(!success) probMax = 0.95d;
+		double probStarting = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration accept_emigrants chance starting", out success);
+		if(!success) probStarting = 0.4d;
+		
+		double racialCarePerPopMin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration racial_care per_pop min", out success);
+		if(!success) racialCarePerPopMin = -0.5d;
+		double racialCarePerPopMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration racial_care per_pop max", out success);
+		if(!success) racialCarePerPopMax = 2.0d;
+		double racialCarePerPopMinMult = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration racial_care per_pop mult min", out success);
+		if(!success) racialCarePerPopMinMult = 0.05d;
+		double racialCarePerPopMaxMult = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration racial_care per_pop mult max", out success);
+		if(!success) racialCarePerPopMaxMult = 2.0d;
+		
+		double woundRaceCareAddition = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration racial_care wound addition", out success);
+		if(!success) woundRaceCareAddition = -0.4d;
+		double pregnancyRaceCareAddition = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration racial_care pregnancy addition", out success);
+		if(!success) pregnancyRaceCareAddition = -0.4d;
+		double illnessPerPopProbMult = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration illness per_pop mult", out success);
+		if(!success) illnessPerPopProbMult = 0.975d;
+		
+		double resourceValueMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration resource_value max", out success);
+		if(!success) resourceValueMax = 10000.0d;
+		double resourceValueMultMin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration resource_value mult min", out success);
+		if(!success) resourceValueMultMin = 1.0d;
+		double resourceValueMultMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration resource_value mult max", out success);
+		if(!success) resourceValueMultMax = 3.0d;
+		
+		double econStrengthMin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration econ_strength min", out success);
+		if(!success) econStrengthMin = 0.05d;
+		double econStrengthMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration econ_strength max", out success);
+		if(!success) econStrengthMax = 0.8d;
+		double econStrengthMultMin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration econ_strength mult min", out success);
+		if(!success) econStrengthMultMin = 0.15d;
+		double econStrengthMultMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration econ_strength mult max", out success);
+		if(!success) econStrengthMultMax = 1.5d;
+		
+		double popCountRatioMin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration pop_count_ratio min", out success);
+		if(!success) popCountRatioMin = 0.0d;
+		double popCountRatioNeutral = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration pop_count_ratio neutral", out success);
+		if(!success) popCountRatioNeutral = 5.0d;
+		double popCountRatioMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration pop_count_ratio max", out success);
+		if(!success) popCountRatioMax = 25.0d;
+		double popCountRatioMultMin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration pop_count_ratio mult min", out success);
+		if(!success) popCountRatioMultMin = 0.005d;
+		double popCountRatioMultMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration pop_count_ratio mult max", out success);
+		if(!success) popCountRatioMultMax = 2.0d;
+		
+		double connectionMult = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration master_servant_connection mult", out success);
+		if(!success) connectionMult = 1.35d;
+		
+		double resourceStressEachMult = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_emigration resource_stress_each mult", out success);
+		if(!success) resourceStressEachMult = 0.33d;
+		
+		IFCommunity targetCommunity = inDelegation.getTargetCommunity();
+		bool acceptEmigrants = false;
+		
+		//first, count up the total number of pops in the target community:
+		bool anyPopAtHomeAtAll = false;
+		UInt64 totalPopCount = 0;
+		foreach(var kvpair in targetCommunity.getAdditionalUndeclaredPopCounts())
+		{
+			totalPopCount += kvpair.Value;
+			if(kvpair.Value &gt; 0)
+				anyPopAtHomeAtAll = true;
+		}
+		foreach(IFPop pop in targetCommunity.getPopsLoyalToCommunity(true, false))
+		{
+			if(!pop.hasDelegation() &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cInForeignCommunity))
+			{
+				totalPopCount++;
+				anyPopAtHomeAtAll = true;
+			}
+		}
+		if(anyPopAtHomeAtAll)
+		{
+			//second, get resource desire values and race care values for the target community:
+			List&lt;double&gt; raceCareValues = new List&lt;double&gt;();
+			if(customScripts.runCustomScriptCheckTypes("getRaceCareValues", new List&lt;object&gt;() { targetCommunity, null },
+									out List&lt;object&gt; outRaceCareValues, true, typeof(List&lt;double&gt;)))
+			{
+				raceCareValues = (List&lt;double&gt;)outRaceCareValues[0];
+			}
+			
+			//third, go through the pops in the delegation and calculate aggregate race care value (and other things)
+			double raceCareValueTotal = 0.0d;
+			double sickMult = 1.0d;
+			int emigrantPopCount = 0;
+			foreach(IFPop pop in inDelegation.getPopsInDelegation())
+			{
+				if(!pop.isDead())
+				{
+					double raceCareValue = 0.0d;
+					if(raceCareValues.Count &gt; pop.getRace().getMOID())
+						raceCareValue = raceCareValues[(int)pop.getRace().getMOID()];
+					if(pop.isWounded())
+						raceCareValue += woundRaceCareAddition;
+					if(pop.isPregnant())
+						raceCareValue += pregnancyRaceCareAddition;
+						
+					if(pop.isIll())
+						sickMult *= illnessPerPopProbMult;
+					
+					raceCareValueTotal += raceCareValue;
+					emigrantPopCount++;
+				}
+			}
+			
+			if(emigrantPopCount &gt; 0)
+			{
+				double raceCareValueAvg = raceCareValueTotal / emigrantPopCount;
+				raceCareValueAvg = Math.Min(racialCarePerPopMax, Math.Max(racialCarePerPopMin, raceCareValueAvg));
+				double raceCareMult = racialCarePerPopMinMult + (racialCarePerPopMaxMult - racialCarePerPopMinMult) * (raceCareValueAvg - racialCarePerPopMin) / (racialCarePerPopMax - racialCarePerPopMin);
+				
+				//fourth, go through the resources and calculate total resource value, and lacking needs:
+				double totalValueHeld = 0.0d;
+				IFResourcePool resPool = inDelegation.getResourcePool();
+				if(customScripts.runCustomScriptCheckTypes("getDesireTotalOfResourceCollection", new List&lt;object&gt;() { targetCommunity, resPool, null }, out List&lt;object&gt; resultDesireValue,
+					true, typeof(double)))
+				{
+					totalValueHeld = (double)resultDesireValue[0];
+				}
+				
+				Int64 total_count_of_resources = getAPI().getTotalCountOfMO("resources");
+				double totalFoodCount = 0.0d;
+				double totalHStasisCount = 0.0d;
+				double totalIllHealCount = 0.0d;
+				for(int moid = 1; moid &lt; total_count_of_resources; moid++)
+				{
+					IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+					if(res == null)
+						continue;
+					
+					double quan = resPool.getResourceQuantity(res);
+					
+					if(res.isFood())
+						totalFoodCount += quan;
+					if(res.isHStasis())
+						totalHStasisCount += quan;
+					if(res.isDiseaseHeal())
+						totalIllHealCount += quan;
+				}
+				totalValueHeld = Math.Min(totalValueHeld, resourceValueMax);
+				double resourceValueMult = resourceValueMultMin + (resourceValueMultMax - resourceValueMultMin) * (totalValueHeld) / (resourceValueMax);
+				
+				//fifth, calculate lack of food/hstasis/medicine
+				double daysOfFoodBelowWhichIsLack = customConsts.getDoubleConst("foreign_community resource_desire food_stress per_pop safe_threshold", out success);
+				if(!success) daysOfFoodBelowWhichIsLack = 75.0d;
+				double mcalPerDay = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out success);
+				if(!success) mcalPerDay = 2.0d;
+				bool lack_food = (totalFoodCount &lt; (totalPopCount * daysOfFoodBelowWhichIsLack * mcalPerDay));
+				
+				double daysOfHStasisBelowWhichIsLack = customConsts.getDoubleConst("foreign_community resource_desire hstasis_stress per_pop safe_threshold", out success);
+				if(!success) daysOfHStasisBelowWhichIsLack = 20.0d;
+				double hstasisDaysPerUnit = customConsts.getDoubleConst("popHealth_HStasis hstasis death_days value", out success);
+				if(!success) hstasisDaysPerUnit = 21.0d;
+				bool lack_hstasis = (totalHStasisCount * hstasisDaysPerUnit) &lt; (totalPopCount * daysOfHStasisBelowWhichIsLack);
+				
+				double daysOfIllHealBelowWhichIsLack = customConsts.getDoubleConst("foreign_community resource_desire diseaseheal_stress per_pop safe_threshold", out success);
+				if(!success) daysOfIllHealBelowWhichIsLack = 5.0d;
+				bool lack_illheal = (totalIllHealCount) &lt; (totalPopCount * daysOfIllHealBelowWhichIsLack);
+				
+				double lackMult = 1.0d;
+				if(lack_food)
+				{
+					lackMult *= resourceStressEachMult;
+				}
+				if(lack_hstasis)
+				{
+					lackMult *= resourceStressEachMult;
+				}
+				if(lack_illheal)
+				{
+					lackMult *= resourceStressEachMult;
+				}
+				
+				//sixth, calculate multiplier from economic strength:
+				double econ_strength = targetCommunity.getEconStrength() / consts.getEconStrengthMax();
+				econ_strength = Math.Max(econStrengthMin, Math.Min(econStrengthMax, econ_strength));
+				double econStrMult = econStrengthMultMin + (econStrengthMultMax - econStrengthMultMin) * (econ_strength - econStrengthMin) / (econStrengthMax - econStrengthMin);
+				
+				//seventh, calculate master/servant mult:
+				bool visitorIsMaster = (inDelegation.getSourceCommunity() == inDelegation.getTargetCommunity().getMasterCommunity());
+				bool localIsMaster = (inDelegation.getSourceCommunity().getMasterCommunity() == inDelegation.getTargetCommunity());
+				connectionMult = (visitorIsMaster || localIsMaster) ? connectionMult : 1.0d;
+				
+				//eighth and last (some other parts are wrapped together), calculate population ratio mult:
+				double popRatio = totalPopCount / (double)emigrantPopCount;
+				popRatio = Math.Max(popCountRatioMin, Math.Min(popCountRatioMax, popRatio));
+				double popRatioMult = popCountRatioMultMin + (popCountRatioMultMax - popCountRatioMultMin) * (popRatio - popCountRatioMin) / (popCountRatioMax - popCountRatioMin);
+				
+				double totalChanceToAccept = popRatioMult * connectionMult * econStrMult * lackMult * resourceValueMult * raceCareMult * sickMult;
+				addDebugMessage(inScriptInstance, "before bounds are set, community " + targetCommunity.getDebugName() + " has a " + totalChanceToAccept + " chance to accept migrants of delegation " + inDelegation.getDebugName());
+				totalChanceToAccept = Math.Min(probMax, Math.Max(probMin, totalChanceToAccept));
+				acceptEmigrants = getAPI().calcProb(totalChanceToAccept);
+			}
+		}
+		else
+		{
+			acceptEmigrants = true;
+		}
+		
+		if(acceptEmigrants)
+		{
+			addDebugMessage(inScriptInstance, "absorbing delegation into community");
+			//set all pop loyalties to the target community, set all pop locations to foreignCommunity, drain all resources into target community, then remove all pops from the delegation
+			List&lt;IFPop&gt; pops = new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()); //copy of list, because we cannot modify the list inside a foreach block
+			foreach(IFPop pop in pops)
+			{
+				if(!pop.isDead())
+				{
+					pop.setCommunity(targetCommunity);
+					pop.removePopFromMap(IFPop.ePopLocation.cInForeignCommunity);
+					pop.setDelegation(null);
+				}
+			}
+			targetCommunity.getResourcePool().drainOtherResourcePoolIntoThisOne(inDelegation.getResourcePool());
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "all pops in delegation will become wanderers");
+			List&lt;IFPop&gt; pops = new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()); //copy of list, because we cannot modify the list inside a foreach block
+			foreach(IFPop pop in pops)
+			{
+				if(!pop.isDead())
+				{
+					pop.setCommunity(null);
+					pop.removePopFromMap(IFPop.ePopLocation.cUnspecifiedNowhere);
+					pop.setDelegation(null);
+				}
+			}
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

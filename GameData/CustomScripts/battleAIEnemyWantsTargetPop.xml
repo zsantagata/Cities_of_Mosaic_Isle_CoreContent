@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script battleaienemywantstargetpop</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines whether an enemy pop wants to target a friendly pop as part of its war goal -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- enemy wants target pop has two input arguments: IFPop inEnemyPop, IFPop inFriendlyPop.  It has two output arguments: bool outWantsToTargetAtAll, bool outTargetIsHidingInBuilding.  If the first output is false, the second one should be ignored. -->
+	<!-- this script is called by other scripts which want to determine if an enemy wants to fight a certain friendly pop (probably just pathfinding) -->
+	<i1><a>battleAIEnemyWantsTargetPop</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop), typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIEnemyWantsTargetPop custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFPop inEnemyPop = (IFPop)inArguments[0];
+	  IFPop inFriendlyPop = (IFPop)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  List &lt;object&gt; toReturn = new List &lt;object&gt;();
+	  
+	  //sanity check: neither pop should be null
+	  if(inEnemyPop == null || inFriendlyPop == null)
+	  {
+		  throw new ArgumentException("battleAIEnemyWantsTargetPop custom script received invalid arguments: one of the input pops was null");
+		  return null;
+	  }
+	  //sanity check: the first pop should be an enemy and the second pop should not be:
+	  if(!getAPI().isHostileCommunity(inEnemyPop.getCommunity()) || getAPI().isHostileCommunity(inFriendlyPop.getCommunity()))
+	  {
+		  addDebugMessage(inScriptInstance, "battleAIEnemyWantsTargetPop custom script received invalid arguments: the first input pop should be an enemy, and the second pop shouldn't be (this is a debug message rather than a throw)");
+		  toReturn.Add(false);
+		  toReturn.Add(false);
+		  return toReturn;
+	  }
+	  
+	  //first: if the wargoal has been abandoned, return false
+	  Int64 abandoned_wargoal = variableHandler.getInt("battleAI_abandonedBattleGoal_community" + inEnemyPop.getCommunity().getUID(), out bool success);
+	  if(!success) abandoned_wargoal = 0;
+	  if(abandoned_wargoal != 0)
+	  {
+		toReturn.Add(false);
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  //second: the target pop must not be dead, or currently being abducted:
+	  if(inFriendlyPop.isDead() || inFriendlyPop.getPathfindingState() == "beingabducted")
+	  {
+		toReturn.Add(false);
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  //third: check the wargoal.  If none exists, return false
+	  string wargoal = variableHandler.getString("battleAI_battleGoal_community" + inEnemyPop.getCommunity().getUID(), out success);
+	  if(!success)
+	  {
+		toReturn.Add(false);
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  //wargoals where pops are targeted are those that start with "hurt_" or "abduct_", check that first:
+	  bool correctWargoal = (wargoal.Contains("hurt_") || wargoal.Contains("abduct_"));
+	  if(!correctWargoal)
+	  {
+		toReturn.Add(false);
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  //if the wargoal contains "hurt_loyal" or "hurt_neutral", make sure the target pop is loyal or neutral as necessary
+	  //if the wargoal contains "hurt_" make sure the target pop is not wounded (abduct goal abducts wounded pops so include them)
+	  bool needNeutralLoyalty = wargoal.Contains("hurt_neutral");
+	  bool needLoyalLoyalty = wargoal.Contains("hurt_loyal");
+	  if(needLoyalLoyalty &amp;&amp; (inFriendlyPop.getCommunity() != getAPI().getLocalCommunity()))
+	  {
+		toReturn.Add(false);
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  if(needNeutralLoyalty &amp;&amp; (inFriendlyPop.getCommunity() == getAPI().getLocalCommunity()))
+	  {
+		toReturn.Add(false);
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  if(wargoal.Contains("hurt_") &amp;&amp; inFriendlyPop.isWounded())
+	  {
+		toReturn.Add(false);
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  //there are four conditions on wargoal that need to be considered here: _races, _leaders, _communities, and _specific
+	  if(wargoal.Contains("_races"))
+	  {
+		//get the set of races being targeted:
+		HashSet&lt;Int64&gt; moidsTargeted = new HashSet&lt;Int64&gt;();
+		IFConnectedVariable raceList = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyPop.getCommunity().getUID() + "_races");
+		success = (raceList != null);
+		if(success)
+		{
+			foreach(IFConnectedVariable cv in raceList.getLowers())
+			{
+				moidsTargeted.Add(cv.getVariableAsInt());
+			}
+			if(!moidsTargeted.Contains(inFriendlyPop.getRace().getMOID()))
+			{
+				toReturn.Add(false);
+				toReturn.Add(false);
+				return toReturn;
+			}
+		}
+	  }
+	  else if(wargoal.Contains("_leaders"))
+	  {
+		//get the leader collection:
+		IFLeaderCollection leaders = inFriendlyPop.getCommunity().getLeaderCollection();
+		if(leaders != null)
+		{
+			if(leaders.getLeaderFlagsForPop(inFriendlyPop) == IFLeaderCollection.eLeaderFlags.cNone)
+			{
+				toReturn.Add(false);
+				toReturn.Add(false);
+				return toReturn;
+			}
+		}
+	  }
+	  else if(wargoal.Contains("_communities"))
+	  {
+		//get the set of communities being targeted:
+		HashSet&lt;Int64&gt; uidsTargeted = new HashSet&lt;Int64&gt;();
+		IFConnectedVariable communityList = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyPop.getCommunity().getUID() + "_communities");
+		success = (communityList != null);
+		if(success)
+		{
+			foreach(IFConnectedVariable cv in communityList.getLowers())
+			{
+				uidsTargeted.Add(cv.getVariableAsInt());
+			}
+			if(!uidsTargeted.Contains((Int64)inFriendlyPop.getCommunity().getUID()))
+			{
+				toReturn.Add(false);
+				toReturn.Add(false);
+				return toReturn;
+			}
+		}
+	  }
+	  else if(wargoal.Contains("_specific"))
+	  {
+		//since we already know wargoal is hurt or abduct, _specific will always mean pops by UID
+		IFConnectedVariable popsList = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyPop.getCommunity().getUID() + "_specific");
+		success = (popsList != null);
+		if(success)
+		{
+			bool found = false;
+			foreach(IFConnectedVariable cv in popsList.getLowers())
+			{
+				if(cv.getVariableAsInt() == (Int64)inFriendlyPop.getUID())
+				{
+					found = true;
+					break;
+				}
+			}
+			if(!found)
+			{
+				toReturn.Add(false);
+				toReturn.Add(false);
+				return toReturn;
+			}
+		}
+	  }
+	  
+	  //the last condition: the target pop must be accessible by the enemy pop
+	  if(getAPI().getPopsWithinLocalCommunityMap().Contains(inFriendlyPop))
+	  {
+		if((inFriendlyPop.getPopLocation() == IFPop.ePopLocation.cInHome) &amp;&amp; inFriendlyPop.hasHomeBuilding())
+		{
+			if(getAPI().isBuildingAccessibleByPop(inFriendlyPop, inFriendlyPop.getHomeBuilding()))
+			{
+				toReturn.Add(true);
+				toReturn.Add(true);
+				return toReturn;
+			}
+		}
+		else if((inFriendlyPop.getPopLocation() == IFPop.ePopLocation.cInWorkplace) &amp;&amp; inFriendlyPop.hasWorkplaceBuilding())
+		{
+			if(getAPI().isBuildingAccessibleByPop(inFriendlyPop, inFriendlyPop.getWorkplaceBuilding()))
+			{
+				toReturn.Add(true);
+				toReturn.Add(true);
+				return toReturn;
+			}
+		}
+		else if(inFriendlyPop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap)
+		{
+			if(getAPI().isPopAccessibleByPop(inEnemyPop, inFriendlyPop))
+			{
+				toReturn.Add(true);
+				toReturn.Add(false);
+				return toReturn;
+			}		  
+		}
+	  }
+	  
+	  toReturn.Add(false);
+	  toReturn.Add(false);
+	  return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <soundgroup name="mainMenuMusic">
+    <mSoundGroupType>Music</mSoundGroupType>
+    <mSoundList>
+	  <i1>
+	    <a>develop_only_music</a>
+		<b>_Previs Sound/Music/main_menu_music</b>
+	  </i1>
+	</mSoundList>
+  </soundgroup>
+</core_data>

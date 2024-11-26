@@ -1,0 +1,20 @@
+I call these grammar rules but grammar rules can't really be enforced, because something might be in quotes (as someone speaking) or for artistic effect.  So these are more like punctuation/character rules.  Order is not necessarily the order in which they are enforced.
+
+-1) tab should become spaces, for consistency
+0) carriage return should be ignored (\n is the newline character, \r is carriage return which is sometimes alongside it)
+1) multiple spaces nowhere but after a period.
+2) double spaces after a period.
+3) ". is not right, it should be ."
+4) ", is not right, it should be ,"
+5) double or multiple commas are never right
+6) double or multiple ! are ugly and not right
+7) double or multiple ? are ugly and not right
+8) mixed ? and ! next to each other should be one single ? 
+9) If the first character after a period-double-space or a new line is a letter, it must be a capital letter
+10) more than two newlines (\n) are ugly and not right
+11) double period that is not part of an ellipses (...) should be changed to a single period
+12) a comma and then a period should turn into just a period (,. -> .), as should a period then a comma (., -> .)
+13) any number of multiple commas should become one comma
+14) the word "a" should not be followed by a word with a vowel starting letter.  Instead, the word "a" should be transformed into "an" (okay this one is actually about vowel "sounds" rather than the letter but this is close enough)
+15) possessive of a word ending in s should be just ', not 's (ex: Minotaurs's should be Minotaurs', but Hylidae's should stay as Hylidae's)
+16) if the first non-space character of the string is a letter, it should be capitalized

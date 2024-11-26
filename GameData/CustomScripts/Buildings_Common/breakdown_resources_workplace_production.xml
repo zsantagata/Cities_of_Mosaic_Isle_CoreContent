@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+		
+			<!-- a workplace which focuses on breaking down resources would be redundant if we consider that the player can manually break down most resources which can be broken down. -->
+			<!-- therefore, the use of such workplaces (besides potentially breaking down resources which the player can't, which doesn't make sense to me that the player can't) is to increase the quality of products: -->
+			<i1><a>breakdown_resources_workplace_production product_offset min</a> <b>double</b> <c>0.05</c></i1>
+			<i1><a>breakdown_resources_workplace_production product_offset max</a> <b>double</b> <c>0.45</c></i1>
+			
+			<i1><a>breakdown_resources_workplace_production no_production before_replace_text</a> <b>string</b>
+			<c>This workplace will not break down any resources.</c></i1>
+			
+			<i1><a>breakdown_resources_workplace_production display before_replace_text</a> <b>string</b>
+			<c>This workplace will recover [0].</c></i1>
+			<!-- if there is no recovered resources, replace "[0]" with the word "nothing". -->
+			<i1><a>breakdown_resources_workplace_production nothing_gathered before_replace_text</a> <b>string</b>
+			<c>nothing</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script breakdown_resources_workplace_production</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines how many animals will be fed by this building's workers and what the result of that will be -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has five inputs: IFBuilding inBuilding, IFCommunity inCommunity, Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInput, double inQualityOfInput, bool inJustPredicting.
+	It has two outputs: string outStringToDisplay, Dictionary&lt;IFResource, double&gt; outResourcesCreated. -->
+	<!-- if we are not just predicting, this script will add the breakdown resources.  It is necessary to do it here, rather than let the caller do so, because the resources added are (possibly) all at different qualities and the C# code after returning from workplace after-production script only uses one quality for all resources added.
+		as a result, outResourcesCreated will be the value that the production script should return: non-empty if we are just predicting (the prediction will be off in quality though), and empty if we are not just predicting -->
+	<!-- this script is called by slaughterer workplace production script -->
+	<i1><a>breakdown_resources_workplace_production</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(Dictionary&lt;IFResource, double&gt;), typeof(double), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("breakdown_resources_workplace_production custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInput = (Dictionary&lt;IFResource, double&gt;)inArguments[2];
+	  double inQualityOfInput = (double)inArguments[3];
+	  bool inJustPredicting = (bool)inArguments[4];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("breakdown_resources_workplace_production custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("breakdown_resources_workplace_production custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  
+	  //just in case:
+	  inResourcesConsumedAsInput = inResourcesConsumedAsInput ?? new Dictionary&lt;IFResource, double&gt;();
+	  
+	  string outStringToDisplay = "";
+	  Dictionary&lt;IFResource, double&gt; outResourcesCreated = new Dictionary&lt;IFResource, double&gt;();
+	  bool success = false;
+	  
+	  if(inResourcesConsumedAsInput.Count != 0)
+	  {
+		double offsetMin = customConsts.getDoubleConst("breakdown_resources_workplace_production product_offset min", out success);
+		if(!success) offsetMin = 0.05d;
+		double offsetMax = customConsts.getDoubleConst("breakdown_resources_workplace_production product_offset max", out success);
+		if(!success) offsetMax = 0.45d;
+		
+		double min_qual = consts.getResourceQualityMin();
+		double max_qual = consts.getResourceQualityMax();
+		
+		double offset = ((inQualityOfInput - min_qual) / (max_qual - min_qual)) * (offsetMax - offsetMin) + offsetMin;
+		offset *= (max_qual - min_qual);
+		
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesToAdd = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		IFResourcePool resPool = inCommunity.getResourcePool();
+		foreach(var kvpair in inResourcesConsumedAsInput)
+		{
+			if(kvpair.Key != null)
+			{
+				double quantityOfResConsumed = kvpair.Value;
+				double qualityOfResConsumed = resPool.getResourceQuality(kvpair.Key);
+				
+				foreach(var tuple in kvpair.Key.getBreakdownResources())
+				{
+					if(inJustPredicting)
+					{
+						if(!outResourcesCreated.ContainsKey(tuple.Item1))
+							outResourcesCreated.Add(tuple.Item1, 0.0d);
+						outResourcesCreated[tuple.Item1] += quantityOfResConsumed * tuple.Item2;
+					}
+					if(!resourcesToAdd.ContainsKey(tuple.Item1))
+						resourcesToAdd.Add(tuple.Item1, Tuple.Create(0.0d, min_qual));
+					double totalQuan = resourcesToAdd[tuple.Item1].Item1 + quantityOfResConsumed * tuple.Item2;
+					resourcesToAdd[tuple.Item1] = Tuple.Create(totalQuan, ((offset + qualityOfResConsumed) * quantityOfResConsumed * tuple.Item2 + resourcesToAdd[tuple.Item1].Item1 * resourcesToAdd[tuple.Item1].Item2) / totalQuan);
+				}
+			}
+		}
+		
+		outStringToDisplay = customConsts.getStringConst("breakdown_resources_workplace_production display before_replace_text", out success);
+		if(!success) outStringToDisplay = "This workplace will recover [0].";
+		  
+		//here, take advantage of existing description scripts:
+		if(customScripts.runCustomScriptCheckTypes("replaceDescriptionMarkupKind_common_resourcedictionary", new List&lt;object&gt;() { resourcesToAdd, true }, out List&lt;object&gt; replacedMarkup1, false, typeof(string)))
+		{
+			if(replacedMarkup1[0].ToString() == "")
+			{
+				string nothingString = customConsts.getStringConst("breakdown_resources_workplace_production nothing_gathered before_replace_text", out success);
+				if(!success) nothingString = "nothing";
+				replacedMarkup1[0] = nothingString;
+			}
+			outStringToDisplay = outStringToDisplay.Replace("[0]", replacedMarkup1[0].ToString());
+		}
+		
+		if(!inJustPredicting)
+		{
+			foreach(var kvpair in resourcesToAdd)
+			{
+				resPool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2, inBuilding);
+			}
+		}
+	  }
+	  else
+	  {
+		outStringToDisplay = customConsts.getStringConst("breakdown_resources_workplace_production no_production before_replace_text", out success);
+		if(!success) outStringToDisplay = "This workplace will not break down any resources.";
+	  }
+	  
+	return new List&lt;object&gt;() { outStringToDisplay, outResourcesCreated };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

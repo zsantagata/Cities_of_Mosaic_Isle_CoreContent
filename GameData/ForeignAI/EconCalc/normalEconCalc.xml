@@ -1,0 +1,1275 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<!-- TODO explain each bit of the xml files and mod loading and how it works -->
+<!-- attributes: a moddableObject delcaration NEEDS name= attribute.  If and only if kind= attribute is "remove", the moddableObject is deleted.  This shifts the ordering of moddableObjects of that type (no in-game effect).  The default object cannot be removed.  When the kind=attribute is "remove", none of the declared elements matter. -->
+<!-- however note that spritesheets cannot be deleted, or have their list elements deleted/replaced/added to; they can only have their information overwritten by redeclaring the spritesheet -->
+<!-- lists: for list-type (including lists of tuples) moddable qualities, if the kind= attribute does not exist, or is "overwrite", previous items/default items in the list are discarded and new items added.  If the kind= attribute is "remove", then items are being removed from previous items/default items in the list (exact match for the first tuple-item).  If the kind= attribute is "add", then items are appended to the previously-declared/default-declared list.  If the kind= attribute is "replace", then the first item in the tuple list which has the same first inner-element (always a name or a reference to an MO) will have its other inner-elements replaced with the values provided.  When a non-tuple list is marked "replace", no action is taken (rethink what you're trying to do). -->
+<!-- default: if the name of an object is default, as are all objects in this file, then the object is not one that should exist during play.  Instead, the object is a fallback object.  Furthermore, when declaring a non-default object, if any element is not declared, the value contained by the default object is used. -->
+<!-- this means a modder could change the default values if they wanted to speed up the declaration of a group of similar objects.  However, remember: unless and until the default values in this file are restored, the changes will continue to other objects declared in the future if they do not declare all elements.  If this is not desired behavior, then it is the modder's responsibility to re-establish the values here in this file at the end of their files or mod. -->
+<core_data>
+	<!-- if these custom consts are 0, then the debug messages from these scripts are not logged.  Otherwise, they are logged. -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- logging consts related to this file's scripts must have this format or they won't work: -->
+			<!-- log_script_econcalc [type]script [calc name] -->
+			<i1><a>log_script_econcalc setupresourcesproducable normaleconcalc</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_econcalc resourceadd normaleconcalc</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_econcalc resourceconsume normaleconcalc</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_econcalc popcountchange normaleconcalc</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_econcalc econstrength normaleconcalc</a> <b>int</b> <c>1</c></i1>
+			
+			<!-- other consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<!-- following this format will prevent name collisions: -->
+			<!-- econStrength [calc name] [variable] -->
+			<i1><a>econstrength normaleconcalc tiles_worked_by_one_worker</a> <b>double</b> <c>5.0</c></i1> <!-- as this increases, fewer workers are needed to extract the maximum possible resources from the land, and vice versa -->
+			<i1><a>econstrength normaleconcalc tiles_count_per_richness</a> <b>double</b> <c>17.5</c></i1> <!-- this converts land source richness to a tile count -->
+			<i1><a>econstrength normaleconcalc production_per_richness rate</a> <b>double</b> <c>0.75</c></i1> <!-- this converts land source richness to a multiplier on per-worker production.  With the above const, this means that richness has a squared impact on max possible resources. -->
+			<i1><a>econstrength normaleconcalc production_per_building rate</a> <b>double</b> <c>2.5</c></i1> <!-- this converts building count to a multiplier on per-worker production -->
+			<i1><a>econstrength normaleconcalc capital_consumption_per_worker rate</a> <b>double</b> <c>1.0</c></i1> <!-- this converts worker count to a desired capital consumption -->
+			<i1><a>econstrength normaleconcalc capital_multiplier max</a> <b>double</b> <c>4.0</c></i1> <!-- this is the capital multiplier on per-worker production when capital is fully available at max quality -->
+			<i1><a>econstrength normaleconcalc decisionmaking std_dev</a> <b>double</b> <c>0.3</c></i1> <!-- this is the standard deviation of decisionmaking for today, which is normally distributed with an avg of 1.0 -->
+			<i1><a>econstrength normaleconcalc quality std_dev</a> <b>double</b> <c>0.3</c></i1> <!-- (this * (maxQual - minQual) / 2) is the standard deviation of quality for today, which is normally distributed with an avg of (maxQual + minQual) / 2 -->
+			
+			<i1><a>econstrength normaleconcalc pop_count_contribution vertex_count</a> <b>int</b> <c>300</c></i1> <!-- this is the pop count at which the pop count contribution multiplier is equal to the below const -->
+			<i1><a>econstrength normaleconcalc pop_count_contribution vertex_mult</a> <b>double</b> <c>1.0</c></i1> <!-- this is the value of the pop count contribution multiplier when pop count is equal to the above const -->
+			<i1><a>econstrength normaleconcalc pop_count_contribution asymptote</a> <b>double</b> <c>2.0</c></i1> <!-- as pop count goes to infinity, pop count contribution multiplier tends to this -->
+			<i1><a>econstrength normaleconcalc resource_lack_penalty food max</a> <b>double</b> <c>0.33333</c></i1> <!-- as food is at a minimum, the food-penalty multiplier on econStrength tends to this -->
+			<i1><a>econstrength normaleconcalc resource_lack_penalty HStasis max</a> <b>double</b> <c>0.65</c></i1> <!-- as HStasis is at a minimum, the HStasis-penalty multiplier on econStrength tends to this -->
+			<i1><a>econstrength normaleconcalc resource_lack_penalty illHeal max</a> <b>double</b> <c>0.80</c></i1> <!-- as illHeal is at a minimum, the illHeal-penalty multiplier on econStrength tends to this -->
+			<i1><a>econstrength normaleconcalc resource_lack_penalty woundHeal max</a> <b>double</b> <c>0.80</c></i1> <!-- as woundHeal is at a minimum, the woundHeal-penalty multiplier on econStrength tends to this -->
+			<i1><a>econstrength normaleconcalc resource_contribution trade count max</a> <b>int</b> <c>10000</c></i1> <!-- if a community's resource pool has more of a single trade good than this, the additional count does not impact econStrength -->
+			<i1><a>econstrength normaleconcalc resource_contribution nontrade count max</a> <b>int</b> <c>5000</c></i1> <!-- if a community's resource pool has more of a single non-trade good than this, the additional count does not impact econStrength -->
+			<i1><a>econstrength normaleconcalc resource_contribution quality_factor min</a> <b>double</b> <c>0.33333</c></i1> <!-- this is the multiplier on a resource's contribution to econStrength for a resource at minimum quality -->
+			<i1><a>econstrength normaleconcalc resource_contribution quality_factor max</a> <b>double</b> <c>3.0</c></i1> <!-- this is the multiplier on a resource's contribution to econStrength for a resource at maximum quality -->
+			<i1><a>econstrength normaleconcalc resource_contribution single_resource_factor</a> <b>double</b> <c>0.0025</c></i1> <!-- this is the overall multiplier on a resource's contribution to econStrength -->
+			
+			<i1><a>econstrength normaleconcalc overhead_food factor</a> <b>double</b> <c>1.1</c></i1> <!-- the community will, each day, try to make this times their daily food needs -->
+			<i1><a>econstrength normaleconcalc overhead_HStasis factor</a> <b>double</b> <c>1.1</c></i1> <!-- the community will, each day, try to make this times their daily HStasis needs -->
+			
+			<i1><a>econstrength normaleconcalc resource_decay factor</a> <b>double</b> <c>0.1</c></i1> <!-- resources decay daily for this foreign community at this * their normal rate -->
+			<i1><a>econstrength normaleconcalc resource_tossout quantity_threshold</a> <b>double</b> <c>6000.0</c></i1> <!-- a foreign community will start tossing out some of its resources to improve their quality if the quantity is above this  -->
+			<i1><a>econstrength normaleconcalc resource_tossout quality_threshold</a> <b>double</b> <c>0.75</c></i1> <!-- a foreign community will stop tossing out some of its resources to improve their quality if the quality is already above this proportion of the whole quality span -->
+			<i1><a>econstrength normaleconcalc resource_tossout quantity_loss</a> <b>double</b> <c>1000.0</c></i1> <!-- a foreign community will toss out this many resources (if it does so) -->
+			<i1><a>econstrength normaleconcalc resource_tossout quality_improvement</a> <b>double</b> <c>0.075</c></i1> <!-- a foreign community will gain this (proportion of the whole quality span) on the remainder resources -->
+			
+		</mCustomVariableList>
+	</customconsts>
+
+  <!-- TODO somewhere here, use getResourceDesireValues to determine which resources should be consumed and which should be created? -->
+  
+  <igEconStrengthCalculation name="normalEconCalc">
+  	<mTagList>
+	</mTagList>
+	
+	<mSetupScript><!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the changing of locally producable resources.  Note that this is not called every day; this is only called if the econ calculation for a community has changed (even if the foreign AI has changed, it's only the econ calc that matters). -->
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	  return null;
+	}
+	
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	var customScripts = getAPI().getCustomScripts();
+	
+	//note that we blast the previous "locally-producable resources" here.  That implies the community is not on the exact same land as before (if it was implied ever before that the community extracted resources from the land).
+	//this should not be true for a community which has a map, AKA a community which has a domestic component:
+	if(inCommunity.hasDomesticComponent())
+	{
+		return null;
+	}
+	//other communities should probably be fine
+	
+	//call the custom script which sets up resources that are locally sourceable:
+	customScripts.runCustomScript("recalcAllResourcesLocallySourceable", new List&lt;object&gt;() {inCommunity}, out _);
+	
+	return null;
+	</mSetupScript>
+	
+    <mResourceAddScript> <!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the changing of resources for the foreign community. -->
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	  return null;
+	}
+	
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	var customScripts = getAPI().getCustomScripts();
+	
+	//TODO any racial considerations here, any variables that change anything here
+	//TODO with the above, this will probably become too unwieldy.  Divide econ strength further into different calculations?
+	
+	//because this is a videogame and "simple"-but-effective calculation is needed, we split resource production into four factors:
+	//land
+	//labor
+	//capital
+	//decisionmaking (in Econ 101 this is called 'entrepreneurship' which is a dumb word)
+	
+	//using [land and/or buildingCount] and labor, a maximum possible worker count is calculated for each resource
+	//using [land and/or buildingCount], a per-worker-rate of resource creation is calculated for each resource
+	//these two are done before workers are assigned
+	
+	//[land and/or buildingCount] is decided by: if the resource has the tag "cannot be made in a building" it's land sources only, otherwise it's land sources + (buildingCount * building_worker_factor)
+	//land sources fall through to all their possible resources, including the products of resources which immediately decay
+	//land: based on the biomes (and therefore land sources), the water ratio, resource-individual factors, and TODO history of pop count (TODO -- as pop counts are high over time, the land will be extracted from more),
+	//a foreign community has a "per-worker-rate of resource creation" value per resource and a "maximum workers" per resource
+	
+	
+    //labor per resource is pop counts that could extract it -- meaning they could breathe on that land
+    Dictionary&lt;IFRace, UInt64&gt; raceCounts = new Dictionary&lt;IFRace, ulong&gt;();
+    foreach(var kvpair in inCommunity.getAdditionalUndeclaredPopCounts())
+    {
+		raceCounts.Add(kvpair.Key, kvpair.Value);
+    }
+    foreach(IFPop pop in inCommunity.getPopsLoyalToCommunity(true, false))
+    {
+		if(!pop.hasDelegation() &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cInForeignCommunity))
+		{
+			if (!raceCounts.ContainsKey(pop.getRace()))
+			{
+				raceCounts.Add(pop.getRace(), 0);
+			}
+			raceCounts[pop.getRace()]++;
+        }
+    }
+    //landBreathersCount + waterBreathersCount will be, at minimum, popCount, but may exceed it
+    UInt64 landBreathersCount = 0;
+    UInt64 waterBreathersCount = 0;
+	UInt64 popCount = 0;
+    foreach(var kvpair in raceCounts)
+    {
+		popCount += kvpair.Value;
+		if (kvpair.Key.isCanBreatheOverwater())
+			landBreathersCount += kvpair.Value;
+		if (kvpair.Key.isCanBreatheUnderwater())
+			waterBreathersCount += kvpair.Value;
+    }
+    if(popCount == 0)
+    {
+		addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " resources don't change for pop count of 0; returning early");
+		return null;
+    }
+    else
+    {
+		addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " popCount = " + popCount + " landBreathersCount = " + landBreathersCount + " waterBreathersCount = " + waterBreathersCount);
+    }
+
+
+      //devolve biomes, and water ratio, into max-workers and per-worker rate:
+      Dictionary&lt;IFResource, double&gt; perWorkerRate = new Dictionary&lt;IFResource, double&gt;();
+	  Dictionary&lt;IFResource, double&gt; maxWorkers = new Dictionary&lt;IFResource, double&gt;();
+	  HashSet&lt;IFResource&gt; availableUnderwater = new HashSet&lt;IFResource&gt;();
+	  HashSet&lt;IFResource&gt; availableOverwater = new HashSet&lt;IFResource&gt;();
+
+	  double tilesWorkedByOneWorker = customConsts.getDoubleConst("econstrength normaleconcalc tiles_worked_by_one_worker", out bool success);
+	  if ((tilesWorkedByOneWorker &lt;= 0.0d) || !success) tilesWorkedByOneWorker = 5.0d;
+	  double tileCountPerRichness = customConsts.getDoubleConst("econstrength normaleconcalc tiles_count_per_richness", out success);
+	  if ((tileCountPerRichness &lt;= 0.0d) || !success) tileCountPerRichness = 17.5d;
+      double productionRatePerRichness = customConsts.getDoubleConst("econstrength normaleconcalc production_per_richness rate", out success);
+      if(!success) productionRatePerRichness = 0.75d;
+      double waterRatio = inCommunity.getWaterRatio();
+      addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " tilesWorkedByOneWorker=" + tilesWorkedByOneWorker + " tileCountPerRichness=" + tileCountPerRichness + " productionRatePerRichness=" + productionRatePerRichness + " waterRatio=" + waterRatio);
+      //water first:
+      if (waterRatio != 0.0d)
+      {
+      IFTerrainBiome waterbiome = inCommunity.getWaterBiome();
+      if(waterbiome != null)
+	  {
+		for(int i = 1; i &lt; getAPI().getTotalCountOfMO("terrainsources"); i++)
+			{
+				IFTerrainSource terrainsource = (IFTerrainSource)getAPI().getMOFromMOID("terrainsources", i);
+				double prob = waterbiome.getTerrainSourceProbability(terrainsource);
+				IFTerrainBiome.eTerrainSourceRichness richness = waterbiome.getTerrainSourceRichness(terrainsource);
+				if((prob != 0.0d) &amp;&amp; (richness != IFTerrainBiome.eTerrainSourceRichness.cNone))
+				{
+				  double tilesExpected = ((Int64)richness) * tileCountPerRichness * waterRatio; //don't include prob here -- that gets taken care of in mSetupScript
+				  addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " tiles expected of " + terrainsource.getDisplayName() + " = " + tilesExpected);
+				  foreach(IFResource res in terrainsource.getAllowedResourcesWater())
+					{
+						if(!res.hasTag("only from pops"))
+						{
+							availableUnderwater.Add(res);
+							if (!maxWorkers.ContainsKey(res))
+								maxWorkers.Add(res, 0L);
+							maxWorkers[res] += tilesExpected / tilesWorkedByOneWorker;
+							double perWorkerFactor = ((Int64)richness) * productionRatePerRichness * res.getProductionSpeed() * tilesWorkedByOneWorker;
+							if (!perWorkerRate.ContainsKey(res))
+							{
+								perWorkerRate.Add(res, perWorkerFactor);
+							}
+							else
+							{
+								perWorkerRate[res] = Math.Max(perWorkerRate[res], perWorkerFactor); //this works, even though a perfectly-accurate calculation would weight each rate by how many workers could work that one rate
+							}
+						}
+					}
+				}
+		    }
+		}
+      }
+      //land second:
+      if (waterRatio != 1.0d)
+      {
+		IFTerrainBiome landbiome = inCommunity.getLandBiome();
+		if(landbiome != null)
+		{
+			for (int i = 1; i &lt; getAPI().getTotalCountOfMO("terrainsources"); i++)
+			{
+				IFTerrainSource terrainsource = (IFTerrainSource)getAPI().getMOFromMOID("terrainsources", i);
+				double prob = landbiome.getTerrainSourceProbability(terrainsource);
+				IFTerrainBiome.eTerrainSourceRichness richness = landbiome.getTerrainSourceRichness(terrainsource);
+				if ((prob != 0.0d) &amp;&amp; (richness != IFTerrainBiome.eTerrainSourceRichness.cNone))
+				{
+					double tilesExpected = ((Int64)richness) * tileCountPerRichness * (1.0d - waterRatio);  //don't include prob here -- that gets taken care of in mSetupScript
+					addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " tiles expected of " + terrainsource.getDisplayName() + " = " + tilesExpected);
+					foreach (IFResource res in terrainsource.getAllowedResourcesLand())
+					{
+						if (!res.hasTag("only from pops"))
+						{
+							availableOverwater.Add(res);
+							if (!maxWorkers.ContainsKey(res))
+							maxWorkers.Add(res, 0L);
+							maxWorkers[res] += tilesExpected / tilesWorkedByOneWorker;
+							double perWorkerFactor = ((Int64)richness) * productionRatePerRichness * res.getProductionSpeed() * tilesWorkedByOneWorker;
+							if (!perWorkerRate.ContainsKey(res))
+							{
+								perWorkerRate.Add(res, perWorkerFactor);
+							}
+							else
+							{
+								perWorkerRate[res] = Math.Max(perWorkerRate[res], perWorkerFactor);
+							}
+						}
+					}
+				}
+			}
+		}
+      }
+
+      //after land, but before buildings, we should filter the available resources by availability:
+      //(remember that modifying the collection iterated over in a foreach loop is invalid and will cause a C# error)
+	  if(customScripts.runCustomScriptCheckTypes("getResourcesLocallySourceable", new List&lt;object&gt;() { inCommunity }, out List&lt;object&gt; returnVals, false,
+			typeof(List&lt;IFResource&gt;), typeof(List&lt;UInt64&gt;)))
+      {
+			List&lt;IFResource&gt; presentRes = (List&lt;IFResource&gt;)returnVals[0];
+	
+			List&lt;IFResource&gt; toRemove = new List&lt;IFResource&gt;();
+			foreach(IFResource res in perWorkerRate.Keys)
+			{
+				if(perWorkerRate.ContainsKey(res) &amp;&amp; !presentRes.Contains(res))
+				{
+					toRemove.Add(res);
+				}
+			}
+			//no need to repeat for maxWorkers -- the keys should be the same up to this point
+			foreach(IFResource res in toRemove)
+			{
+				addDebugMessage(inScriptInstance, "resource " + res.getDebugName() + " cannot be extracted from this land, removing");
+				perWorkerRate.Remove(res);
+				maxWorkers.Remove(res);
+			}
+      }
+
+      //now, add in building considerations:
+      Int64 buildingCount = variableHandler.getInt("ai" + inCommunity.getUID() + "_buildingCount", out success);
+      if (success &amp;&amp; (buildingCount &gt; 0))
+            {
+                Int64 workersPerBuilding = variableHandler.getInt("ai" + inCommunity.getUID() + "_workersPerBuilding", out success);
+                if (!success) workersPerBuilding = 5L;
+                Int64 maxWorkerCountToAdd = workersPerBuilding * buildingCount;
+                double buildingPerWorkerFactor = customConsts.getDoubleConst("econstrength normaleconcalc production_per_building rate", out success);
+				if(!success) buildingPerWorkerFactor = 2.5d;
+                for(int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+      {
+      IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+      if (res.hasTag("only from pops") || res.hasTag("cannot be made in a building"))
+      continue;
+      if(!maxWorkers.ContainsKey(res))
+      maxWorkers.Add(res, 0L);
+      maxWorkers[res] += maxWorkerCountToAdd;
+      double buildingWorkerRate = buildingPerWorkerFactor * res.getProductionSpeed();
+      addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " buildings making " + res.getDebugName() + " increase max worker count by " + maxWorkerCountToAdd + " and produce at " + buildingWorkerRate);
+      if (!perWorkerRate.ContainsKey(res))
+      {
+      perWorkerRate.Add(res, buildingWorkerRate);
+      }
+      else
+      {
+      perWorkerRate[res] = Math.Max(perWorkerRate[res], buildingWorkerRate);
+      }
+      }
+      }
+
+      //now, let resources in the previous lists immediately decay:
+      //(this is very rough; a perfectly-accurate calculation would leave them as is and have more complex assignment of workers)
+      bool allResolved = false;
+      while (!allResolved)
+      {
+      allResolved = true;
+      Dictionary&lt;IFResource, double&gt; toAddAfterLoop = new Dictionary&lt;IFResource, double&gt;();
+                HashSet&lt;IFResource&gt; toRemoveAfterLoop = new HashSet&lt;IFResource&gt;();
+                foreach(var kvpair in perWorkerRate)
+                {
+                    if(kvpair.Key.isImmediateBreakdown())
+                    {
+                        allResolved = false;
+                        IFResource decayingRes = kvpair.Key;
+                        double decayingResRate = kvpair.Value;
+                        toRemoveAfterLoop.Add(decayingRes);
+
+                        foreach (var tpl in decayingRes.getBreakdownResources())
+                        {
+                            if (!toAddAfterLoop.ContainsKey(tpl.Item1))
+                                toAddAfterLoop.Add(tpl.Item1, 0.0d);
+                            toAddAfterLoop[tpl.Item1] = Math.Max(toAddAfterLoop[tpl.Item1], decayingResRate * tpl.Item2);
+                        }
+                    }
+                }
+                //put this loop before the below, so that if a resource decays into other immediately-decaying resources, the subsequent decays aren't skipped:
+                foreach(IFResource res in toRemoveAfterLoop)
+                {
+                    perWorkerRate.Remove(res);
+                }
+                foreach (var kvpair in toAddAfterLoop)
+                {
+                    if (!perWorkerRate.ContainsKey(kvpair.Key))
+                        perWorkerRate.Add(kvpair.Key, 0.0d);
+                    perWorkerRate[kvpair.Key] = Math.Max(perWorkerRate[kvpair.Key], kvpair.Value);
+                }
+            }
+            allResolved = false;
+            while (!allResolved)
+            {
+                allResolved = true;
+                Dictionary&lt;IFResource, double&gt; toAddAfterLoop = new Dictionary&lt;IFResource, double&gt;();
+                HashSet&lt;IFResource&gt; toRemoveAfterLoop = new HashSet&lt;IFResource&gt;();
+      foreach (var kvpair in maxWorkers)
+      {
+      if (kvpair.Key.isImmediateBreakdown())
+      {
+      allResolved = false;
+      IFResource decayingRes = kvpair.Key;
+      double decayingWorkers = kvpair.Value;
+      toRemoveAfterLoop.Add(decayingRes);
+
+      double totalResourcesDecaydInto = 0.0d;
+      foreach (var tpl in decayingRes.getBreakdownResources())
+      {
+      totalResourcesDecaydInto += tpl.Item2;
+      }
+
+      if (totalResourcesDecaydInto > 0.0d)
+      {
+      foreach (var tpl in decayingRes.getBreakdownResources())
+      {
+      if (!toAddAfterLoop.ContainsKey(tpl.Item1))
+      toAddAfterLoop.Add(tpl.Item1, 0.0d);
+      toAddAfterLoop[tpl.Item1] += decayingWorkers * tpl.Item2 / totalResourcesDecaydInto;
+      }
+      }
+      }
+      }
+      //put this loop before the below, so that if a resource decays into other immediately-decaying resources, the subsequent decays aren't skipped:
+      foreach (IFResource res in toRemoveAfterLoop)
+      {
+      maxWorkers.Remove(res);
+      }
+      foreach (var kvpair in toAddAfterLoop)
+      {
+      if (!maxWorkers.ContainsKey(kvpair.Key))
+      maxWorkers.Add(kvpair.Key, 0.0d);
+      maxWorkers[kvpair.Key] += kvpair.Value;
+      }
+      }
+
+      //as of this point, maxWorkers and perWorkerRate are accurate, and all resources in them are end products
+      foreach(IFResource res in perWorkerRate.Keys)
+      {
+      addDebugMessage(inScriptInstance, res.getDebugName() + " max worker count= " + maxWorkers[res] + " per worker rate= " + perWorkerRate[res]);
+      }
+
+
+      //capital: resources which are not food/HStasis/woundheal/illheal/military/trade are considered inputs to production and provide a multiplicative factor depending on their availability and quality
+      double minQual = consts.getResourceQualityMin();
+      double maxQual = consts.getResourceQualityMax();
+      double totalCapitalAvailable = 0.0d;
+      double avgQualityCapitalAvailable = 0.0d;
+      IFResourcePool resPool = inCommunity.getResourcePool();
+
+      for (int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+    {
+        IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+        double quant = resPool.getResourceQuantity(res);
+        double qual = resPool.getResourceQuality(res);
+
+        if(quant != 0.0d)
+        {
+            avgQualityCapitalAvailable = (totalCapitalAvailable * avgQualityCapitalAvailable + quant * qual) / (totalCapitalAvailable + quant);
+            totalCapitalAvailable += quant;
+        }
+    }
+    double capitalConsumptionPerWorker = customConsts.getDoubleConst("econstrength normaleconcalc capital_consumption_per_worker rate", out success);
+	if(!success) capitalConsumptionPerWorker = 1.0d;
+    //low side of capital multiplier is 1.0d, exactly equal to if there was no capital available.  High side:
+    double capitalMultiplierMax = customConsts.getDoubleConst("econstrength normaleconcalc capital_multiplier max", out success);
+	if(!success) capitalMultiplierMax = 4.0d;
+    double capitalMultiplier = ((capitalMultiplierMax - 1) * ((avgQualityCapitalAvailable - minQual) / (maxQual - minQual))); //we have not added "1.0d" to this yet, deliberately
+    if(capitalConsumptionPerWorker * popCount &gt; totalCapitalAvailable)
+    {
+        capitalMultiplier *= totalCapitalAvailable / capitalConsumptionPerWorker * popCount;
+    }
+    capitalMultiplier += 1.0d;
+	addDebugMessage(inScriptInstance, "capital count= " + totalCapitalAvailable + " avg qual= " + avgQualityCapitalAvailable + " amount consumed=" + (capitalConsumptionPerWorker * popCount) + " for total multiplier of " + capitalMultiplier);
+	
+	
+	//decisionmaking: a foreign AI, or events, may change this factor
+    //if this does not exist, use 1.0d
+    double decisionmakingFactor = variableHandler.getDouble("ai" + inCommunity.getUID() + "_decisionmakingFactor", out success);
+	if(!success) decisionmakingFactor = 1.0d;
+	//lastly, day-to-day, decisionmaking can be poor or great, having an impact on quantity and quality produced
+	//Box-Muller transform: (z0 is decisionmaking directly (AKA quantity), z1 is quality)
+	double uniform0 = 1.0d - getAPI().calcRand();
+	double uniform1 = 1.0d - getAPI().calcRand();
+	double z0 = Math.Sqrt(-2 * Math.Log(uniform0)) * Math.Cos(2 * Math.PI * uniform1);
+	double z1 = Math.Sqrt(-2 * Math.Log(uniform0)) * Math.Sin(2 * Math.PI * uniform1);
+	double decisionmakingStdDev = customConsts.getDoubleConst("econstrength normaleconcalc decisionmaking std_dev", out success);
+	if(!success) decisionmakingStdDev = 0.3d;
+	decisionmakingFactor += (z0 * decisionmakingStdDev);
+	//"quality of goods produced std dev" is normalized so that 1.0d is (maxQual - minQual) / 2
+	double qualityOfGoodsProducedStdDev = customConsts.getDoubleConst("econstrength normaleconcalc quality std_dev", out success);
+	if(!success) qualityOfGoodsProducedStdDev = 0.3d;
+	double qualityOfGoodsProduced = z1 * (qualityOfGoodsProducedStdDev * ((maxQual - minQual) / 2));
+	qualityOfGoodsProduced += (maxQual + minQual) / 2; //this centers quality on the average
+	addDebugMessage(inScriptInstance, "decisionmakingFactor= " + decisionmakingFactor + " qualityOfGoodsProduced= " + qualityOfGoodsProduced);
+	
+	
+            //based on max-possible values for each resource, a foreign community distributes its workers:
+            //1) the foreign community wants to make more food than it eats
+            //2) the foreign community wants to make more HStasis than it consumes
+            //3) the foreign community wants to make woundheal and illheal up to a reserve depending on current pop counts
+            //4) the foreign community wants to make military equipment if it does not have total quantity of that military equipment equal to or greater than pop count
+            //5) the foreign community will spread workers over all goods
+
+            Dictionary&lt;IFResource, Int64&gt; maxWorkersInt = new Dictionary&lt;IFResource, long&gt;();
+            foreach(var kvpair in maxWorkers)
+            {
+				Int64 value = (Int64)kvpair.Value;
+				if(kvpair.Value != 0.0d) //don't bother adding keys with zero quantity to maxWorkersInt (note that this means maxWorkersInt may have fewer keys than perWorkerRate)
+				{
+					if(kvpair.Value - value &gt; 0.0d)
+					{
+						value++; //round up
+					}
+					maxWorkersInt.Add(kvpair.Key, (Int64)kvpair.Value);
+				}
+            }
+
+            //1)
+            double overhead_food = customConsts.getDoubleConst("econstrength normaleconcalc overhead_food factor", out success);
+			if(!success) overhead_food = 1.1d;
+            double desiredFoodProduction = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out success);
+			if(!success) desiredFoodProduction = 2.0d;
+			desiredFoodProduction *= popCount * overhead_food;
+
+            List&lt;IFResource&gt; foodResources = new List&lt;IFResource&gt;();
+            foreach (IFResource res in maxWorkersInt.Keys)
+            {
+                if (res.isFood())
+                {
+                    foodResources.Add(res);
+                }
+            }
+            //start randomly assigning workers until there are no more possible workers left to assign, or we have met food goals:
+            Dictionary&lt;IFResource, Int64&gt; workersAssigned = new Dictionary&lt;IFResource, long&gt;();
+            UInt64 workersAssignedTotal = 0;
+            double foodMade = 0.0d;
+            while((workersAssignedTotal &lt; popCount) &amp;&amp; (foodMade &lt; desiredFoodProduction) &amp;&amp; (foodResources.Count != 0))
+            {
+                IFResource res = foodResources[(int)getAPI().calcRandIntUnder(foodResources.Count)];
+                if (!workersAssigned.ContainsKey(res))
+                    workersAssigned.Add(res, 0L);
+                if (maxWorkersInt[res] &lt; workersAssigned[res] + 1)
+                {
+                    foodResources.Remove(res);
+                }
+                else
+                {
+                    bool takeFromLargest = false;
+                    if(res.hasTag("cannot be made in a building"))
+                    {
+                        if (availableOverwater.Contains(res) &amp;&amp; !availableUnderwater.Contains(res) &amp;&amp; (landBreathersCount != 0))
+                        {
+                            landBreathersCount--;
+                        }
+                        else if(availableUnderwater.Contains(res) &amp;&amp; !availableOverwater.Contains(res) &amp;&amp; (waterBreathersCount != 0))
+                        {
+                            waterBreathersCount--;
+                        }
+                        else if(availableOverwater.Contains(res) &amp;&amp; availableUnderwater.Contains(res))
+                        {
+                            takeFromLargest = true;
+                        }
+                        else
+                        {
+                            //this resource cannot be extracted because there is no pop who can breathe in the location where it is available
+                            foodResources.Remove(res);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        takeFromLargest = true;
+                    }
+                    if(takeFromLargest)
+                    {
+                        if (landBreathersCount &gt; waterBreathersCount)
+                            landBreathersCount--;
+                        else
+                            waterBreathersCount--;
+                    }
+					
+                    workersAssigned[res]++;
+                    workersAssignedTotal++;
+                    foodMade += perWorkerRate[res];
+                }
+            }
+
+            //2)
+			double hstasis_death_days = customConsts.getDoubleConst("popHealth_HStasis hstasis death_days value", out success);
+			if(!success) hstasis_death_days = 21.0d;
+			double overhead_HStasis = customConsts.getDoubleConst("econstrength normaleconcalc overhead_HStasis factor", out success);
+			if(!success) overhead_HStasis = 1.1d;
+            double desiredHStasisProduction = overhead_HStasis * popCount * 1.0d / hstasis_death_days;
+            List&lt;IFResource&gt; hstasisResources = new List&lt;IFResource&gt;();
+            foreach (IFResource res in maxWorkersInt.Keys)
+            {
+                if (res.isHStasis())
+                {
+                    hstasisResources.Add(res);
+                }
+            }
+            //start randomly assigning workers until there are no more possible workers left to assign, or we have met hstasis goals:
+            double hstasisMade = 0.0d;
+            while ((workersAssignedTotal &lt; popCount) &amp;&amp; (hstasisMade &lt; desiredHStasisProduction) &amp;&amp; (hstasisResources.Count != 0))
+            {
+                IFResource res = hstasisResources[(int)getAPI().calcRandIntUnder(hstasisResources.Count)];
+                if (!workersAssigned.ContainsKey(res))
+                    workersAssigned.Add(res, 0L);
+                if (maxWorkersInt[res] &lt; workersAssigned[res] + 1)
+                {
+                    hstasisResources.Remove(res);
+                }
+                else
+                {
+                    bool takeFromLargest = false;
+                    if (res.hasTag("cannot be made in a building"))
+                    {
+                        if (availableOverwater.Contains(res) &amp;&amp; !availableUnderwater.Contains(res) &amp;&amp; (landBreathersCount != 0))
+                        {
+                            landBreathersCount--;
+                        }
+                        else if (availableUnderwater.Contains(res) &amp;&amp; !availableOverwater.Contains(res) &amp;&amp; (waterBreathersCount != 0))
+                        {
+                            waterBreathersCount--;
+                        }
+                        else if (availableOverwater.Contains(res) &amp;&amp; availableUnderwater.Contains(res))
+                        {
+                            takeFromLargest = true;
+                        }
+                        else
+                        {
+                            //this resource cannot be extracted because there is no pop who can breathe in the location where it is available
+                            hstasisResources.Remove(res);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        takeFromLargest = true;
+                    }
+                    if (takeFromLargest)
+                    {
+                        if (landBreathersCount &gt; waterBreathersCount)
+                            landBreathersCount--;
+                        else
+                            waterBreathersCount--;
+                    }
+                    workersAssigned[res]++;
+                    workersAssignedTotal++;
+                    hstasisMade += perWorkerRate[res];
+                }
+            }
+
+            //3)
+            double totalWoundHeal = 0.0d;
+            double totalIllHeal = 0.0d;
+            foreach (IFResource res in maxWorkersInt.Keys)
+            {
+                if(res.isWoundHeal())
+                {
+                    totalWoundHeal += resPool.getResourceQuantity(res);
+                }
+                if(res.isDiseaseHeal())
+                {
+                    totalIllHeal += resPool.getResourceQuantity(res);
+                }
+            }
+            double desiredWoundHealProduction = popCount - totalWoundHeal;
+            double desiredIllHealProduction = popCount - totalIllHeal;
+            if(desiredWoundHealProduction &gt; 0.0d)
+            {
+                List&lt;IFResource&gt; woundHealResources = new List&lt;IFResource&gt;();
+                foreach (IFResource res in maxWorkersInt.Keys)
+                {
+                    if (res.isWoundHeal())
+                    {
+                        woundHealResources.Add(res);
+                    }
+                }
+                //start randomly assigning workers until there are no more possible workers left to assign, or we have met hstasis goals:
+                double woundHealMade = 0.0d;
+                while ((workersAssignedTotal &lt; popCount) &amp;&amp; (woundHealMade &lt; desiredWoundHealProduction) &amp;&amp; (woundHealResources.Count != 0))
+                {
+                    IFResource res = woundHealResources[(int)getAPI().calcRandIntUnder(woundHealResources.Count)];
+                    if (!workersAssigned.ContainsKey(res))
+                        workersAssigned.Add(res, 0L);
+                    if (maxWorkersInt[res] &lt; workersAssigned[res] + 1)
+                    {
+                        woundHealResources.Remove(res);
+                    }
+                    else
+                    {
+                        bool takeFromLargest = false;
+                        if (res.hasTag("cannot be made in a building"))
+                        {
+                            if (availableOverwater.Contains(res) &amp;&amp; !availableUnderwater.Contains(res) &amp;&amp; (landBreathersCount != 0))
+                            {
+                                landBreathersCount--;
+                            }
+                            else if (availableUnderwater.Contains(res) &amp;&amp; !availableOverwater.Contains(res) &amp;&amp; (waterBreathersCount != 0))
+                            {
+                                waterBreathersCount--;
+                            }
+                            else if (availableOverwater.Contains(res) &amp;&amp; availableUnderwater.Contains(res))
+                            {
+                                takeFromLargest = true;
+                            }
+                            else
+                            {
+                                //this resource cannot be extracted because there is no pop who can breathe in the location where it is available
+                                woundHealResources.Remove(res);
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            takeFromLargest = true;
+                        }
+                        if (takeFromLargest)
+                        {
+                            if (landBreathersCount &gt; waterBreathersCount)
+                                landBreathersCount--;
+                            else
+                                waterBreathersCount--;
+                        }
+                        workersAssigned[res]++;
+                        workersAssignedTotal++;
+                        woundHealMade += perWorkerRate[res];
+                    }
+                }
+            }
+            if(desiredIllHealProduction &gt; 0.0d)
+            {
+                List&lt;IFResource&gt; illHealResources = new List&lt;IFResource&gt;();
+                foreach (IFResource res in maxWorkersInt.Keys)
+                {
+                    if (res.isDiseaseHeal())
+                    {
+                        illHealResources.Add(res);
+                    }
+                }
+                //start randomly assigning workers until there are no more possible workers left to assign, or we have met hstasis goals:
+                double illHealMade = 0.0d;
+                while ((workersAssignedTotal &lt; popCount) &amp;&amp; (illHealMade &lt; desiredIllHealProduction) &amp;&amp; (illHealResources.Count != 0))
+                {
+                    IFResource res = illHealResources[(int)getAPI().calcRandIntUnder(illHealResources.Count)];
+                    if (!workersAssigned.ContainsKey(res))
+                        workersAssigned.Add(res, 0L);
+                    if (maxWorkersInt[res] &lt; workersAssigned[res] + 1)
+                    {
+                        illHealResources.Remove(res);
+                    }
+                    else
+                    {
+                        bool takeFromLargest = false;
+                        if (res.hasTag("cannot be made in a building"))
+                        {
+                            if (availableOverwater.Contains(res) &amp;&amp; !availableUnderwater.Contains(res) &amp;&amp; (landBreathersCount != 0))
+                            {
+                                landBreathersCount--;
+                            }
+                            else if (availableUnderwater.Contains(res) &amp;&amp; !availableOverwater.Contains(res) &amp;&amp; (waterBreathersCount != 0))
+                            {
+                                waterBreathersCount--;
+                            }
+                            else if (availableOverwater.Contains(res) &amp;&amp; availableUnderwater.Contains(res))
+                            {
+                                takeFromLargest = true;
+                            }
+                            else
+                            {
+                                //this resource cannot be extracted because there is no pop who can breathe in the location where it is available
+                                illHealResources.Remove(res);
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            takeFromLargest = true;
+                        }
+                        if (takeFromLargest)
+                        {
+                            if (landBreathersCount &gt; waterBreathersCount)
+                                landBreathersCount--;
+                            else
+                                waterBreathersCount--;
+                        }
+                        workersAssigned[res]++;
+                        workersAssignedTotal++;
+                        illHealMade += perWorkerRate[res];
+                    }
+                }
+            }
+
+            //4)
+			foreach (IFResource res in maxWorkersInt.Keys)
+			{
+                if (res.isMilEquip())
+                {
+                    double quantity = resPool.getResourceQuantity(res);
+                    if(quantity &lt; popCount)
+                    {
+                        double desiredToCreate = popCount - quantity;
+                        Int64 popsNeededToCreate = (Int64)(desiredToCreate / perWorkerRate[res]) + 1L; //round up
+                        UInt64 actualNewPops = 0;
+						if(!workersAssigned.ContainsKey(res))
+							workersAssigned.Add(res, 0L);
+                        if (maxWorkersInt[res] &gt;= workersAssigned[res] + popsNeededToCreate)
+                        {
+                            actualNewPops = (UInt64)popsNeededToCreate;
+                        }
+                        else
+                        {
+                            actualNewPops = (UInt64)(maxWorkersInt[res] - workersAssigned[res]);
+                        }
+                        if (actualNewPops + workersAssignedTotal &gt; popCount)
+                        {
+                            actualNewPops = popCount - workersAssignedTotal;
+                        }
+                        if (actualNewPops == 0)
+                            continue;
+                        bool takeFromLargest = false;
+                        if (res.hasTag("cannot be made in a building"))
+                        {
+                            if (availableOverwater.Contains(res) &amp;&amp; !availableUnderwater.Contains(res) &amp;&amp; (landBreathersCount &gt; actualNewPops))
+                            {
+                                landBreathersCount -= actualNewPops;
+                            }
+                            else if (availableUnderwater.Contains(res) &amp;&amp; !availableOverwater.Contains(res) &amp;&amp; (waterBreathersCount &gt; actualNewPops))
+                            {
+                                waterBreathersCount -= actualNewPops;
+                            }
+                            else if (availableOverwater.Contains(res) &amp;&amp; availableUnderwater.Contains(res))
+                            {
+                                takeFromLargest = true;
+                            }
+                            else
+                            {
+                                //this resource cannot be extracted because there is no pop who can breathe in the location where it is available
+                                continue;
+                            }
+                        }
+                        else
+                        {
+                            takeFromLargest = true;
+                        }
+                        if (takeFromLargest)
+                        {
+                            if ((landBreathersCount &gt; waterBreathersCount) &amp;&amp; (landBreathersCount &gt;= actualNewPops))
+                                landBreathersCount -= actualNewPops;
+                            else if(waterBreathersCount &gt;= actualNewPops)
+                                waterBreathersCount -= actualNewPops;
+                            else //we can only get here if actualNewPops &gt; waterBreatherPops and actualNewPops &gt; landBreathersCount
+                            {
+                                waterBreathersCount -= (actualNewPops - landBreathersCount);
+                                landBreathersCount = 0;
+                            }
+                        }
+                        workersAssigned[res] += (Int64)actualNewPops;
+                        workersAssignedTotal += actualNewPops;
+                    }
+                }
+            }
+
+            //5)
+            List&lt;IFResource&gt; producable = new List&lt;IFResource&gt;(maxWorkersInt.Keys);
+            //start randomly assigning workers until there are no more possible workers left to assign, or there are no more resources producable:
+            while ((workersAssignedTotal &lt; popCount) &amp;&amp; (producable.Count != 0))
+            {
+                IFResource res = producable[(int)getAPI().calcRandIntUnder(producable.Count)];
+				if(!workersAssigned.ContainsKey(res))
+					workersAssigned.Add(res, 0L);
+                if (maxWorkersInt[res] &lt;= workersAssigned[res])
+                {
+                    producable.Remove(res);
+                    continue;
+                }
+                bool takeFromLargest = false;
+                if (res.hasTag("cannot be made in a building"))
+                {
+                    if (availableOverwater.Contains(res) &amp;&amp; !availableUnderwater.Contains(res) &amp;&amp; (landBreathersCount != 0))
+                    {
+                        landBreathersCount--;
+                    }
+                    else if (availableUnderwater.Contains(res) &amp;&amp; !availableOverwater.Contains(res) &amp;&amp; (waterBreathersCount != 0))
+                    {
+                        waterBreathersCount--;
+                    }
+                    else if (availableOverwater.Contains(res) &amp;&amp; availableUnderwater.Contains(res))
+                    {
+                        takeFromLargest = true;
+                    }
+                    else
+                    {
+                        //this resource cannot be extracted because there is no pop who can breathe in the location where it is available
+                        producable.Remove(res);
+                        continue;
+                    }
+                }
+                else
+                {
+                    takeFromLargest = true;
+                }
+                if(takeFromLargest)
+                {
+                    if (landBreathersCount &gt; waterBreathersCount)
+      landBreathersCount--;
+      else
+      waterBreathersCount--;
+      }
+      workersAssigned[res]++;
+      workersAssignedTotal++;
+      }
+
+      //store "workers assigned total" as a foreign AI variable so mResourceConsumeScript can access it:
+      variableHandler.storeIntVariable(Int64.MaxValue, "ai" + inCommunity.getUID() + "_workersAssignedTotal", (Int64)workersAssignedTotal);
+
+      //quality of goods created is based on: "normal" distribution (Box-Muller transform is used), then modified by variables
+      //that's done above (near "capital" considerations)
+      foreach(var kvpair in workersAssigned)
+      {
+      addDebugMessage(inScriptInstance, "producing " + (kvpair.Value * perWorkerRate[kvpair.Key]) + " " + kvpair.Key.getDebugName() + " at quality=" + qualityOfGoodsProduced);
+      resPool.addResourcesOfQuality(kvpair.Key, kvpair.Value * perWorkerRate[kvpair.Key], qualityOfGoodsProduced);
+      }
+      return null;
+    </mResourceAddScript>
+	
+	<mResourceConsumeScript> <!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the consuming (i.e. regular removal) of resources for the foreign community. -->
+	//input count check:
+	if(inArguments.Length &lt; 1)
+    {
+    return null;
+    }
+
+    IFCommunity inCommunity = (IFCommunity)inArguments[0];
+    var consts = getAPI().getConsts();
+    var customConsts = getAPI().getCustomConsts();
+    var variableHandler = getAPI().getVariableHandler();
+
+    //resource consumptions (happen after resource creation):
+    //1) food per pop
+    //2) hstasis per pop
+    //3) some amount of woundheal and illheal per pop -- TODO THIS IS TAKEN CARE OF BY EVENTS
+    //4) no military equipment (consumed when sending out a war/raiding delegation or defending against one)
+    //5) capital is consumed per pop working
+    //6) trade goods are not consumed (random events, or actual trade, should probably take care of that)
+    //7) communities can throw out some of a resource they have a lot of in order to increase the quality of the remainder
+    //8) (not really a resource consumption) all resources should slowly decay some
+
+    Int64 popCount = 0;
+    foreach(IFPop pop in inCommunity.getPopsLoyalToCommunity(true, false))
+    {
+		if(!pop.hasDelegation() &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cInForeignCommunity))
+		{
+			popCount++;
+		}
+	}
+    foreach(var kvpair in inCommunity.getAdditionalUndeclaredPopCounts())
+    {
+		popCount += (Int64)kvpair.Value;
+    }
+    if(popCount &lt;= 0)
+    {
+		//return early
+		addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " consumes no resources for popCount of 0; returning early");
+		return null;
+    }
+    IFResourcePool resPool = inCommunity.getResourcePool();
+
+    //1)
+    //this is similar to, but does not have the multiplicative modifier of, desiredFoodProduction
+    double desiredFoodConsumption = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out bool success);
+    if(!success) desiredFoodConsumption = 2.0d;
+    desiredFoodConsumption *= popCount;
+    //eat from food randomly:
+    List&lt;IFResource&gt; randomRes = new List&lt;IFResource&gt;();
+	for(int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+		if(res.isFood() &amp;&amp; resPool.getResourceQuantity(res) &gt; 0.0d)
+		{
+			randomRes.Add(res);
+		}
+	}
+	double totalFoodConsumed = 0.0d;
+	while(randomRes.Count != 0 &amp;&amp; (totalFoodConsumed &lt; desiredFoodConsumption))
+	{
+		Int64 randIndex = getAPI().calcRandIntUnder(randomRes.Count);
+		IFResource res = randomRes[(int)randIndex];
+		double quan = resPool.getResourceQuantity(res);
+		double eaten = Math.Min(quan, desiredFoodConsumption - totalFoodConsumed);
+		resPool.subtractResource(res, eaten);
+		totalFoodConsumed += eaten;
+		randomRes.Remove(res);
+	}
+	//if totalFoodConsumed is still less than desired, we have a food deficit:
+	if(totalFoodConsumed &lt; desiredFoodConsumption)
+	{
+		addDebugMessage(inScriptInstance, "food deficit of " + (desiredFoodConsumption - totalFoodConsumed));
+		//store food deficit as a foreign AI variable so other scripts can access it:
+		variableHandler.storeDoubleVariable(Int64.MaxValue, "ai" + inCommunity.getUID() + "_foodDeficit", desiredFoodConsumption - totalFoodConsumed);
+	}
+	
+	//2)
+	double hstasis_death_days = customConsts.getDoubleConst("popHealth_HStasis hstasis death_days value", out success);
+	if(!success) hstasis_death_days = 21.0d;
+	double desiredHStasisConsumption = popCount * 1.0d / hstasis_death_days; //this is similar to, but does not have the multiplicative modifier of, desiredHStasisProduction
+	//consume HStasis randomly:
+	randomRes.Clear();
+	for(int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+		if(res.isHStasis() &amp;&amp; resPool.getResourceQuantity(res) &gt; 0.0d)
+		{
+			randomRes.Add(res);
+		}
+	}
+	double totalHStasisConsumed = 0.0d;
+	while(randomRes.Count != 0 &amp;&amp; (totalHStasisConsumed &lt; desiredHStasisConsumption))
+	{
+		Int64 randIndex = getAPI().calcRandIntUnder(randomRes.Count);
+		IFResource res = randomRes[(int)randIndex];
+		double quan = resPool.getResourceQuantity(res);
+		double consumed = Math.Min(quan, desiredHStasisConsumption - totalHStasisConsumed);
+		resPool.subtractResource(res, consumed);
+		totalHStasisConsumed += consumed;
+		randomRes.Remove(res);
+	}
+	//if totalHStasisConsumed is still less than desired, we have an HStasis deficit:
+	if(totalHStasisConsumed &lt; desiredHStasisConsumption)
+	{
+		addDebugMessage(inScriptInstance, "HStasis deficit of " + (desiredHStasisConsumption - totalHStasisConsumed));
+		//store HStasis deficit as a foreign AI variable so other scripts can access it:
+		variableHandler.storeDoubleVariable(Int64.MaxValue, "ai" + inCommunity.getUID() + "_HStasisDeficit", desiredHStasisConsumption - totalHStasisConsumed);
+	}
+	
+	//5)
+	Int64 workersAssignedTotal = variableHandler.getInt("ai" + inCommunity.getUID() + "_workersAssignedTotal", out success);
+	double desiredCapitalConsumption = 0.0d;
+	if(success)
+	{
+		desiredCapitalConsumption = customConsts.getDoubleConst("econstrength normaleconcalc capital_consumption_per_worker rate", out success);
+		if(!success) desiredCapitalConsumption = 1.0d;
+		desiredCapitalConsumption *= workersAssignedTotal;
+	}
+	//there may be other ways of calculating desired capital consumption, such as directly:
+	double directCapitalConsumption = variableHandler.getDouble("ai" + inCommunity.getUID() + "_directCapitalConsumption", out success);
+	desiredCapitalConsumption += success ? directCapitalConsumption : 0.0d;
+	if(desiredCapitalConsumption &gt; 0.0d)
+	{
+		//consume capital randomly:
+		randomRes.Clear();
+		for(int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+		{
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+			if(!res.isFood() &amp;&amp; !res.isHStasis() &amp;&amp; !res.isDiseaseHeal() &amp;&amp; !res.isWoundHeal() &amp;&amp; !res.isMilEquip() &amp;&amp; !res.isTrade() &amp;&amp; (resPool.getResourceQuantity(res) &gt; 0.0d))
+			{
+				randomRes.Add(res);
+			}
+		}
+		double totalCapitalConsumed = 0.0d;
+		while(randomRes.Count != 0 &amp;&amp; (totalCapitalConsumed &lt; desiredCapitalConsumption))
+		{
+			Int64 randIndex = getAPI().calcRandIntUnder(randomRes.Count);
+			IFResource res = randomRes[(int)randIndex];
+			double quan = resPool.getResourceQuantity(res);
+			double consumed = Math.Min(quan, desiredCapitalConsumption - totalCapitalConsumed);
+			resPool.subtractResource(res, consumed);
+			totalCapitalConsumed += consumed;
+			randomRes.Remove(res);
+		}
+		//if totalCapitalConsumed is still less than desired, we have a capital deficit
+		//but there's nothing we can do about that here
+	}
+	
+	//7)
+	double minQual = consts.getResourceQualityMin();
+	double maxQual = consts.getResourceQualityMax();
+	
+	double quantityThreshThrowout = customConsts.getDoubleConst("econstrength normaleconcalc resource_tossout quantity_threshold", out success);
+	if(!success) quantityThreshThrowout = 6000.0d;
+	double qualityThreshThrowout = customConsts.getDoubleConst("econstrength normaleconcalc resource_tossout quality_threshold", out success);
+	if(!success) qualityThreshThrowout = 0.75d;
+	qualityThreshThrowout = minQual + qualityThreshThrowout * (maxQual - minQual);
+	double quantityToThrowout = customConsts.getDoubleConst("econstrength normaleconcalc resource_tossout quantity_loss", out success);
+	if(!success) quantityToThrowout = 1000.0d;
+	double qualityGain = customConsts.getDoubleConst("econstrength normaleconcalc resource_tossout quality_improvement", out success);
+	if(!success) qualityGain = 0.075d;
+	qualityGain = qualityGain * (maxQual - minQual);
+	for(int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+    {
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+		if(!res.isNotInResourcePool())
+		{
+			if((resPool.getResourceQuantity(res) &gt; quantityThreshThrowout) &amp;&amp; (resPool.getResourceQuality(res) &lt; qualityThreshThrowout))
+    {
+    addDebugMessage(inScriptInstance, "throwing out " + quantityToThrowout + " of resource " + res.getDebugName() + " to gain " + qualityGain + " quality");
+    resPool.subtractResource(res, quantityToThrowout);
+    resPool.changeResourceQuality(res, qualityGain);
+    }
+    }
+    }
+
+    //8)
+    double decayFactorOverall = customConsts.getDoubleConst("econstrength normaleconcalc resource_decay factor", out success);
+    if(!success) decayFactorOverall = 0.1d;
+    for(int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+    {
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+		if(!res.isNotInResourcePool())
+		{
+			if(resPool.getResourceQuantity(res) &gt; 0.0d)
+			{
+				resPool.changeResourceQuality(res, (maxQual - minQual) * (res.getDecaySpeed() * decayFactorOverall)); //getDecaySpeed is proportion of the whole range
+			}
+		}
+    }
+	
+	return null;
+	</mResourceConsumeScript>
+	
+	<mPopCountChangeScript> <!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the changing of pop counts for the foreign community.  Note that pop counts in igForeignCommunityComponent.getAdditionalUndeclaredPopCounts() can be changed directly with little other effect, but pops that are loyal to this community and alive should have at least one of those qualities change; hard code will clean up the rest. -->
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	  return null;
+	}
+	
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	//usually, a community's population changes by sending out emigration delegations, receiving emigration delegations, military action, or events.
+	//However, if a community is starving or has no HStasis or has no woundHeal/illHeal, there is a chance some pops die from lack of resources
+	//perform that here:
+	
+	//TODO
+	
+	//there is also a chance that pops are born in the community, or that wanderers join.  Do that here:
+	
+	//TODO
+	
+	return null;
+	</mPopCountChangeScript>
+	
+	<mEconStrengthScript><!-- this script has one input: IFCommunity inCommunity. This script has one output: the new value of econ strength.  The value will be constrained between 0.0d and the maximum econ strength value as held by moddable game consts. -->
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	  return null;
+	}
+	
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	//actual economic strength is based on pop count, held resources, and decisionmaking factor
+	//TODO any variables that change anything here
+	//TODO figure out if custom consts here should instead be consts to this object
+	
+	
+    //pop count:
+    Int64 popCount = 0;
+    foreach(IFPop pop in inCommunity.getPopsLoyalToCommunity(true, false))
+    {
+		if(!pop.hasDelegation() &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cInForeignCommunity))
+		{
+			popCount++;
+		}
+	}
+    foreach(var kvpair in inCommunity.getAdditionalUndeclaredPopCounts())
+    {
+		popCount += (Int64)kvpair.Value;
+    } 
+	if(popCount &lt;= 0)
+    {
+		//return early
+		addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " econStrength must be 0.0d for pop count of 0; returning early");
+		return new List&lt;object&gt;() { 0.0d };
+	}
+    Int64 popCountEconStrengthVertex = customConsts.getIntConst("econstrength normaleconcalc pop_count_contribution vertex_count", out bool success);
+	if(!success) popCountEconStrengthVertex = 300;
+    //at the vertex, the pop contribution multiplier is pop_contrib_atvertex; at pop count 0, the pop contribution multiplier is 0.0d; at infinity, the pop contribution multiplier is pop_contrib_asymptote
+    double pop_contrib_asymptote = customConsts.getDoubleConst("econstrength normaleconcalc pop_count_contribution asymptote", out success);
+	if(!success) pop_contrib_asymptote = 2.0d;
+    double pop_contrib_atvertex = customConsts.getDoubleConst("econstrength normaleconcalc pop_count_contribution vertex_mult", out success);
+	if(!success) pop_contrib_atvertex = 1.0d;
+    
+    double pop_count_multiplier = pop_contrib_asymptote * popCount / (popCount + popCountEconStrengthVertex * ((pop_contrib_asymptote / pop_contrib_atvertex) - 1));
+	
+	
+            //held resources:
+            //pops take different actions (i.e. taking effort away from their workplaces, trying to secure themselves, or working less efficiently) as:
+            //  there is not food for the next three months, //TODO make this a custom const
+            //  there is not HStasis for the next month,  //TODO make this a custom const
+            //  there is not one day's worth of woundHeal/illHeal goods for all pops,  //TODO make this a custom const
+            //therefore the above provide penalties.
+            //otherwise, all resources and their qualities contribute to economic strength, with a maximum for a single resource (the max is higher for Trade resources)
+
+            double resourceBase = 0.0d;
+
+            IFResourcePool resPool = inCommunity.getResourcePool();
+            double foodTotal = 0.0d;
+            double HStasisTotal = 0.0d;
+            double woundHealTotal = 0.0d;
+            double illHealTotal = 0.0d;
+            double foodPenaltyWorst = customConsts.getDoubleConst("econstrength normaleconcalc resource_lack_penalty food max", out success);
+			if(!success) foodPenaltyWorst = 0.33333d;
+            double HStasisWorst = customConsts.getDoubleConst("econstrength normaleconcalc resource_lack_penalty HStasis max", out success);
+			if(!success) HStasisWorst = 0.65d;
+            double woundHealWorst = customConsts.getDoubleConst("econstrength normaleconcalc resource_lack_penalty woundHeal max", out success);
+			if(!success) woundHealWorst = 0.80d;
+            double illHealWorst = customConsts.getDoubleConst("econstrength normaleconcalc resource_lack_penalty illHeal max", out success);
+			if(!success) illHealWorst = 0.80d;
+            double foodExpected = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out success);
+			if(!success) foodExpected = 2.0d;
+			double hstasis_death_days = customConsts.getDoubleConst("popHealth_HStasis hstasis death_days value", out success);
+			if(!success) hstasis_death_days = 21.0d;
+			
+			foodExpected *= 90 * popCount;
+            double HStasisExpected = 30 * popCount / hstasis_death_days;
+			double woundHealExpected = popCount;
+            double illHealExpected = popCount;
+
+            Int64 maxContributionCountTradeResources = customConsts.getIntConst("econstrength normaleconcalc resource_contribution trade count max", out success);
+			if(!success) maxContributionCountTradeResources = 10000L;
+            Int64 maxContributionCountNontradeResources = customConsts.getIntConst("econstrength normaleconcalc resource_contribution nontrade count max", out success);
+			if(!success) maxContributionCountNontradeResources = 5000L;
+            double resourceMinQualityFactor = customConsts.getDoubleConst("econstrength normaleconcalc resource_contribution quality_factor min", out success);
+			if(!success) resourceMinQualityFactor = 0.33333d;
+            double resourceMaxQualityFactor = customConsts.getDoubleConst("econstrength normaleconcalc resource_contribution quality_factor max", out success);
+			if(!success) resourceMaxQualityFactor = 3.0d;
+            double maxQual = consts.getResourceQualityMax();
+            double minQual = consts.getResourceQualityMin();
+            double singleResourceFactor = customConsts.getDoubleConst("econstrength normaleconcalc resource_contribution single_resource_factor", out success); //a single count of a resource at average value contributes this amount to econStrength (which is from 0 to max)
+			if(!success) singleResourceFactor = 0.0025d;
+
+            for (int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+    {
+    IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+    if (res.isNotInResourcePool())
+    continue;
+
+    double quantity = resPool.getResourceQuantity(res);
+    if (res.isFood())
+    {
+    foodTotal += quantity;
+    }
+    if(res.isHStasis())
+    {
+    HStasisTotal += quantity;
+    }
+    if(res.isWoundHeal())
+    {
+    woundHealTotal += quantity;
+    }
+    if(res.isDiseaseHeal())
+    {
+    illHealTotal += quantity;
+    }
+    if(res.isTrade())
+    {
+    quantity = Math.Min(quantity, maxContributionCountTradeResources);
+    }
+    else
+    {
+    quantity = Math.Min(quantity, maxContributionCountNontradeResources);
+    }
+
+    double quality = resPool.getResourceQuality(res);
+    //quality factor is an exponential from resourceMinQualityFactor to resourceMaxQualityFactor as quality goes from minQual to maxQual
+    //at average quality, the factor is Math.Sqrt(resourceMinQualityFactor * resourceMaxQualityFactor) (AKA the geometric mean of the two)
+    double qualityFactor = resourceMaxQualityFactor * Math.Pow(resourceMinQualityFactor / resourceMaxQualityFactor, (maxQual - quality) / (maxQual - minQual));
+    double contribution = singleResourceFactor * quantity * qualityFactor;
+
+    addDebugMessage(inScriptInstance, "dealing with res=" + res.getDebugName() + " and it contributes " + contribution + " from quality = " + quality + " (making qualityFactor=" + qualityFactor + ") and quantity = " + quantity);
+
+    resourceBase += (contribution);
+    }
+
+    if(foodTotal &lt; foodExpected)
+    {
+		addDebugMessage(inScriptInstance, "resource base reducing by factor of " + (((1 - foodPenaltyWorst) * (foodTotal / foodExpected)) + foodPenaltyWorst) + " as a result of food lack");
+		resourceBase *= ((1 - foodPenaltyWorst) * (foodTotal / foodExpected)) + foodPenaltyWorst;
+    }
+            if (HStasisTotal &lt; HStasisExpected)
+            {
+				addDebugMessage(inScriptInstance, "resource base reducing by factor of " + (((1 - HStasisWorst) * (HStasisTotal / HStasisExpected)) + HStasisWorst) + " as a result of HStasis lack");
+				
+                resourceBase *= ((1 - HStasisWorst) * (HStasisTotal / HStasisExpected)) + HStasisWorst;
+            }
+            if (woundHealTotal &lt; woundHealExpected)
+            {
+				addDebugMessage(inScriptInstance, "resource base reducing by factor of " + (((1 - woundHealWorst) * (woundHealTotal / woundHealExpected)) + woundHealWorst) + " as a result of woundHeal lack");
+				
+                resourceBase *= ((1 - woundHealWorst) * (woundHealTotal / woundHealExpected)) + woundHealWorst;
+            }
+            if (illHealTotal &lt; illHealExpected)
+            {
+				addDebugMessage(inScriptInstance, "resource base reducing by factor of " + (((1 - illHealWorst) * (illHealTotal / illHealExpected)) + illHealWorst) + " as a result of illHeal lack");
+				
+                resourceBase *= ((1 - illHealWorst) * (illHealTotal / illHealExpected)) + illHealWorst;
+            }
+	
+	
+    //decisionmaking factor:
+    //if this does not exist, use 1.0d
+    double decisionmakingFactor = variableHandler.getDouble("ai" + inCommunity.getUID() + "_decisionmakingFactor", out success);
+	if(!success) decisionmakingFactor = 1.0d;
+	
+	double econStrength = pop_count_multiplier * resourceBase * decisionmakingFactor;
+	addDebugMessage(inScriptInstance, "econStrength new value = " + econStrength + " from pop_count_multiplier=" + pop_count_multiplier + " resourceBase=" + resourceBase + " decisionmakingFactor=" + decisionmakingFactor);
+	
+	return new List&lt;object&gt;() { econStrength };
+	</mEconStrengthScript>
+
+  </igEconStrengthCalculation>
+  
+</core_data>

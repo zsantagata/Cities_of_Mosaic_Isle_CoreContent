@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- these are the starting probabilities that a community will send a delegation of each kind -->
+			<!-- foreign AI and variables might have multipliers for these rates, but foreign AI multiplier isn't calculated here -->
+			<i1><a>dailystartf2pdelegation war base prob</a> <b>double</b> <c>0.005</c></i1> <!-- average of 1 each 200 days per community -->
+			<i1><a>dailystartf2pdelegation raiding base prob</a> <b>double</b> <c>0.01</c></i1> <!-- average of 1 each 100 days per community -->
+			<i1><a>dailystartf2pdelegation trade base prob</a> <b>double</b> <c>0.025</c></i1> <!-- average of 1 each 40 days per community -->
+			<i1><a>dailystartf2pdelegation emigration base prob</a> <b>double</b> <c>0.00555</c></i1> <!-- average of 1 each 180 days per community -->
+			<i1><a>dailystartf2pdelegation diplomacy base prob</a> <b>double</b> <c>0.0</c></i1> <!-- TODO make sure that foreign communities can send diplomacy delegations to the player and then adjust this number -->
+			
+			<!-- most communities will have the urge to wait for their existing delegations to return before sending a new one. the multiplier for each delegation that has not yet returned: -->
+			<i1><a>dailystartf2pdelegation each_existing_delegation prob mult</a> <b>double</b> <c>0.7</c></i1>
+			
+			<!-- if no delegations have visited the player or will visit the player in X days, increase the probability one will be sent (to keep things interesting): -->
+			<i1><a>dailystartf2pdelegation player_oriented_prob_increase days count</a> <b>int</b> <c>21</c></i1>
+			<i1><a>dailystartf2pdelegation player_oriented_prob_increase prob_mult</a> <b>double</b> <c>2.0</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script dailystartf2pdelegation_deltypeprobability</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which handles (some of, not all) probabilities to see if a foreign community's foreign-to-player delegations of a provided type are created -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunity
+	IFDelegation.eDelegationType inDelegationType
+	-->
+	
+	<!-- output:
+	double outProbability //this is the probability that a community will send a delegation of inDelegationType each day, not including anything specific to a foreign AI
+						  //(therefore, just base probabilities and variables)
+	-->
+	<i1><a>dailyStartF2PDelegation_delTypeProbability</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity), typeof(IFDelegation.eDelegationType)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("dailyStartF2PDelegation_delTypeProbability custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		if(inCommunity == null)
+		{
+		  throw new ArgumentException("dailyStartF2PDelegation_delTypeProbability custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+		}
+		IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[1];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		string typeName = (inDelegationType == IFDelegation.eDelegationType.cWar) ? "war" :
+						  (inDelegationType == IFDelegation.eDelegationType.cRaiding) ? "raiding" :
+						  (inDelegationType == IFDelegation.eDelegationType.cTrade) ? "trade" :
+						  (inDelegationType == IFDelegation.eDelegationType.cDiplomacy) ? "diplomacy" : 
+						  (inDelegationType == IFDelegation.eDelegationType.cEmigration) ? "emigration" :
+						  (inDelegationType == IFDelegation.eDelegationType.cSettlement) ? "settlement" :
+						  "none";
+
+		double baseProb = customConsts.getDoubleConst("dailystartf2pdelegation " + typeName + " base prob", out bool success);
+		if(!success) baseProb = 0.0d;
+
+		int count_of_outstanding_delegations = 0;
+		if(customScripts.runCustomScriptCheckTypes("getForeignDelegations", new List&lt;object&gt;() { true, false, null, inCommunity,
+			IFDelegation.eDelegationType.cNone, IFDelegation.eDelegationState.cHasReturnedHome, null, false, false, 0L, false, false, 0.0d, false, false, 0.0d, false },
+			out List&lt;object&gt; outputs, false, typeof(List&lt;IFDelegation&gt;)))
+		{
+			count_of_outstanding_delegations = ((List&lt;IFDelegation&gt;)(outputs[0])).Count;
+		}
+		double outstandingEachMult = customConsts.getDoubleConst("dailystartf2pdelegation each_existing_delegation prob mult", out success);
+		if(!success) outstandingEachMult = 0.7d;
+		double outstandingMult = Math.Pow(outstandingEachMult, count_of_outstanding_delegations);
+		
+		List&lt;string&gt; multsToCheck = new List&lt;string&gt;();
+		multsToCheck.Add("multForeignDelegationsProb_all_all_all");
+		multsToCheck.Add("multForeignDelegationsProb_uid" + inCommunity.getUID() + "_all_all");
+		multsToCheck.Add("multForeignDelegationsProb_all_player_all");
+		multsToCheck.Add("multForeignDelegationsProb_uid" + inCommunity.getUID() + "_player_all");
+		multsToCheck.Add("multForeignDelegationsProb_all_all_" + typeName);
+		multsToCheck.Add("multForeignDelegationsProb_uid" + inCommunity.getUID() + "_all_" + typeName);
+		multsToCheck.Add("multForeignDelegationsProb_all_player_" + typeName);
+		multsToCheck.Add("multForeignDelegationsProb_uid" + inCommunity.getUID() + "_player_" + typeName);
+		
+		double allMults = 1.0d;
+		foreach(string str in multsToCheck)
+		{
+			double mult = variableHandler.getConnectedDouble(str, out success);
+			if(!success) mult = 1.0d;
+			allMults *= mult;
+		}
+		
+		//player-oriented mult:
+		Int64 dayCount = customConsts.getIntConst("dailystartf2pdelegation player_oriented_prob_increase days count", out success);
+		if(!success) dayCount = 21;
+		double playerOrientedProbIncrease = customConsts.getDoubleConst("dailystartf2pdelegation player_oriented_prob_increase prob_mult", out success);
+		if(!success) playerOrientedProbIncrease = 2.0d;
+		double playerOrientedMult = playerOrientedProbIncrease;
+		
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		//HERE: check history for delegations that arrived in the last dayCount days (because they may have fully resolved and been cleared out)
+		string commaStringList = customConsts.getStringConst("mHardcodedHistory delegation_arrived_at_community minoradjlist before_replace_text", out success);
+		if(!success) commaStringList = "delegation arrival,[0]";
+		List&lt;string&gt; stringList = new List&lt;string&gt;(commaStringList.Split(','));
+		for(int i = 0; i &lt; stringList.Count; i++)
+		{
+			if(stringList[i].Contains("[") &amp;&amp; stringList[i].Contains("]"))
+			{
+				stringList.RemoveAt(i);
+				i--;
+			}
+		}
+		foreach(IFHistoricalOccurrence histOccur in getAPI().getLocalCommunity().getHistory().getAllHistoryBetweenDates(currentDate - dayCount, currentDate))
+		{
+			bool has_all_needed_minoradj = true;
+			ReadOnlyCollection&lt;string&gt; actualMinorAdj = histOccur.getAction().getMinorAdjectives();
+			foreach(string neededMinorAdj in stringList)
+			{
+				if(!actualMinorAdj.Contains(neededMinorAdj))
+				{
+					has_all_needed_minoradj = false;
+					break;
+				}
+			}
+			if(has_all_needed_minoradj)
+			{
+				playerOrientedMult = 1.0d;
+				break;
+			}
+		}
+		
+		//fetch delegations heading towards the player:
+		if(customScripts.runCustomScriptCheckTypes("getForeignDelegations", new List&lt;object&gt;() { true, true, null, null, IFDelegation.eDelegationType.cNone, IFDelegation.eDelegationState.cHasReturnedHome, 
+			null, false, false, (Int64)0, false, false, 0.0d, false, false, 0.0d, false}, out List&lt;object&gt; delegationOutputs, false, typeof(List&lt;IFDelegation&gt;)))
+		{
+			Int64 beforeDate = currentDate - dayCount;
+			Int64 afterDate = currentDate + dayCount;
+			foreach(IFDelegation del in (List&lt;IFDelegation&gt;)delegationOutputs[0])
+			{
+				if(((del.getExpectedArrivalDate() &gt; beforeDate) &amp;&amp; (del.getExpectedArrivalDate() &lt; afterDate)) || (del.getState() == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap))
+				{
+					playerOrientedMult = 1.0d;
+					break;
+				}
+			}
+		}
+		else
+		{
+			playerOrientedMult = 1.0d;
+		}
+		
+		double difficultyMult = 1.0d;
+		if(inDelegationType == IFDelegation.eDelegationType.cWar || inDelegationType == IFDelegation.eDelegationType.cRaiding)
+		{
+			difficultyMult = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("hostile delegation danger");
+		}
+		
+		double outProbability = baseProb * outstandingMult * allMults * playerOrientedMult * difficultyMult;
+		outProbability = Math.Max(0.0d, outProbability); //no negatives
+		addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " has probability " + outProbability + " to send a " + typeName + " delegation to the player today,"
+			+ " based on custom consts base=" + baseProb + " mult from outstanding delegations=" + outstandingMult + " mults from all variables=" + allMults + " player-oriented mult=" + playerOrientedMult + " difficultyMult=" + difficultyMult);
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outProbability };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

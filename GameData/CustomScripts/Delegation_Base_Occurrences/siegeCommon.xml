@@ -1,0 +1,377 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script siegecommon</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which handles (by calling other custom scripts) the common handling of a siege attack/wait-one-day for either a raiding delegation or war delegation -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation,
+	bool inRaiding,
+	bool inWaitOneDay,
+	double inAttackerMorale,
+	double inDefenderMorale,
+	string inWarTarget
+	
+	There are three outputs: string outDisplayText (the text which should be displayed on the "base occurrence" resolution menu), double outAttackerNewMorale, double outDefenderNewMorale  -->
+	<i1><a>siegeCommon</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation), typeof(bool), typeof(bool), typeof(double), typeof(double), typeof(string)   }
+	  }, out _))
+	{
+		throw new ArgumentException("siegeCommon custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	bool inRaiding = (bool)inArguments[1];
+	bool inWaitOneDay = (bool)inArguments[2];
+	double inAttackerMorale = (double)inArguments[3];
+	double inDefenderMorale = (double)inArguments[4];
+	string inWarTarget = (string)inArguments[5];
+	
+	List&lt;object&gt; toReturn = new List&lt;object&gt;() { "", 0.0d, 0.0d };
+	
+	//first, for morale and text calculation, we need to calculate some values/lists before they are changed:
+	//false = 0, true = 1 for the below
+	HashSet&lt;IFPop&gt;[] delegationPopsByDead = { new HashSet&lt;IFPop&gt;(), new HashSet&lt;IFPop&gt;() };
+	HashSet&lt;IFPop&gt;[] delegationPopsByWound = { new HashSet&lt;IFPop&gt;(), new HashSet&lt;IFPop&gt;() };
+	HashSet&lt;IFPop&gt;[] delegationPopsByIll = { new HashSet&lt;IFPop&gt;(), new HashSet&lt;IFPop&gt;() };
+	HashSet&lt;IFPop&gt;[] communityPopsByDead = { new HashSet&lt;IFPop&gt;(), new HashSet&lt;IFPop&gt;() };
+	HashSet&lt;IFPop&gt;[] communityPopsByWound = { new HashSet&lt;IFPop&gt;(), new HashSet&lt;IFPop&gt;() };
+	HashSet&lt;IFPop&gt;[] communityPopsByIll = { new HashSet&lt;IFPop&gt;(), new HashSet&lt;IFPop&gt;() };
+	Dictionary&lt;IFResource, double&gt; delegationResourceCount = new Dictionary&lt;IFResource, double&gt;();
+	Dictionary&lt;IFResource, double&gt; communityResourceCount = new Dictionary&lt;IFResource, double&gt;();
+	foreach(IFPop pop in inDelegation.getPopsInDelegation())
+	{
+		delegationPopsByDead[pop.isDead() ? 1 : 0].Add(pop);
+		delegationPopsByWound[pop.isWounded() ? 1 : 0].Add(pop);
+		delegationPopsByIll[pop.isIll() ? 1 : 0].Add(pop);
+	}
+	foreach(IFPop pop in inDelegation.getTargetCommunity().getPopsLoyalToCommunity()) //technically this does not include pops-to-be-reified, so remember that such pops will be reified non-dead, non-wounded, and possibly ill (or not)
+	{
+		communityPopsByDead[pop.isDead() ? 1 : 0].Add(pop);
+		communityPopsByWound[pop.isWounded() ? 1 : 0].Add(pop);
+		communityPopsByIll[pop.isIll() ? 1 : 0].Add(pop);
+	}
+	IFResourcePool delegationResPool = inDelegation.getResourcePool();
+	IFResourcePool communityResPool = inDelegation.getTargetCommunity().getResourcePool();
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res != null)
+		{
+			delegationResourceCount.Add(res, delegationResPool.getResourceQuantity(res));
+			communityResourceCount.Add(res, communityResPool.getResourceQuantity(res));
+		}
+	}
+	
+	
+	//order of calls:
+	//A) daily maintenance (such as illness/wound/resource decay calculations)
+	//B) determine which delegation pops are attackers and which community pops are defenders
+	//C) calculate which attackers and defenders meet each other, and the result of their fightss
+	//D) calculate what happens for the attackers and defenders which didn't meet each other
+	//E) calculate new morale of both sides
+	//F) calculate the text to display
+	
+	//A)
+	customScripts.runCustomScript("siegeDailyMaintenance", new List&lt;object&gt;() { inDelegation }, out _);
+	
+	//B)
+	List&lt;IFPop&gt; originalAttackers = new List&lt;IFPop&gt;();
+	List&lt;IFPop&gt; originalDefenders = new List&lt;IFPop&gt;();
+	if(!inWaitOneDay)
+	{
+		if(!customScripts.runCustomScriptCheckTypes("determineDelegationAttackers", new List&lt;object&gt;() { inDelegation, inWarTarget, inAttackerMorale, inRaiding }, out List&lt;object&gt; attackerDetermineOutputs, false, 
+			typeof(List&lt;IFPop&gt;))
+		  )
+		{
+			addDebugMessage(inScriptInstance, "siegeCommon failed to fully execute because determineDelegationAttackers failed to execute correctly");
+			return toReturn;
+		}
+		originalAttackers = (List&lt;IFPop&gt;)attackerDetermineOutputs[0];
+	}
+	if(!customScripts.runCustomScriptCheckTypes("determineDelegationEnemyDefenders", new List&lt;object&gt;() { inDelegation, inDefenderMorale, inRaiding }, out List&lt;object&gt; defenderDetermineOutputs, false, 
+		typeof(List&lt;IFPop&gt;))
+	  )
+	{
+		addDebugMessage(inScriptInstance, "siegeCommon failed to fully execute because determineDelegationEnemyDefenders failed to execute correctly");
+		return toReturn;
+	}
+	originalDefenders = (List&lt;IFPop&gt;)defenderDetermineOutputs[0];
+	
+	//C)
+	List&lt;IFPop&gt; nonInterceptedAttackers = new List&lt;IFPop&gt;();
+	List&lt;IFPop&gt; nonInterceptedDefenders = new List&lt;IFPop&gt;();
+	if(!customScripts.runCustomScriptCheckTypes("determineDelegationInterceptions", new List&lt;object&gt;() { inDelegation, originalAttackers, originalDefenders, inRaiding }, out List&lt;object&gt; interceptionOutputs, false, 
+		typeof(List&lt;IFPop&gt;), typeof(List&lt;IFPop&gt;))
+	  )
+	{
+		addDebugMessage(inScriptInstance, "siegeCommon called determineDelegationInterceptions but it failed to execute correctly.  siegeCommon will continue processing");
+	}
+	else
+	{
+		nonInterceptedAttackers = (List&lt;IFPop&gt;)interceptionOutputs[0];
+		nonInterceptedDefenders = (List&lt;IFPop&gt;)interceptionOutputs[1];
+	}
+	
+	//D)
+	if(!customScripts.runCustomScriptCheckTypes("determineDefenderCampAttackResults", new List&lt;object&gt;() { inDelegation, nonInterceptedAttackers, nonInterceptedDefenders, inRaiding }, out List&lt;object&gt; defenderRaidOutputs, false,
+		typeof(double))
+	  )
+	{
+		addDebugMessage(inScriptInstance, "siegeCommon called determineDefenderCampAttackResults but it failed to execute correctly. siegeCommon will continue processing");
+	}
+	double defenderRaidResourcesDestroyed = (double)defenderRaidOutputs[0];
+	
+	double targetDestroyedValue = 0.0d;
+	if(customScripts.doesCustomScriptExistWithName("determineAttackerResults_" + inWarTarget.ToLower() + "Target"))
+	{
+		//all of the determineAttackerResults_ scripts should have the following inputs: inDelegation, inAttackers, inDefenders, inRaiding.  The output should be a double of how much of the target has been destroyed
+		
+		if(!customScripts.runCustomScriptCheckTypes("determineAttackerResults_" + inWarTarget.ToLower() + "Target", new List&lt;object&gt;() { inDelegation, nonInterceptedAttackers, nonInterceptedDefenders, inRaiding }, out List&lt;object&gt; attackerResultOutputs, false, 
+			typeof(double))
+		  )
+		{
+			addDebugMessage(inScriptInstance, "siegeCommon called determineAttackerResults_" + inWarTarget.ToLower() + "Target but it failed to execute correctly.  siegeCommon will continue processing");
+		}
+		else
+		{
+			targetDestroyedValue = (double)attackerResultOutputs[0];
+		}
+	}
+	else
+	{
+		addDebugMessage(inScriptInstance, "siegeCommon checked for custom script " + "determineAttackerResults_" + inWarTarget.ToLower() + "Target" + " but it does not exist. siegeCommon will continue processing");
+	}
+	
+	//E)
+	//before performing the call to determine morale, we need to calculate some important values:
+	double delegationFoodRemaining = 0.0d;
+	double delegationFoodQuality = 0.0d;
+	double delegationHStasisRemaining = 0.0d;
+	double delegationHStasisQuality = 0.0d;
+	Int64 newDelegationDead = 0;
+	Int64 newDelegationWounded = 0;
+	Int64 newDelegationIll = 0;
+	Int64 defendersKilled = 0;
+	Int64 defendersWounded = 0;
+	double delegationTotalResourceChange = 0.0d;
+	
+	double communityFoodRemaining = 0.0d;
+	double communityFoodQuality = 0.0d;
+	double communityHStasisRemaining = 0.0d;
+	double communityHStasisQuality = 0.0d;
+	Int64 newCommunityDead = 0;
+	Int64 newCommunityWounded = 0;
+	Int64 newCommunityIll = 0;
+	Int64 attackersKilled = 0;
+	Int64 attackersWounded = 0;
+	double communityTotalResourceChange = 0.0d;
+	
+	//the following values are also necessary for assembling the text, so calculate them here as well:
+	Int64 newDelegationNotWounded = 0;
+	Int64 newDelegationNotIll = 0;
+	Int64 newDelegationArrivals = 0;
+	
+	Int64 newCommunityNotWounded = 0;
+	Int64 newCommunityNotIll = 0;
+	
+	HashSet&lt;IFPop&gt; originalAttackersSet = new HashSet&lt;IFPop&gt;(originalAttackers);
+	HashSet&lt;IFPop&gt; originalDefendersSet = new HashSet&lt;IFPop&gt;(originalDefenders);
+	
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res != null)
+		{
+			double delegationRemaining = delegationResPool.getResourceQuantity(res);
+			double communityRemaining = communityResPool.getResourceQuantity(res);
+			
+			delegationTotalResourceChange += (delegationRemaining - delegationResourceCount[res]);
+			communityTotalResourceChange += (communityRemaining - communityResourceCount[res]);
+		
+			if(res.isFood())
+			{
+				delegationFoodRemaining += delegationRemaining;
+				communityFoodRemaining += communityRemaining;
+				delegationFoodQuality += delegationRemaining * delegationResPool.getResourceQuality(res);
+				communityFoodQuality += communityRemaining * communityResPool.getResourceQuality(res);
+			}
+			if(res.isHStasis())
+			{
+				delegationHStasisRemaining += delegationRemaining;
+				communityHStasisRemaining += communityRemaining;
+				delegationHStasisQuality += delegationRemaining * delegationResPool.getResourceQuality(res);
+				communityHStasisQuality += communityRemaining * communityResPool.getResourceQuality(res);
+			}
+		}
+	}
+	if(delegationFoodRemaining != 0.0d) delegationFoodQuality /= delegationFoodRemaining;
+	if(communityFoodRemaining != 0.0d) communityFoodQuality /= communityFoodRemaining;
+	if(delegationHStasisRemaining != 0.0d) delegationHStasisQuality /= delegationHStasisRemaining;
+	if(communityHStasisRemaining != 0.0d) communityHStasisQuality /= communityHStasisRemaining;
+	
+	foreach(IFPop pop in delegationPopsByDead[0])
+	{
+		if(pop.isDead())
+		{
+			newDelegationDead++;
+			if(originalAttackersSet.Contains(pop))
+				attackersKilled++;
+		}
+	}
+	foreach(IFPop pop in inDelegation.getPopsInDelegation()) //note to self: none of the pops fetched by getPopsInDelegation should ever be dead, as pops set dead will clear their delegation assignment
+	{
+		if(originalAttackersSet.Contains(pop))
+		{
+			if(pop.isWounded())
+				attackersWounded++;
+		}
+		
+		if(pop.isDead()) //just in case
+			continue;
+		
+		if(!(delegationPopsByDead[0].Contains(pop) || delegationPopsByDead[1].Contains(pop)))
+		{
+			newDelegationArrivals++;
+		}
+		
+		if(pop.isWounded() &amp;&amp; !delegationPopsByWound[1].Contains(pop))
+			newDelegationWounded++;
+		if(!pop.isWounded() &amp;&amp; delegationPopsByWound[1].Contains(pop))
+			newDelegationNotWounded++;
+		if(pop.isIll() &amp;&amp; !delegationPopsByIll[1].Contains(pop))
+			newDelegationIll++;
+		if(!pop.isIll() &amp;&amp; delegationPopsByIll[1].Contains(pop))
+			newDelegationNotIll++;
+	}
+	foreach(IFPop pop in inDelegation.getTargetCommunity().getPopsLoyalToCommunity())
+	{
+		if(originalDefendersSet.Contains(pop))
+		{
+			if(pop.isDead())
+				defendersKilled++;
+			else if(pop.isWounded())
+				defendersWounded++;
+		}
+	
+		if(pop.isDead() &amp;&amp; !communityPopsByDead[1].Contains(pop))
+			newCommunityDead++;
+		if(pop.isDead())
+			continue;
+		
+		if(pop.isWounded() &amp;&amp; !communityPopsByWound[1].Contains(pop))
+			newCommunityWounded++;
+		if(!pop.isWounded() &amp;&amp; communityPopsByWound[1].Contains(pop))
+			newCommunityNotWounded++;
+		if(pop.isIll() &amp;&amp; !communityPopsByIll[1].Contains(pop))
+			newCommunityIll++;
+		if(!pop.isIll() &amp;&amp; communityPopsByIll[1].Contains(pop))
+			newCommunityNotIll++;
+	}
+	
+	if(inWarTarget.ToLower() == "people")
+	{
+		if(inRaiding)
+		{
+			int existingPrisoners = 0;
+			int totalPrisoners = 0;
+			foreach(IFPop pop in inDelegation.getPopsInDelegation())
+			{
+				if(!pop.isDead() &amp;&amp; (pop.getCommunity() != inDelegation.getSourceCommunity()))
+					totalPrisoners++;
+			}
+			foreach(IFPop pop in delegationPopsByDead[0])
+			{
+				if(pop.getCommunity() != inDelegation.getSourceCommunity())
+					existingPrisoners++;
+			}
+			foreach(IFPop pop in delegationPopsByDead[1])
+			{
+				if(pop.getCommunity() != inDelegation.getSourceCommunity())
+					existingPrisoners++;
+			}
+			targetDestroyedValue = Math.Max(0, totalPrisoners - existingPrisoners);
+		}
+		else
+		{
+			targetDestroyedValue = newCommunityWounded + newCommunityDead;
+		}
+	}
+	else if(inWarTarget.ToLower() == "resources")
+	{
+		targetDestroyedValue = (-communityTotalResourceChange);
+	}
+	
+	double outAttackerNewMorale = inAttackerMorale;
+	if(!customScripts.runCustomScriptCheckTypes("determineAttackerMorale",
+		new List&lt;object&gt;() { inDelegation, inAttackerMorale, delegationFoodRemaining == 0.0d, delegationFoodQuality, delegationHStasisRemaining == 0.0d, delegationHStasisQuality, newDelegationDead, newDelegationWounded, newDelegationIll, defendersKilled, defendersWounded, inWarTarget, targetDestroyedValue, inRaiding },
+		out List&lt;object&gt; attackerMoraleOutputs, false, typeof(double)))
+	{
+		addDebugMessage(inScriptInstance, "siegeCommon called determineAttackerMorale but it failed to execute correctly.  siegeCommon will continue processing");
+	}
+	else
+	{
+		outAttackerNewMorale = (double)attackerMoraleOutputs[0];
+	}
+	double outDefenderNewMorale = inDefenderMorale;
+	if(!customScripts.runCustomScriptCheckTypes("determineDefenderMorale",
+		new List&lt;object&gt;() { inDelegation, inDefenderMorale, communityFoodRemaining == 0.0d, communityFoodQuality, communityHStasisRemaining == 0.0d, communityHStasisQuality, newCommunityDead, newCommunityWounded, newCommunityIll, attackersKilled, attackersWounded, inRaiding },
+		out List&lt;object&gt; defenderMoraleOutputs, false, typeof(double)))
+	{
+		addDebugMessage(inScriptInstance, "siegeCommon called determineDefenderMorale but it failed to execute correctly.  siegeCommon will continue processing");
+	}
+	else
+	{
+		outDefenderNewMorale = (double)defenderMoraleOutputs[0];
+	}
+	
+	//F)
+	string outDisplayText = inWaitOneDay ? "The delegation chose not to attack today." : "The delegation ordered an attack.";
+	string warTargetDisplayName = inDelegation.getTargetCommunity().getEconStrengthCalculation().getEconomicCapitalKindDisplayName(inWarTarget);
+	if(warTargetDisplayName == "")
+	{
+		warTargetDisplayName = inWarTarget;
+	}
+	if(!customScripts.runCustomScriptCheckTypes("assembleTextBasedOnSiegeHappenings",
+		new List&lt;object&gt;() { (Int64)originalAttackers.Count, newDelegationDead, newDelegationWounded, newDelegationNotWounded, newDelegationIll, newDelegationNotIll, newDelegationArrivals,
+								   (Int64)nonInterceptedDefenders.Count, newCommunityDead, newCommunityWounded, newCommunityNotWounded, newCommunityIll, newCommunityNotIll,
+								   defenderRaidResourcesDestroyed, delegationFoodRemaining, delegationFoodQuality, delegationHStasisRemaining, delegationHStasisQuality,
+								   warTargetDisplayName, targetDestroyedValue, (inWarTarget == "people"), inRaiding, inWaitOneDay //TODO a better check for if inWarTarget is an int kind of target
+								 },
+		out List&lt;object&gt; textOutputs, false, typeof(string)))
+	{
+		addDebugMessage(inScriptInstance, "siegeCommon called assembleTextBasedOnSiegeHappenings but it failed to execute correctly.  siegeCommon will continue processing");
+	}
+	else
+	{
+		outDisplayText = (string)textOutputs[0];
+	}
+	
+	toReturn[0] = outDisplayText;
+	toReturn[1] = outAttackerNewMorale;
+	toReturn[2] = outDefenderNewMorale;
+	
+    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

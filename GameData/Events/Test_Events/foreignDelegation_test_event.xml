@@ -1,0 +1,1008 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- strictly speaking, an igEvent could check anything.  I can't add enough custom variables to setup "anything", so these are mostly the common bits. -->
+		
+			<i1><a>foreignDelegation_test_event source community kind</a> <b>string</b> <c>normal</c></i1> <!-- could be: normal, abstract, invisible -->
+			<i1><a>foreignDelegation_test_event source community ms_relation</a> <b>string</b> <c>none</c></i1> <!-- could be: none, master_other, servant_other, master_player, master_player_other, servant_player -->
+			<i1><a>foreignDelegation_test_event source community ms_relation_player</a> <b>string</b> <c>none</c></i1> <!-- could be: none, player_is_master_other, player_is_servant_other, player_shares_master -->
+			
+			<i1><a>foreignDelegation_test_event source community foreignAI</a> <b>string</b> <c>regular_assign</c></i1> <!-- could be: none, regular_assign, or a specific name -->
+			<i1><a>foreignDelegation_test_event source community econCalcOverride</a> <b>string</b> <c>regular_assign</c></i1> <!-- could be: none, regular_assign, or a specific name -->
+			<i1><a>foreignDelegation_test_event source community milCalcOverride</a> <b>string</b> <c>regular_assign</c></i1> <!-- could be: none, regular_assign, or a specific name -->
+			<i1><a>foreignDelegation_test_event source community opinion override</a> <b>string</b> <c>regular_assign</c></i1> <!-- could be: none (==regular_assign), or a specific name -->
+			
+			<i1><a>foreignDelegation_test_event source community resource moids</a> <b>string</b> <c></c></i1> <!-- moids separated by commas.  If empty, the resource pool will autogen -->
+			<i1><a>foreignDelegation_test_event source community resource counts</a> <b>string</b> <c></c></i1> <!-- values separated by commas -->
+			<i1><a>foreignDelegation_test_event source community resource qualities</a> <b>string</b> <c></c></i1> <!-- proportional values separated by commas -->
+			<i1><a>foreignDelegation_test_event source community resource autogen quantity</a> <b>double</b> <c>5000.0</c></i1> <!-- only used if moids is the empty string -->
+			
+			<!-- pops in the delegation are generated directly, rather than using fetchOrReify on the source community -->
+			<i1><a>foreignDelegation_test_event delegation pops totalCount</a> <b>int</b> <c>8</c></i1> <!-- must be 1 or greater -->
+			<i1><a>foreignDelegation_test_event delegation pops races</a> <b>string</b> <c></c></i1> <!-- if absent, will use same race(s) as are in the foreign community.  MOIDs separated by commas -->
+			<i1><a>foreignDelegation_test_event delegation pops race weights</a> <b>string</b> <c></c></i1> <!-- should be same count as above.  weights separated by commas -->
+			
+			<i1><a>foreignDelegation_test_event delegation pops healths</a> <b>string</b> <c></c></i1> <!-- if absent, will use full health.  proportional values separated by commas -->
+			<i1><a>foreignDelegation_test_event delegation pops health weights</a> <b>string</b> <c></c></i1> <!-- if absent, will use equal weights.  weights separated by commas -->
+			<i1><a>foreignDelegation_test_event delegation pops soldier skills</a> <b>string</b> <c></c></i1> <!-- if absent, will use minimum.  proportional values separated by commas -->
+			<i1><a>foreignDelegation_test_event delegation pops soldier skill weights</a> <b>string</b> <c></c></i1> <!-- if absent, will use equal weights.  weights separated by commas -->
+			<i1><a>foreignDelegation_test_event delegation pops soldier equipment counts</a> <b>string</b> <c></c></i1> <!-- if absent, will use 0.  proportional values separated by commas -->
+			<i1><a>foreignDelegation_test_event delegation pops soldier equipment count weights</a> <b>string</b> <c></c></i1> <!-- if absent, will use equal weights.  weights separated by commas -->
+			<i1><a>foreignDelegation_test_event delegation pops foreign leaderships forced</a> <b>string</b> <c></c></i1> <!-- if absent, will use none.  city_leader,race_leader,industry_leader,race_leader_all,industry_leader_all separated by commas. -->
+			
+			<i1><a>foreignDelegation_test_event delegation type</a> <b>string</b> <c>war</c></i1> <!-- war/raiding/diplomacy/trade/emigration -->
+			<i1><a>foreignDelegation_test_event delegation resource moids</a> <b>string</b> <c></c></i1> <!-- moids separated by commas -->
+			<i1><a>foreignDelegation_test_event delegation resource counts</a> <b>string</b> <c></c></i1> <!-- values separated by commas -->
+			<i1><a>foreignDelegation_test_event delegation resource qualities</a> <b>string</b> <c></c></i1> <!-- proportional values separated by commas -->
+			<i1><a>foreignDelegation_test_event delegation resource autogen quantity</a> <b>double</b> <c>500.0</c></i1> <!-- only used if moids is the empty string -->
+			
+			<i1><a>foreignDelegation_test_event delegation arrival event override</a> <b>string</b> <c>regular_assign</c></i1> <!-- could be: none, regular_assign, or a specific name -->
+			<i1><a>foreignDelegation_test_event delegation leave event override</a> <b>string</b> <c>regular_assign</c></i1> <!-- could be: none, regular_assign, or a specific name -->
+			
+			<i1><a>foreignDelegation_test_event map forced buildingkind uids</a> <b>string</b> <c></c></i1> <!-- moids separated by commas.  If empty, no additional buildings will be built on the map -->
+			<i1><a>foreignDelegation_test_event map forced buildingkind counts</a> <b>string</b> <c></c></i1> <!-- moids separated by commas.  If an entry is empty or zero/negative, one building will be built on the map for the appropriate uid -->
+			
+			<!-- logging const for an event's upon-happening script is always "log_script_event undercase_event_name upon happening" where undercase_event_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_event foreignDelegation_prep_test_event upon happening</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+
+  <igEvent name="foreignDelegation_prep_test_event">
+  <mTypeOfEvent>0</mTypeOfEvent> <!-- 0 = normal event (happens in community over time), 1 = player-sourced delegation arrives at foreign location event, 2 = player-sourced delegation while traveling event, 3 = simultaneous with other occurrence event -->
+  <mSimultaneousWithOccurrence>0x0</mSimultaneousWithOccurrence> <!-- does not matter unless mTypeOfEvent is 3 -->
+  
+  <mDefaultEnabled>0</mDefaultEnabled> <!-- enable the event -->
+  <mDefaultMTTH>0x1</mDefaultMTTH> <!-- trigger the event on every day -->
+  
+  <!-- no gate conditions for the test event: -->
+  <mScriptWhichGatesHappening>
+	List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	toReturn.Add(true);
+	return toReturn;
+  </mScriptWhichGatesHappening>
+  
+  <mInvisible>0</mInvisible>
+  <mDefaultMenuText>
+	The foreign delegation test has been set up.  If you are seeing this text, foreignDelegation_prep_test_event did not correctly override its default text.
+  </mDefaultMenuText>
+  
+  <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+  <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+  
+  
+  <mScriptUponHappening>
+    //input count check:
+    if (inArguments.Length &lt; 2)
+    {
+		return null;
+    }
+			
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var customScripts = getAPI().getCustomScripts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+	IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+	bool success = false;
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+  
+    //first, generate the source community and set it up correctly:
+	string communityKind = customConsts.getStringConst("foreignDelegation_test_event source community kind", out success);
+	if(!success) communityKind = "normal";
+	string communityMSRelation = customConsts.getStringConst("foreignDelegation_test_event source community ms_relation", out success);
+	if(!success) communityMSRelation = "none";
+	string communityMSRelationPlayer = customConsts.getStringConst("foreignDelegation_test_event source community ms_relation_player", out success);
+	if(!success) communityMSRelationPlayer = "none";
+	
+	string foreignAIName = customConsts.getStringConst("foreignDelegation_test_event source community foreignAI", out success);
+	if(!success) foreignAIName = "none";
+	string econCalcOverrideName = customConsts.getStringConst("foreignDelegation_test_event source community econCalcOverride", out success);
+	if(!success) econCalcOverrideName = "none";
+	string milCalcOverrideName = customConsts.getStringConst("foreignDelegation_test_event source community milCalcOverride", out success);
+	if(!success) milCalcOverrideName = "none";
+	string opinionOverrideName = customConsts.getStringConst("foreignDelegation_test_event source community opinion override", out success);
+	if(!success) opinionOverrideName = "none";
+	
+	string foreignResourceMOIDs = customConsts.getStringConst("foreignDelegation_test_event source community resource moids", out success);
+	if(!success) foreignResourceMOIDs = "";
+	string foreignResourceCounts = customConsts.getStringConst("foreignDelegation_test_event source community resource counts", out success);
+	if(!success) foreignResourceCounts = "";
+	string foreignResourceQuals = customConsts.getStringConst("foreignDelegation_test_event source community resource qualities", out success);
+	if(!success) foreignResourceQuals = "";
+	double foreignAutogenQuantity = customConsts.getDoubleConst("foreignDelegation_test_event source community resource autogen quantity", out success);
+	if(!success) foreignAutogenQuantity = 5000.0d;
+	
+	string reportTextOverride = "";
+	
+	Dictionary&lt;IFRace, UInt64&gt; sourceCommunityPops = new Dictionary&lt;IFRace, UInt64&gt;();
+	//TODO if a specific racial distribution of pops is desired, need to set it up here.  Default is 125 of one race
+	IFRace randRace = null;
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("races"); moid++)
+	{
+		IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+		if(race == null)
+			continue;
+		if(!race.isHiddenFromPlayerSight())
+		{
+			if((randRace != null) &amp;&amp; (getAPI().calcProb(0.3d)))
+			{
+				randRace = race;
+			}
+			else if(randRace == null)
+			{
+				randRace = race;
+			}
+		}
+	}
+	if(randRace == null)
+	{
+		addDebugMessage(inScriptInstance, "possible race to put in community not found");
+		return null;
+	}
+	sourceCommunityPops.Add(randRace, 125);
+	reportTextOverride += "125 pops of race " + randRace.getPluralNoun() + " added to foreign community.\n";
+	
+	IFForeignAI aiOverride = null;
+	IFEconStrengthCalculation econCalcOverride = null;
+	IFMilStrengthCalculation milCalcOverride = null;
+	
+	if((foreignAIName != "none") &amp;&amp; (foreignAIName != "regular_assign"))
+	{
+		aiOverride = (IFForeignAI)getAPI().getMOFromInternalName("foreignais", foreignAIName);
+		if(aiOverride == null)
+		{
+			addDebugMessage(inScriptInstance, "ai override by name of " + foreignAIName + " not found");
+		}
+		else
+		{
+			reportTextOverride += "Foreign community has AI of name " + foreignAIName + "\n";
+			if((econCalcOverrideName != "none") &amp;&amp; (econCalcOverrideName != "regular_assign"))
+			{
+				econCalcOverride = (IFEconStrengthCalculation)getAPI().getMOFromInternalName("econstrengthcalculations", econCalcOverrideName);
+				if(econCalcOverride == null)
+				{
+					addDebugMessage(inScriptInstance, "econ calc override by name of " + foreignAIName + " not found");
+				}
+			}
+			if((milCalcOverrideName != "none") &amp;&amp; (milCalcOverrideName != "regular_assign"))
+			{
+				milCalcOverride = (IFMilStrengthCalculation)getAPI().getMOFromInternalName("milstrengthcalculations", milCalcOverrideName);
+				if(milCalcOverride == null)
+				{
+					addDebugMessage(inScriptInstance, "mil calc override by name of " + foreignAIName + " not found");
+				}
+			}
+		}
+	}
+	
+	//put it near the player community:
+	Int64 playerXLoc = localCommunity.getDiploMapLocationX();
+	Int64 playerYLoc = localCommunity.getDiploMapLocationY();
+	int addInToLoc = 75;
+	if(playerXLoc + addInToLoc &lt; getAPI().getDiploMapDimensions().Item1)
+		playerXLoc += addInToLoc;
+	else if(playerXLoc - addInToLoc &gt;= 0)
+		playerXLoc -= addInToLoc;
+	if(playerYLoc + addInToLoc &lt; getAPI().getDiploMapDimensions().Item2)
+		playerYLoc += addInToLoc;
+	else if(playerYLoc - addInToLoc &gt;= 0)
+		playerYLoc -= addInToLoc;
+	
+	IFCommunity sourceCommunity = getAPI().createCommunity(sourceCommunityPops, 
+		communityKind == "normal" ? IFCommunity.eCommunityType.cNormal : (communityKind == "abstract" ? IFCommunity.eCommunityType.cAbstract : IFCommunity.eCommunityType.cInvisible),
+		true, 0,
+		aiOverride, econCalcOverride, milCalcOverride,
+		playerXLoc, playerYLoc,
+		0.5d, //water ratio
+		"foreignDelegation_prep_test_event test community");
+	reportTextOverride += communityKind == "normal" ? "Normal community.  " : (communityKind == "abstract" ? "Abstract community.  " : "Invisible community.  ");
+	
+	if(sourceCommunity == null)
+	{
+		addDebugMessage(inScriptInstance, "unable to create source community for delegation test event; returning early");
+		return null;
+	}
+	
+	if(foreignAIName == "regular_assign")
+	{
+		sourceCommunity.setCurrentAIFromWeights();
+	}
+	
+	//master-servant relations:
+	//first, gather a list of "other" communities:
+	List&lt;IFCommunity&gt; otherCommunities = new List&lt;IFCommunity&gt;();
+	foreach(UInt64 uid in getAPI().getUIDsOfAllSO("communities"))
+	{
+		IFCommunity comm = (IFCommunity)getAPI().getSO("communities", uid);
+		if(comm != null)
+		{
+			if(comm == localCommunity || comm == sourceCommunity)
+				continue;
+			otherCommunities.Add(comm);
+		}
+	}
+	
+	if(communityMSRelation == "master_other")
+	{
+		IFCommunity randomlyChosen = otherCommunities[(int)getAPI().calcRandIntUnder(otherCommunities.Count)];
+		randomlyChosen.setMasterCommunity(sourceCommunity);
+		reportTextOverride += "Source community is master of other community.  ";
+	}
+	else if(communityMSRelation == "servant_other")
+	{
+		IFCommunity randomlyChosen = otherCommunities[(int)getAPI().calcRandIntUnder(otherCommunities.Count)];
+		sourceCommunity.setMasterCommunity(randomlyChosen);
+		reportTextOverride += "Source community is servant of other community.  ";
+	}
+	else if(communityMSRelation == "master_player")
+	{
+		localCommunity.setMasterCommunity(sourceCommunity);
+		reportTextOverride += "Source community is master of player community.  ";
+	}
+	else if(communityMSRelation == "master_player_other")
+	{
+		localCommunity.setMasterCommunity(sourceCommunity);
+		IFCommunity randomlyChosen = otherCommunities[(int)getAPI().calcRandIntUnder(otherCommunities.Count)];
+		randomlyChosen.setMasterCommunity(sourceCommunity);
+		reportTextOverride += "Source community is master of player and other community.  ";
+	}
+	else if(communityMSRelation == "servant_player")
+	{
+		sourceCommunity.setMasterCommunity(localCommunity);
+		reportTextOverride += "Source community is servant of player community.  ";
+	}
+	
+	if(communityMSRelationPlayer == "player_is_master_other")
+	{
+		IFCommunity randomlyChosen = otherCommunities[(int)getAPI().calcRandIntUnder(otherCommunities.Count)];
+		randomlyChosen.setMasterCommunity(localCommunity);
+		reportTextOverride += "Player community is master of other community.  ";
+	}
+	else if(communityMSRelationPlayer == "player_is_servant_other")
+	{
+		IFCommunity randomlyChosen = otherCommunities[(int)getAPI().calcRandIntUnder(otherCommunities.Count)];
+		localCommunity.setMasterCommunity(randomlyChosen);
+		reportTextOverride += "Player community is servant of other community.  ";
+	}
+	else if(communityMSRelationPlayer == "player_shares_master")
+	{
+		if(sourceCommunity.hasMasterCommunity())
+		{
+			localCommunity.setMasterCommunity(sourceCommunity.getMasterCommunity());
+			reportTextOverride += "Player community is servant of same community as source community is servant of.  ";
+		}
+	}
+	
+    if(opinionOverrideName != "none")
+	{
+		sourceCommunity.setOpinion(opinionOverrideName);
+		reportTextOverride += "Opinion forced to " + opinionOverrideName + ".";
+	}
+	reportTextOverride += "\n";
+	
+	//set up the foreign resource pool:
+	List&lt;string&gt; foreignResourceMOIDStrings = new List&lt;string&gt;(foreignResourceMOIDs.Split(','));
+	List&lt;string&gt; foreignResourceCountStrings = new List&lt;string&gt;(foreignResourceCounts.Split(','));
+	List&lt;string&gt; foreignResourceQualStrings = new List&lt;string&gt;(foreignResourceQuals.Split(','));
+	
+	int countToUse = foreignResourceMOIDStrings.Count;
+	int countOfResAdded = 0;
+	if((foreignResourceMOIDStrings.Count != foreignResourceCountStrings.Count) || (foreignResourceQualStrings.Count != foreignResourceCountStrings.Count))
+	{
+		countToUse = Math.Min(Math.Min(foreignResourceMOIDStrings.Count, foreignResourceCountStrings.Count), foreignResourceQualStrings.Count);
+		addDebugMessage(inScriptInstance, "counts of entries in foreign resource custom consts are mismatched; using minimum count of " + countToUse);
+	}
+	
+	for(int i = 0; i &lt; countToUse; i++)
+	{
+		try
+		{
+			Int64 moid = Int64.Parse(foreignResourceMOIDStrings[i]);
+			double count = double.Parse(foreignResourceCountStrings[i]);
+			double qual = double.Parse(foreignResourceQualStrings[i]);
+			
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res != null)
+			{
+				sourceCommunity.getResourcePool().addResourcesOfQuality(res, count, qual);
+				reportTextOverride += "Foreign community has " + count + " (qual=" + qual + ") of resource " + res.getDisplayName() + "\n";
+				countOfResAdded++;
+			}
+		}
+		catch
+		{
+			addDebugMessage(inScriptInstance, "couldn't parse one of moid=" + foreignResourceMOIDStrings[i] + " or count=" + foreignResourceCountStrings[i] + " or qual=" + foreignResourceQualStrings[i]);
+		}
+	}
+	
+	double maxQual = consts.getResourceQualityMax();
+	double minQual = consts.getResourceQualityMin();
+	double avgQual = (maxQual + minQual) / 2;
+	
+	if(countOfResAdded == 0)
+	{
+		//auto-gen foreign community resources:
+		//choose up to 20 resources:
+		Int64 resourceTypeCount = 1 + getAPI().calcRandIntUnder(20);
+		double resourceCountLeftToAdd = foreignAutogenQuantity;
+		
+		while(resourceTypeCount &gt; 0)
+		{
+			resourceTypeCount--;
+			double quantityToAdd = getAPI().calcRand() * resourceCountLeftToAdd;
+			if(resourceTypeCount == 0)
+				quantityToAdd = resourceCountLeftToAdd;
+			
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", 1 + getAPI().calcRandIntUnder(getAPI().getTotalCountOfMO("resources") - 1));
+			if(res != null)
+			{
+				resourceCountLeftToAdd -= quantityToAdd;
+				if(!res.isNotInResourcePool())
+				{
+					sourceCommunity.getResourcePool().addResourcesOfQuality(res, quantityToAdd, avgQual);
+					reportTextOverride += "Foreign community has " + quantityToAdd + " (avgQual=" + avgQual + ") of resource " + res.getDisplayName() + "\n";
+				}
+			}
+		}
+	}
+	
+	
+	//secondly, generate the delegation:
+	Int64 delPopCount = customConsts.getIntConst("foreignDelegation_test_event delegation pops totalCount", out success);
+	if(!success) delPopCount = 15;
+	string delPopRacesMOIDs = customConsts.getStringConst("foreignDelegation_test_event delegation pops races", out success);
+	if(!success) delPopRacesMOIDs = "";
+	string delPopRacesWeights = customConsts.getStringConst("foreignDelegation_test_event delegation pops race weights", out success);
+	if(!success) delPopRacesWeights = "";
+	
+	string delPopHealths = customConsts.getStringConst("foreignDelegation_test_event delegation pops healths", out success);
+	if(!success) delPopHealths = "";
+	string delPopHealthWeights = customConsts.getStringConst("foreignDelegation_test_event delegation pops health weights", out success);
+	if(!success) delPopHealthWeights = "";
+	string delPopSoldierSkills = customConsts.getStringConst("foreignDelegation_test_event delegation pops soldier skills", out success);
+	if(!success) delPopSoldierSkills = "";
+	string delPopSoldierSkillWeights = customConsts.getStringConst("foreignDelegation_test_event delegation pops soldier skill weights", out success);
+	if(!success) delPopSoldierSkillWeights = "";
+	string delPopSoldierEquipCounts = customConsts.getStringConst("foreignDelegation_test_event delegation pops soldier equipment counts", out success);
+	if(!success) delPopSoldierEquipCounts = "";
+	string delPopSoldierEquipCountWeights = customConsts.getStringConst("foreignDelegation_test_event delegation pops soldier equipment count weights", out success);
+	if(!success) delPopSoldierEquipCountWeights = "";
+	string delPopLeadershipsForced = customConsts.getStringConst("foreignDelegation_test_event delegation pops foreign leaderships forced", out success);
+	if(!success) delPopLeadershipsForced = "";
+	
+	string delegationType = customConsts.getStringConst("foreignDelegation_test_event delegation type", out success);
+	if(!success)
+	{
+		addDebugMessage(inScriptInstance, "something really dumb happened: delegationType was unable to be fetched from custom consts");
+		return null;
+	}
+			
+	string delResourceMOIDs = customConsts.getStringConst("foreignDelegation_test_event delegation resource moids", out success);
+	if(!success) delResourceMOIDs = "";
+	string delResourceCounts = customConsts.getStringConst("foreignDelegation_test_event delegation resource counts", out success);
+	if(!success) delResourceCounts = "";
+	string delResourceQuals = customConsts.getStringConst("foreignDelegation_test_event delegation resource qualities", out success);
+	if(!success) delResourceQuals = "";
+	
+	if(delPopCount &lt;= 0)
+	{
+		addDebugMessage(inScriptInstance, "delPopCount of " + delPopCount + " is invalid so using default value of 15");
+		delPopCount = 15;
+	}
+	
+	List&lt;string&gt; racesMOIDsStrings = new List&lt;string&gt;(delPopRacesMOIDs.Split(','));
+	List&lt;string&gt; racesWeightsStrings = new List&lt;string&gt;(delPopRacesWeights.Split(','));
+	
+	List&lt;string&gt; popsHealthsStrings = new List&lt;string&gt;(delPopHealths.Split(','));
+	List&lt;string&gt; popsHealthWeightsStrings = new List&lt;string&gt;(delPopHealthWeights.Split(','));
+	List&lt;string&gt; popsSoldierSkillsStrings = new List&lt;string&gt;(delPopSoldierSkills.Split(','));
+	List&lt;string&gt; popsSoldierSkillsWeightsStrings = new List&lt;string&gt;(delPopSoldierSkillWeights.Split(','));
+	List&lt;string&gt; popsSoldierEquipCountsStrings = new List&lt;string&gt;(delPopSoldierEquipCounts.Split(','));
+	List&lt;string&gt; popsSoldierEquipCountWeightsStrings = new List&lt;string&gt;(delPopSoldierEquipCountWeights.Split(','));
+	
+	List&lt;string&gt; popLeadershipsForced = new List&lt;string&gt;(delPopLeadershipsForced.Split(','));
+	
+	IFDelegation.eDelegationType delType = IFDelegation.eDelegationType.cNone;
+	if(delegationType == "war")
+	{
+		delType = IFDelegation.eDelegationType.cWar;
+	}
+	else if(delegationType == "raiding")
+	{
+		delType = IFDelegation.eDelegationType.cRaiding;
+	}
+	else if(delegationType == "trade")
+	{
+		delType = IFDelegation.eDelegationType.cTrade;
+	}
+	else if(delegationType == "diplomacy")
+	{
+		delType = IFDelegation.eDelegationType.cDiplomacy;
+	}
+	else if(delegationType == "emigration")
+	{
+		delType = IFDelegation.eDelegationType.cEmigration;
+	}
+	else
+	{
+		addDebugMessage(inScriptInstance, "something really dumb happened: delegationType was not one of war/raiding/diplomacy/trade/emigration: delegationType=" + delegationType);
+		return null;
+	}
+	reportTextOverride += "Delegation type=" + delegationType + ".  ";
+	
+	List&lt;IFRace&gt; popRaces = new List&lt;IFRace&gt;();
+	foreach(string str in racesMOIDsStrings)
+	{
+		if(Int64.TryParse(str, out Int64 toAdd))
+		{
+			//filter valid values:
+			IFRace race = (IFRace)getAPI().getMOFromMOID("races", toAdd);
+			if(race == null)
+				continue;
+			if(race.isHiddenFromPlayerSight())
+				continue;
+			
+			popRaces.Add(race);
+		}
+	}
+	double totalRaceWeight = 0.0d;
+	List&lt;double&gt; raceWeights = new List&lt;double&gt;();
+	foreach(string str in racesWeightsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt;= 0.0d)
+				continue;
+			
+			raceWeights.Add(toAdd);
+			totalRaceWeight += toAdd;
+		}
+	}
+	
+	double minHealth = consts.getHealthMin();
+	double maxHealth = consts.getHealthMax();
+	List&lt;double&gt; popHealths = new List&lt;double&gt;();
+	foreach(string str in popsHealthsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt; 0.0d)
+				continue;
+			if(toAdd &gt; 1.0d)
+				continue;
+				
+			popHealths.Add(toAdd * (maxHealth - minHealth) + minHealth);
+		}
+	}
+	double totalHealthWeight = 0.0d;
+	List&lt;double&gt; popHealthWeights = new List&lt;double&gt;();
+	foreach(string str in popsHealthWeightsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt;= 0.0d)
+				continue;
+				
+			popHealthWeights.Add(toAdd);
+			totalHealthWeight += toAdd;
+		}
+	}
+	
+	double ssMin = consts.getSoldierSkillMin();
+	double ssMax = consts.getSoldierSkillMax();
+	List&lt;double&gt; popSoldierSkills = new List&lt;double&gt;();
+	foreach(string str in popsSoldierSkillsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt; 0.0d)
+				continue;
+			if(toAdd &gt; 1.0d)
+				continue;
+			
+			popSoldierSkills.Add(toAdd * (ssMax - ssMin) + ssMin);
+		}
+	}
+	double totalSSWeight = 0.0d;
+	List&lt;double&gt; popSoldierSkillWeights = new List&lt;double&gt;();
+	foreach(string str in popsSoldierSkillsWeightsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt;= 0.0d)
+				continue;
+				
+			popSoldierSkillWeights.Add(toAdd);
+			totalSSWeight += toAdd;
+		}
+	}
+	
+	List&lt;Int64&gt; popEquipCounts = new List&lt;Int64&gt;();
+	foreach(string str in popsSoldierEquipCountsStrings)
+	{
+		if(Int64.TryParse(str, out Int64 toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt; 0)
+				continue;
+		
+			popEquipCounts.Add(toAdd);
+		}
+	}
+	double totalEquipWeight = 0.0d;
+	List&lt;double&gt; popEquipCountWeights = new List&lt;double&gt;();
+	foreach(string str in popsSoldierEquipCountWeightsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt;= 0.0d)
+				continue;
+				
+			popEquipCountWeights.Add(toAdd);
+			totalEquipWeight += toAdd;
+		}
+	}
+	
+	if(popRaces.Count != raceWeights.Count)
+	{
+		addDebugMessage(inScriptInstance, "something really dumb happened: popRaces.Count was != raceWeights.Count; " + popRaces.Count + "!=" + raceWeights.Count);
+		return null;
+	}
+	if(popSoldierSkills.Count != popSoldierSkillWeights.Count)
+	{
+		addDebugMessage(inScriptInstance, "something really dumb happened: popSoldierSkills.Count was != popSoldierSkillWeights.Count; " + popSoldierSkills.Count + "!=" + popSoldierSkillWeights.Count);
+		return null;
+	}
+	if(popEquipCounts.Count != popEquipCountWeights.Count)
+	{
+		addDebugMessage(inScriptInstance, "something really dumb happened: popEquipCounts.Count was != popEquipCountWeights.Count; " + popEquipCounts.Count + "!=" + popEquipCountWeights.Count);
+		return null;
+	}
+	
+	//before we assign equipment, we need to know which resources are equipment:
+	List&lt;IFResource&gt; milResources = new List&lt;IFResource&gt;();
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res == null)
+			continue;
+			
+		if(res.isMilEquip())
+			milResources.Add(res);
+	}
+	
+	List&lt;IFPop&gt; popsInDelegation = new List&lt;IFPop&gt;();
+	for(int count = 0; count &lt; delPopCount; count++)
+	{
+		//choose race:
+		IFRace race = null;
+		if(popRaces.Count != 0)
+		{
+			double randVal = getAPI().calcRand() * totalRaceWeight;
+			double weightSoFar = 0.0d;
+			for(int i = 0; i &lt; raceWeights.Count; i++)
+			{
+				weightSoFar += raceWeights[i];
+				if(weightSoFar &gt;= randVal)
+				{
+					race = popRaces[i];
+					break;
+				}
+			}
+			if(race == null)
+				race = popRaces[popRaces.Count - 1];
+		}
+		else
+		{
+			race = randRace;
+		}
+		
+		double soldierSkill = double.MinValue;
+		if(popSoldierSkills.Count != 0)
+		{
+			double randVal = getAPI().calcRand() * totalSSWeight;
+			double weightSoFar = 0.0d;
+			for(int i = 0; i &lt; popSoldierSkillWeights.Count; i++)
+			{
+				weightSoFar += popSoldierSkillWeights[i];
+				if(weightSoFar &gt;= randVal)
+				{
+					soldierSkill = popSoldierSkills[i];
+					break;
+				}
+			}
+			if(soldierSkill == double.MinValue)
+				soldierSkill = popSoldierSkills[popSoldierSkills.Count - 1];
+		}
+		
+		Int64 equipCount = -1;
+		if(popEquipCounts.Count != 0)
+		{
+			double randVal = getAPI().calcRand() * totalEquipWeight;
+			double weightSoFar = 0.0d;
+			for(int i = 0; i &lt; popEquipCountWeights.Count; i++)
+			{
+				weightSoFar += popEquipCountWeights[i];
+				if(weightSoFar &gt;= randVal)
+				{
+					equipCount = popEquipCounts[i];
+					break;
+				}
+			}
+			if(equipCount == -1)
+				equipCount = popEquipCounts[popEquipCounts.Count - 1];
+		}
+		
+		Dictionary&lt;IFResource, double&gt; equippedResources = new Dictionary&lt;IFResource, double&gt;();
+		int milResourcesPastSoFar = 0;
+		int milResourcesEquippedSoFar = 0;
+		foreach(IFResource res in milResources)
+		{
+			bool thisOneEquipped = (equipCount - milResourcesEquippedSoFar) &lt;= 0 ? false :
+								   ((equipCount - milResourcesEquippedSoFar) &gt;= (milResources.Count - milResourcesPastSoFar)) ? true :
+								   getAPI().calcProb(((double)(equipCount - milResourcesEquippedSoFar)) / (milResources.Count - milResourcesPastSoFar));
+		
+			equippedResources.Add(res, thisOneEquipped ? avgQual : minQual);
+			
+			if(thisOneEquipped)
+				milResourcesEquippedSoFar++;
+			milResourcesPastSoFar++;
+		}
+		
+		double healthVal = double.MaxValue;
+		if(popHealths.Count != 0)
+		{
+			double randVal = getAPI().calcRand() * totalSSWeight;
+			double weightSoFar = 0.0d;
+			for(int i = 0; i &lt; popHealthWeights.Count; i++)
+			{
+				weightSoFar += popHealthWeights[i];
+				if(weightSoFar &gt;= randVal)
+				{
+					healthVal = popHealths[i];
+					break;
+				}
+			}
+			if(healthVal == double.MaxValue)
+				healthVal = popHealths[popHealths.Count - 1];
+		}
+		
+		IFPop popGenerated = getAPI().generateNewPop(
+			race, sourceCommunity, "delegation pop #" + count, Int64.MinValue, soldierSkill, IFPop.ePopSex.cUnisexNone, equippedResources,
+			null, false, 0.0d, 0.0d, -1, -1, -1,
+			healthVal, healthVal, healthVal, healthVal, healthVal
+			);
+		
+		if(popGenerated != null)
+		{
+			popsInDelegation.Add(popGenerated);
+			addDebugMessage(inScriptInstance, "generated pop UID=" + popGenerated.getUID());
+			reportTextOverride += "Pop of race=" + race.getPluralNoun() + ", ss=" + soldierSkill + ", equip count=" + equipCount + ", and health=" + healthVal + " added to delegation.  ";
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "failed to generate pop for some reason");
+		}
+	}
+	
+	//now that the pops for the delegation are created, assemble the delegation resource pool and then the delegation:
+	List&lt;string&gt; delResourceMOIDStrings = new List&lt;string&gt;(delResourceMOIDs.Split(','));
+	List&lt;string&gt; delResourceCountStrings = new List&lt;string&gt;(delResourceCounts.Split(','));
+	List&lt;string&gt; delResourceQualStrings = new List&lt;string&gt;(delResourceQuals.Split(','));
+	
+	countToUse = delResourceMOIDStrings.Count;
+	countOfResAdded = 0;
+	if((delResourceMOIDStrings.Count != delResourceCountStrings.Count) || (delResourceQualStrings.Count != delResourceCountStrings.Count))
+	{
+		countToUse = Math.Min(Math.Min(delResourceMOIDStrings.Count, delResourceCountStrings.Count), delResourceQualStrings.Count);
+		addDebugMessage(inScriptInstance, "counts of entries in foreign resource custom consts are mismatched; using minimum count of " + countToUse);
+	}
+	
+	Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesHeldByDel = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+	for(int i = 0; i &lt; countToUse; i++)
+	{
+		try
+		{
+			Int64 moid = Int64.Parse(delResourceMOIDStrings[i]);
+			double count = double.Parse(delResourceCountStrings[i]);
+			double qual = double.Parse(delResourceQualStrings[i]);
+			
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res != null)
+			{
+				resourcesHeldByDel.Add(res, Tuple.Create(count, qual));
+				reportTextOverride += "Delegation has " + count + " (qual=" + qual + ") of resource " + res.getDisplayName() + "\n";
+				countOfResAdded++;
+			}
+		}
+		catch
+		{
+			addDebugMessage(inScriptInstance, "couldn't parse one of moid=" + delResourceMOIDStrings[i] + " or count=" + delResourceCountStrings[i] + " or qual=" + delResourceQualStrings[i]);
+		}
+	}
+	if(countOfResAdded == 0)
+	{
+		double delResourceCountAutogen = customConsts.getDoubleConst("foreignDelegation_test_event delegation resource autogen quantity", out success);
+		if(!success) delResourceCountAutogen = 500.0d;
+		
+		//choose up to 20 resources:
+		Int64 resourceTypeCount = 1 + getAPI().calcRandIntUnder(20);
+		double resourceCountLeftToAdd = delResourceCountAutogen;
+		
+		while(resourceTypeCount &gt; 0)
+		{
+			resourceTypeCount--;
+			double quantityToAdd = getAPI().calcRand() * resourceCountLeftToAdd;
+			if(resourceTypeCount == 0)
+				quantityToAdd = resourceCountLeftToAdd;
+			
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", 1 + getAPI().calcRandIntUnder(getAPI().getTotalCountOfMO("resources") - 1));
+			if(res != null)
+			{
+				resourceCountLeftToAdd -= quantityToAdd;
+				if(!res.isNotInResourcePool())
+				{
+					if(!resourcesHeldByDel.ContainsKey(res))
+						resourcesHeldByDel.Add(res, Tuple.Create(quantityToAdd, avgQual));
+					else
+						resourcesHeldByDel[res] = Tuple.Create(quantityToAdd + resourcesHeldByDel[res].Item1, avgQual);
+					reportTextOverride += "Delegation community has " + quantityToAdd + " (avgQual=" + avgQual + ") of resource " + res.getDisplayName() + "\n";
+				}
+			}
+		}
+	}
+	
+	IFDelegation del = getAPI().createDelegation(sourceCommunity, localCommunity, delType, resourcesHeldByDel, popsInDelegation);
+	if(del == null)
+	{
+		addDebugMessage(inScriptInstance, "failed to generate delegation for some reason");
+		return null;
+	}
+	else
+	{
+		addDebugMessage(inScriptInstance, "generated delegation UID=" + del.getUID());
+	}
+	reportTextOverride += "\n";
+	
+	
+	//now that the delegation has been generated and placed on the diplo map, perform other setup:
+	//A) force certain events for the delegation if desired
+	//B) add certain buildings to the map if desired
+	//C) force the necessary leadership roles in the delegation from delPopLeadershipsForced
+	
+	//A)
+	string arrivalOverrideEventName = customConsts.getStringConst("foreignDelegation_test_event delegation arrival event override", out success);
+	if(!success) arrivalOverrideEventName = "none";
+	string leaveOverrideEventName = customConsts.getStringConst("foreignDelegation_test_event delegation leave event override", out success);
+	if(!success) leaveOverrideEventName = "none"; //regular_assign
+	
+	if(arrivalOverrideEventName == "none")
+	{
+		getAPI().setSimultaneousEventToForceForDelegation(null, del, true);
+		reportTextOverride += "Forcing no arrival event.  ";
+	}
+	else if(arrivalOverrideEventName == "regular_assign")
+	{
+		//nothing to do specifically
+		reportTextOverride += "Allowing any arrival event.  ";
+	}
+	else
+	{
+		//find the event name:
+		IFEvent evt = (IFEvent)getAPI().getMOFromInternalName("events", arrivalOverrideEventName);
+		if(evt == null)
+		{
+			addDebugMessage(inScriptInstance, "event with name " + arrivalOverrideEventName + " could not be found; will force null event for arrival event");
+			reportTextOverride += "Forcing no arrival event (failure to find event " + arrivalOverrideEventName + ".  ";
+		}
+		else
+		{
+			reportTextOverride += "Forcing arrival event " + arrivalOverrideEventName + ".  ";
+		}
+		getAPI().setSimultaneousEventToForceForDelegation(evt, del, true);
+	}
+	
+	if(leaveOverrideEventName == "none")
+	{
+		getAPI().setSimultaneousEventToForceForDelegation(null, del, false);
+		reportTextOverride += "Forcing no leave event.  ";
+	}
+	else if(leaveOverrideEventName == "regular_assign")
+	{
+		//nothing to do specifically
+		reportTextOverride += "Allowing any leave event.  ";
+	}
+	else
+	{
+		//find the event name:
+		IFEvent evt = (IFEvent)getAPI().getMOFromInternalName("events", leaveOverrideEventName);
+		if(evt == null)
+		{
+			addDebugMessage(inScriptInstance, "event with name " + leaveOverrideEventName + " could not be found; will force null event for leave event");
+			reportTextOverride += "Forcing no leave event (failure to find event " + leaveOverrideEventName + ".  ";
+		}
+		else
+		{
+			reportTextOverride += "Forcing leave event " + leaveOverrideEventName + ".  ";
+		}
+		getAPI().setSimultaneousEventToForceForDelegation(evt, del, false);
+	}
+	
+	//B)
+	//we may need buildings on the map:
+	string forcedBuildingUIDs = customConsts.getStringConst("foreignDelegation_test_event map forced buildingkind uids", out success);
+	if(!success) forcedBuildingUIDs = "";
+	string forcedBuildingCounts = customConsts.getStringConst("foreignDelegation_test_event map forced buildingkind counts", out success);
+	if(!success) forcedBuildingCounts = "";
+	
+	Dictionary&lt;IFBuildingKind, Int64&gt; buildingsToPlaceOnMap = new Dictionary&lt;IFBuildingKind, Int64&gt;();
+	List&lt;string&gt; forcedBuildingUIDStrings = new List&lt;string&gt;(forcedBuildingUIDs.Split(','));
+	List&lt;string&gt; forcedBuildingCountStrings = new List&lt;string&gt;(forcedBuildingCounts.Split(','));
+	Int64 countOfBuildingsToAdd = 0;
+	for(int i = 0; i &lt; forcedBuildingUIDStrings.Count; i++)
+	{
+		if(Int64.TryParse(forcedBuildingUIDStrings[i], out Int64 uid))
+		{
+			IFBuildingKind bkind = (IFBuildingKind)getAPI().getMOFromMOID("buildingkinds", uid);
+			if(bkind == null)
+				continue;
+			if((forcedBuildingCountStrings.Count &gt; i) &amp;&amp; Int64.TryParse(forcedBuildingCountStrings[i], out Int64 buildingCount))
+			{
+				if(buildingCount &gt;= 1)
+				{
+					buildingsToPlaceOnMap.Add(bkind, buildingCount);
+					countOfBuildingsToAdd += buildingCount;
+				}
+				else
+				{
+					buildingsToPlaceOnMap.Add(bkind, 1);
+					countOfBuildingsToAdd += 1;
+				}
+			}
+		}
+	}
+	
+	//add all these buildings:
+	reportTextOverride += "\n";
+	addDebugMessage(inScriptInstance, "adding " + countOfBuildingsToAdd + " buildings to map because event (probably) wants them");
+	IFMap map = localCommunity.getDomesticComponent().getMap();
+	foreach(var kvpair in buildingsToPlaceOnMap)
+	{
+		IFBuildingKind bkind = kvpair.Key;
+		double countThisKind = kvpair.Value;
+		
+		reportTextOverride += "Adding " + countThisKind + " buildings of kind " + bkind.getDisplayName() + "\n";
+		
+		while(countThisKind &gt; 0)
+		{
+			int x_origin = (int)(getAPI().calcRandIntUnder(map.getMapDimensions().Item1));
+			int y_origin = (int)(getAPI().calcRandIntUnder(map.getMapDimensions().Item2));
+			int x_max = (int)(x_origin + bkind.getWidth());
+			int y_max = (int)(y_origin + bkind.getHeight());
+			if(x_max &gt;= map.getMapDimensions().Item1)
+				continue;
+			if(y_max &gt;= map.getMapDimensions().Item2)
+				continue;
+			//check all tiles:
+			bool cannotBuild = false;
+			List&lt;IFMapTile&gt; allTiles = new List&lt;IFMapTile&gt;();
+			for(int x = x_origin; (x &lt; x_max) &amp;&amp; !cannotBuild; x++)
+			{
+				for(int y = y_origin; (y &lt; y_max) &amp;&amp; !cannotBuild; y++)
+				{
+					IFMapTile tile = map.getMapTiles()[x][y];
+					if(!tile.isBuildable())
+					{
+						cannotBuild = true;
+					}
+					allTiles.Add(tile);
+				}
+			}
+			if(cannotBuild)
+				continue;
+			//create the new building:
+			IFBuilding newlyCreatedBuilding = getAPI().createBuildingNotPlaced(bkind, x_origin, y_origin, null);
+			newlyCreatedBuilding.setBuildingFullyBuilt();
+			addDebugMessage(inScriptInstance, "Building " + newlyCreatedBuilding.getDisplayName() + " placed on map.");
+			for(int i = 0; i &lt; allTiles.Count; i++)
+			{
+				allTiles[i].setBuilding(newlyCreatedBuilding, i == 0, IFMapTileObject.eMapItemOrientation.cOriginal);
+			}
+			countThisKind--;
+		}
+	}
+	
+	//C)
+	foreach(string role in popLeadershipsForced)
+	{
+		if(role == "industry_leader")
+		{
+			//choose an industry:
+			IFIndustry randIndustry = (IFIndustry)getAPI().getMOFromMOID("industries", 1 + getAPI().calcRandIntUnder(getAPI().getTotalCountOfMO("industries") - 1));
+			if(randIndustry != null)
+			{
+				sourceCommunity.getLeaderCollection().setIndustryLeader(popsInDelegation[0], randIndustry);
+				reportTextOverride += "Including " + randIndustry.getDisplayName() + " Industry Leader in delegation.  ";
+			}
+		}
+		else if(role == "industry_leader_all")
+		{
+			//iterate over industries and pops until they run out:
+			Int64 totalCountOfMO = getAPI().getTotalCountOfMO("industries");
+			for(int i = 0; (i &lt; totalCountOfMO) &amp;&amp; (i &lt; popsInDelegation.Count); i++)
+			{
+				IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", 1 + i);
+				if(industry != null)
+				{
+					sourceCommunity.getLeaderCollection().setIndustryLeader(popsInDelegation[i], industry);
+					reportTextOverride += "Including " + industry.getDisplayName() + " Industry Leader in delegation.  ";
+				}
+			}
+		}
+		else if(role == "race_leader")
+		{
+			sourceCommunity.getLeaderCollection().setRaceLeader(popsInDelegation[0]);
+			reportTextOverride += "Including " + popsInDelegation[0].getRace().getPluralNoun() + " Race Leader in delegation.  ";
+		}
+		else if(role == "race_leader_all")
+		{
+			HashSet&lt;IFRace&gt; racesAlreadyLed = new HashSet&lt;IFRace&gt;();
+			for(int i = 0; i &lt; popsInDelegation.Count; i++)
+			{
+				IFPop pop = popsInDelegation[i];
+				if(!racesAlreadyLed.Contains(pop.getRace()))
+				{
+					sourceCommunity.getLeaderCollection().setRaceLeader(pop);
+					racesAlreadyLed.Add(pop.getRace());
+					reportTextOverride += "Including " + pop.getRace().getPluralNoun() + " Race Leader in delegation.  ";
+				}
+			}
+		}
+		else if(role == "city_leader")
+		{
+			sourceCommunity.getLeaderCollection().setCityLeader(popsInDelegation[0]);
+			reportTextOverride += "Including City Leader in delegation.  ";
+		}
+	}
+	
+	inEventReport.setReportTextOverride(reportTextOverride);
+	inEventStatus.setEnabled(false);
+	
+	List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	return toReturn;
+  </mScriptUponHappening>
+  
+    <mChoiceCombo>
+      <i>
+        <name>Dismiss</name>
+        <appears_script>
+					List&lt;object&gt; toReturn = new List&lt;object&gt;();
+                         toReturn.Add(true);
+                     return toReturn;
+        </appears_script>
+        <selection_script>
+
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+			Go to the event report resolution screen.
+        </prechoice>
+        <resolution>
+			In some time, the delegation will arrive.
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  
+  </igEvent>
+  
+</core_data>

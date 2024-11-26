@@ -1,0 +1,148 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkups language_of_grammar_enforcer_script</a> <b>string</b> <c>english</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind list_of_options</a> <b>list</b> <c></c></i1> <!-- the individual script files will add to this, one by one.  MUST ALL BE LOWERCASE -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkups</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which delegates the replacement of markup text in a string that is to be displayed to the player -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	string inStringWithMarkupToReplace,
+	List<Dictionary<IFResource, Tuple<double, double>>> inListsOfResources //can be null, but should be the same size as expected by the markup text's desire to display lists of resources
+	
+	There is one output: string outStringWithDescriptions -->
+	<i1><a>replaceDescriptionMarkups</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(string), typeof(List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkups custom script received invalid arguments");
+		return null;
+	}
+	  
+	string inStringWithMarkupToReplace = (string)inArguments[0];
+	List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt; inListsOfResources = (List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;)inArguments[1];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outStringWithDescriptions = new string(inStringWithMarkupToReplace.ToCharArray());
+	
+	ReadOnlyCollection&lt;string&gt; markupKinds = customConsts.getListConst("replaceDescriptionMarkupKind list_of_options", out success);
+	if(!success)
+	{
+		addDebugMessage(inScriptInstance, "list of options could not be found");
+		return new List&lt;object&gt;() { outStringWithDescriptions };
+	}
+	
+	bool keepLooking = true;
+	int previouslySearchedUpToHere = 0;
+	int nextMarkupStartCharacter = -1;
+	int kindEndCharacter = -1;
+	int nextMarkupEndCharacter = -1;
+    char[] charactersToEndKind = {'|',':'};
+	do
+	{
+		//find the next markup:
+		nextMarkupStartCharacter = outStringWithDescriptions.IndexOf("[", previouslySearchedUpToHere);
+		//if -1, no markup found; exit:
+		if(nextMarkupStartCharacter == -1)
+		{
+			addDebugMessage(inScriptInstance, "ending search for markup: [ character missing in remaining text");
+			break;
+		}
+		
+		//try to identify the markup kind by looking for the | or : character which comes soonest:
+		kindEndCharacter = outStringWithDescriptions.IndexOfAny(charactersToEndKind, nextMarkupStartCharacter);
+		//if -1, no markup found; exit:
+		if(kindEndCharacter == -1)
+		{
+			addDebugMessage(inScriptInstance, "no more markup found: |: characters missing after [");
+			break;
+		}
+		
+		string kindSubstring = outStringWithDescriptions.Substring(nextMarkupStartCharacter + 1, kindEndCharacter - (nextMarkupStartCharacter + 1));
+		if(!markupKinds.Contains(kindSubstring.ToLower()))
+		{
+			//this is not a markup, but there may be markup further in the string:
+			addDebugMessage(inScriptInstance, "markup kind not found: " + kindSubstring.ToLower());
+			previouslySearchedUpToHere = nextMarkupStartCharacter + 1;
+			continue;
+		}
+		
+		//this is a markup.  look for the ending ] character:
+		nextMarkupEndCharacter = outStringWithDescriptions.IndexOf("]", nextMarkupStartCharacter);
+		//if -1, some sort of markup failure:
+		if(nextMarkupEndCharacter == -1)
+		{
+			string messedUpString = outStringWithDescriptions.Substring(nextMarkupStartCharacter);
+			addDebugMessage(inScriptInstance, "missing ending ] character for markup; terminating replacement.  Next line starts with the broken markup:\n" + messedUpString);
+			break;
+		}
+		
+		string markup = outStringWithDescriptions.Substring(nextMarkupStartCharacter, 1 + nextMarkupEndCharacter - nextMarkupStartCharacter); //1 + to include the ending ] character
+		
+		//using the kindSubstring, call the appropriate subscript
+		string replacementText = "";
+		if(customScripts.doesCustomScriptExistWithName("replaceDescriptionMarkupKind_" + kindSubstring.ToLower()))
+		{
+			if(customScripts.runCustomScriptCheckTypes("replaceDescriptionMarkupKind_" + kindSubstring.ToLower(), new List&lt;object&gt;() { markup, inListsOfResources }, out List&lt;object&gt; replacedMarkup, false, typeof(string)))
+			{
+				replacementText = (string)replacedMarkup[0];
+				addDebugMessage(inScriptInstance, "replaceDescriptionMarkupKind_" + kindSubstring.ToLower() + " called successfully for markup " + markup);
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "markup kind script replaceDescriptionMarkupKind_" + kindSubstring.ToLower() + " did not execute correctly; something went wrong; terminating replacement");
+				break;
+			}
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "markup kind script replaceDescriptionMarkupKind_" + kindSubstring.ToLower() + " does not exist despite markup kind being valid; something went wrong; terminating replacement");
+			break;
+		}
+		
+		//replace only the first instance of the markup text by doing the below.  If the same markup text is present in inStringWithMarkupToReplace multiple times, we probably want the replaced text to be different (though due to randomness it may still be the same).
+		outStringWithDescriptions = outStringWithDescriptions.Substring(0, nextMarkupStartCharacter) + replacementText + outStringWithDescriptions.Substring(nextMarkupEndCharacter + 1);
+		previouslySearchedUpToHere = nextMarkupStartCharacter; //this does not have a +1 like the previous assignment because a replacementText could start immediately with another markup text.  Only sentences -> phrases tho
+	}
+	while(keepLooking);
+	
+	//now that all the markup text has been replaced, enforce (probably language-specific) rules:
+	string language = customConsts.getStringConst("replaceDescriptionMarkups language_of_grammar_enforcer_script", out success);
+	if(!success) language = "noLanguageGrammarEnforced";
+	
+	//using the language, call the appropriate subscript
+	if(customScripts.doesCustomScriptExistWithName("enforceLanguageGrammar_" + language.ToLower()))
+	{
+		if(customScripts.runCustomScriptCheckTypes("enforceLanguageGrammar_" + language.ToLower(), new List&lt;object&gt;() { outStringWithDescriptions }, out List&lt;object&gt; grammarEnforced, false, typeof(string)))
+		{
+			outStringWithDescriptions = (string)grammarEnforced[0];
+		}
+	}
+	  
+    return new List&lt;object&gt;() { outStringWithDescriptions };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

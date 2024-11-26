@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+		<i1><a>delegation_illness illness_from_environment threshold</a> <b>int</b> <c>0x7F00</c></i1> <!-- pops are unlikely to get a disease from the environment if their overall health is greater than this, unless they have minimum mcal/water/protein health -->
+		<i1><a>delegation_illness illness_from_environment healthy_pop_sick_anyway rate</a> <b>double</b> <c>0.002</c></i1> <!-- this is the small random chance that an otherwise healthy pop (see above threshold) gets a disease from the environment -->
+		<i1><a>delegation_illness illness_from_environment rate</a> <b>double</b> <c>0.25</c></i1> <!-- this is the base chance that a pop will get an illness from the environment at minimum health -->
+		
+		<i1><a>delegation_illness illness_from_others same_race rate</a> <b>double</b> <c>0.025</c></i1> <!-- this is the base chance that a pop will get an illness from another pop of the same race, per other pop -->
+		<i1><a>delegation_illness illness_from_others different_race rate</a> <b>double</b> <c>0.01</c></i1> <!-- this is the base chance that a pop will get an illness from another pop of a different race, per other pop -->
+		<i1><a>delegation_illness illness_from_others ill_isolate_self rate</a> <b>double</b> <c>0.5</c></i1> <!-- this is the chance that an ill pop will manage to isolate itself from others -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script delegation_illnesses</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which checks if new pops in a delegation get an illness from each other, or from the environment  -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation
+	
+	There is no output -->
+	<i1><a>delegation_illnesses</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation)   }
+	  }, out _))
+	{
+		throw new ArgumentException("delegation_illnesses custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	
+	//Delegation illnesses have two possible sources: the environment, and other pops in the delegation
+	//the environment is just the biome being traveled through.  Because of the rigors of travel, and the fact that pops are possibly being exposed to many more sources of disease than if they were staying in one location, the chance of contracting a disease is higher
+	//other pops in the delegation are about as close to pops in the delegation as pops housing together
+	
+	double min_health = consts.getHealthMin();
+	double biome_rate = customConsts.getDoubleConst("biome " + inDelegation.getBiomeOfCurrentLocation().getInternalName() + " disease frequency factor", out bool success);
+	if(!success) biome_rate = 1.0d;
+	
+	double environment_threshold = (double)customConsts.getIntConst("delegation_illness illness_from_environment threshold", out success);
+	if(!success) environment_threshold = 0x7F00;
+	double healthyPopSickRate = (double)customConsts.getDoubleConst("delegation_illness illness_from_environment healthy_pop_sick_anyway rate", out success);
+	if(!success) healthyPopSickRate = 0.002d;
+	double fromEnvironmentRate = (double)customConsts.getDoubleConst("delegation_illness illness_from_environment rate", out success);
+	if(!success) fromEnvironmentRate = 0.25d;
+	
+	double sameRaceRate = (double)customConsts.getDoubleConst("delegation_illness illness_from_others same_race rate", out success);
+	if(!success) sameRaceRate = 0.025d;
+	double differentRaceRate = (double)customConsts.getDoubleConst("delegation_illness illness_from_others different_race rate", out success);
+	if(!success) differentRaceRate = 0.01d;
+	double isolateSelfRate = (double)customConsts.getDoubleConst("delegation_illness illness_from_others ill_isolate_self rate", out success);
+	if(!success) isolateSelfRate = 0.5d;
+	
+	HashSet&lt;IFPop&gt; illnessSpreaders = new HashSet&lt;IFPop&gt;();
+	
+	double difficultyTravel = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("travel danger");
+	double difficultyIllness = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("illness danger");
+	healthyPopSickRate *= difficultyTravel * difficultyIllness;
+	
+	//first, calculate sickness from the environment:
+	foreach(IFPop pop in inDelegation.getPopsInDelegation())
+	{
+		if(!pop.isDead())
+		{
+			if(pop.isIll() &amp;&amp; !getAPI().calcProb(isolateSelfRate)) illnessSpreaders.Add(pop);
+		
+			bool belowThreshold = (pop.getOverallHealth() &lt; environment_threshold);
+			if(belowThreshold || (getAPI().calcProb(healthyPopSickRate)))
+			{
+				double rate = belowThreshold ? biome_rate * fromEnvironmentRate * ((environment_threshold - pop.getOverallHealth()) / (environment_threshold - min_health)) : 0.5d;
+				rate *= difficultyTravel * difficultyIllness;
+				if(getAPI().calcProb(rate))
+				{
+					addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " will get illness from environment, chance=" + rate);
+					pop.addIllness(true);
+				}
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " will not get illness from environment because their health is greater than threshold and threshold-bypass chance did not occur");
+			}
+		}
+	}
+	
+	//second, calculate if previously-sick pops spread their illness to others:
+	foreach(IFPop pop in inDelegation.getPopsInDelegation())
+	{
+		if(pop.isIll()) continue;
+		foreach(IFPop spreaderPop in illnessSpreaders)
+		{
+			double spreadRate = (pop.getRace() == spreaderPop.getRace() ? sameRaceRate : differentRaceRate);
+			spreadRate *= difficultyTravel * difficultyIllness;
+			if(getAPI().calcProb(spreadRate))
+			{
+				addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " contracted illness from pop " + spreaderPop.getDebugName());
+				pop.addIllness(false, spreaderPop);
+				break;
+			}
+		}
+	}
+	
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

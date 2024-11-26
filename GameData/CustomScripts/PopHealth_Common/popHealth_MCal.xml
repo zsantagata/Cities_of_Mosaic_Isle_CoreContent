@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+		<i1><a>popHealth_MCal mcal_daily min</a> <b>double</b> <c>2.0</c></i1> <!-- how much resources worth of food does a pop want to consume a day (before race considerations)? -->
+		<i1><a>popHealth_MCal mcal_roughing ratio</a> <b>double</b> <c>0.25</c></i1> <!-- what proportion of mcal needs are met when a pop is roughing it -->
+		<i1><a>popHealth_MCal mcal death_days value</a> <b>double</b> <c>21.0</c></i1> <!-- how many days a pop can go fully without mcal until minimum health -->
+		<i1><a>popHealth_MCal mcal recovery_days value</a> <b>double</b> <c>14.0</c></i1> <!-- how many days a pop at minimum health requires full mcal to get to full health -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script pophealth_mcal</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which handles pop mcal health from whatever situation the pop is in -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop,
+	double inMCalConsumed,
+	double inMCalMultiplier,
+	bool inRoughingIt
+	
+	There is no output -->
+	<i1><a>popHealth_MCal</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop), typeof(double), typeof(double), typeof(bool)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popHealth_MCal custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	double inMCalConsumed = (double)inArguments[1];
+	double inMCalMultiplier = (double)inArguments[2];
+	bool inRoughingIt = (bool)inArguments[3];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	//TODO any race or other non-standard considerations
+	
+	double daily_mcal_need_met = 0;
+	bool success = false;
+	if(!inRoughingIt)
+	{
+		double dailyMCalMin = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out success);
+		if(!success) dailyMCalMin = 2.0d; //2000 calories minimum per day
+		daily_mcal_need_met = inMCalConsumed * inMCalMultiplier / dailyMCalMin;
+	}
+	else if (inRoughingIt &amp;&amp; inPop.isPopNoHealthStatus())
+    {
+		daily_mcal_need_met = customConsts.getDoubleConst("popHealth_MCal mcal_roughing ratio", out success);
+		if(!success) daily_mcal_need_met = 0.25d;
+    }
+
+    // MCal needs decay slowly and recover slowly
+    // MCal has 21 days to death at 0.0 need met and 14 days to recovery at 1.5* need met by default consts
+	
+    double deathDays = customConsts.getDoubleConst("popHealth_MCal mcal death_days value", out success);
+    if(!success) deathDays = 21.0d;
+    double recoveryDays = customConsts.getDoubleConst("popHealth_MCal mcal recovery_days value", out success);
+    if(!success) recoveryDays = 14.0d;
+	
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("pop health decay");
+	if(difficulty &gt; 0.0d)
+	{
+		recoveryDays *= difficulty;
+		deathDays /= difficulty;
+	}
+
+    //just a line between days to death at 0.0 and days to recovery at 1.5
+    double shift_from_current_mcal_health = 1 / (1.5d * deathDays);
+    shift_from_current_mcal_health = shift_from_current_mcal_health + ( 1 / (1.5d * recoveryDays) );
+    shift_from_current_mcal_health = shift_from_current_mcal_health * daily_mcal_need_met;
+    shift_from_current_mcal_health = shift_from_current_mcal_health - ( 1.0d / deathDays);
+    shift_from_current_mcal_health = shift_from_current_mcal_health * (consts.getHealthMax() - consts.getHealthMin());
+    addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " increasing mcal health by " + shift_from_current_mcal_health.ToString() + " as a result of daily mcal need met at ratio " + daily_mcal_need_met.ToString());
+
+    inPop.setMCalHealth(inPop.getMCalHealth() + shift_from_current_mcal_health);
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

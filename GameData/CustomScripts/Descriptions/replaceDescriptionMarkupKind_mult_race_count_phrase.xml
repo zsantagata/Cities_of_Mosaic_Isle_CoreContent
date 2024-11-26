@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_race_count_phrase default before_replace_text</a> <b>string</b> <c>no races</c></i1> <!-- this is only used if there are no races in the input list -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_race list_of_options</a> <b>list</b> <c>count_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_mult_race_count_phrase singular before_replace_text</a> <b>string</b> <c>1 race</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_race_count_phrase plural before_replace_text</a> <b>string</b> <c>[0] races</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_race_count_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a list of races and from it, returns a string that is a noun phrase relating to the count of races -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	List<IFRace> inRaces, //cannot be null but can be empty
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_mult_race_count_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(List&lt;IFRace&gt;)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_race_count_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	List&lt;IFRace&gt; inRaces = (List&lt;IFRace&gt;)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	if(inRaces == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_race_count_phrase custom script received invalid arguments: inRaces cannot be null");
+		return null;
+	}
+	
+	if(inRaces.Count == 0)
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_race_count_phrase default before_replace_text", out success);
+		if(!success) outDescription = "no races";
+	}
+	else if(inRaces.Count == 1)
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_race_count_phrase singular before_replace_text", out success);
+		if(!success) outDescription = "1 race";
+	}
+	else
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_race_count_phrase plural before_replace_text", out success);
+		if(!success) outDescription = "[0] races";
+		outDescription = outDescription.Replace("[0]", inRaces.Count.ToString());
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

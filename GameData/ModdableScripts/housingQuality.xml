@@ -1,0 +1,548 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>housingquality service bonus</a> <b>double</b> <c>0.08333333</c></i1> <!-- this is the proportion of the full quality range that an industry's service quality contributes to housing quality -->
+			<i1><a>housingquality goods bonus</a> <b>double</b> <c>0.0104167</c></i1> <!-- this is the proportion of the full quality range that a single good's quality contributes to housing quality -->
+			<i1><a>housingquality water penalty</a> <b>double</b> <c>0.25</c></i1> <!-- this is the proportion of the full quality range that lack of water will penalize housing quality -->
+			<i1><a>housingquality food penalty</a> <b>double</b> <c>0.1875</c></i1> <!-- this is the proportion of the full quality range that lack of food (as goods) will penalize housing quality -->
+			<i1><a>housingquality hstasis penalty</a> <b>double</b> <c>0.125</c></i1> <!-- this is the proportion of the full quality range that lack of hstasis (as goods) will penalize housing quality -->
+			<i1><a>housingquality full_damage penalty</a> <b>double</b> <c>0.09375</c></i1> <!-- this is the proportion of the full quality range that fully-damaged current durability will penalize housing quality -->
+			
+			<i1><a>housingquality crowding_points start</a> <b>double</b> <c>1.5</c></i1>
+			<i1><a>housingquality crowding_same_race mult</a> <b>double</b> <c>0.8</c></i1>
+			<i1><a>housingquality crowding_enjoy_other_race mult</a> <b>double</b> <c>0.8</c></i1>
+			<i1><a>housingquality crowding_same_race_none mult</a> <b>double</b> <c>0.0</c></i1>
+			<i1><a>housingquality crowding_like_same_race_less mult</a> <b>double</b> <c>2.0</c></i1>
+			<i1><a>housingquality crowding_hate_other_race mult</a> <b>double</b> <c>2.0</c></i1>
+			<!-- for each crowding point, the housing's quality is decreased by this proportion of its current value: -->
+			<i1><a>housingquality crowding_decrease_per_point proportion</a> <b>double</b> <c>0.015</c></i1>
+			
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a few scripts relating to housing quality -->
+  <gamescripts name="default">
+	<!-- housing quality ranges from internal quality min to internal quality max -->
+	<!-- TODO a house without water, food, hstasis, and at durability 0% should be at internal quality min -->
+	<!-- a house without penalties, with diverse and quality goods available, with diverse and quality services available, and with beautiful surroundings, should approach internal quality max -->
+	<!-- in these calculations, quality starts at internal quality min and increases based on bonus up to max, then is decreased by penalty down to min -->
+	
+	<!-- the scripts are called in the following order: mHousingQualityServiceBonus, mHousingQualityGoodsBonus, mHousingQualityBeautyBonus, mHousingQualityWaterPenalty, mHousingQualityFoodPenalty, mHousingQualityHStasisPenalty, mHousingQualityDurabilityPenalty, mHousingQualityFinalize -->
+	<!-- (that is the order in which they appear in this file) -->
+	<!-- all scripts are called for one housing building, then the next housing building is considered.  Housing buildings recalculate their qualities at midnight. -->
+	
+	<!-- housing quality service bonus has one input argument: the building in question.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of available services on housing quality -->
+	<mHousingQualityServiceBonus>
+	  //input count check:
+	  if(inArguments.Length &lt; 1)
+	  {
+	    return null;
+	  }
+	  
+	  IFBuilding building = (IFBuilding)inArguments[0];
+	  
+	  var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  List&lt;double&gt; service_quantities = new List&lt;double&gt;();
+	  List&lt;double&gt; service_qualities = new List&lt;double&gt;();
+	  
+	  for(int i=1; i &lt; getAPI().getTotalCountOfMO("industries"); i++)
+      {
+		double qual = building.calcServiceQualityForIndustry((UInt64)i);
+		if(qual != consts.getResourceQualityMin())
+		{
+			addDebugMessage(inScriptInstance, "industry of MOID = " + i.ToString() + " provides service of internal quality = " + qual.ToString() + " to home " + building.getDebugName());
+			service_quantities.Add(1.0d);
+			service_qualities.Add(qual);
+		}
+      }
+
+    double factor_over_average = getAPI().calcOutputFromInputs(service_quantities, service_qualities, false, true);
+    factor_over_average = factor_over_average / consts.getAverageInputFactor();
+
+    double housingQualityServiceBonus = customConsts.getDoubleConst("housingQuality service bonus", out bool success);
+    if(!success) housingQualityServiceBonus = (1.0d/12.0d);
+    double service_bonus = factor_over_average * housingQualityServiceBonus * (consts.getResourceQualityMax() - consts.getResourceQualityMin());
+
+	double difficultyAll = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("base housing quality");
+	double difficultyServicesAndGoods = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("goods and services housing quality");
+	if(difficultyServicesAndGoods &gt; 0.0d)
+	{
+		//remove difficultyAll from service bonus because it will be added in later
+		service_bonus *= difficultyAll / difficultyServicesAndGoods;
+	}
+	
+    List&lt;object&gt; toReturn = new List&lt;object&gt;();
+    addDebugMessage(inScriptInstance, "services provide housing quality bonus of " + service_bonus + " and penalty of " + 0 + " to housing " + building.getDisplayName());
+    toReturn.Add(service_bonus);
+    toReturn.Add((double)0);
+
+    return toReturn;
+  </mHousingQualityServiceBonus>
+	<!-- housing quality goods bonus has four input arguments: the building in question, a resource pool, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of available goods on housing quality -->
+	<mHousingQualityGoodsBonus>
+	  //input count check:
+	  if(inArguments.Length &lt; 4)
+	  {
+	    return null;
+	  }
+	  
+	  IFBuilding building = (IFBuilding)inArguments[0];
+	  IFResourcePool resourcepool = (IFResourcePool)inArguments[1];
+	  
+	  var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  List&lt;double&gt; goods_quantities = new List&lt;double&gt;(); //note that while goods do have quantities unlike services, we don't use that here; we simply care about "the appearance of being able to access goods of a certain quality", not how many of those goods there actually are
+	  List&lt;double&gt; goods_qualities = new List&lt;double&gt;();
+	  
+	  var accessible_resources_bools = building.getAccessibleResources();
+	  for(int i=1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+	  {
+	    if(accessible_resources_bools[i])
+		{
+		  IFResource resource = (IFResource)getAPI().getMOFromMOID("resources", i);
+		  //only certain resources which could be consumed by pops contribute to housing quality
+		  if(           (   !resource.isNotInResourcePool())
+		     &amp;&amp; (   !resource.hasTag("only from pops"))
+			 &amp;&amp; (   resource.isFood()
+    || resource.isDrug()
+    || resource.isHStasis()
+    || resource.isWoundHeal()
+    || resource.isDiseaseHeal()
+    )
+    )
+    {
+    double qual = resourcepool.getResourceQuality(resource);
+    addDebugMessage(inScriptInstance, "resource " + resource.getDebugName() + " with internal quality = " + qual.ToString() + " is accessible by home " + building.getDebugName());
+    goods_quantities.Add(1.0d);
+    goods_qualities.Add(qual);
+    }
+    }
+    }
+
+    double factor_over_average = getAPI().calcOutputFromInputs(goods_quantities, goods_qualities, false, true);
+    factor_over_average = factor_over_average / consts.getAverageInputFactor();
+    double housingQualityGoodsBonus = customConsts.getDoubleConst("housingQuality goods bonus", out bool success);
+    if(!success) housingQualityGoodsBonus = (1.0d/96.0d);
+    double goods_bonus = factor_over_average * housingQualityGoodsBonus * (consts.getResourceQualityMax() - consts.getResourceQualityMin());
+
+	double difficultyAll = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("base housing quality");
+	double difficultyServicesAndGoods = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("goods and services housing quality");
+	if(difficultyServicesAndGoods &gt; 0.0d)
+	{
+		//remove difficultyAll from goods bonus because it will be added in later
+		goods_bonus *= difficultyAll / difficultyServicesAndGoods;
+	}
+	
+    List&lt;object&gt; toReturn = new List&lt;object&gt;();
+    addDebugMessage(inScriptInstance, "goods provide housing quality bonus of " + goods_bonus + " and penalty of " + 0 + " to housing " + building.getDebugName());
+    toReturn.Add(goods_bonus + (double)inArguments[2]);
+    toReturn.Add((double)inArguments[3]);
+
+    return toReturn;
+  </mHousingQualityGoodsBonus>
+	<!-- housing quality beauty bonus has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of surrounding beauty on housing quality -->
+	<mHousingQualityBeautyBonus>
+	  //input count check:
+	  if(inArguments.Length &lt; 3)
+    {
+    return null;
+    }
+
+    IFBuilding building = (IFBuilding)inArguments[0];
+
+    double beauty_val = building.getHousingComponent().getBeautySurrounding();
+    addDebugMessage(inScriptInstance, "beauty of value = " + beauty_val.ToString() + " surrounds home " + building.getDebugName());
+
+    //TODO actually do beauty calculations in any way
+    double beauty_bonus = 0.0d;
+
+    List&lt;object&gt; toReturn = new List&lt;object&gt;();
+    addDebugMessage(inScriptInstance, "surrouding beauty provides housing quality bonus of " + beauty_bonus + " and penalty of " + 0 + " to housing " + building.getDebugName());
+    toReturn.Add((double)inArguments[1] + beauty_bonus);
+    toReturn.Add((double)inArguments[2]);
+
+    return toReturn;
+  </mHousingQualityBeautyBonus>
+	<!-- housing quality water penalty has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of not having water on housing quality -->
+	<mHousingQualityWaterPenalty>
+	  //input count check:
+	  if(inArguments.Length &lt; 3)
+	  {
+	    return null;
+	  }
+	  
+	  IFBuilding building = (IFBuilding)inArguments[0];
+	  var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	
+	  double water_penalty = customConsts.getDoubleConst("housingQuality water penalty", out bool success);
+	  if(!success) water_penalty = 0.25d;
+	  water_penalty *= (consts.getResourceQualityMax() - consts.getResourceQualityMin());
+	  
+	  for(int i=1; i &lt; getAPI().getTotalCountOfMO("industries"); i++)
+	  {
+	    IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", i);
+		if(industry.hasTag("water bearing") &amp;&amp; (building.calcServiceQualityForIndustry((UInt64)i) != consts.getResourceQualityMin()))
+    {
+    water_penalty = 0;
+    addDebugMessage(inScriptInstance, "water is being provided to home " + building.getDebugName() + ", first industry detected=" + industry.getDebugName());
+    break;
+    }
+    }
+
+    if(water_penalty != 0)
+    {
+    addDebugMessage(inScriptInstance, "water is not being provided to home " + building.getDebugName());
+    }
+
+    List&lt;object&gt; toReturn = new List&lt;object&gt;();
+    addDebugMessage(inScriptInstance, "water (or its lack) bonus of " + 0 + " and penalty of " + water_penalty + " to quality of housing " + building.getDebugName());
+    toReturn.Add((double)inArguments[1]);
+    toReturn.Add((double)inArguments[2] + water_penalty);
+
+    return toReturn;
+  </mHousingQualityWaterPenalty>
+	<!-- housing quality food penalty has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of not having food on housing quality -->
+	<mHousingQualityFoodPenalty>
+	  //input count check:
+	  if(inArguments.Length &lt; 3)
+	  {
+	    return null;
+	  }
+	  
+	  IFBuilding building = (IFBuilding)inArguments[0];
+	  var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  
+	  double food_penalty = customConsts.getDoubleConst("housingQuality food penalty", out bool success);
+	  if(!success) food_penalty = 0.1875d;
+	  food_penalty *= (consts.getResourceQualityMax() - consts.getResourceQualityMin());
+	  
+	  List&lt;bool&gt; accessible_resources_bools = building.getAccessibleResources();
+	  for(int i=1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+	  {
+	    if(accessible_resources_bools[i]) {
+		  IFResource resource = (IFResource)getAPI().getMOFromMOID("resources", i);
+		  if(           (!resource.isNotInResourcePool())
+		     &amp;&amp; (!resource.hasTag("only from pops"))
+			 &amp;&amp; (resource.isFood())
+    ) {
+    food_penalty = 0;
+    addDebugMessage(inScriptInstance, "food is being provided to home " + building.getDebugName() + ", first food resource detected=" + resource.getDebugName());
+    break;
+    }
+    }
+    }
+
+    if(food_penalty != 0) {
+    addDebugMessage(inScriptInstance, "food is not being provided to home " + building.getDebugName());
+    }
+
+    List&lt;object&gt; toReturn = new List&lt;object&gt;();
+    addDebugMessage(inScriptInstance, "food (or its lack) bonus of " + 0 + " and penalty of " + food_penalty + " to quality of housing " + building.getDebugName());
+    toReturn.Add((double)inArguments[1]);
+    toReturn.Add((double)inArguments[2] + food_penalty);
+
+    return toReturn;
+  </mHousingQualityFoodPenalty>
+	<!-- housing quality hstasis penalty has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of not having hstasis-recovering-items on housing quality -->
+	<mHousingQualityHStasisPenalty>
+	  //input count check:
+	  if(inArguments.Length &lt; 3)
+	  {
+	    return null;
+	  }
+	  
+	  IFBuilding building = (IFBuilding)inArguments[0];
+	  var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  
+	  //TODO this should probably change per biome harshness
+	  double hstasis_penalty = customConsts.getDoubleConst("housingQuality hstasis penalty", out bool success);
+	  if(!success) hstasis_penalty = 0.125d;
+	  hstasis_penalty *= (consts.getResourceQualityMax() - consts.getResourceQualityMin());
+	  
+	  List&lt;bool&gt; accessible_resources_bools = building.getAccessibleResources();
+	  for(int i=1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+	  {
+	    if(accessible_resources_bools[i]) {
+		  IFResource resource = (IFResource)getAPI().getMOFromMOID("resources", i);
+		  if(           (!resource.isNotInResourcePool())
+		     &amp;&amp; (!resource.hasTag("only from pops"))
+			 &amp;&amp; (resource.isHStasis())
+    ) {
+    hstasis_penalty = 0;
+    addDebugMessage(inScriptInstance, "hstasis items are being provided to home " + building.getDebugName() + ", first resource found=" + resource.getDebugName());
+    break;
+    }
+    }
+    }
+
+    if(hstasis_penalty != 0)
+    {
+    addDebugMessage(inScriptInstance, "hstasis items are not being provided to home " + building.getDebugName());
+    }
+
+    List&lt;object&gt; toReturn = new List&lt;object&gt;();
+    addDebugMessage(inScriptInstance, "hstasis (or its lack) bonus of " + 0 + " and penalty of " + hstasis_penalty + " to quality of housing " + building.getDebugName());
+    toReturn.Add((double)inArguments[1]);
+    toReturn.Add((double)inArguments[2] + hstasis_penalty);
+
+    return toReturn;
+  </mHousingQualityHStasisPenalty>
+	<!-- housing quality durability penalty has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of damage on housing quality -->
+	<mHousingQualityDurabilityPenalty>
+	  //input count check:
+	  if(inArguments.Length &lt; 3)
+	  {
+	    return null;
+	  }
+	  
+	  IFBuilding building = (IFBuilding)inArguments[0];
+	  var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  
+	  double damage_penalty = customConsts.getDoubleConst("housingQuality full_damage penalty", out bool success);
+	  if(!success) damage_penalty = 0.09375d;
+	  damage_penalty *= (consts.getResourceQualityMax() - consts.getResourceQualityMin());
+	  
+	  damage_penalty = damage_penalty * (building.getMaxBuildingDurability() - building.getCurrentBuildingDurability()) / building.getMaxBuildingDurability();
+	  
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;();
+    addDebugMessage(inScriptInstance, "durability damage (or its lack) bonus of " + 0 + " and penalty of " + damage_penalty + " to quality of housing " + building.getDebugName());
+    toReturn.Add((double)inArguments[1]);
+    toReturn.Add((double)inArguments[2] + damage_penalty);
+
+    return toReturn;
+  </mHousingQualityDurabilityPenalty>
+	<!-- housing quality finalize has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There is one output: building quality. -->
+	<!-- This segment calculates the housing quality based on previous bonuses/penalties and the inherent housing quality. -->
+	<mHousingQualityFinalize>
+	  //input count check:
+	  if(inArguments.Length &lt; 3)
+	  {
+	    return null;
+	  }
+	  
+	  IFBuilding building = (IFBuilding)inArguments[0];
+	  var consts = getAPI().getConsts();
+	
+	  double kind_qual_factor = building.getBuildingKind().getHousingQualityFactor();
+	  double bonus = ((double)inArguments[1]) * kind_qual_factor;
+	  double penalty = (double)inArguments[2];
+	  
+	  double min = consts.getResourceQualityMin();
+	  double max = consts.getResourceQualityMax();
+	  
+	  double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("base housing quality");
+	  penalty *= difficulty;
+	  if(difficulty &gt; 0.0d)
+	  {
+		bonus /= difficulty;
+	  }
+	  else
+	  {
+		bonus = max;
+		penalty = 0.0d;
+	  }
+	  
+	  double total_qual_to_return = (bonus - penalty);
+	  if(total_qual_to_return &lt; min) {
+	    total_qual_to_return = min;
+	  }
+	  if(total_qual_to_return &gt; max) {
+	    total_qual_to_return = max;
+	  }
+	
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;();
+    addDebugMessage(inScriptInstance, "with building-kind quality factor of " + kind_qual_factor + " and incoming bonus of " + ((double)inArguments[1]).ToString() + " and incoming penalty of " + ((double)inArguments[2]).ToString() + ", " + building.getDebugName() + " has total quality of " + total_qual_to_return);
+    toReturn.Add(total_qual_to_return);
+    return toReturn;
+  </mHousingQualityFinalize>
+  
+	<!-- housing quality specific pop has two input arguments: IFBuilding inBuilding, IFPop inPop.  There is one output: building quality for the pop in question. -->
+	<!-- This segment calculates the housing quality based seen by the pop (which can be different than base housing quality).  This script is called when igHousingComponent.calculateHousingQualityForPop is called -->
+	<mHousingQualitySpecificPop>
+	  //input count check:
+	  if(inArguments.Length &lt; 2)
+	  {
+	    return null;
+	  }
+	  
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  IFPop inPop = (IFPop)inArguments[1];
+	  var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  bool success = false;
+	  
+	  double min = consts.getResourceQualityMin();
+	  double max = consts.getResourceQualityMax();
+	  
+	  //a pop has direct racial bonuses and penalties to housing:
+	  double raceQualityShift = inBuilding.getBuildingKind().getHousingQualityShiftForRace(inPop.getRace());
+	  
+	  //but a pop's individual enjoyment of housing relates to the other pops living there.
+	  //here are all the possible racial tags/custom consts that impact housing:
+	    /*
+		housing crowding penalty to others: //followed by a double
+		housing enjoy other race: //this must be followed by the internal name of the race
+		housing hate other race: //this must be followed by the internal name of the race
+		housing other race enjoy me
+		housing other race hate me
+		housing same race no crowding
+		housing like my race normal
+		housing like my race less
+		*/
+	  
+	  //these are implemented by tallying a "crowding count" and decreasing established housing quality based on that
+	  //each other pop with no modifiers counts towards crowding by 1.5 point to start
+	  //if the pop is the same race as inPop, if inPop's race has "housing enjoy other race" towards the pop's race, or if the pop's race has "housing other race enjoy me", crowding points is mult by *0.8 for each
+	  //if the pop is the same race as inPop and has "housing same race no crowding", crowding points is mult by *0.0
+	  //if the pop is the same race as inPop and has "housing like my race normal", crowding points is mult by 1/0.8
+	  //if the pop is the same race as inPop and has "housing like my race less", crowding points is mult by *2.0
+	  //if the pop is a different race and has "housing other race hate me", or inPop's race has "housing hate other race" towards the pop's race, crowding points is mult by *2.0
+	  //lastly, each other pop adds their "housing crowding penalty to others" to this if it exists
+	  
+	  double crowdingStart = customConsts.getDoubleConst("housingquality crowding_points start", out success);
+	  if(!success) crowdingStart = 1.5d;
+	  double crowdingSameRace = customConsts.getDoubleConst("housingquality crowding_same_race start", out success);
+	  if(!success) crowdingSameRace = 0.8d;
+	  double crowdingEnjoyOtherRace = customConsts.getDoubleConst("housingquality crowding_enjoy_other_race start", out success);
+	  if(!success) crowdingEnjoyOtherRace = 0.8d;
+	  double crowdingSameRaceNone = customConsts.getDoubleConst("housingquality crowding_same_race_none start", out success);
+	  if(!success) crowdingSameRaceNone = 0.0d;
+	  double crowdingLikeSameRaceLess = customConsts.getDoubleConst("housingquality crowding_like_same_race_less start", out success);
+	  if(!success) crowdingLikeSameRaceLess = 2.0d;
+	  double crowdingHateOtherRace = customConsts.getDoubleConst("housingquality crowding_hate_other_race start", out success);
+	  if(!success) crowdingHateOtherRace = 2.0d;
+	  
+	  double crowdingCount = 0.0d;
+	  
+	  foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+	  {
+		if(pop == inPop)
+			continue;
+			
+		ReadOnlyCollection&lt;string&gt; enjoyOtherRaceNames = customConsts.getListConst(inPop.getRace().getInternalName() + " housing enjoy other race", out success);
+		if(!success) enjoyOtherRaceNames = (new List&lt;string&gt;()).AsReadOnly();
+		ReadOnlyCollection&lt;string&gt; hateOtherRaceNames = customConsts.getListConst(inPop.getRace().getInternalName() + " housing hate other race", out success);
+		if(!success) hateOtherRaceNames = (new List&lt;string&gt;()).AsReadOnly();
+		
+		bool sameRace = (inPop.getRace() == pop.getRace());
+		
+		double crowdingToAdd = crowdingStart;
+		if(sameRace)
+		{
+			crowdingToAdd *= crowdingSameRace;
+			if(inPop.getRace().hasTag("housing same race no crowding"))
+				crowdingToAdd *= crowdingSameRaceNone;
+			else if(inPop.getRace().hasTag("housing like my race normal"))
+				crowdingToAdd = crowdingStart;
+			else if(inPop.getRace().hasTag("housing like my race less"))
+				crowdingToAdd *= crowdingLikeSameRaceLess;
+		}
+		else
+		{
+			if(pop.getRace().hasTag("housing other race enjoy me"))
+				crowdingToAdd *= crowdingEnjoyOtherRace;
+			if(enjoyOtherRaceNames.Contains(pop.getRace().getInternalName()))
+				crowdingToAdd *= crowdingEnjoyOtherRace;
+			if(pop.getRace().hasTag("housing other race hate me"))
+				crowdingToAdd *= crowdingHateOtherRace;
+			if(hateOtherRaceNames.Contains(pop.getRace().getInternalName()))
+				crowdingToAdd *= crowdingHateOtherRace;
+		}
+		
+		double crowdingPenaltyAdd = customConsts.getDoubleConst(pop.getRace().getInternalName() + "housing crowding penalty to others", out success);
+		if(!success) crowdingPenaltyAdd = 0.0d;
+		
+		crowdingToAdd += crowdingPenaltyAdd;
+		addDebugMessage(inScriptInstance, pop.getDebugName() + " adds " + crowdingToAdd + " crowding points from the perspective of " + inPop.getDebugName());
+		crowdingCount += crowdingToAdd;
+	  }
+	  
+	  double crowdingDecreasePerPointProp = customConsts.getDoubleConst("housingquality crowding_decrease_per_point proportion", out success);
+	  if(!success) crowdingDecreasePerPointProp = 0.015d;
+	  
+	  double crowdingDecrease = crowdingDecreasePerPointProp * crowdingCount;
+	  double crowdingHQFactorRemaining = 1.0d - Math.Max(1.0d, crowdingDecrease);
+	  
+	  double qualityOut = Math.Max(min, Math.Min(max, (inBuilding.getHousingComponent().getHousingQuality() - min) * crowdingHQFactorRemaining + min));
+	
+	  return new List&lt;object&gt;() { qualityOut };
+	</mHousingQualitySpecificPop>
+  
+	<!-- get service quality of building has two input arguments: IFBuilding inBuilding, IFIndustry inIndustryInQuestion.  There is one output: service quality for the building and industry in question. -->
+	<!-- This segment calculates the service quality seen by the building as a result of contributions from zero, one, or multiple buildings from that industry (and possibly even of the same buildingkind as another)  -->
+	<mCalcServiceQualityOfBuilding>
+	  //input count check:
+	  if(inArguments.Length &lt; 2)
+	  {
+	    return null;
+	  }
+	  
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  IFIndustry inIndustryInQuestion = (IFIndustry)inArguments[1];
+	  var consts = getAPI().getConsts();
+	  bool success = false;
+	  double qualityOut = 0.0d;
+	  
+	  double min = consts.getResourceQualityMin();
+	  double max = consts.getResourceQualityMax();
+	
+	  //first, assemble a dictionary buildingkind to provided service quality.  These will be combined in a different way than services from separate buildingkinds
+	  Dictionary&lt;IFBuildingKind, List&lt;double&gt;&gt; kindToQualitiesDict = new Dictionary&lt;IFBuildingKind, List&lt;double&gt;&gt;();
+	  foreach(var kvpair in inBuilding.getServiceQualities())
+	  {
+	    if(kvpair.Key.getBuildingKind().getIndustry() == inIndustryInQuestion)
+		{
+			if(!kindToQualitiesDict.ContainsKey(kvpair.Key.getBuildingKind()))
+				kindToQualitiesDict.Add(kvpair.Key.getBuildingKind(), new List&lt;double&gt;());
+			kindToQualitiesDict[kvpair.Key.getBuildingKind()].Add(kvpair.Value);
+		}
+	  }
+	  
+	  List&lt;double&gt; differentBuildingKindQualities = new List&lt;double&gt;();
+	  foreach(var kvpair in kindToQualitiesDict)
+	  {
+		//for each buildingkind, take the highest quality:
+		//for gameplay purposes and for lore/logic it makes sense that for the exact service that a buildingkind does, pops in a house choose to enjoy the best service and don't get any benefit from being offered worse service
+		double highestQualSoFar = min;
+		foreach(double qual in kvpair.Value)
+		{
+			if(qual &gt; highestQualSoFar)
+				highestQualSoFar = qual;
+		}
+		differentBuildingKindQualities.Add(highestQualSoFar);
+	  }
+	  
+	  //to combine the qualities of different buildingkinds we use sum of squares.
+	  //for gameplay purposes and for lore/logic it makes sense that having similar-but-not-the-same services can only increase the benefit over having one service, but if they're not nearly as high quality then they don't increase the benefit much
+	  //NTS: we need to take "min" offset out of the provided qualities before feeding it into sum of squares but do not need to scale it down to between 0 and 1.  Math reasons (sum-of-squares only has linearity if we take out the offset.  yay linear systems for teaching me how to check that)
+	  double runningSum = 0.0d;
+	  foreach(double qual in differentBuildingKindQualities)
+	  {
+		runningSum += (qual - min)*(qual - min);
+	  }
+	  
+	  //add min back in after the sqrt is done:
+	  qualityOut = Math.Sqrt(runningSum) + min;
+	  qualityOut = Math.Min(max, Math.Max(min, qualityOut));
+	
+	  return new List&lt;object&gt;() { qualityOut };
+	</mCalcServiceQualityOfBuilding>
+  
+  </gamescripts>
+  
+</core_data>

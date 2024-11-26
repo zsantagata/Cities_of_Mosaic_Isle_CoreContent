@@ -1,0 +1,451 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igTerrainSource name="Fertile Soil">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Fertile Soil</full_path>
+	  <body_text>Fertile Soil.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Wheat</i1>
+	  <i1>Corn</i1>
+	  <i1>Vegetables</i1>
+	  <i1>Beans</i1>
+	  <i1>Fruits</i1>
+	  <i1>Olives</i1>
+	  <i1>Mustard Seed</i1>
+	  <i1>Hemp</i1>
+	  <i1>Cotton</i1>
+	  <i1>Ladyhair</i1>
+	  <i1>Tobacco</i1>
+	  <i1>Aloe</i1>
+	  <i1>Painplant</i1>
+	</mAllowedResourcesLand>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.27777777777</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.27777777777 is recovery in one year of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Fertile Muck">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Fertile Muck</full_path>
+	  <body_text>Fertile Muck.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Seaweed</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.27777777777</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.27777777777 is recovery in one year of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Woods">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Woods</full_path>
+	  <body_text>Woods.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Raw Wood</i1>
+	</mAllowedResourcesLand>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.0185185185</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.0185185185 is recovery in fifteen years of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Grazeland">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Grazeland</full_path>
+	  <body_text>Grazeland.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Animal Feed</i1>
+	</mAllowedResourcesLand>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.55555555555</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.55555555555 is recovery in half a year of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Hunting Grounds Water">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Hunting Grounds Water</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesWater>
+	  <i1>Shark</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.55555555555</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.55555555555 is recovery in half a year of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Hunting Grounds Flatlands">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Hunting Grounds Flatlands</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Deer</i1>
+	  <i1>Boar</i1>
+	  <i1>Chicken</i1>
+	  <i1>Duck</i1>
+	  <i1>Sheep</i1>
+	  <i1>Camel</i1>
+	</mAllowedResourcesLand>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.1388888888</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.1388888888 is recovery in two years of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Hunting Grounds Tundra">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Hunting Grounds Tundra</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Deer</i1>
+	  <i1>Sheep</i1>
+	</mAllowedResourcesLand>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.55555555555</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.55555555555 is recovery in half a year of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Hunting Grounds Taiga">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Hunting Grounds Taiga</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Deer</i1>
+	  <i1>Boar</i1>
+	  <i1>Bear</i1>
+	  <i1>Duck</i1>
+	</mAllowedResourcesLand>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.27777777777</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.27777777777 is recovery in one year of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Hunting Grounds Forest">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Hunting Grounds Forest</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Deer</i1>
+	  <i1>Boar</i1>
+	  <i1>Bear</i1>
+	  <i1>Chicken</i1>
+	  <i1>Duck</i1>
+	</mAllowedResourcesLand>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.27777777777</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.27777777777 is recovery in one year of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Hunting Grounds Mountain">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Hunting Grounds Mountain</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Bear</i1>
+	  <i1>Duck</i1>
+	  <i1>Sheep</i1>
+	</mAllowedResourcesLand>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.27777777777</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.27777777777 is recovery in one year of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Hunting Grounds Desert">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Hunting Grounds Desert</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Camel</i1>
+	</mAllowedResourcesLand>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.1388888888</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.27777777777 is recovery in one year of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Fishing Spot">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Fishing Spot</full_path>
+	  <body_text>Fishing Spot.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Fish</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.55555555555</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.55555555555 is recovery in half a year of not being exploited -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Marble Outcropping">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Marble Outcropping</full_path>
+	  <body_text>Marble Outcropping.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Marble</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Marble</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>1</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Granite Outcropping">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Granite Outcropping</full_path>
+	  <body_text>Granite Outcropping.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Granite</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Granite</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>1</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Obsidian Outcropping">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Obsidian Outcropping</full_path>
+	  <body_text>Obsidian Outcropping.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Obsidian</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Obsidian</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>1</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Limestone Outcropping">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Limestone Outcropping</full_path>
+	  <body_text>Limestone Outcropping.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Limestone</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Limestone</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>1</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Surface Galena Ore Vein">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Galena Ore Vein</full_path>
+	  <body_text>Galena Ore Vein.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Galena Ore</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Galena Ore</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Surface Nickel Ore Vein">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Nickel Ore Vein</full_path>
+	  <body_text>Nickel Ore Vein.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Nickel Ore</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Nickel Ore</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Surface Antimony Ore Vein">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Antimony Ore Vein</full_path>
+	  <body_text>Antimony Ore Vein.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Antimony Ore</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Antimony Ore</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Surface Iron Ore Vein">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Iron Ore Vein</full_path>
+	  <body_text>Iron Ore Vein.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Iron Ore</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Iron Ore</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Surface Tin Ore Vein">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Tin Ore Vein</full_path>
+	  <body_text>Tin Ore Vein.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Tin Ore</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Tin Ore</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Surface Zinc Ore Vein">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Zinc Ore Vein</full_path>
+	  <body_text>Zinc Ore Vein.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Zinc Ore</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Zinc Ore</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Surface Copper Ore Vein">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Copper Ore Vein</full_path>
+	  <body_text>Copper Ore Vein.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Copper Ore</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Copper Ore</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+  
+  <igTerrainSource name="Surface Gold Ore Vein">
+    <Encyclopedia_Entry>
+	  <full_path>Terrain/Gold Ore Vein</full_path>
+	  <body_text>Gold Ore Vein.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	  <i1>Gold Ore</i1>
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	  <i1>Gold Ore</i1>
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0</mDesolationRecoveryPerDay> <!-- does not naturally restore -->
+  </igTerrainSource>
+
+</core_data>

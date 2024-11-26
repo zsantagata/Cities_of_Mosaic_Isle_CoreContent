@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script storeOrFetchPopsForEvent</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which stores or retrieves pops associated with an instance of an event, using the variableHandler -->
+  <!-- note that this script will override any stored values without notification (besides the variableHandler's default messages) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus,
+	Int64 inEventReportUID,
+	bool inStoring, //if false, fetching
+	List<IFPop> inPops, //can only be null if inStoring is false
+	string inAdditionalLabel, //some events have multiple groups of pops they want to store/fetch
+	Int64 inExpiryDateAssociation, //if storing, use this expiry date for the association of these pops to this event instance
+	Int64 inDatePopsDesireToStayUntil, //if storing, also create and/or store a variable relating to how long the pops will want to stay.  -1L will mean these variables should not be created/stored
+	double inStrengthOfDesireToStay //if storing, this is the strength with which pops desire to stay
+	-->
+	
+	<!-- output:
+	List<IFPop> outPops //will always be filled with the correct pops whether storing or fetching
+	-->
+	<i1><a>storeOrFetchPopsForEvent</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(bool), typeof(List&lt;IFPop&gt;), typeof(string), typeof(Int64), typeof(Int64), typeof(double)}
+	      }, out _))
+	    {
+			throw new ArgumentException("storeOrFetchPopsForEvent custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		bool inStoring = (bool)inArguments[2];
+		List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[3];
+		string inAdditionalLabel = (string)inArguments[4];
+		Int64 inExpiryDateAssociation = (Int64)inArguments[5];
+		Int64 inDatePopsDesireToStayUntil = (Int64)inArguments[6];
+		double inStrengthOfDesireToStay = (double)inArguments[7];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("storeOrFetchPopsForEvent custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReportUID &lt; 0)
+		{
+			throw new ArgumentException("storeOrFetchPopsForEvent custom script received invalid arguments: inEventReportUID cannot be negative");
+			return null;
+		}
+		if(inStoring &amp;&amp; inPops == null)
+		{
+			throw new ArgumentException("storeOrFetchPopsForEvent custom script received invalid arguments: inPops cannot be null when storing resources");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		List&lt;IFPop&gt; outPops;
+		
+		if(inStoring)
+		{
+			outPops = new List&lt;IFPop&gt;(inPops);
+			
+			Int64 countOfPopsStored = inPops.Count;
+			variableHandler.storeIntVariable(inExpiryDateAssociation, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPopCount_report" + inEventReportUID, countOfPopsStored);
+			
+			int index = 0;
+			IFEvent evt = (IFEvent)getAPI().getMOFromMOID("events", inEventStatus.getUID());
+			if((evt != null) &amp;&amp; (inDatePopsDesireToStayUntil != -1L))
+			{
+				if(evt.hasTag("can EXPIRE"))
+					inDatePopsDesireToStayUntil++; //this is necessary because EXPIRE scripts will cut off one day of the "want to stay until" time in order to have pop-wanting-to-leave and consequences-for-it happen midday at the same time
+			}
+					
+			foreach(IFPop pop in inPops)
+			{
+				Int64 uid = (Int64)pop.getUID();
+				variableHandler.storeIntVariable(inExpiryDateAssociation, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPopUID" + index + "_report" + inEventReportUID, uid);
+				
+				if(inDatePopsDesireToStayUntil != -1L)
+				{
+					string variableName = "desireToStayOnMap_pop" + pop.getUID();
+					IFConnectedVariable cv = variableHandler.getConnectedVariable(variableName);
+					
+					if(cv == null)
+					{
+						variableHandler.addConnectedDouble(variableName, 0.0d, out cv, inDatePopsDesireToStayUntil, IFConnectedVariable.eCombinationType.cAdd);
+					}
+					variableHandler.addConnectedDouble("evt" + inEventStatus.getUID() + "report" + inEventReportUID + "_desireToStayOnMap_pop" + pop.getUID(), inStrengthOfDesireToStay, out IFConnectedVariable lower, inDatePopsDesireToStayUntil);
+					variableHandler.connectVariables(lower, cv);
+				}
+				
+				//also store a variable from this pop to the event: must be a LIST connected variable since several events might be associated with the pop
+				IFConnectedVariable popToEventList = variableHandler.getConnectedVariable("eventsassociatedwith_pop" + pop.getUID());
+				if(popToEventList == null)
+				{
+					variableHandler.addConnectedInt("eventsassociatedwith_pop" + uid, 0L, out popToEventList, inExpiryDateAssociation, IFConnectedVariable.eCombinationType.cLIST);
+				}
+				variableHandler.addConnectedInt("event" + inEventStatus.getUID() + "_assocationToPop_pop" + uid, inEventReportUID, out IFConnectedVariable lowerToAdd, inExpiryDateAssociation);
+				variableHandler.connectVariables(lowerToAdd, popToEventList);
+				
+				index++;
+			}
+			
+			//tell midnight processor not to delete these pops:
+			customScripts.runCustomScript("markSOsAsDoNotDelete", new List&lt;object&gt;() { inExpiryDateAssociation, inPops, null, null, inAdditionalLabel + inEventReportUID }, out _);
+		}
+		else
+		{
+			outPops = new List&lt;IFPop&gt;();
+			
+			Int64 countOfPopsStored = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPopCount_report" + inEventReportUID, out bool success);
+			if(!success) countOfPopsStored = 0;
+			
+			for(int index = 0; index &lt; countOfPopsStored; index++)
+			{
+				Int64 uid = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPopUID" + index + "_report" + inEventReportUID, out success);
+				if(!success) continue;
+				IFPop pop = (IFPop)getAPI().getSO("pops", uid);
+				if(pop == null)
+					continue;
+				
+				outPops.Add(pop);
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outPops };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop list_of_options</a> <b>list</b> <c>race_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <!-- note that all races have "getAdjective", so an adjective like "human" is available without markup -->
+	  <!-- but some races might have tagged adjectives associated with them that can be chosen from (ex: Mermaids can be "scaly", "aquatic", "amphibious", or other adjectives that describe any member of the race) -->
+	  <!-- this script has the below chance to use the group's getAdjective if all members of the group are of the same race: -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_race_adj_phrase same_race getAdjective prob</a> <b>double</b> <c>0.33</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_race_adj_phrase no_common_adjectives before_replace_text</a> <b>string</b> <c>mixed-race</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_pop_race_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- RACE tag: general_adj -->
+  
+  <!-- this file holds the implementation of a custom script which takes a list of pops and from it, returns a string that is an adjective phrase related to the pops' race(s) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFPop inPop, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_mult_pop_race_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(List&lt;IFPop&gt;)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_pop_race_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	if(inPops == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_pop_race_adj_phrase custom script received invalid arguments: inPops cannot be null");
+		return null;
+	}
+	
+	if(inPops.Count == 0)
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_race_adj_phrase default before_replace_text", out success);
+		if(!success) outDescription = "";
+		return new List&lt;object&gt;() { outDescription };
+	}
+	
+	HashSet&lt;IFRace&gt; allRaces = new HashSet&lt;IFRace&gt;();
+	foreach(IFPop pop in inPops)
+	{
+		allRaces.Add(pop.getRace());
+	}
+	
+	double sameRaceGetAdjProb = customConsts.getDoubleConst("replaceDescriptionMarkupKind_mult_pop same_race getAdjective prob", out success);
+	if(!success) sameRaceGetAdjProb = 0.33d;
+	if((allRaces.Count == 1) &amp;&amp; getAPI().calcProb(sameRaceGetAdjProb))
+	{
+		outDescription = inPops[0].getRace().getAdjective();
+	}
+	else
+	{
+		HashSet&lt;string&gt; commonAdjs = new HashSet&lt;string&gt;();
+		bool first = true;
+		foreach(IFRace race in allRaces)
+		{
+			HashSet&lt;string&gt; thisRaceAdjs = new HashSet&lt;string&gt;();
+			foreach(string tag in race.getTagList())
+			{
+				if(tag.Contains("general_adj:"))
+				{
+					thisRaceAdjs.Add(tag.Replace("general_adj:", "").ToLower());
+				}
+			}
+			if(first)
+				commonAdjs = thisRaceAdjs;
+			else
+				commonAdjs = new HashSet&lt;string&gt;(commonAdjs.Intersect(thisRaceAdjs));
+		}
+		
+		List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(commonAdjs);
+		if(possibleAdjs.Count &gt; 0)
+		{
+			outDescription = possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)];
+		}
+		else if(allRaces.Count &gt; 1)
+		{
+			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_race_adj_phrase no_common_adjectives before_replace_text", out success);
+		}
+		else
+		{
+			outDescription = inPops[0].getRace().getAdjective();
+		}
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

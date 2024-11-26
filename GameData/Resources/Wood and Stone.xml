@@ -1,0 +1,235 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igResource name="Granite">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Stone/Granite</full_path>
+	  <body_text>Granite.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>19</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>stony</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:stony</i1>
+		<i1>use_noun:stone</i1>
+		<i1>qual_low_adj:cracked</i1>
+		<i1>qual_high_adj:sturdy</i1>
+		<i1>property_adj:grey</i1>
+		<i1>property_adj:heavy</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Hardwood">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Wood/Hardwood</full_path>
+	  <body_text>Hardwood.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	    <i>Resources/Wood/Lumber</i>
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x400</mResourceQualities><!--enable manual breakdown-->
+	<mDecaySpeed>0.0025</mDecaySpeed>
+	<mBreakdownResources>
+	  <i1>
+	    <a>Lumber</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>20</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>woody</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:wooden</i1>
+		<i1>use_adj:burnable</i1>
+		<i1>use_noun:wood</i1>
+		<i1>use_noun:fuel</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:dry</i1>
+		<i1>qual_high_adj:hardy</i1>
+		<i1>property_adj:workable</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Limestone">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Stone/Limestone</full_path>
+	  <body_text>Limestone.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>27</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>stony</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:stony</i1>
+		<i1>use_noun:stone</i1>
+		<i1>qual_low_adj:cracked</i1>
+		<i1>qual_high_adj:sturdy</i1>
+		<i1>property_adj:pale</i1>
+		<i1>property_adj:heavy</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Lumber">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Wood/Lumber</full_path>
+	  <body_text>Lumber.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0025</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>28</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>woody</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:wooden</i1>
+		<i1>use_adj:burnable</i1>
+		<i1>use_noun:wood</i1>
+		<i1>use_noun:fuel</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:dry</i1>
+		<i1>qual_high_adj:hardy</i1>
+		<i1>property_adj:workable</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Marble">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Stone/Marble</full_path>
+	  <body_text>Marble.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>29</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>stony</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:stony</i1>
+		<i1>use_noun:stone</i1>
+		<i1>qual_low_adj:cracked</i1>
+		<i1>qual_high_adj:beautiful</i1>
+		<i1>property_adj:marbled</i1>
+		<i1>property_adj:heavy</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Obsidian">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Stone/Obsidian</full_path>
+	  <body_text>Obsidian.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>36</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>stony</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:stony</i1>
+		<i1>use_noun:stone</i1>
+		<i1>qual_low_adj:cracked</i1>
+		<i1>qual_high_adj:sharp</i1>
+		<i1>property_adj:dark</i1>
+		<i1>property_adj:glassy</i1>
+		<i1>property_adj:heavy</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Raw Wood">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Wood/Raw Wood</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mResourceQualities>0x80</mResourceQualities> <!-- breaks down immediately -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Lumber</a>
+		<b>0.85</b>
+	  </i1>
+	  <i2>
+	    <a>Hardwood</a>
+		<b>0.15</b>
+	  </i2>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>woody</i1>
+		<i1>flammable</i1>
+		<i1>immediate breakdown</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:wooden</i1>
+		<i1>use_adj:burnable</i1>
+		<i1>use_noun:wood</i1>
+		<i1>use_noun:fuel</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:dry</i1>
+		<i1>qual_high_adj:hardy</i1>
+		<i1>property_adj:workable</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+</core_data>

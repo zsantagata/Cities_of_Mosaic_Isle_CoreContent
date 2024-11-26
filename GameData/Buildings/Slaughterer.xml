@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igBuildingKind name="Slaughterer">
+    <Encyclopedia_Entry>
+	  <full_path>Buildings/Slaughterer</full_path>
+	  <body_text>Slaughterer.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mBuildingKindQualities>0x28003</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x8000 = this is a service workplace (outputs no goods), 0x20000 = workplace forces best quality -->
+    <mWidth>1</mWidth>
+    <mHeight>5</mHeight>
+
+	<mPopDaysToBuild>4</mPopDaysToBuild>
+	<mBaseDurability>80</mBaseDurability>
+	
+	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive) -->
+	  <i1>
+	    <a>TAG:woody</a>
+		<b>80</b>
+	  </i1>
+	  <i1>
+	    <a>TAG:stony</a>
+		<b>80</b>
+	  </i1>
+	  <i5>
+	    <a>TAG:metallic</a>
+		<b>80</b>
+	  </i5>
+	</mResourcesToBuild>
+	
+	<mOutputMultBasedOnConstructionResources>
+	</mOutputMultBasedOnConstructionResources>
+	
+	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value -->
+	  <i1>
+	    <a>TAG:woody</a>
+		<b>1.25</b>
+	  </i1>
+	  <i1>
+	    <a>TAG:stony</a>
+		<b>2.5</b>
+	  </i1>
+	  <i1>
+	    <a>TAG:metallic</a>
+		<b>1.75</b>
+	  </i1>
+	</mDurabilityMultBasedOnConstructionResources>
+	
+	<mBeautyValue>-15</mBeautyValue>
+	<mBeautyRadius>8</mBeautyRadius>
+    <mBeautySynergyBuildings><!-- basic list of names -->
+	</mBeautySynergyBuildings>
+	
+    <mSSIDs>
+		<i>Slaughterer</i>
+	</mSSIDs>
+	
+	<mMaxWorkers>10</mMaxWorkers>
+	<mIndustry>Salvage</mIndustry>
+	<mRadius>5</mRadius>
+	<mDesolationRateInRadius>-0.35555555</mDesolationRateInRadius> <!-- a Slaughterer's scraps rejuvenate the soil around it -->
+	
+	<!-- note that "required other" indicates that ALL those resources are required, not ANY.  So to implement ANY, we need to use the workplace script instead of putting tagged resources here. -->
+	<mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor> <!-- this is a list of: reference to resource (common input resource), list of references to resources (outputs for which consumption of the common-input-resource is disabled), list of references to resources (other resources which must be consumed while the common-input-resource is being consumed), list of references to resources (other resources which cannot be consumed while the common-input-resource is being consumed) -->
+	  <i1>
+	    <a>TAG:slaughter-animal</a>
+		<b>
+		</b>
+		<c>
+		</c>
+		<d>
+		</d>
+		<e>1.0</e>
+		<f>1.0</f>
+	  </i1>
+	</mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor>
+	
+	<mRequiredResourceInputs><!-- basic list of names: if the workplace is on at all, these resources must be consumed -->
+	</mRequiredResourceInputs>
+	
+	<mScriptCalledDaily></mScriptCalledDaily> <!-- exactly what it says on the tin: if this building is fully constructed, this script is called daily.  First input is the building itself. -->
+	<mScriptCalledBetweenOutputCalculationAndResolution>
+		//intent: call through to the common script to break down resources
+		
+		//common to all workplace scripts:
+		if(inArguments.Length &lt; 7)
+		{
+		  return null;
+		}
+		IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+		Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInput = (Dictionary&lt;IFResource, double&gt;)inArguments[1];
+		Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)inArguments[2];
+		Dictionary&lt;IFResource, double&gt; inResourcesCreated = (Dictionary&lt;IFResource, double&gt;)inArguments[3];
+		double inQuality = (double)inArguments[4];
+		bool inWorkplaceOn = (bool)inArguments[5];
+		bool inJustPredicting = (bool)inArguments[6];
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		var customConsts = getAPI().getCustomConsts();
+		var consts = getAPI().getConsts();
+		var customScripts = getAPI().getCustomScripts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		string outPredictionText = "";
+		//start of unique part of script:
+		
+		Dictionary&lt;IFResource, double&gt; outResourcesCreated = new Dictionary&lt;IFResource, double&gt;(); 
+		if(customScripts.runCustomScriptCheckTypes("breakdown_resources_workplace_production", new List&lt;object&gt;() { inWorkplace, getAPI().getLocalCommunity(), inResourcesConsumedAsInput, inQuality, inJustPredicting },
+			out List&lt;object&gt; stringToOutput, false, typeof(string), typeof(Dictionary&lt;IFResource, double&gt;)))
+		{
+			outPredictionText = (string)stringToOutput[0];
+			inResourcesCreated = (Dictionary&lt;IFResource, double&gt;)stringToOutput[1];
+		}
+		
+		//outputs: generally if they do not need to be changed, don't modify the values going out, even as a "sanity/safety check".  Doing so would force changes to this script if other scripts change (from, for example, mods)
+		//resources created have been changed by the breakdown script.  the dictionary should be non-empty for prediction, but when actually creating goods, it will be empty.
+		//that is necessary because the return values only allow one quality for all output resources, but this building creates goods of different qualities.
+		
+		toReturn.Add(inResourcesConsumedAsInput);
+		toReturn.Add(inResourcesConsumedOtherwise);
+		toReturn.Add(inResourcesCreated);
+		toReturn.Add(inQuality);
+		toReturn.Add(inWorkplaceOn);
+		toReturn.Add(outPredictionText);
+		return toReturn;
+	</mScriptCalledBetweenOutputCalculationAndResolution>
+	
+	<mOutputResourceQuanDailyFactor>0.545</mOutputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make output goods per day approximately equal to 10 for a single unskilled worker using one perfectly-average common good, for a workplace that does not work the land. -->
+	<mInputResourceQuanDailyFactor>4</mInputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make input goods per day per worker approximately equal to 2, spread over all inputs (not counting those which are required to be consumed TODO figure that out?). -->
+	
+	<mIsHousing>0</mIsHousing> <!-- bool, true if nonzero -->
+	<mIsWorkplace>1</mIsWorkplace> <!-- bool, true if nonzero -->
+	
+	<mTagList>
+	  <i1>road benefit increase leader control count</i1>
+	  <i1>workers happiness bonus</i1>
+	  
+	  <!-- description tags: -->
+	  <i1>description_shape_top_noun:thatches</i1>
+	  <i1>description_shape_side_noun:walls</i1>
+	  <i1>description_shape_middle_noun:hooks</i1>
+	  <i1>description_shape_bottom_noun:refuse holes</i1>
+	</mTagList>
+  </igBuildingKind>
+  
+  
+</core_data>

@@ -1,0 +1,3506 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igRace name="Weaver">
+	<mPopNameList>
+	  <i>Rose Water</i>
+	  <i>Rose Rain</i>
+	  <i>Rose Fire</i>
+	  <i>Rose Earth</i>
+	  <i>Rose Wind</i>
+	  <i>Rose Gust</i>
+	  <i>Rose Leaf</i>
+	  <i>Rose Trunk</i>
+	  <i>Rose Tree</i>
+	  <i>Rose Root</i>
+	  <i>Rose Spear</i>
+	  <i>Rose Tooth</i>
+	  <i>Rose Claw</i>
+	  <i>Rose Gem</i>
+	  <i>Rose Hope</i>
+	  <i>Rose Sun</i>
+	  <i>Rose Moon</i>
+	  <i>Rose Sky</i>
+	  <i>Rose Cloud</i>
+	  <i>Rose Gleam</i>
+	  <i>Rose Warrior</i>
+	  <i>Rose Victor</i>
+	  <i>Rose Flower</i>
+	  <i>Rose Petal</i>
+	  <i>Rose Glory</i>
+	  <i>Rose Heart</i>
+	  <i>Rose River</i>
+	  <i>Water Rose</i>
+	  <i>Water Rain</i>
+	  <i>Water Fire</i>
+	  <i>Water Earth</i>
+	  <i>Water Wind</i>
+	  <i>Water Gust</i>
+	  <i>Water Leaf</i>
+	  <i>Water Trunk</i>
+	  <i>Water Tree</i>
+	  <i>Water Root</i>
+	  <i>Water Spear</i>
+	  <i>Water Tooth</i>
+	  <i>Water Claw</i>
+	  <i>Water Gem</i>
+	  <i>Water Hope</i>
+	  <i>Water Sun</i>
+	  <i>Water Moon</i>
+	  <i>Water Sky</i>
+	  <i>Water Cloud</i>
+	  <i>Water Gleam</i>
+	  <i>Water Warrior</i>
+	  <i>Water Victor</i>
+	  <i>Water Flower</i>
+	  <i>Water Petal</i>
+	  <i>Water Glory</i>
+	  <i>Water Heart</i>
+	  <i>Water River</i>
+	  <i>Rain Rose</i>
+	  <i>Rain Water</i>
+	  <i>Rain Fire</i>
+	  <i>Rain Earth</i>
+	  <i>Rain Wind</i>
+	  <i>Rain Gust</i>
+	  <i>Rain Leaf</i>
+	  <i>Rain Trunk</i>
+	  <i>Rain Tree</i>
+	  <i>Rain Root</i>
+	  <i>Rain Spear</i>
+	  <i>Rain Tooth</i>
+	  <i>Rain Claw</i>
+	  <i>Rain Gem</i>
+	  <i>Rain Hope</i>
+	  <i>Rain Sun</i>
+	  <i>Rain Moon</i>
+	  <i>Rain Sky</i>
+	  <i>Rain Cloud</i>
+	  <i>Rain Gleam</i>
+	  <i>Rain Warrior</i>
+	  <i>Rain Victor</i>
+	  <i>Rain Flower</i>
+	  <i>Rain Petal</i>
+	  <i>Rain Glory</i>
+	  <i>Rain Heart</i>
+	  <i>Rain River</i>
+	  <i>Fire Rose</i>
+	  <i>Fire Water</i>
+	  <i>Fire Rain</i>
+	  <i>Fire Earth</i>
+	  <i>Fire Wind</i>
+	  <i>Fire Gust</i>
+	  <i>Fire Leaf</i>
+	  <i>Fire Trunk</i>
+	  <i>Fire Tree</i>
+	  <i>Fire Root</i>
+	  <i>Fire Spear</i>
+	  <i>Fire Tooth</i>
+	  <i>Fire Claw</i>
+	  <i>Fire Gem</i>
+	  <i>Fire Hope</i>
+	  <i>Fire Sun</i>
+	  <i>Fire Moon</i>
+	  <i>Fire Sky</i>
+	  <i>Fire Cloud</i>
+	  <i>Fire Gleam</i>
+	  <i>Fire Warrior</i>
+	  <i>Fire Victor</i>
+	  <i>Fire Flower</i>
+	  <i>Fire Petal</i>
+	  <i>Fire Glory</i>
+	  <i>Fire Heart</i>
+	  <i>Fire River</i>
+	  <i>Earth Rose</i>
+	  <i>Earth Water</i>
+	  <i>Earth Rain</i>
+	  <i>Earth Fire</i>
+	  <i>Earth Wind</i>
+	  <i>Earth Gust</i>
+	  <i>Earth Leaf</i>
+	  <i>Earth Trunk</i>
+	  <i>Earth Tree</i>
+	  <i>Earth Root</i>
+	  <i>Earth Spear</i>
+	  <i>Earth Tooth</i>
+	  <i>Earth Claw</i>
+	  <i>Earth Gem</i>
+	  <i>Earth Hope</i>
+	  <i>Earth Sun</i>
+	  <i>Earth Moon</i>
+	  <i>Earth Sky</i>
+	  <i>Earth Cloud</i>
+	  <i>Earth Gleam</i>
+	  <i>Earth Warrior</i>
+	  <i>Earth Victor</i>
+	  <i>Earth Flower</i>
+	  <i>Earth Petal</i>
+	  <i>Earth Glory</i>
+	  <i>Earth Heart</i>
+	  <i>Earth River</i>
+	  <i>Wind Rose</i>
+	  <i>Wind Water</i>
+	  <i>Wind Rain</i>
+	  <i>Wind Fire</i>
+	  <i>Wind Earth</i>
+	  <i>Wind Gust</i>
+	  <i>Wind Leaf</i>
+	  <i>Wind Trunk</i>
+	  <i>Wind Tree</i>
+	  <i>Wind Root</i>
+	  <i>Wind Spear</i>
+	  <i>Wind Tooth</i>
+	  <i>Wind Claw</i>
+	  <i>Wind Gem</i>
+	  <i>Wind Hope</i>
+	  <i>Wind Sun</i>
+	  <i>Wind Moon</i>
+	  <i>Wind Sky</i>
+	  <i>Wind Cloud</i>
+	  <i>Wind Gleam</i>
+	  <i>Wind Warrior</i>
+	  <i>Wind Victor</i>
+	  <i>Wind Flower</i>
+	  <i>Wind Petal</i>
+	  <i>Wind Glory</i>
+	  <i>Wind Heart</i>
+	  <i>Wind River</i>
+	  <i>Gust Rose</i>
+	  <i>Gust Water</i>
+	  <i>Gust Rain</i>
+	  <i>Gust Fire</i>
+	  <i>Gust Earth</i>
+	  <i>Gust Wind</i>
+	  <i>Gust Leaf</i>
+	  <i>Gust Trunk</i>
+	  <i>Gust Tree</i>
+	  <i>Gust Root</i>
+	  <i>Gust Spear</i>
+	  <i>Gust Tooth</i>
+	  <i>Gust Claw</i>
+	  <i>Gust Gem</i>
+	  <i>Gust Hope</i>
+	  <i>Gust Sun</i>
+	  <i>Gust Moon</i>
+	  <i>Gust Sky</i>
+	  <i>Gust Cloud</i>
+	  <i>Gust Gleam</i>
+	  <i>Gust Warrior</i>
+	  <i>Gust Victor</i>
+	  <i>Gust Flower</i>
+	  <i>Gust Petal</i>
+	  <i>Gust Glory</i>
+	  <i>Gust Heart</i>
+	  <i>Gust River</i>
+	  <i>Leaf Rose</i>
+	  <i>Leaf Water</i>
+	  <i>Leaf Rain</i>
+	  <i>Leaf Fire</i>
+	  <i>Leaf Earth</i>
+	  <i>Leaf Wind</i>
+	  <i>Leaf Gust</i>
+	  <i>Leaf Trunk</i>
+	  <i>Leaf Tree</i>
+	  <i>Leaf Root</i>
+	  <i>Leaf Spear</i>
+	  <i>Leaf Tooth</i>
+	  <i>Leaf Claw</i>
+	  <i>Leaf Gem</i>
+	  <i>Leaf Hope</i>
+	  <i>Leaf Sun</i>
+	  <i>Leaf Moon</i>
+	  <i>Leaf Sky</i>
+	  <i>Leaf Cloud</i>
+	  <i>Leaf Gleam</i>
+	  <i>Leaf Warrior</i>
+	  <i>Leaf Victor</i>
+	  <i>Leaf Flower</i>
+	  <i>Leaf Petal</i>
+	  <i>Leaf Glory</i>
+	  <i>Leaf Heart</i>
+	  <i>Leaf River</i>
+	  <i>Trunk Rose</i>
+	  <i>Trunk Water</i>
+	  <i>Trunk Rain</i>
+	  <i>Trunk Fire</i>
+	  <i>Trunk Earth</i>
+	  <i>Trunk Wind</i>
+	  <i>Trunk Gust</i>
+	  <i>Trunk Leaf</i>
+	  <i>Trunk Tree</i>
+	  <i>Trunk Root</i>
+	  <i>Trunk Spear</i>
+	  <i>Trunk Tooth</i>
+	  <i>Trunk Claw</i>
+	  <i>Trunk Gem</i>
+	  <i>Trunk Hope</i>
+	  <i>Trunk Sun</i>
+	  <i>Trunk Moon</i>
+	  <i>Trunk Sky</i>
+	  <i>Trunk Cloud</i>
+	  <i>Trunk Gleam</i>
+	  <i>Trunk Warrior</i>
+	  <i>Trunk Victor</i>
+	  <i>Trunk Flower</i>
+	  <i>Trunk Petal</i>
+	  <i>Trunk Glory</i>
+	  <i>Trunk Heart</i>
+	  <i>Trunk River</i>
+	  <i>Tree Rose</i>
+	  <i>Tree Water</i>
+	  <i>Tree Rain</i>
+	  <i>Tree Fire</i>
+	  <i>Tree Earth</i>
+	  <i>Tree Wind</i>
+	  <i>Tree Gust</i>
+	  <i>Tree Leaf</i>
+	  <i>Tree Trunk</i>
+	  <i>Tree Root</i>
+	  <i>Tree Spear</i>
+	  <i>Tree Tooth</i>
+	  <i>Tree Claw</i>
+	  <i>Tree Gem</i>
+	  <i>Tree Hope</i>
+	  <i>Tree Sun</i>
+	  <i>Tree Moon</i>
+	  <i>Tree Sky</i>
+	  <i>Tree Cloud</i>
+	  <i>Tree Gleam</i>
+	  <i>Tree Warrior</i>
+	  <i>Tree Victor</i>
+	  <i>Tree Flower</i>
+	  <i>Tree Petal</i>
+	  <i>Tree Glory</i>
+	  <i>Tree Heart</i>
+	  <i>Tree River</i>
+	  <i>Root Rose</i>
+	  <i>Root Water</i>
+	  <i>Root Rain</i>
+	  <i>Root Fire</i>
+	  <i>Root Earth</i>
+	  <i>Root Wind</i>
+	  <i>Root Gust</i>
+	  <i>Root Leaf</i>
+	  <i>Root Trunk</i>
+	  <i>Root Tree</i>
+	  <i>Root Spear</i>
+	  <i>Root Tooth</i>
+	  <i>Root Claw</i>
+	  <i>Root Gem</i>
+	  <i>Root Hope</i>
+	  <i>Root Sun</i>
+	  <i>Root Moon</i>
+	  <i>Root Sky</i>
+	  <i>Root Cloud</i>
+	  <i>Root Gleam</i>
+	  <i>Root Warrior</i>
+	  <i>Root Victor</i>
+	  <i>Root Flower</i>
+	  <i>Root Petal</i>
+	  <i>Root Glory</i>
+	  <i>Root Heart</i>
+	  <i>Root River</i>
+	  <i>Spear Rose</i>
+	  <i>Spear Water</i>
+	  <i>Spear Rain</i>
+	  <i>Spear Fire</i>
+	  <i>Spear Earth</i>
+	  <i>Spear Wind</i>
+	  <i>Spear Gust</i>
+	  <i>Spear Leaf</i>
+	  <i>Spear Trunk</i>
+	  <i>Spear Tree</i>
+	  <i>Spear Root</i>
+	  <i>Spear Tooth</i>
+	  <i>Spear Claw</i>
+	  <i>Spear Gem</i>
+	  <i>Spear Hope</i>
+	  <i>Spear Sun</i>
+	  <i>Spear Moon</i>
+	  <i>Spear Sky</i>
+	  <i>Spear Cloud</i>
+	  <i>Spear Gleam</i>
+	  <i>Spear Warrior</i>
+	  <i>Spear Victor</i>
+	  <i>Spear Flower</i>
+	  <i>Spear Petal</i>
+	  <i>Spear Glory</i>
+	  <i>Spear Heart</i>
+	  <i>Spear River</i>
+	  <i>Tooth Rose</i>
+	  <i>Tooth Water</i>
+	  <i>Tooth Rain</i>
+	  <i>Tooth Fire</i>
+	  <i>Tooth Earth</i>
+	  <i>Tooth Wind</i>
+	  <i>Tooth Gust</i>
+	  <i>Tooth Leaf</i>
+	  <i>Tooth Trunk</i>
+	  <i>Tooth Tree</i>
+	  <i>Tooth Root</i>
+	  <i>Tooth Spear</i>
+	  <i>Tooth Claw</i>
+	  <i>Tooth Gem</i>
+	  <i>Tooth Hope</i>
+	  <i>Tooth Sun</i>
+	  <i>Tooth Moon</i>
+	  <i>Tooth Sky</i>
+	  <i>Tooth Cloud</i>
+	  <i>Tooth Gleam</i>
+	  <i>Tooth Warrior</i>
+	  <i>Tooth Victor</i>
+	  <i>Tooth Flower</i>
+	  <i>Tooth Petal</i>
+	  <i>Tooth Glory</i>
+	  <i>Tooth Heart</i>
+	  <i>Tooth River</i>
+	  <i>Claw Rose</i>
+	  <i>Claw Water</i>
+	  <i>Claw Rain</i>
+	  <i>Claw Fire</i>
+	  <i>Claw Earth</i>
+	  <i>Claw Wind</i>
+	  <i>Claw Gust</i>
+	  <i>Claw Leaf</i>
+	  <i>Claw Trunk</i>
+	  <i>Claw Tree</i>
+	  <i>Claw Root</i>
+	  <i>Claw Spear</i>
+	  <i>Claw Tooth</i>
+	  <i>Claw Gem</i>
+	  <i>Claw Hope</i>
+	  <i>Claw Sun</i>
+	  <i>Claw Moon</i>
+	  <i>Claw Sky</i>
+	  <i>Claw Cloud</i>
+	  <i>Claw Gleam</i>
+	  <i>Claw Warrior</i>
+	  <i>Claw Victor</i>
+	  <i>Claw Flower</i>
+	  <i>Claw Petal</i>
+	  <i>Claw Glory</i>
+	  <i>Claw Heart</i>
+	  <i>Claw River</i>
+	  <i>Gem Rose</i>
+	  <i>Gem Water</i>
+	  <i>Gem Rain</i>
+	  <i>Gem Fire</i>
+	  <i>Gem Earth</i>
+	  <i>Gem Wind</i>
+	  <i>Gem Gust</i>
+	  <i>Gem Leaf</i>
+	  <i>Gem Trunk</i>
+	  <i>Gem Tree</i>
+	  <i>Gem Root</i>
+	  <i>Gem Spear</i>
+	  <i>Gem Tooth</i>
+	  <i>Gem Claw</i>
+	  <i>Gem Hope</i>
+	  <i>Gem Sun</i>
+	  <i>Gem Moon</i>
+	  <i>Gem Sky</i>
+	  <i>Gem Cloud</i>
+	  <i>Gem Gleam</i>
+	  <i>Gem Warrior</i>
+	  <i>Gem Victor</i>
+	  <i>Gem Flower</i>
+	  <i>Gem Petal</i>
+	  <i>Gem Glory</i>
+	  <i>Gem Heart</i>
+	  <i>Gem River</i>
+	  <i>Hope Rose</i>
+	  <i>Hope Water</i>
+	  <i>Hope Rain</i>
+	  <i>Hope Fire</i>
+	  <i>Hope Earth</i>
+	  <i>Hope Wind</i>
+	  <i>Hope Gust</i>
+	  <i>Hope Leaf</i>
+	  <i>Hope Trunk</i>
+	  <i>Hope Tree</i>
+	  <i>Hope Root</i>
+	  <i>Hope Spear</i>
+	  <i>Hope Tooth</i>
+	  <i>Hope Claw</i>
+	  <i>Hope Gem</i>
+	  <i>Hope Sun</i>
+	  <i>Hope Moon</i>
+	  <i>Hope Sky</i>
+	  <i>Hope Cloud</i>
+	  <i>Hope Gleam</i>
+	  <i>Hope Warrior</i>
+	  <i>Hope Victor</i>
+	  <i>Hope Flower</i>
+	  <i>Hope Petal</i>
+	  <i>Hope Glory</i>
+	  <i>Hope Heart</i>
+	  <i>Hope River</i>
+	  <i>Sun Rose</i>
+	  <i>Sun Water</i>
+	  <i>Sun Rain</i>
+	  <i>Sun Fire</i>
+	  <i>Sun Earth</i>
+	  <i>Sun Wind</i>
+	  <i>Sun Gust</i>
+	  <i>Sun Leaf</i>
+	  <i>Sun Trunk</i>
+	  <i>Sun Tree</i>
+	  <i>Sun Root</i>
+	  <i>Sun Spear</i>
+	  <i>Sun Tooth</i>
+	  <i>Sun Claw</i>
+	  <i>Sun Gem</i>
+	  <i>Sun Hope</i>
+	  <i>Sun Moon</i>
+	  <i>Sun Sky</i>
+	  <i>Sun Cloud</i>
+	  <i>Sun Gleam</i>
+	  <i>Sun Warrior</i>
+	  <i>Sun Victor</i>
+	  <i>Sun Flower</i>
+	  <i>Sun Petal</i>
+	  <i>Sun Glory</i>
+	  <i>Sun Heart</i>
+	  <i>Sun River</i>
+	  <i>Moon Rose</i>
+	  <i>Moon Water</i>
+	  <i>Moon Rain</i>
+	  <i>Moon Fire</i>
+	  <i>Moon Earth</i>
+	  <i>Moon Wind</i>
+	  <i>Moon Gust</i>
+	  <i>Moon Leaf</i>
+	  <i>Moon Trunk</i>
+	  <i>Moon Tree</i>
+	  <i>Moon Root</i>
+	  <i>Moon Spear</i>
+	  <i>Moon Tooth</i>
+	  <i>Moon Claw</i>
+	  <i>Moon Gem</i>
+	  <i>Moon Hope</i>
+	  <i>Moon Sun</i>
+	  <i>Moon Sky</i>
+	  <i>Moon Cloud</i>
+	  <i>Moon Gleam</i>
+	  <i>Moon Warrior</i>
+	  <i>Moon Victor</i>
+	  <i>Moon Flower</i>
+	  <i>Moon Petal</i>
+	  <i>Moon Glory</i>
+	  <i>Moon Heart</i>
+	  <i>Moon River</i>
+	  <i>Sky Rose</i>
+	  <i>Sky Water</i>
+	  <i>Sky Rain</i>
+	  <i>Sky Fire</i>
+	  <i>Sky Earth</i>
+	  <i>Sky Wind</i>
+	  <i>Sky Gust</i>
+	  <i>Sky Leaf</i>
+	  <i>Sky Trunk</i>
+	  <i>Sky Tree</i>
+	  <i>Sky Root</i>
+	  <i>Sky Spear</i>
+	  <i>Sky Tooth</i>
+	  <i>Sky Claw</i>
+	  <i>Sky Gem</i>
+	  <i>Sky Hope</i>
+	  <i>Sky Sun</i>
+	  <i>Sky Moon</i>
+	  <i>Sky Cloud</i>
+	  <i>Sky Gleam</i>
+	  <i>Sky Warrior</i>
+	  <i>Sky Victor</i>
+	  <i>Sky Flower</i>
+	  <i>Sky Petal</i>
+	  <i>Sky Glory</i>
+	  <i>Sky Heart</i>
+	  <i>Sky River</i>
+	  <i>Cloud Rose</i>
+	  <i>Cloud Water</i>
+	  <i>Cloud Rain</i>
+	  <i>Cloud Fire</i>
+	  <i>Cloud Earth</i>
+	  <i>Cloud Wind</i>
+	  <i>Cloud Gust</i>
+	  <i>Cloud Leaf</i>
+	  <i>Cloud Trunk</i>
+	  <i>Cloud Tree</i>
+	  <i>Cloud Root</i>
+	  <i>Cloud Spear</i>
+	  <i>Cloud Tooth</i>
+	  <i>Cloud Claw</i>
+	  <i>Cloud Gem</i>
+	  <i>Cloud Hope</i>
+	  <i>Cloud Sun</i>
+	  <i>Cloud Moon</i>
+	  <i>Cloud Sky</i>
+	  <i>Cloud Gleam</i>
+	  <i>Cloud Warrior</i>
+	  <i>Cloud Victor</i>
+	  <i>Cloud Flower</i>
+	  <i>Cloud Petal</i>
+	  <i>Cloud Glory</i>
+	  <i>Cloud Heart</i>
+	  <i>Cloud River</i>
+	  <i>Gleam Rose</i>
+	  <i>Gleam Water</i>
+	  <i>Gleam Rain</i>
+	  <i>Gleam Fire</i>
+	  <i>Gleam Earth</i>
+	  <i>Gleam Wind</i>
+	  <i>Gleam Gust</i>
+	  <i>Gleam Leaf</i>
+	  <i>Gleam Trunk</i>
+	  <i>Gleam Tree</i>
+	  <i>Gleam Root</i>
+	  <i>Gleam Spear</i>
+	  <i>Gleam Tooth</i>
+	  <i>Gleam Claw</i>
+	  <i>Gleam Gem</i>
+	  <i>Gleam Hope</i>
+	  <i>Gleam Sun</i>
+	  <i>Gleam Moon</i>
+	  <i>Gleam Sky</i>
+	  <i>Gleam Cloud</i>
+	  <i>Gleam Warrior</i>
+	  <i>Gleam Victor</i>
+	  <i>Gleam Flower</i>
+	  <i>Gleam Petal</i>
+	  <i>Gleam Glory</i>
+	  <i>Gleam Heart</i>
+	  <i>Gleam River</i>
+	  <i>Warrior Rose</i>
+	  <i>Warrior Water</i>
+	  <i>Warrior Rain</i>
+	  <i>Warrior Fire</i>
+	  <i>Warrior Earth</i>
+	  <i>Warrior Wind</i>
+	  <i>Warrior Gust</i>
+	  <i>Warrior Leaf</i>
+	  <i>Warrior Trunk</i>
+	  <i>Warrior Tree</i>
+	  <i>Warrior Root</i>
+	  <i>Warrior Spear</i>
+	  <i>Warrior Tooth</i>
+	  <i>Warrior Claw</i>
+	  <i>Warrior Gem</i>
+	  <i>Warrior Hope</i>
+	  <i>Warrior Sun</i>
+	  <i>Warrior Moon</i>
+	  <i>Warrior Sky</i>
+	  <i>Warrior Cloud</i>
+	  <i>Warrior Gleam</i>
+	  <i>Warrior Victor</i>
+	  <i>Warrior Flower</i>
+	  <i>Warrior Petal</i>
+	  <i>Warrior Glory</i>
+	  <i>Warrior Heart</i>
+	  <i>Warrior River</i>
+	  <i>Victor Rose</i>
+	  <i>Victor Water</i>
+	  <i>Victor Rain</i>
+	  <i>Victor Fire</i>
+	  <i>Victor Earth</i>
+	  <i>Victor Wind</i>
+	  <i>Victor Gust</i>
+	  <i>Victor Leaf</i>
+	  <i>Victor Trunk</i>
+	  <i>Victor Tree</i>
+	  <i>Victor Root</i>
+	  <i>Victor Spear</i>
+	  <i>Victor Tooth</i>
+	  <i>Victor Claw</i>
+	  <i>Victor Gem</i>
+	  <i>Victor Hope</i>
+	  <i>Victor Sun</i>
+	  <i>Victor Moon</i>
+	  <i>Victor Sky</i>
+	  <i>Victor Cloud</i>
+	  <i>Victor Gleam</i>
+	  <i>Victor Warrior</i>
+	  <i>Victor Flower</i>
+	  <i>Victor Petal</i>
+	  <i>Victor Glory</i>
+	  <i>Victor Heart</i>
+	  <i>Victor River</i>
+	  <i>Flower Rose</i>
+	  <i>Flower Water</i>
+	  <i>Flower Rain</i>
+	  <i>Flower Fire</i>
+	  <i>Flower Earth</i>
+	  <i>Flower Wind</i>
+	  <i>Flower Gust</i>
+	  <i>Flower Leaf</i>
+	  <i>Flower Trunk</i>
+	  <i>Flower Tree</i>
+	  <i>Flower Root</i>
+	  <i>Flower Spear</i>
+	  <i>Flower Tooth</i>
+	  <i>Flower Claw</i>
+	  <i>Flower Gem</i>
+	  <i>Flower Hope</i>
+	  <i>Flower Sun</i>
+	  <i>Flower Moon</i>
+	  <i>Flower Sky</i>
+	  <i>Flower Cloud</i>
+	  <i>Flower Gleam</i>
+	  <i>Flower Warrior</i>
+	  <i>Flower Victor</i>
+	  <i>Flower Petal</i>
+	  <i>Flower Glory</i>
+	  <i>Flower Heart</i>
+	  <i>Flower River</i>
+	  <i>Petal Rose</i>
+	  <i>Petal Water</i>
+	  <i>Petal Rain</i>
+	  <i>Petal Fire</i>
+	  <i>Petal Earth</i>
+	  <i>Petal Wind</i>
+	  <i>Petal Gust</i>
+	  <i>Petal Leaf</i>
+	  <i>Petal Trunk</i>
+	  <i>Petal Tree</i>
+	  <i>Petal Root</i>
+	  <i>Petal Spear</i>
+	  <i>Petal Tooth</i>
+	  <i>Petal Claw</i>
+	  <i>Petal Gem</i>
+	  <i>Petal Hope</i>
+	  <i>Petal Sun</i>
+	  <i>Petal Moon</i>
+	  <i>Petal Sky</i>
+	  <i>Petal Cloud</i>
+	  <i>Petal Gleam</i>
+	  <i>Petal Warrior</i>
+	  <i>Petal Victor</i>
+	  <i>Petal Flower</i>
+	  <i>Petal Glory</i>
+	  <i>Petal Heart</i>
+	  <i>Petal River</i>
+	  <i>Glory Rose</i>
+	  <i>Glory Water</i>
+	  <i>Glory Rain</i>
+	  <i>Glory Fire</i>
+	  <i>Glory Earth</i>
+	  <i>Glory Wind</i>
+	  <i>Glory Gust</i>
+	  <i>Glory Leaf</i>
+	  <i>Glory Trunk</i>
+	  <i>Glory Tree</i>
+	  <i>Glory Root</i>
+	  <i>Glory Spear</i>
+	  <i>Glory Tooth</i>
+	  <i>Glory Claw</i>
+	  <i>Glory Gem</i>
+	  <i>Glory Hope</i>
+	  <i>Glory Sun</i>
+	  <i>Glory Moon</i>
+	  <i>Glory Sky</i>
+	  <i>Glory Cloud</i>
+	  <i>Glory Gleam</i>
+	  <i>Glory Warrior</i>
+	  <i>Glory Victor</i>
+	  <i>Glory Flower</i>
+	  <i>Glory Petal</i>
+	  <i>Glory Heart</i>
+	  <i>Glory River</i>
+	  <i>Heart Rose</i>
+	  <i>Heart Water</i>
+	  <i>Heart Rain</i>
+	  <i>Heart Fire</i>
+	  <i>Heart Earth</i>
+	  <i>Heart Wind</i>
+	  <i>Heart Gust</i>
+	  <i>Heart Leaf</i>
+	  <i>Heart Trunk</i>
+	  <i>Heart Tree</i>
+	  <i>Heart Root</i>
+	  <i>Heart Spear</i>
+	  <i>Heart Tooth</i>
+	  <i>Heart Claw</i>
+	  <i>Heart Gem</i>
+	  <i>Heart Hope</i>
+	  <i>Heart Sun</i>
+	  <i>Heart Moon</i>
+	  <i>Heart Sky</i>
+	  <i>Heart Cloud</i>
+	  <i>Heart Gleam</i>
+	  <i>Heart Warrior</i>
+	  <i>Heart Victor</i>
+	  <i>Heart Flower</i>
+	  <i>Heart Petal</i>
+	  <i>Heart Glory</i>
+	  <i>Heart River</i>
+	  <i>River Rose</i>
+	  <i>River Water</i>
+	  <i>River Rain</i>
+	  <i>River Fire</i>
+	  <i>River Earth</i>
+	  <i>River Wind</i>
+	  <i>River Gust</i>
+	  <i>River Leaf</i>
+	  <i>River Trunk</i>
+	  <i>River Tree</i>
+	  <i>River Root</i>
+	  <i>River Spear</i>
+	  <i>River Tooth</i>
+	  <i>River Claw</i>
+	  <i>River Gem</i>
+	  <i>River Hope</i>
+	  <i>River Sun</i>
+	  <i>River Moon</i>
+	  <i>River Sky</i>
+	  <i>River Cloud</i>
+	  <i>River Gleam</i>
+	  <i>River Warrior</i>
+	  <i>River Victor</i>
+	  <i>River Flower</i>
+	  <i>River Petal</i>
+	  <i>River Glory</i>
+	  <i>River Heart</i>
+	  <i>Free Rose</i>
+	  <i>Strong Rose</i>
+	  <i>Swift Rose</i>
+	  <i>Hardy Rose</i>
+	  <i>Beloved Rose</i>
+	  <i>Honored Rose</i>
+	  <i>Skillful Rose</i>
+	  <i>Loyal Rose</i>
+	  <i>Happy Rose</i>
+	  <i>Hale Rose</i>
+	  <i>Clever Rose</i>
+	  <i>Quick Rose</i>
+	  <i>Quiet Rose</i>
+	  <i>Iron Rose</i>
+	  <i>Gold Rose</i>
+	  <i>Dangerous Rose</i>
+	  <i>Healthy Rose</i>
+	  <i>Calm Rose</i>
+	  <i>Fair Rose</i>
+	  <i>Trustworthy Rose</i>
+	  <i>Wild Rose</i>
+	  <i>Free Water</i>
+	  <i>Strong Water</i>
+	  <i>Swift Water</i>
+	  <i>Hardy Water</i>
+	  <i>Beloved Water</i>
+	  <i>Honored Water</i>
+	  <i>Skillful Water</i>
+	  <i>Loyal Water</i>
+	  <i>Happy Water</i>
+	  <i>Hale Water</i>
+	  <i>Clever Water</i>
+	  <i>Quick Water</i>
+	  <i>Quiet Water</i>
+	  <i>Iron Water</i>
+	  <i>Gold Water</i>
+	  <i>Dangerous Water</i>
+	  <i>Healthy Water</i>
+	  <i>Calm Water</i>
+	  <i>Fair Water</i>
+	  <i>Trustworthy Water</i>
+	  <i>Wild Water</i>
+	  <i>Free Rain</i>
+	  <i>Strong Rain</i>
+	  <i>Swift Rain</i>
+	  <i>Hardy Rain</i>
+	  <i>Beloved Rain</i>
+	  <i>Honored Rain</i>
+	  <i>Skillful Rain</i>
+	  <i>Loyal Rain</i>
+	  <i>Happy Rain</i>
+	  <i>Hale Rain</i>
+	  <i>Clever Rain</i>
+	  <i>Quick Rain</i>
+	  <i>Quiet Rain</i>
+	  <i>Iron Rain</i>
+	  <i>Gold Rain</i>
+	  <i>Dangerous Rain</i>
+	  <i>Healthy Rain</i>
+	  <i>Calm Rain</i>
+	  <i>Fair Rain</i>
+	  <i>Trustworthy Rain</i>
+	  <i>Wild Rain</i>
+	  <i>Free Fire</i>
+	  <i>Strong Fire</i>
+	  <i>Swift Fire</i>
+	  <i>Hardy Fire</i>
+	  <i>Beloved Fire</i>
+	  <i>Honored Fire</i>
+	  <i>Skillful Fire</i>
+	  <i>Loyal Fire</i>
+	  <i>Happy Fire</i>
+	  <i>Hale Fire</i>
+	  <i>Clever Fire</i>
+	  <i>Quick Fire</i>
+	  <i>Quiet Fire</i>
+	  <i>Iron Fire</i>
+	  <i>Gold Fire</i>
+	  <i>Dangerous Fire</i>
+	  <i>Healthy Fire</i>
+	  <i>Calm Fire</i>
+	  <i>Fair Fire</i>
+	  <i>Trustworthy Fire</i>
+	  <i>Wild Fire</i>
+	  <i>Free Earth</i>
+	  <i>Strong Earth</i>
+	  <i>Swift Earth</i>
+	  <i>Hardy Earth</i>
+	  <i>Beloved Earth</i>
+	  <i>Honored Earth</i>
+	  <i>Skillful Earth</i>
+	  <i>Loyal Earth</i>
+	  <i>Happy Earth</i>
+	  <i>Hale Earth</i>
+	  <i>Clever Earth</i>
+	  <i>Quick Earth</i>
+	  <i>Quiet Earth</i>
+	  <i>Iron Earth</i>
+	  <i>Gold Earth</i>
+	  <i>Dangerous Earth</i>
+	  <i>Healthy Earth</i>
+	  <i>Calm Earth</i>
+	  <i>Fair Earth</i>
+	  <i>Trustworthy Earth</i>
+	  <i>Wild Earth</i>
+	  <i>Free Wind</i>
+	  <i>Strong Wind</i>
+	  <i>Swift Wind</i>
+	  <i>Hardy Wind</i>
+	  <i>Beloved Wind</i>
+	  <i>Honored Wind</i>
+	  <i>Skillful Wind</i>
+	  <i>Loyal Wind</i>
+	  <i>Happy Wind</i>
+	  <i>Hale Wind</i>
+	  <i>Clever Wind</i>
+	  <i>Quick Wind</i>
+	  <i>Quiet Wind</i>
+	  <i>Iron Wind</i>
+	  <i>Gold Wind</i>
+	  <i>Dangerous Wind</i>
+	  <i>Healthy Wind</i>
+	  <i>Calm Wind</i>
+	  <i>Fair Wind</i>
+	  <i>Trustworthy Wind</i>
+	  <i>Wild Wind</i>
+	  <i>Free Gust</i>
+	  <i>Strong Gust</i>
+	  <i>Swift Gust</i>
+	  <i>Hardy Gust</i>
+	  <i>Beloved Gust</i>
+	  <i>Honored Gust</i>
+	  <i>Skillful Gust</i>
+	  <i>Loyal Gust</i>
+	  <i>Happy Gust</i>
+	  <i>Hale Gust</i>
+	  <i>Clever Gust</i>
+	  <i>Quick Gust</i>
+	  <i>Quiet Gust</i>
+	  <i>Iron Gust</i>
+	  <i>Gold Gust</i>
+	  <i>Dangerous Gust</i>
+	  <i>Healthy Gust</i>
+	  <i>Calm Gust</i>
+	  <i>Fair Gust</i>
+	  <i>Trustworthy Gust</i>
+	  <i>Wild Gust</i>
+	  <i>Free Leaf</i>
+	  <i>Strong Leaf</i>
+	  <i>Swift Leaf</i>
+	  <i>Hardy Leaf</i>
+	  <i>Beloved Leaf</i>
+	  <i>Honored Leaf</i>
+	  <i>Skillful Leaf</i>
+	  <i>Loyal Leaf</i>
+	  <i>Happy Leaf</i>
+	  <i>Hale Leaf</i>
+	  <i>Clever Leaf</i>
+	  <i>Quick Leaf</i>
+	  <i>Quiet Leaf</i>
+	  <i>Iron Leaf</i>
+	  <i>Gold Leaf</i>
+	  <i>Dangerous Leaf</i>
+	  <i>Healthy Leaf</i>
+	  <i>Calm Leaf</i>
+	  <i>Fair Leaf</i>
+	  <i>Trustworthy Leaf</i>
+	  <i>Wild Leaf</i>
+	  <i>Free Trunk</i>
+	  <i>Strong Trunk</i>
+	  <i>Swift Trunk</i>
+	  <i>Hardy Trunk</i>
+	  <i>Beloved Trunk</i>
+	  <i>Honored Trunk</i>
+	  <i>Skillful Trunk</i>
+	  <i>Loyal Trunk</i>
+	  <i>Happy Trunk</i>
+	  <i>Hale Trunk</i>
+	  <i>Clever Trunk</i>
+	  <i>Quick Trunk</i>
+	  <i>Quiet Trunk</i>
+	  <i>Iron Trunk</i>
+	  <i>Gold Trunk</i>
+	  <i>Dangerous Trunk</i>
+	  <i>Healthy Trunk</i>
+	  <i>Calm Trunk</i>
+	  <i>Fair Trunk</i>
+	  <i>Trustworthy Trunk</i>
+	  <i>Wild Trunk</i>
+	  <i>Free Tree</i>
+	  <i>Strong Tree</i>
+	  <i>Swift Tree</i>
+	  <i>Hardy Tree</i>
+	  <i>Beloved Tree</i>
+	  <i>Honored Tree</i>
+	  <i>Skillful Tree</i>
+	  <i>Loyal Tree</i>
+	  <i>Happy Tree</i>
+	  <i>Hale Tree</i>
+	  <i>Clever Tree</i>
+	  <i>Quick Tree</i>
+	  <i>Quiet Tree</i>
+	  <i>Iron Tree</i>
+	  <i>Gold Tree</i>
+	  <i>Dangerous Tree</i>
+	  <i>Healthy Tree</i>
+	  <i>Calm Tree</i>
+	  <i>Fair Tree</i>
+	  <i>Trustworthy Tree</i>
+	  <i>Wild Tree</i>
+	  <i>Free Root</i>
+	  <i>Strong Root</i>
+	  <i>Swift Root</i>
+	  <i>Hardy Root</i>
+	  <i>Beloved Root</i>
+	  <i>Honored Root</i>
+	  <i>Skillful Root</i>
+	  <i>Loyal Root</i>
+	  <i>Happy Root</i>
+	  <i>Hale Root</i>
+	  <i>Clever Root</i>
+	  <i>Quick Root</i>
+	  <i>Quiet Root</i>
+	  <i>Iron Root</i>
+	  <i>Gold Root</i>
+	  <i>Dangerous Root</i>
+	  <i>Healthy Root</i>
+	  <i>Calm Root</i>
+	  <i>Fair Root</i>
+	  <i>Trustworthy Root</i>
+	  <i>Wild Root</i>
+	  <i>Free Spear</i>
+	  <i>Strong Spear</i>
+	  <i>Swift Spear</i>
+	  <i>Hardy Spear</i>
+	  <i>Beloved Spear</i>
+	  <i>Honored Spear</i>
+	  <i>Skillful Spear</i>
+	  <i>Loyal Spear</i>
+	  <i>Happy Spear</i>
+	  <i>Hale Spear</i>
+	  <i>Clever Spear</i>
+	  <i>Quick Spear</i>
+	  <i>Quiet Spear</i>
+	  <i>Iron Spear</i>
+	  <i>Gold Spear</i>
+	  <i>Dangerous Spear</i>
+	  <i>Healthy Spear</i>
+	  <i>Calm Spear</i>
+	  <i>Fair Spear</i>
+	  <i>Trustworthy Spear</i>
+	  <i>Wild Spear</i>
+	  <i>Free Tooth</i>
+	  <i>Strong Tooth</i>
+	  <i>Swift Tooth</i>
+	  <i>Hardy Tooth</i>
+	  <i>Beloved Tooth</i>
+	  <i>Honored Tooth</i>
+	  <i>Skillful Tooth</i>
+	  <i>Loyal Tooth</i>
+	  <i>Happy Tooth</i>
+	  <i>Hale Tooth</i>
+	  <i>Clever Tooth</i>
+	  <i>Quick Tooth</i>
+	  <i>Quiet Tooth</i>
+	  <i>Iron Tooth</i>
+	  <i>Gold Tooth</i>
+	  <i>Dangerous Tooth</i>
+	  <i>Healthy Tooth</i>
+	  <i>Calm Tooth</i>
+	  <i>Fair Tooth</i>
+	  <i>Trustworthy Tooth</i>
+	  <i>Wild Tooth</i>
+	  <i>Free Claw</i>
+	  <i>Strong Claw</i>
+	  <i>Swift Claw</i>
+	  <i>Hardy Claw</i>
+	  <i>Beloved Claw</i>
+	  <i>Honored Claw</i>
+	  <i>Skillful Claw</i>
+	  <i>Loyal Claw</i>
+	  <i>Happy Claw</i>
+	  <i>Hale Claw</i>
+	  <i>Clever Claw</i>
+	  <i>Quick Claw</i>
+	  <i>Quiet Claw</i>
+	  <i>Iron Claw</i>
+	  <i>Gold Claw</i>
+	  <i>Dangerous Claw</i>
+	  <i>Healthy Claw</i>
+	  <i>Calm Claw</i>
+	  <i>Fair Claw</i>
+	  <i>Trustworthy Claw</i>
+	  <i>Wild Claw</i>
+	  <i>Free Gem</i>
+	  <i>Strong Gem</i>
+	  <i>Swift Gem</i>
+	  <i>Hardy Gem</i>
+	  <i>Beloved Gem</i>
+	  <i>Honored Gem</i>
+	  <i>Skillful Gem</i>
+	  <i>Loyal Gem</i>
+	  <i>Happy Gem</i>
+	  <i>Hale Gem</i>
+	  <i>Clever Gem</i>
+	  <i>Quick Gem</i>
+	  <i>Quiet Gem</i>
+	  <i>Iron Gem</i>
+	  <i>Gold Gem</i>
+	  <i>Dangerous Gem</i>
+	  <i>Healthy Gem</i>
+	  <i>Calm Gem</i>
+	  <i>Fair Gem</i>
+	  <i>Trustworthy Gem</i>
+	  <i>Wild Gem</i>
+	  <i>Free Hope</i>
+	  <i>Strong Hope</i>
+	  <i>Swift Hope</i>
+	  <i>Hardy Hope</i>
+	  <i>Beloved Hope</i>
+	  <i>Honored Hope</i>
+	  <i>Skillful Hope</i>
+	  <i>Loyal Hope</i>
+	  <i>Happy Hope</i>
+	  <i>Hale Hope</i>
+	  <i>Clever Hope</i>
+	  <i>Quick Hope</i>
+	  <i>Quiet Hope</i>
+	  <i>Iron Hope</i>
+	  <i>Gold Hope</i>
+	  <i>Dangerous Hope</i>
+	  <i>Healthy Hope</i>
+	  <i>Calm Hope</i>
+	  <i>Fair Hope</i>
+	  <i>Trustworthy Hope</i>
+	  <i>Wild Hope</i>
+	  <i>Free Sun</i>
+	  <i>Strong Sun</i>
+	  <i>Swift Sun</i>
+	  <i>Hardy Sun</i>
+	  <i>Beloved Sun</i>
+	  <i>Honored Sun</i>
+	  <i>Skillful Sun</i>
+	  <i>Loyal Sun</i>
+	  <i>Happy Sun</i>
+	  <i>Hale Sun</i>
+	  <i>Clever Sun</i>
+	  <i>Quick Sun</i>
+	  <i>Quiet Sun</i>
+	  <i>Iron Sun</i>
+	  <i>Gold Sun</i>
+	  <i>Dangerous Sun</i>
+	  <i>Healthy Sun</i>
+	  <i>Calm Sun</i>
+	  <i>Fair Sun</i>
+	  <i>Trustworthy Sun</i>
+	  <i>Wild Sun</i>
+	  <i>Free Moon</i>
+	  <i>Strong Moon</i>
+	  <i>Swift Moon</i>
+	  <i>Hardy Moon</i>
+	  <i>Beloved Moon</i>
+	  <i>Honored Moon</i>
+	  <i>Skillful Moon</i>
+	  <i>Loyal Moon</i>
+	  <i>Happy Moon</i>
+	  <i>Hale Moon</i>
+	  <i>Clever Moon</i>
+	  <i>Quick Moon</i>
+	  <i>Quiet Moon</i>
+	  <i>Iron Moon</i>
+	  <i>Gold Moon</i>
+	  <i>Dangerous Moon</i>
+	  <i>Healthy Moon</i>
+	  <i>Calm Moon</i>
+	  <i>Fair Moon</i>
+	  <i>Trustworthy Moon</i>
+	  <i>Wild Moon</i>
+	  <i>Free Sky</i>
+	  <i>Strong Sky</i>
+	  <i>Swift Sky</i>
+	  <i>Hardy Sky</i>
+	  <i>Beloved Sky</i>
+	  <i>Honored Sky</i>
+	  <i>Skillful Sky</i>
+	  <i>Loyal Sky</i>
+	  <i>Happy Sky</i>
+	  <i>Hale Sky</i>
+	  <i>Clever Sky</i>
+	  <i>Quick Sky</i>
+	  <i>Quiet Sky</i>
+	  <i>Iron Sky</i>
+	  <i>Gold Sky</i>
+	  <i>Dangerous Sky</i>
+	  <i>Healthy Sky</i>
+	  <i>Calm Sky</i>
+	  <i>Fair Sky</i>
+	  <i>Trustworthy Sky</i>
+	  <i>Wild Sky</i>
+	  <i>Free Cloud</i>
+	  <i>Strong Cloud</i>
+	  <i>Swift Cloud</i>
+	  <i>Hardy Cloud</i>
+	  <i>Beloved Cloud</i>
+	  <i>Honored Cloud</i>
+	  <i>Skillful Cloud</i>
+	  <i>Loyal Cloud</i>
+	  <i>Happy Cloud</i>
+	  <i>Hale Cloud</i>
+	  <i>Clever Cloud</i>
+	  <i>Quick Cloud</i>
+	  <i>Quiet Cloud</i>
+	  <i>Iron Cloud</i>
+	  <i>Gold Cloud</i>
+	  <i>Dangerous Cloud</i>
+	  <i>Healthy Cloud</i>
+	  <i>Calm Cloud</i>
+	  <i>Fair Cloud</i>
+	  <i>Trustworthy Cloud</i>
+	  <i>Wild Cloud</i>
+	  <i>Free Gleam</i>
+	  <i>Strong Gleam</i>
+	  <i>Swift Gleam</i>
+	  <i>Hardy Gleam</i>
+	  <i>Beloved Gleam</i>
+	  <i>Honored Gleam</i>
+	  <i>Skillful Gleam</i>
+	  <i>Loyal Gleam</i>
+	  <i>Happy Gleam</i>
+	  <i>Hale Gleam</i>
+	  <i>Clever Gleam</i>
+	  <i>Quick Gleam</i>
+	  <i>Quiet Gleam</i>
+	  <i>Iron Gleam</i>
+	  <i>Gold Gleam</i>
+	  <i>Dangerous Gleam</i>
+	  <i>Healthy Gleam</i>
+	  <i>Calm Gleam</i>
+	  <i>Fair Gleam</i>
+	  <i>Trustworthy Gleam</i>
+	  <i>Wild Gleam</i>
+	  <i>Free Warrior</i>
+	  <i>Strong Warrior</i>
+	  <i>Swift Warrior</i>
+	  <i>Hardy Warrior</i>
+	  <i>Beloved Warrior</i>
+	  <i>Honored Warrior</i>
+	  <i>Skillful Warrior</i>
+	  <i>Loyal Warrior</i>
+	  <i>Happy Warrior</i>
+	  <i>Hale Warrior</i>
+	  <i>Clever Warrior</i>
+	  <i>Quick Warrior</i>
+	  <i>Quiet Warrior</i>
+	  <i>Iron Warrior</i>
+	  <i>Gold Warrior</i>
+	  <i>Dangerous Warrior</i>
+	  <i>Healthy Warrior</i>
+	  <i>Calm Warrior</i>
+	  <i>Fair Warrior</i>
+	  <i>Trustworthy Warrior</i>
+	  <i>Wild Warrior</i>
+	  <i>Free Victor</i>
+	  <i>Strong Victor</i>
+	  <i>Swift Victor</i>
+	  <i>Hardy Victor</i>
+	  <i>Beloved Victor</i>
+	  <i>Honored Victor</i>
+	  <i>Skillful Victor</i>
+	  <i>Loyal Victor</i>
+	  <i>Happy Victor</i>
+	  <i>Hale Victor</i>
+	  <i>Clever Victor</i>
+	  <i>Quick Victor</i>
+	  <i>Quiet Victor</i>
+	  <i>Iron Victor</i>
+	  <i>Gold Victor</i>
+	  <i>Dangerous Victor</i>
+	  <i>Healthy Victor</i>
+	  <i>Calm Victor</i>
+	  <i>Fair Victor</i>
+	  <i>Trustworthy Victor</i>
+	  <i>Wild Victor</i>
+	  <i>Free Flower</i>
+	  <i>Strong Flower</i>
+	  <i>Swift Flower</i>
+	  <i>Hardy Flower</i>
+	  <i>Beloved Flower</i>
+	  <i>Honored Flower</i>
+	  <i>Skillful Flower</i>
+	  <i>Loyal Flower</i>
+	  <i>Happy Flower</i>
+	  <i>Hale Flower</i>
+	  <i>Clever Flower</i>
+	  <i>Quick Flower</i>
+	  <i>Quiet Flower</i>
+	  <i>Iron Flower</i>
+	  <i>Gold Flower</i>
+	  <i>Dangerous Flower</i>
+	  <i>Healthy Flower</i>
+	  <i>Calm Flower</i>
+	  <i>Fair Flower</i>
+	  <i>Trustworthy Flower</i>
+	  <i>Wild Flower</i>
+	  <i>Free Petal</i>
+	  <i>Strong Petal</i>
+	  <i>Swift Petal</i>
+	  <i>Hardy Petal</i>
+	  <i>Beloved Petal</i>
+	  <i>Honored Petal</i>
+	  <i>Skillful Petal</i>
+	  <i>Loyal Petal</i>
+	  <i>Happy Petal</i>
+	  <i>Hale Petal</i>
+	  <i>Clever Petal</i>
+	  <i>Quick Petal</i>
+	  <i>Quiet Petal</i>
+	  <i>Iron Petal</i>
+	  <i>Gold Petal</i>
+	  <i>Dangerous Petal</i>
+	  <i>Healthy Petal</i>
+	  <i>Calm Petal</i>
+	  <i>Fair Petal</i>
+	  <i>Trustworthy Petal</i>
+	  <i>Wild Petal</i>
+	  <i>Free Glory</i>
+	  <i>Strong Glory</i>
+	  <i>Swift Glory</i>
+	  <i>Hardy Glory</i>
+	  <i>Beloved Glory</i>
+	  <i>Honored Glory</i>
+	  <i>Skillful Glory</i>
+	  <i>Loyal Glory</i>
+	  <i>Happy Glory</i>
+	  <i>Hale Glory</i>
+	  <i>Clever Glory</i>
+	  <i>Quick Glory</i>
+	  <i>Quiet Glory</i>
+	  <i>Iron Glory</i>
+	  <i>Gold Glory</i>
+	  <i>Dangerous Glory</i>
+	  <i>Healthy Glory</i>
+	  <i>Calm Glory</i>
+	  <i>Fair Glory</i>
+	  <i>Trustworthy Glory</i>
+	  <i>Wild Glory</i>
+	  <i>Free Heart</i>
+	  <i>Strong Heart</i>
+	  <i>Swift Heart</i>
+	  <i>Hardy Heart</i>
+	  <i>Beloved Heart</i>
+	  <i>Honored Heart</i>
+	  <i>Skillful Heart</i>
+	  <i>Loyal Heart</i>
+	  <i>Happy Heart</i>
+	  <i>Hale Heart</i>
+	  <i>Clever Heart</i>
+	  <i>Quick Heart</i>
+	  <i>Quiet Heart</i>
+	  <i>Iron Heart</i>
+	  <i>Gold Heart</i>
+	  <i>Dangerous Heart</i>
+	  <i>Healthy Heart</i>
+	  <i>Calm Heart</i>
+	  <i>Fair Heart</i>
+	  <i>Trustworthy Heart</i>
+	  <i>Wild Heart</i>
+	  <i>Free River</i>
+	  <i>Strong River</i>
+	  <i>Swift River</i>
+	  <i>Hardy River</i>
+	  <i>Beloved River</i>
+	  <i>Honored River</i>
+	  <i>Skillful River</i>
+	  <i>Loyal River</i>
+	  <i>Happy River</i>
+	  <i>Hale River</i>
+	  <i>Clever River</i>
+	  <i>Quick River</i>
+	  <i>Quiet River</i>
+	  <i>Iron River</i>
+	  <i>Gold River</i>
+	  <i>Dangerous River</i>
+	  <i>Healthy River</i>
+	  <i>Calm River</i>
+	  <i>Fair River</i>
+	  <i>Trustworthy River</i>
+	  <i>Wild River</i>
+	  <i>Runs Well</i>
+	  <i>Runs Swiftly</i>
+	  <i>Runs Quickly</i>
+	  <i>Runs Often</i>
+	  <i>Runs Forever</i>
+	  <i>Runs Daily</i>
+	  <i>Runs Oddly</i>
+	  <i>Runs Cleverly</i>
+	  <i>Runs Best</i>
+	  <i>Runs Humbly</i>
+	  <i>Runs Calmly</i>
+	  <i>Runs Freely</i>
+	  <i>Runs Wildly</i>
+	  <i>Hunts Well</i>
+	  <i>Hunts Swiftly</i>
+	  <i>Hunts Quickly</i>
+	  <i>Hunts Often</i>
+	  <i>Hunts Forever</i>
+	  <i>Hunts Daily</i>
+	  <i>Hunts Oddly</i>
+	  <i>Hunts Cleverly</i>
+	  <i>Hunts Best</i>
+	  <i>Hunts Humbly</i>
+	  <i>Hunts Calmly</i>
+	  <i>Hunts Freely</i>
+	  <i>Hunts Wildly</i>
+	  <i>Makes Well</i>
+	  <i>Makes Swiftly</i>
+	  <i>Makes Quickly</i>
+	  <i>Makes Often</i>
+	  <i>Makes Forever</i>
+	  <i>Makes Daily</i>
+	  <i>Makes Oddly</i>
+	  <i>Makes Cleverly</i>
+	  <i>Makes Best</i>
+	  <i>Makes Humbly</i>
+	  <i>Makes Calmly</i>
+	  <i>Makes Freely</i>
+	  <i>Makes Wildly</i>
+	  <i>Grows Well</i>
+	  <i>Grows Swiftly</i>
+	  <i>Grows Quickly</i>
+	  <i>Grows Often</i>
+	  <i>Grows Forever</i>
+	  <i>Grows Daily</i>
+	  <i>Grows Oddly</i>
+	  <i>Grows Cleverly</i>
+	  <i>Grows Best</i>
+	  <i>Grows Humbly</i>
+	  <i>Grows Calmly</i>
+	  <i>Grows Freely</i>
+	  <i>Grows Wildly</i>
+	  <i>Travels Well</i>
+	  <i>Travels Swiftly</i>
+	  <i>Travels Quickly</i>
+	  <i>Travels Often</i>
+	  <i>Travels Forever</i>
+	  <i>Travels Daily</i>
+	  <i>Travels Oddly</i>
+	  <i>Travels Cleverly</i>
+	  <i>Travels Best</i>
+	  <i>Travels Humbly</i>
+	  <i>Travels Calmly</i>
+	  <i>Travels Freely</i>
+	  <i>Travels Wildly</i>
+	  <i>Swims Well</i>
+	  <i>Swims Swiftly</i>
+	  <i>Swims Quickly</i>
+	  <i>Swims Often</i>
+	  <i>Swims Forever</i>
+	  <i>Swims Daily</i>
+	  <i>Swims Oddly</i>
+	  <i>Swims Cleverly</i>
+	  <i>Swims Best</i>
+	  <i>Swims Humbly</i>
+	  <i>Swims Calmly</i>
+	  <i>Swims Freely</i>
+	  <i>Swims Wildly</i>
+	  <i>Triumphs Well</i>
+	  <i>Triumphs Swiftly</i>
+	  <i>Triumphs Quickly</i>
+	  <i>Triumphs Often</i>
+	  <i>Triumphs Forever</i>
+	  <i>Triumphs Daily</i>
+	  <i>Triumphs Oddly</i>
+	  <i>Triumphs Cleverly</i>
+	  <i>Triumphs Best</i>
+	  <i>Triumphs Humbly</i>
+	  <i>Triumphs Calmly</i>
+	  <i>Triumphs Freely</i>
+	  <i>Triumphs Wildly</i>
+	  <i>Laughs Well</i>
+	  <i>Laughs Swiftly</i>
+	  <i>Laughs Quickly</i>
+	  <i>Laughs Often</i>
+	  <i>Laughs Forever</i>
+	  <i>Laughs Daily</i>
+	  <i>Laughs Oddly</i>
+	  <i>Laughs Cleverly</i>
+	  <i>Laughs Best</i>
+	  <i>Laughs Humbly</i>
+	  <i>Laughs Calmly</i>
+	  <i>Laughs Freely</i>
+	  <i>Laughs Wildly</i>
+	  <i>Talks Well</i>
+	  <i>Talks Swiftly</i>
+	  <i>Talks Quickly</i>
+	  <i>Talks Often</i>
+	  <i>Talks Forever</i>
+	  <i>Talks Daily</i>
+	  <i>Talks Oddly</i>
+	  <i>Talks Cleverly</i>
+	  <i>Talks Best</i>
+	  <i>Talks Humbly</i>
+	  <i>Talks Calmly</i>
+	  <i>Talks Freely</i>
+	  <i>Talks Wildly</i>
+	  <i>Fights Well</i>
+	  <i>Fights Swiftly</i>
+	  <i>Fights Quickly</i>
+	  <i>Fights Often</i>
+	  <i>Fights Forever</i>
+	  <i>Fights Daily</i>
+	  <i>Fights Oddly</i>
+	  <i>Fights Cleverly</i>
+	  <i>Fights Best</i>
+	  <i>Fights Humbly</i>
+	  <i>Fights Calmly</i>
+	  <i>Fights Freely</i>
+	  <i>Fights Wildly</i>
+	  <i>Trains Well</i>
+	  <i>Trains Swiftly</i>
+	  <i>Trains Quickly</i>
+	  <i>Trains Often</i>
+	  <i>Trains Forever</i>
+	  <i>Trains Daily</i>
+	  <i>Trains Oddly</i>
+	  <i>Trains Cleverly</i>
+	  <i>Trains Best</i>
+	  <i>Trains Humbly</i>
+	  <i>Trains Calmly</i>
+	  <i>Trains Freely</i>
+	  <i>Trains Wildly</i>
+	  <i>Learns Well</i>
+	  <i>Learns Swiftly</i>
+	  <i>Learns Quickly</i>
+	  <i>Learns Often</i>
+	  <i>Learns Forever</i>
+	  <i>Learns Daily</i>
+	  <i>Learns Oddly</i>
+	  <i>Learns Cleverly</i>
+	  <i>Learns Best</i>
+	  <i>Learns Humbly</i>
+	  <i>Learns Calmly</i>
+	  <i>Learns Freely</i>
+	  <i>Learns Wildly</i>
+	  <i>Gathers Well</i>
+	  <i>Gathers Swiftly</i>
+	  <i>Gathers Quickly</i>
+	  <i>Gathers Often</i>
+	  <i>Gathers Forever</i>
+	  <i>Gathers Daily</i>
+	  <i>Gathers Oddly</i>
+	  <i>Gathers Cleverly</i>
+	  <i>Gathers Best</i>
+	  <i>Gathers Humbly</i>
+	  <i>Gathers Calmly</i>
+	  <i>Gathers Freely</i>
+	  <i>Gathers Wildly</i>
+	  <i>Smiles Well</i>
+	  <i>Smiles Swiftly</i>
+	  <i>Smiles Quickly</i>
+	  <i>Smiles Often</i>
+	  <i>Smiles Forever</i>
+	  <i>Smiles Daily</i>
+	  <i>Smiles Oddly</i>
+	  <i>Smiles Cleverly</i>
+	  <i>Smiles Best</i>
+	  <i>Smiles Humbly</i>
+	  <i>Smiles Calmly</i>
+	  <i>Smiles Freely</i>
+	  <i>Smiles Wildly</i>
+	  <i>Searches Well</i>
+	  <i>Searches Swiftly</i>
+	  <i>Searches Quickly</i>
+	  <i>Searches Often</i>
+	  <i>Searches Forever</i>
+	  <i>Searches Daily</i>
+	  <i>Searches Oddly</i>
+	  <i>Searches Cleverly</i>
+	  <i>Searches Best</i>
+	  <i>Searches Humbly</i>
+	  <i>Searches Calmly</i>
+	  <i>Searches Freely</i>
+	  <i>Searches Wildly</i>
+	  <i>Rose the Water</i>
+	  <i>Rose the Rain</i>
+	  <i>Rose the Fire</i>
+	  <i>Rose the Earth</i>
+	  <i>Rose the Wind</i>
+	  <i>Rose the Gust</i>
+	  <i>Rose the Leaf</i>
+	  <i>Rose the Trunk</i>
+	  <i>Rose the Tree</i>
+	  <i>Rose the Root</i>
+	  <i>Rose the Spear</i>
+	  <i>Rose the Tooth</i>
+	  <i>Rose the Claw</i>
+	  <i>Rose the Gem</i>
+	  <i>Rose the Hope</i>
+	  <i>Rose the Sun</i>
+	  <i>Rose the Moon</i>
+	  <i>Rose the Sky</i>
+	  <i>Rose the Cloud</i>
+	  <i>Rose the Gleam</i>
+	  <i>Rose the Warrior</i>
+	  <i>Rose the Victor</i>
+	  <i>Rose the Flower</i>
+	  <i>Rose the Petal</i>
+	  <i>Rose the Glory</i>
+	  <i>Rose the Heart</i>
+	  <i>Rose the River</i>
+	  <i>Water the Rose</i>
+	  <i>Water the Rain</i>
+	  <i>Water the Fire</i>
+	  <i>Water the Earth</i>
+	  <i>Water the Wind</i>
+	  <i>Water the Gust</i>
+	  <i>Water the Leaf</i>
+	  <i>Water the Trunk</i>
+	  <i>Water the Tree</i>
+	  <i>Water the Root</i>
+	  <i>Water the Spear</i>
+	  <i>Water the Tooth</i>
+	  <i>Water the Claw</i>
+	  <i>Water the Gem</i>
+	  <i>Water the Hope</i>
+	  <i>Water the Sun</i>
+	  <i>Water the Moon</i>
+	  <i>Water the Sky</i>
+	  <i>Water the Cloud</i>
+	  <i>Water the Gleam</i>
+	  <i>Water the Warrior</i>
+	  <i>Water the Victor</i>
+	  <i>Water the Flower</i>
+	  <i>Water the Petal</i>
+	  <i>Water the Glory</i>
+	  <i>Water the Heart</i>
+	  <i>Water the River</i>
+	  <i>Rain the Rose</i>
+	  <i>Rain the Water</i>
+	  <i>Rain the Fire</i>
+	  <i>Rain the Earth</i>
+	  <i>Rain the Wind</i>
+	  <i>Rain the Gust</i>
+	  <i>Rain the Leaf</i>
+	  <i>Rain the Trunk</i>
+	  <i>Rain the Tree</i>
+	  <i>Rain the Root</i>
+	  <i>Rain the Spear</i>
+	  <i>Rain the Tooth</i>
+	  <i>Rain the Claw</i>
+	  <i>Rain the Gem</i>
+	  <i>Rain the Hope</i>
+	  <i>Rain the Sun</i>
+	  <i>Rain the Moon</i>
+	  <i>Rain the Sky</i>
+	  <i>Rain the Cloud</i>
+	  <i>Rain the Gleam</i>
+	  <i>Rain the Warrior</i>
+	  <i>Rain the Victor</i>
+	  <i>Rain the Flower</i>
+	  <i>Rain the Petal</i>
+	  <i>Rain the Glory</i>
+	  <i>Rain the Heart</i>
+	  <i>Rain the River</i>
+	  <i>Fire the Rose</i>
+	  <i>Fire the Water</i>
+	  <i>Fire the Rain</i>
+	  <i>Fire the Earth</i>
+	  <i>Fire the Wind</i>
+	  <i>Fire the Gust</i>
+	  <i>Fire the Leaf</i>
+	  <i>Fire the Trunk</i>
+	  <i>Fire the Tree</i>
+	  <i>Fire the Root</i>
+	  <i>Fire the Spear</i>
+	  <i>Fire the Tooth</i>
+	  <i>Fire the Claw</i>
+	  <i>Fire the Gem</i>
+	  <i>Fire the Hope</i>
+	  <i>Fire the Sun</i>
+	  <i>Fire the Moon</i>
+	  <i>Fire the Sky</i>
+	  <i>Fire the Cloud</i>
+	  <i>Fire the Gleam</i>
+	  <i>Fire the Warrior</i>
+	  <i>Fire the Victor</i>
+	  <i>Fire the Flower</i>
+	  <i>Fire the Petal</i>
+	  <i>Fire the Glory</i>
+	  <i>Fire the Heart</i>
+	  <i>Fire the River</i>
+	  <i>Earth the Rose</i>
+	  <i>Earth the Water</i>
+	  <i>Earth the Rain</i>
+	  <i>Earth the Fire</i>
+	  <i>Earth the Wind</i>
+	  <i>Earth the Gust</i>
+	  <i>Earth the Leaf</i>
+	  <i>Earth the Trunk</i>
+	  <i>Earth the Tree</i>
+	  <i>Earth the Root</i>
+	  <i>Earth the Spear</i>
+	  <i>Earth the Tooth</i>
+	  <i>Earth the Claw</i>
+	  <i>Earth the Gem</i>
+	  <i>Earth the Hope</i>
+	  <i>Earth the Sun</i>
+	  <i>Earth the Moon</i>
+	  <i>Earth the Sky</i>
+	  <i>Earth the Cloud</i>
+	  <i>Earth the Gleam</i>
+	  <i>Earth the Warrior</i>
+	  <i>Earth the Victor</i>
+	  <i>Earth the Flower</i>
+	  <i>Earth the Petal</i>
+	  <i>Earth the Glory</i>
+	  <i>Earth the Heart</i>
+	  <i>Earth the River</i>
+	  <i>Wind the Rose</i>
+	  <i>Wind the Water</i>
+	  <i>Wind the Rain</i>
+	  <i>Wind the Fire</i>
+	  <i>Wind the Earth</i>
+	  <i>Wind the Gust</i>
+	  <i>Wind the Leaf</i>
+	  <i>Wind the Trunk</i>
+	  <i>Wind the Tree</i>
+	  <i>Wind the Root</i>
+	  <i>Wind the Spear</i>
+	  <i>Wind the Tooth</i>
+	  <i>Wind the Claw</i>
+	  <i>Wind the Gem</i>
+	  <i>Wind the Hope</i>
+	  <i>Wind the Sun</i>
+	  <i>Wind the Moon</i>
+	  <i>Wind the Sky</i>
+	  <i>Wind the Cloud</i>
+	  <i>Wind the Gleam</i>
+	  <i>Wind the Warrior</i>
+	  <i>Wind the Victor</i>
+	  <i>Wind the Flower</i>
+	  <i>Wind the Petal</i>
+	  <i>Wind the Glory</i>
+	  <i>Wind the Heart</i>
+	  <i>Wind the River</i>
+	  <i>Gust the Rose</i>
+	  <i>Gust the Water</i>
+	  <i>Gust the Rain</i>
+	  <i>Gust the Fire</i>
+	  <i>Gust the Earth</i>
+	  <i>Gust the Wind</i>
+	  <i>Gust the Leaf</i>
+	  <i>Gust the Trunk</i>
+	  <i>Gust the Tree</i>
+	  <i>Gust the Root</i>
+	  <i>Gust the Spear</i>
+	  <i>Gust the Tooth</i>
+	  <i>Gust the Claw</i>
+	  <i>Gust the Gem</i>
+	  <i>Gust the Hope</i>
+	  <i>Gust the Sun</i>
+	  <i>Gust the Moon</i>
+	  <i>Gust the Sky</i>
+	  <i>Gust the Cloud</i>
+	  <i>Gust the Gleam</i>
+	  <i>Gust the Warrior</i>
+	  <i>Gust the Victor</i>
+	  <i>Gust the Flower</i>
+	  <i>Gust the Petal</i>
+	  <i>Gust the Glory</i>
+	  <i>Gust the Heart</i>
+	  <i>Gust the River</i>
+	  <i>Leaf the Rose</i>
+	  <i>Leaf the Water</i>
+	  <i>Leaf the Rain</i>
+	  <i>Leaf the Fire</i>
+	  <i>Leaf the Earth</i>
+	  <i>Leaf the Wind</i>
+	  <i>Leaf the Gust</i>
+	  <i>Leaf the Trunk</i>
+	  <i>Leaf the Tree</i>
+	  <i>Leaf the Root</i>
+	  <i>Leaf the Spear</i>
+	  <i>Leaf the Tooth</i>
+	  <i>Leaf the Claw</i>
+	  <i>Leaf the Gem</i>
+	  <i>Leaf the Hope</i>
+	  <i>Leaf the Sun</i>
+	  <i>Leaf the Moon</i>
+	  <i>Leaf the Sky</i>
+	  <i>Leaf the Cloud</i>
+	  <i>Leaf the Gleam</i>
+	  <i>Leaf the Warrior</i>
+	  <i>Leaf the Victor</i>
+	  <i>Leaf the Flower</i>
+	  <i>Leaf the Petal</i>
+	  <i>Leaf the Glory</i>
+	  <i>Leaf the Heart</i>
+	  <i>Leaf the River</i>
+	  <i>Trunk the Rose</i>
+	  <i>Trunk the Water</i>
+	  <i>Trunk the Rain</i>
+	  <i>Trunk the Fire</i>
+	  <i>Trunk the Earth</i>
+	  <i>Trunk the Wind</i>
+	  <i>Trunk the Gust</i>
+	  <i>Trunk the Leaf</i>
+	  <i>Trunk the Tree</i>
+	  <i>Trunk the Root</i>
+	  <i>Trunk the Spear</i>
+	  <i>Trunk the Tooth</i>
+	  <i>Trunk the Claw</i>
+	  <i>Trunk the Gem</i>
+	  <i>Trunk the Hope</i>
+	  <i>Trunk the Sun</i>
+	  <i>Trunk the Moon</i>
+	  <i>Trunk the Sky</i>
+	  <i>Trunk the Cloud</i>
+	  <i>Trunk the Gleam</i>
+	  <i>Trunk the Warrior</i>
+	  <i>Trunk the Victor</i>
+	  <i>Trunk the Flower</i>
+	  <i>Trunk the Petal</i>
+	  <i>Trunk the Glory</i>
+	  <i>Trunk the Heart</i>
+	  <i>Trunk the River</i>
+	  <i>Tree the Rose</i>
+	  <i>Tree the Water</i>
+	  <i>Tree the Rain</i>
+	  <i>Tree the Fire</i>
+	  <i>Tree the Earth</i>
+	  <i>Tree the Wind</i>
+	  <i>Tree the Gust</i>
+	  <i>Tree the Leaf</i>
+	  <i>Tree the Trunk</i>
+	  <i>Tree the Root</i>
+	  <i>Tree the Spear</i>
+	  <i>Tree the Tooth</i>
+	  <i>Tree the Claw</i>
+	  <i>Tree the Gem</i>
+	  <i>Tree the Hope</i>
+	  <i>Tree the Sun</i>
+	  <i>Tree the Moon</i>
+	  <i>Tree the Sky</i>
+	  <i>Tree the Cloud</i>
+	  <i>Tree the Gleam</i>
+	  <i>Tree the Warrior</i>
+	  <i>Tree the Victor</i>
+	  <i>Tree the Flower</i>
+	  <i>Tree the Petal</i>
+	  <i>Tree the Glory</i>
+	  <i>Tree the Heart</i>
+	  <i>Tree the River</i>
+	  <i>Root the Rose</i>
+	  <i>Root the Water</i>
+	  <i>Root the Rain</i>
+	  <i>Root the Fire</i>
+	  <i>Root the Earth</i>
+	  <i>Root the Wind</i>
+	  <i>Root the Gust</i>
+	  <i>Root the Leaf</i>
+	  <i>Root the Trunk</i>
+	  <i>Root the Tree</i>
+	  <i>Root the Spear</i>
+	  <i>Root the Tooth</i>
+	  <i>Root the Claw</i>
+	  <i>Root the Gem</i>
+	  <i>Root the Hope</i>
+	  <i>Root the Sun</i>
+	  <i>Root the Moon</i>
+	  <i>Root the Sky</i>
+	  <i>Root the Cloud</i>
+	  <i>Root the Gleam</i>
+	  <i>Root the Warrior</i>
+	  <i>Root the Victor</i>
+	  <i>Root the Flower</i>
+	  <i>Root the Petal</i>
+	  <i>Root the Glory</i>
+	  <i>Root the Heart</i>
+	  <i>Root the River</i>
+	  <i>Spear the Rose</i>
+	  <i>Spear the Water</i>
+	  <i>Spear the Rain</i>
+	  <i>Spear the Fire</i>
+	  <i>Spear the Earth</i>
+	  <i>Spear the Wind</i>
+	  <i>Spear the Gust</i>
+	  <i>Spear the Leaf</i>
+	  <i>Spear the Trunk</i>
+	  <i>Spear the Tree</i>
+	  <i>Spear the Root</i>
+	  <i>Spear the Tooth</i>
+	  <i>Spear the Claw</i>
+	  <i>Spear the Gem</i>
+	  <i>Spear the Hope</i>
+	  <i>Spear the Sun</i>
+	  <i>Spear the Moon</i>
+	  <i>Spear the Sky</i>
+	  <i>Spear the Cloud</i>
+	  <i>Spear the Gleam</i>
+	  <i>Spear the Warrior</i>
+	  <i>Spear the Victor</i>
+	  <i>Spear the Flower</i>
+	  <i>Spear the Petal</i>
+	  <i>Spear the Glory</i>
+	  <i>Spear the Heart</i>
+	  <i>Spear the River</i>
+	  <i>Tooth the Rose</i>
+	  <i>Tooth the Water</i>
+	  <i>Tooth the Rain</i>
+	  <i>Tooth the Fire</i>
+	  <i>Tooth the Earth</i>
+	  <i>Tooth the Wind</i>
+	  <i>Tooth the Gust</i>
+	  <i>Tooth the Leaf</i>
+	  <i>Tooth the Trunk</i>
+	  <i>Tooth the Tree</i>
+	  <i>Tooth the Root</i>
+	  <i>Tooth the Spear</i>
+	  <i>Tooth the Claw</i>
+	  <i>Tooth the Gem</i>
+	  <i>Tooth the Hope</i>
+	  <i>Tooth the Sun</i>
+	  <i>Tooth the Moon</i>
+	  <i>Tooth the Sky</i>
+	  <i>Tooth the Cloud</i>
+	  <i>Tooth the Gleam</i>
+	  <i>Tooth the Warrior</i>
+	  <i>Tooth the Victor</i>
+	  <i>Tooth the Flower</i>
+	  <i>Tooth the Petal</i>
+	  <i>Tooth the Glory</i>
+	  <i>Tooth the Heart</i>
+	  <i>Tooth the River</i>
+	  <i>Claw the Rose</i>
+	  <i>Claw the Water</i>
+	  <i>Claw the Rain</i>
+	  <i>Claw the Fire</i>
+	  <i>Claw the Earth</i>
+	  <i>Claw the Wind</i>
+	  <i>Claw the Gust</i>
+	  <i>Claw the Leaf</i>
+	  <i>Claw the Trunk</i>
+	  <i>Claw the Tree</i>
+	  <i>Claw the Root</i>
+	  <i>Claw the Spear</i>
+	  <i>Claw the Tooth</i>
+	  <i>Claw the Gem</i>
+	  <i>Claw the Hope</i>
+	  <i>Claw the Sun</i>
+	  <i>Claw the Moon</i>
+	  <i>Claw the Sky</i>
+	  <i>Claw the Cloud</i>
+	  <i>Claw the Gleam</i>
+	  <i>Claw the Warrior</i>
+	  <i>Claw the Victor</i>
+	  <i>Claw the Flower</i>
+	  <i>Claw the Petal</i>
+	  <i>Claw the Glory</i>
+	  <i>Claw the Heart</i>
+	  <i>Claw the River</i>
+	  <i>Gem the Rose</i>
+	  <i>Gem the Water</i>
+	  <i>Gem the Rain</i>
+	  <i>Gem the Fire</i>
+	  <i>Gem the Earth</i>
+	  <i>Gem the Wind</i>
+	  <i>Gem the Gust</i>
+	  <i>Gem the Leaf</i>
+	  <i>Gem the Trunk</i>
+	  <i>Gem the Tree</i>
+	  <i>Gem the Root</i>
+	  <i>Gem the Spear</i>
+	  <i>Gem the Tooth</i>
+	  <i>Gem the Claw</i>
+	  <i>Gem the Hope</i>
+	  <i>Gem the Sun</i>
+	  <i>Gem the Moon</i>
+	  <i>Gem the Sky</i>
+	  <i>Gem the Cloud</i>
+	  <i>Gem the Gleam</i>
+	  <i>Gem the Warrior</i>
+	  <i>Gem the Victor</i>
+	  <i>Gem the Flower</i>
+	  <i>Gem the Petal</i>
+	  <i>Gem the Glory</i>
+	  <i>Gem the Heart</i>
+	  <i>Gem the River</i>
+	  <i>Hope the Rose</i>
+	  <i>Hope the Water</i>
+	  <i>Hope the Rain</i>
+	  <i>Hope the Fire</i>
+	  <i>Hope the Earth</i>
+	  <i>Hope the Wind</i>
+	  <i>Hope the Gust</i>
+	  <i>Hope the Leaf</i>
+	  <i>Hope the Trunk</i>
+	  <i>Hope the Tree</i>
+	  <i>Hope the Root</i>
+	  <i>Hope the Spear</i>
+	  <i>Hope the Tooth</i>
+	  <i>Hope the Claw</i>
+	  <i>Hope the Gem</i>
+	  <i>Hope the Sun</i>
+	  <i>Hope the Moon</i>
+	  <i>Hope the Sky</i>
+	  <i>Hope the Cloud</i>
+	  <i>Hope the Gleam</i>
+	  <i>Hope the Warrior</i>
+	  <i>Hope the Victor</i>
+	  <i>Hope the Flower</i>
+	  <i>Hope the Petal</i>
+	  <i>Hope the Glory</i>
+	  <i>Hope the Heart</i>
+	  <i>Hope the River</i>
+	  <i>Sun the Rose</i>
+	  <i>Sun the Water</i>
+	  <i>Sun the Rain</i>
+	  <i>Sun the Fire</i>
+	  <i>Sun the Earth</i>
+	  <i>Sun the Wind</i>
+	  <i>Sun the Gust</i>
+	  <i>Sun the Leaf</i>
+	  <i>Sun the Trunk</i>
+	  <i>Sun the Tree</i>
+	  <i>Sun the Root</i>
+	  <i>Sun the Spear</i>
+	  <i>Sun the Tooth</i>
+	  <i>Sun the Claw</i>
+	  <i>Sun the Gem</i>
+	  <i>Sun the Hope</i>
+	  <i>Sun the Moon</i>
+	  <i>Sun the Sky</i>
+	  <i>Sun the Cloud</i>
+	  <i>Sun the Gleam</i>
+	  <i>Sun the Warrior</i>
+	  <i>Sun the Victor</i>
+	  <i>Sun the Flower</i>
+	  <i>Sun the Petal</i>
+	  <i>Sun the Glory</i>
+	  <i>Sun the Heart</i>
+	  <i>Sun the River</i>
+	  <i>Moon the Rose</i>
+	  <i>Moon the Water</i>
+	  <i>Moon the Rain</i>
+	  <i>Moon the Fire</i>
+	  <i>Moon the Earth</i>
+	  <i>Moon the Wind</i>
+	  <i>Moon the Gust</i>
+	  <i>Moon the Leaf</i>
+	  <i>Moon the Trunk</i>
+	  <i>Moon the Tree</i>
+	  <i>Moon the Root</i>
+	  <i>Moon the Spear</i>
+	  <i>Moon the Tooth</i>
+	  <i>Moon the Claw</i>
+	  <i>Moon the Gem</i>
+	  <i>Moon the Hope</i>
+	  <i>Moon the Sun</i>
+	  <i>Moon the Sky</i>
+	  <i>Moon the Cloud</i>
+	  <i>Moon the Gleam</i>
+	  <i>Moon the Warrior</i>
+	  <i>Moon the Victor</i>
+	  <i>Moon the Flower</i>
+	  <i>Moon the Petal</i>
+	  <i>Moon the Glory</i>
+	  <i>Moon the Heart</i>
+	  <i>Moon the River</i>
+	  <i>Sky the Rose</i>
+	  <i>Sky the Water</i>
+	  <i>Sky the Rain</i>
+	  <i>Sky the Fire</i>
+	  <i>Sky the Earth</i>
+	  <i>Sky the Wind</i>
+	  <i>Sky the Gust</i>
+	  <i>Sky the Leaf</i>
+	  <i>Sky the Trunk</i>
+	  <i>Sky the Tree</i>
+	  <i>Sky the Root</i>
+	  <i>Sky the Spear</i>
+	  <i>Sky the Tooth</i>
+	  <i>Sky the Claw</i>
+	  <i>Sky the Gem</i>
+	  <i>Sky the Hope</i>
+	  <i>Sky the Sun</i>
+	  <i>Sky the Moon</i>
+	  <i>Sky the Cloud</i>
+	  <i>Sky the Gleam</i>
+	  <i>Sky the Warrior</i>
+	  <i>Sky the Victor</i>
+	  <i>Sky the Flower</i>
+	  <i>Sky the Petal</i>
+	  <i>Sky the Glory</i>
+	  <i>Sky the Heart</i>
+	  <i>Sky the River</i>
+	  <i>Cloud the Rose</i>
+	  <i>Cloud the Water</i>
+	  <i>Cloud the Rain</i>
+	  <i>Cloud the Fire</i>
+	  <i>Cloud the Earth</i>
+	  <i>Cloud the Wind</i>
+	  <i>Cloud the Gust</i>
+	  <i>Cloud the Leaf</i>
+	  <i>Cloud the Trunk</i>
+	  <i>Cloud the Tree</i>
+	  <i>Cloud the Root</i>
+	  <i>Cloud the Spear</i>
+	  <i>Cloud the Tooth</i>
+	  <i>Cloud the Claw</i>
+	  <i>Cloud the Gem</i>
+	  <i>Cloud the Hope</i>
+	  <i>Cloud the Sun</i>
+	  <i>Cloud the Moon</i>
+	  <i>Cloud the Sky</i>
+	  <i>Cloud the Gleam</i>
+	  <i>Cloud the Warrior</i>
+	  <i>Cloud the Victor</i>
+	  <i>Cloud the Flower</i>
+	  <i>Cloud the Petal</i>
+	  <i>Cloud the Glory</i>
+	  <i>Cloud the Heart</i>
+	  <i>Cloud the River</i>
+	  <i>Gleam the Rose</i>
+	  <i>Gleam the Water</i>
+	  <i>Gleam the Rain</i>
+	  <i>Gleam the Fire</i>
+	  <i>Gleam the Earth</i>
+	  <i>Gleam the Wind</i>
+	  <i>Gleam the Gust</i>
+	  <i>Gleam the Leaf</i>
+	  <i>Gleam the Trunk</i>
+	  <i>Gleam the Tree</i>
+	  <i>Gleam the Root</i>
+	  <i>Gleam the Spear</i>
+	  <i>Gleam the Tooth</i>
+	  <i>Gleam the Claw</i>
+	  <i>Gleam the Gem</i>
+	  <i>Gleam the Hope</i>
+	  <i>Gleam the Sun</i>
+	  <i>Gleam the Moon</i>
+	  <i>Gleam the Sky</i>
+	  <i>Gleam the Cloud</i>
+	  <i>Gleam the Warrior</i>
+	  <i>Gleam the Victor</i>
+	  <i>Gleam the Flower</i>
+	  <i>Gleam the Petal</i>
+	  <i>Gleam the Glory</i>
+	  <i>Gleam the Heart</i>
+	  <i>Gleam the River</i>
+	  <i>Warrior the Rose</i>
+	  <i>Warrior the Water</i>
+	  <i>Warrior the Rain</i>
+	  <i>Warrior the Fire</i>
+	  <i>Warrior the Earth</i>
+	  <i>Warrior the Wind</i>
+	  <i>Warrior the Gust</i>
+	  <i>Warrior the Leaf</i>
+	  <i>Warrior the Trunk</i>
+	  <i>Warrior the Tree</i>
+	  <i>Warrior the Root</i>
+	  <i>Warrior the Spear</i>
+	  <i>Warrior the Tooth</i>
+	  <i>Warrior the Claw</i>
+	  <i>Warrior the Gem</i>
+	  <i>Warrior the Hope</i>
+	  <i>Warrior the Sun</i>
+	  <i>Warrior the Moon</i>
+	  <i>Warrior the Sky</i>
+	  <i>Warrior the Cloud</i>
+	  <i>Warrior the Gleam</i>
+	  <i>Warrior the Victor</i>
+	  <i>Warrior the Flower</i>
+	  <i>Warrior the Petal</i>
+	  <i>Warrior the Glory</i>
+	  <i>Warrior the Heart</i>
+	  <i>Warrior the River</i>
+	  <i>Victor the Rose</i>
+	  <i>Victor the Water</i>
+	  <i>Victor the Rain</i>
+	  <i>Victor the Fire</i>
+	  <i>Victor the Earth</i>
+	  <i>Victor the Wind</i>
+	  <i>Victor the Gust</i>
+	  <i>Victor the Leaf</i>
+	  <i>Victor the Trunk</i>
+	  <i>Victor the Tree</i>
+	  <i>Victor the Root</i>
+	  <i>Victor the Spear</i>
+	  <i>Victor the Tooth</i>
+	  <i>Victor the Claw</i>
+	  <i>Victor the Gem</i>
+	  <i>Victor the Hope</i>
+	  <i>Victor the Sun</i>
+	  <i>Victor the Moon</i>
+	  <i>Victor the Sky</i>
+	  <i>Victor the Cloud</i>
+	  <i>Victor the Gleam</i>
+	  <i>Victor the Warrior</i>
+	  <i>Victor the Flower</i>
+	  <i>Victor the Petal</i>
+	  <i>Victor the Glory</i>
+	  <i>Victor the Heart</i>
+	  <i>Victor the River</i>
+	  <i>Flower the Rose</i>
+	  <i>Flower the Water</i>
+	  <i>Flower the Rain</i>
+	  <i>Flower the Fire</i>
+	  <i>Flower the Earth</i>
+	  <i>Flower the Wind</i>
+	  <i>Flower the Gust</i>
+	  <i>Flower the Leaf</i>
+	  <i>Flower the Trunk</i>
+	  <i>Flower the Tree</i>
+	  <i>Flower the Root</i>
+	  <i>Flower the Spear</i>
+	  <i>Flower the Tooth</i>
+	  <i>Flower the Claw</i>
+	  <i>Flower the Gem</i>
+	  <i>Flower the Hope</i>
+	  <i>Flower the Sun</i>
+	  <i>Flower the Moon</i>
+	  <i>Flower the Sky</i>
+	  <i>Flower the Cloud</i>
+	  <i>Flower the Gleam</i>
+	  <i>Flower the Warrior</i>
+	  <i>Flower the Victor</i>
+	  <i>Flower the Petal</i>
+	  <i>Flower the Glory</i>
+	  <i>Flower the Heart</i>
+	  <i>Flower the River</i>
+	  <i>Petal the Rose</i>
+	  <i>Petal the Water</i>
+	  <i>Petal the Rain</i>
+	  <i>Petal the Fire</i>
+	  <i>Petal the Earth</i>
+	  <i>Petal the Wind</i>
+	  <i>Petal the Gust</i>
+	  <i>Petal the Leaf</i>
+	  <i>Petal the Trunk</i>
+	  <i>Petal the Tree</i>
+	  <i>Petal the Root</i>
+	  <i>Petal the Spear</i>
+	  <i>Petal the Tooth</i>
+	  <i>Petal the Claw</i>
+	  <i>Petal the Gem</i>
+	  <i>Petal the Hope</i>
+	  <i>Petal the Sun</i>
+	  <i>Petal the Moon</i>
+	  <i>Petal the Sky</i>
+	  <i>Petal the Cloud</i>
+	  <i>Petal the Gleam</i>
+	  <i>Petal the Warrior</i>
+	  <i>Petal the Victor</i>
+	  <i>Petal the Flower</i>
+	  <i>Petal the Glory</i>
+	  <i>Petal the Heart</i>
+	  <i>Petal the River</i>
+	  <i>Glory the Rose</i>
+	  <i>Glory the Water</i>
+	  <i>Glory the Rain</i>
+	  <i>Glory the Fire</i>
+	  <i>Glory the Earth</i>
+	  <i>Glory the Wind</i>
+	  <i>Glory the Gust</i>
+	  <i>Glory the Leaf</i>
+	  <i>Glory the Trunk</i>
+	  <i>Glory the Tree</i>
+	  <i>Glory the Root</i>
+	  <i>Glory the Spear</i>
+	  <i>Glory the Tooth</i>
+	  <i>Glory the Claw</i>
+	  <i>Glory the Gem</i>
+	  <i>Glory the Hope</i>
+	  <i>Glory the Sun</i>
+	  <i>Glory the Moon</i>
+	  <i>Glory the Sky</i>
+	  <i>Glory the Cloud</i>
+	  <i>Glory the Gleam</i>
+	  <i>Glory the Warrior</i>
+	  <i>Glory the Victor</i>
+	  <i>Glory the Flower</i>
+	  <i>Glory the Petal</i>
+	  <i>Glory the Heart</i>
+	  <i>Glory the River</i>
+	  <i>Heart the Rose</i>
+	  <i>Heart the Water</i>
+	  <i>Heart the Rain</i>
+	  <i>Heart the Fire</i>
+	  <i>Heart the Earth</i>
+	  <i>Heart the Wind</i>
+	  <i>Heart the Gust</i>
+	  <i>Heart the Leaf</i>
+	  <i>Heart the Trunk</i>
+	  <i>Heart the Tree</i>
+	  <i>Heart the Root</i>
+	  <i>Heart the Spear</i>
+	  <i>Heart the Tooth</i>
+	  <i>Heart the Claw</i>
+	  <i>Heart the Gem</i>
+	  <i>Heart the Hope</i>
+	  <i>Heart the Sun</i>
+	  <i>Heart the Moon</i>
+	  <i>Heart the Sky</i>
+	  <i>Heart the Cloud</i>
+	  <i>Heart the Gleam</i>
+	  <i>Heart the Warrior</i>
+	  <i>Heart the Victor</i>
+	  <i>Heart the Flower</i>
+	  <i>Heart the Petal</i>
+	  <i>Heart the Glory</i>
+	  <i>Heart the River</i>
+	  <i>River the Rose</i>
+	  <i>River the Water</i>
+	  <i>River the Rain</i>
+	  <i>River the Fire</i>
+	  <i>River the Earth</i>
+	  <i>River the Wind</i>
+	  <i>River the Gust</i>
+	  <i>River the Leaf</i>
+	  <i>River the Trunk</i>
+	  <i>River the Tree</i>
+	  <i>River the Root</i>
+	  <i>River the Spear</i>
+	  <i>River the Tooth</i>
+	  <i>River the Claw</i>
+	  <i>River the Gem</i>
+	  <i>River the Hope</i>
+	  <i>River the Sun</i>
+	  <i>River the Moon</i>
+	  <i>River the Sky</i>
+	  <i>River the Cloud</i>
+	  <i>River the Gleam</i>
+	  <i>River the Warrior</i>
+	  <i>River the Victor</i>
+	  <i>River the Flower</i>
+	  <i>River the Petal</i>
+	  <i>River the Glory</i>
+	  <i>River the Heart</i>
+	  <i>Rose the Free</i>
+	  <i>Rose the Strong</i>
+	  <i>Rose the Swift</i>
+	  <i>Rose the Hardy</i>
+	  <i>Rose the Beloved</i>
+	  <i>Rose the Honored</i>
+	  <i>Rose the Skillful</i>
+	  <i>Rose the Loyal</i>
+	  <i>Rose the Happy</i>
+	  <i>Rose the Hale</i>
+	  <i>Rose the Clever</i>
+	  <i>Rose the Quick</i>
+	  <i>Rose the Quiet</i>
+	  <i>Rose the Iron</i>
+	  <i>Rose the Gold</i>
+	  <i>Rose the Dangerous</i>
+	  <i>Rose the Healthy</i>
+	  <i>Rose the Calm</i>
+	  <i>Rose the Fair</i>
+	  <i>Rose the Trustworthy</i>
+	  <i>Rose the Wild</i>
+	  <i>Water the Free</i>
+	  <i>Water the Strong</i>
+	  <i>Water the Swift</i>
+	  <i>Water the Hardy</i>
+	  <i>Water the Beloved</i>
+	  <i>Water the Honored</i>
+	  <i>Water the Skillful</i>
+	  <i>Water the Loyal</i>
+	  <i>Water the Happy</i>
+	  <i>Water the Hale</i>
+	  <i>Water the Clever</i>
+	  <i>Water the Quick</i>
+	  <i>Water the Quiet</i>
+	  <i>Water the Iron</i>
+	  <i>Water the Gold</i>
+	  <i>Water the Dangerous</i>
+	  <i>Water the Healthy</i>
+	  <i>Water the Calm</i>
+	  <i>Water the Fair</i>
+	  <i>Water the Trustworthy</i>
+	  <i>Water the Wild</i>
+	  <i>Rain the Free</i>
+	  <i>Rain the Strong</i>
+	  <i>Rain the Swift</i>
+	  <i>Rain the Hardy</i>
+	  <i>Rain the Beloved</i>
+	  <i>Rain the Honored</i>
+	  <i>Rain the Skillful</i>
+	  <i>Rain the Loyal</i>
+	  <i>Rain the Happy</i>
+	  <i>Rain the Hale</i>
+	  <i>Rain the Clever</i>
+	  <i>Rain the Quick</i>
+	  <i>Rain the Quiet</i>
+	  <i>Rain the Iron</i>
+	  <i>Rain the Gold</i>
+	  <i>Rain the Dangerous</i>
+	  <i>Rain the Healthy</i>
+	  <i>Rain the Calm</i>
+	  <i>Rain the Fair</i>
+	  <i>Rain the Trustworthy</i>
+	  <i>Rain the Wild</i>
+	  <i>Fire the Free</i>
+	  <i>Fire the Strong</i>
+	  <i>Fire the Swift</i>
+	  <i>Fire the Hardy</i>
+	  <i>Fire the Beloved</i>
+	  <i>Fire the Honored</i>
+	  <i>Fire the Skillful</i>
+	  <i>Fire the Loyal</i>
+	  <i>Fire the Happy</i>
+	  <i>Fire the Hale</i>
+	  <i>Fire the Clever</i>
+	  <i>Fire the Quick</i>
+	  <i>Fire the Quiet</i>
+	  <i>Fire the Iron</i>
+	  <i>Fire the Gold</i>
+	  <i>Fire the Dangerous</i>
+	  <i>Fire the Healthy</i>
+	  <i>Fire the Calm</i>
+	  <i>Fire the Fair</i>
+	  <i>Fire the Trustworthy</i>
+	  <i>Fire the Wild</i>
+	  <i>Earth the Free</i>
+	  <i>Earth the Strong</i>
+	  <i>Earth the Swift</i>
+	  <i>Earth the Hardy</i>
+	  <i>Earth the Beloved</i>
+	  <i>Earth the Honored</i>
+	  <i>Earth the Skillful</i>
+	  <i>Earth the Loyal</i>
+	  <i>Earth the Happy</i>
+	  <i>Earth the Hale</i>
+	  <i>Earth the Clever</i>
+	  <i>Earth the Quick</i>
+	  <i>Earth the Quiet</i>
+	  <i>Earth the Iron</i>
+	  <i>Earth the Gold</i>
+	  <i>Earth the Dangerous</i>
+	  <i>Earth the Healthy</i>
+	  <i>Earth the Calm</i>
+	  <i>Earth the Fair</i>
+	  <i>Earth the Trustworthy</i>
+	  <i>Earth the Wild</i>
+	  <i>Wind the Free</i>
+	  <i>Wind the Strong</i>
+	  <i>Wind the Swift</i>
+	  <i>Wind the Hardy</i>
+	  <i>Wind the Beloved</i>
+	  <i>Wind the Honored</i>
+	  <i>Wind the Skillful</i>
+	  <i>Wind the Loyal</i>
+	  <i>Wind the Happy</i>
+	  <i>Wind the Hale</i>
+	  <i>Wind the Clever</i>
+	  <i>Wind the Quick</i>
+	  <i>Wind the Quiet</i>
+	  <i>Wind the Iron</i>
+	  <i>Wind the Gold</i>
+	  <i>Wind the Dangerous</i>
+	  <i>Wind the Healthy</i>
+	  <i>Wind the Calm</i>
+	  <i>Wind the Fair</i>
+	  <i>Wind the Trustworthy</i>
+	  <i>Wind the Wild</i>
+	  <i>Gust the Free</i>
+	  <i>Gust the Strong</i>
+	  <i>Gust the Swift</i>
+	  <i>Gust the Hardy</i>
+	  <i>Gust the Beloved</i>
+	  <i>Gust the Honored</i>
+	  <i>Gust the Skillful</i>
+	  <i>Gust the Loyal</i>
+	  <i>Gust the Happy</i>
+	  <i>Gust the Hale</i>
+	  <i>Gust the Clever</i>
+	  <i>Gust the Quick</i>
+	  <i>Gust the Quiet</i>
+	  <i>Gust the Iron</i>
+	  <i>Gust the Gold</i>
+	  <i>Gust the Dangerous</i>
+	  <i>Gust the Healthy</i>
+	  <i>Gust the Calm</i>
+	  <i>Gust the Fair</i>
+	  <i>Gust the Trustworthy</i>
+	  <i>Gust the Wild</i>
+	  <i>Leaf the Free</i>
+	  <i>Leaf the Strong</i>
+	  <i>Leaf the Swift</i>
+	  <i>Leaf the Hardy</i>
+	  <i>Leaf the Beloved</i>
+	  <i>Leaf the Honored</i>
+	  <i>Leaf the Skillful</i>
+	  <i>Leaf the Loyal</i>
+	  <i>Leaf the Happy</i>
+	  <i>Leaf the Hale</i>
+	  <i>Leaf the Clever</i>
+	  <i>Leaf the Quick</i>
+	  <i>Leaf the Quiet</i>
+	  <i>Leaf the Iron</i>
+	  <i>Leaf the Gold</i>
+	  <i>Leaf the Dangerous</i>
+	  <i>Leaf the Healthy</i>
+	  <i>Leaf the Calm</i>
+	  <i>Leaf the Fair</i>
+	  <i>Leaf the Trustworthy</i>
+	  <i>Leaf the Wild</i>
+	  <i>Trunk the Free</i>
+	  <i>Trunk the Strong</i>
+	  <i>Trunk the Swift</i>
+	  <i>Trunk the Hardy</i>
+	  <i>Trunk the Beloved</i>
+	  <i>Trunk the Honored</i>
+	  <i>Trunk the Skillful</i>
+	  <i>Trunk the Loyal</i>
+	  <i>Trunk the Happy</i>
+	  <i>Trunk the Hale</i>
+	  <i>Trunk the Clever</i>
+	  <i>Trunk the Quick</i>
+	  <i>Trunk the Quiet</i>
+	  <i>Trunk the Iron</i>
+	  <i>Trunk the Gold</i>
+	  <i>Trunk the Dangerous</i>
+	  <i>Trunk the Healthy</i>
+	  <i>Trunk the Calm</i>
+	  <i>Trunk the Fair</i>
+	  <i>Trunk the Trustworthy</i>
+	  <i>Trunk the Wild</i>
+	  <i>Tree the Free</i>
+	  <i>Tree the Strong</i>
+	  <i>Tree the Swift</i>
+	  <i>Tree the Hardy</i>
+	  <i>Tree the Beloved</i>
+	  <i>Tree the Honored</i>
+	  <i>Tree the Skillful</i>
+	  <i>Tree the Loyal</i>
+	  <i>Tree the Happy</i>
+	  <i>Tree the Hale</i>
+	  <i>Tree the Clever</i>
+	  <i>Tree the Quick</i>
+	  <i>Tree the Quiet</i>
+	  <i>Tree the Iron</i>
+	  <i>Tree the Gold</i>
+	  <i>Tree the Dangerous</i>
+	  <i>Tree the Healthy</i>
+	  <i>Tree the Calm</i>
+	  <i>Tree the Fair</i>
+	  <i>Tree the Trustworthy</i>
+	  <i>Tree the Wild</i>
+	  <i>Root the Free</i>
+	  <i>Root the Strong</i>
+	  <i>Root the Swift</i>
+	  <i>Root the Hardy</i>
+	  <i>Root the Beloved</i>
+	  <i>Root the Honored</i>
+	  <i>Root the Skillful</i>
+	  <i>Root the Loyal</i>
+	  <i>Root the Happy</i>
+	  <i>Root the Hale</i>
+	  <i>Root the Clever</i>
+	  <i>Root the Quick</i>
+	  <i>Root the Quiet</i>
+	  <i>Root the Iron</i>
+	  <i>Root the Gold</i>
+	  <i>Root the Dangerous</i>
+	  <i>Root the Healthy</i>
+	  <i>Root the Calm</i>
+	  <i>Root the Fair</i>
+	  <i>Root the Trustworthy</i>
+	  <i>Root the Wild</i>
+	  <i>Spear the Free</i>
+	  <i>Spear the Strong</i>
+	  <i>Spear the Swift</i>
+	  <i>Spear the Hardy</i>
+	  <i>Spear the Beloved</i>
+	  <i>Spear the Honored</i>
+	  <i>Spear the Skillful</i>
+	  <i>Spear the Loyal</i>
+	  <i>Spear the Happy</i>
+	  <i>Spear the Hale</i>
+	  <i>Spear the Clever</i>
+	  <i>Spear the Quick</i>
+	  <i>Spear the Quiet</i>
+	  <i>Spear the Iron</i>
+	  <i>Spear the Gold</i>
+	  <i>Spear the Dangerous</i>
+	  <i>Spear the Healthy</i>
+	  <i>Spear the Calm</i>
+	  <i>Spear the Fair</i>
+	  <i>Spear the Trustworthy</i>
+	  <i>Spear the Wild</i>
+	  <i>Tooth the Free</i>
+	  <i>Tooth the Strong</i>
+	  <i>Tooth the Swift</i>
+	  <i>Tooth the Hardy</i>
+	  <i>Tooth the Beloved</i>
+	  <i>Tooth the Honored</i>
+	  <i>Tooth the Skillful</i>
+	  <i>Tooth the Loyal</i>
+	  <i>Tooth the Happy</i>
+	  <i>Tooth the Hale</i>
+	  <i>Tooth the Clever</i>
+	  <i>Tooth the Quick</i>
+	  <i>Tooth the Quiet</i>
+	  <i>Tooth the Iron</i>
+	  <i>Tooth the Gold</i>
+	  <i>Tooth the Dangerous</i>
+	  <i>Tooth the Healthy</i>
+	  <i>Tooth the Calm</i>
+	  <i>Tooth the Fair</i>
+	  <i>Tooth the Trustworthy</i>
+	  <i>Tooth the Wild</i>
+	  <i>Claw the Free</i>
+	  <i>Claw the Strong</i>
+	  <i>Claw the Swift</i>
+	  <i>Claw the Hardy</i>
+	  <i>Claw the Beloved</i>
+	  <i>Claw the Honored</i>
+	  <i>Claw the Skillful</i>
+	  <i>Claw the Loyal</i>
+	  <i>Claw the Happy</i>
+	  <i>Claw the Hale</i>
+	  <i>Claw the Clever</i>
+	  <i>Claw the Quick</i>
+	  <i>Claw the Quiet</i>
+	  <i>Claw the Iron</i>
+	  <i>Claw the Gold</i>
+	  <i>Claw the Dangerous</i>
+	  <i>Claw the Healthy</i>
+	  <i>Claw the Calm</i>
+	  <i>Claw the Fair</i>
+	  <i>Claw the Trustworthy</i>
+	  <i>Claw the Wild</i>
+	  <i>Gem the Free</i>
+	  <i>Gem the Strong</i>
+	  <i>Gem the Swift</i>
+	  <i>Gem the Hardy</i>
+	  <i>Gem the Beloved</i>
+	  <i>Gem the Honored</i>
+	  <i>Gem the Skillful</i>
+	  <i>Gem the Loyal</i>
+	  <i>Gem the Happy</i>
+	  <i>Gem the Hale</i>
+	  <i>Gem the Clever</i>
+	  <i>Gem the Quick</i>
+	  <i>Gem the Quiet</i>
+	  <i>Gem the Iron</i>
+	  <i>Gem the Gold</i>
+	  <i>Gem the Dangerous</i>
+	  <i>Gem the Healthy</i>
+	  <i>Gem the Calm</i>
+	  <i>Gem the Fair</i>
+	  <i>Gem the Trustworthy</i>
+	  <i>Gem the Wild</i>
+	  <i>Hope the Free</i>
+	  <i>Hope the Strong</i>
+	  <i>Hope the Swift</i>
+	  <i>Hope the Hardy</i>
+	  <i>Hope the Beloved</i>
+	  <i>Hope the Honored</i>
+	  <i>Hope the Skillful</i>
+	  <i>Hope the Loyal</i>
+	  <i>Hope the Happy</i>
+	  <i>Hope the Hale</i>
+	  <i>Hope the Clever</i>
+	  <i>Hope the Quick</i>
+	  <i>Hope the Quiet</i>
+	  <i>Hope the Iron</i>
+	  <i>Hope the Gold</i>
+	  <i>Hope the Dangerous</i>
+	  <i>Hope the Healthy</i>
+	  <i>Hope the Calm</i>
+	  <i>Hope the Fair</i>
+	  <i>Hope the Trustworthy</i>
+	  <i>Hope the Wild</i>
+	  <i>Sun the Free</i>
+	  <i>Sun the Strong</i>
+	  <i>Sun the Swift</i>
+	  <i>Sun the Hardy</i>
+	  <i>Sun the Beloved</i>
+	  <i>Sun the Honored</i>
+	  <i>Sun the Skillful</i>
+	  <i>Sun the Loyal</i>
+	  <i>Sun the Happy</i>
+	  <i>Sun the Hale</i>
+	  <i>Sun the Clever</i>
+	  <i>Sun the Quick</i>
+	  <i>Sun the Quiet</i>
+	  <i>Sun the Iron</i>
+	  <i>Sun the Gold</i>
+	  <i>Sun the Dangerous</i>
+	  <i>Sun the Healthy</i>
+	  <i>Sun the Calm</i>
+	  <i>Sun the Fair</i>
+	  <i>Sun the Trustworthy</i>
+	  <i>Sun the Wild</i>
+	  <i>Moon the Free</i>
+	  <i>Moon the Strong</i>
+	  <i>Moon the Swift</i>
+	  <i>Moon the Hardy</i>
+	  <i>Moon the Beloved</i>
+	  <i>Moon the Honored</i>
+	  <i>Moon the Skillful</i>
+	  <i>Moon the Loyal</i>
+	  <i>Moon the Happy</i>
+	  <i>Moon the Hale</i>
+	  <i>Moon the Clever</i>
+	  <i>Moon the Quick</i>
+	  <i>Moon the Quiet</i>
+	  <i>Moon the Iron</i>
+	  <i>Moon the Gold</i>
+	  <i>Moon the Dangerous</i>
+	  <i>Moon the Healthy</i>
+	  <i>Moon the Calm</i>
+	  <i>Moon the Fair</i>
+	  <i>Moon the Trustworthy</i>
+	  <i>Moon the Wild</i>
+	  <i>Sky the Free</i>
+	  <i>Sky the Strong</i>
+	  <i>Sky the Swift</i>
+	  <i>Sky the Hardy</i>
+	  <i>Sky the Beloved</i>
+	  <i>Sky the Honored</i>
+	  <i>Sky the Skillful</i>
+	  <i>Sky the Loyal</i>
+	  <i>Sky the Happy</i>
+	  <i>Sky the Hale</i>
+	  <i>Sky the Clever</i>
+	  <i>Sky the Quick</i>
+	  <i>Sky the Quiet</i>
+	  <i>Sky the Iron</i>
+	  <i>Sky the Gold</i>
+	  <i>Sky the Dangerous</i>
+	  <i>Sky the Healthy</i>
+	  <i>Sky the Calm</i>
+	  <i>Sky the Fair</i>
+	  <i>Sky the Trustworthy</i>
+	  <i>Sky the Wild</i>
+	  <i>Cloud the Free</i>
+	  <i>Cloud the Strong</i>
+	  <i>Cloud the Swift</i>
+	  <i>Cloud the Hardy</i>
+	  <i>Cloud the Beloved</i>
+	  <i>Cloud the Honored</i>
+	  <i>Cloud the Skillful</i>
+	  <i>Cloud the Loyal</i>
+	  <i>Cloud the Happy</i>
+	  <i>Cloud the Hale</i>
+	  <i>Cloud the Clever</i>
+	  <i>Cloud the Quick</i>
+	  <i>Cloud the Quiet</i>
+	  <i>Cloud the Iron</i>
+	  <i>Cloud the Gold</i>
+	  <i>Cloud the Dangerous</i>
+	  <i>Cloud the Healthy</i>
+	  <i>Cloud the Calm</i>
+	  <i>Cloud the Fair</i>
+	  <i>Cloud the Trustworthy</i>
+	  <i>Cloud the Wild</i>
+	  <i>Gleam the Free</i>
+	  <i>Gleam the Strong</i>
+	  <i>Gleam the Swift</i>
+	  <i>Gleam the Hardy</i>
+	  <i>Gleam the Beloved</i>
+	  <i>Gleam the Honored</i>
+	  <i>Gleam the Skillful</i>
+	  <i>Gleam the Loyal</i>
+	  <i>Gleam the Happy</i>
+	  <i>Gleam the Hale</i>
+	  <i>Gleam the Clever</i>
+	  <i>Gleam the Quick</i>
+	  <i>Gleam the Quiet</i>
+	  <i>Gleam the Iron</i>
+	  <i>Gleam the Gold</i>
+	  <i>Gleam the Dangerous</i>
+	  <i>Gleam the Healthy</i>
+	  <i>Gleam the Calm</i>
+	  <i>Gleam the Fair</i>
+	  <i>Gleam the Trustworthy</i>
+	  <i>Gleam the Wild</i>
+	  <i>Warrior the Free</i>
+	  <i>Warrior the Strong</i>
+	  <i>Warrior the Swift</i>
+	  <i>Warrior the Hardy</i>
+	  <i>Warrior the Beloved</i>
+	  <i>Warrior the Honored</i>
+	  <i>Warrior the Skillful</i>
+	  <i>Warrior the Loyal</i>
+	  <i>Warrior the Happy</i>
+	  <i>Warrior the Hale</i>
+	  <i>Warrior the Clever</i>
+	  <i>Warrior the Quick</i>
+	  <i>Warrior the Quiet</i>
+	  <i>Warrior the Iron</i>
+	  <i>Warrior the Gold</i>
+	  <i>Warrior the Dangerous</i>
+	  <i>Warrior the Healthy</i>
+	  <i>Warrior the Calm</i>
+	  <i>Warrior the Fair</i>
+	  <i>Warrior the Trustworthy</i>
+	  <i>Warrior the Wild</i>
+	  <i>Victor the Free</i>
+	  <i>Victor the Strong</i>
+	  <i>Victor the Swift</i>
+	  <i>Victor the Hardy</i>
+	  <i>Victor the Beloved</i>
+	  <i>Victor the Honored</i>
+	  <i>Victor the Skillful</i>
+	  <i>Victor the Loyal</i>
+	  <i>Victor the Happy</i>
+	  <i>Victor the Hale</i>
+	  <i>Victor the Clever</i>
+	  <i>Victor the Quick</i>
+	  <i>Victor the Quiet</i>
+	  <i>Victor the Iron</i>
+	  <i>Victor the Gold</i>
+	  <i>Victor the Dangerous</i>
+	  <i>Victor the Healthy</i>
+	  <i>Victor the Calm</i>
+	  <i>Victor the Fair</i>
+	  <i>Victor the Trustworthy</i>
+	  <i>Victor the Wild</i>
+	  <i>Flower the Free</i>
+	  <i>Flower the Strong</i>
+	  <i>Flower the Swift</i>
+	  <i>Flower the Hardy</i>
+	  <i>Flower the Beloved</i>
+	  <i>Flower the Honored</i>
+	  <i>Flower the Skillful</i>
+	  <i>Flower the Loyal</i>
+	  <i>Flower the Happy</i>
+	  <i>Flower the Hale</i>
+	  <i>Flower the Clever</i>
+	  <i>Flower the Quick</i>
+	  <i>Flower the Quiet</i>
+	  <i>Flower the Iron</i>
+	  <i>Flower the Gold</i>
+	  <i>Flower the Dangerous</i>
+	  <i>Flower the Healthy</i>
+	  <i>Flower the Calm</i>
+	  <i>Flower the Fair</i>
+	  <i>Flower the Trustworthy</i>
+	  <i>Flower the Wild</i>
+	  <i>Petal the Free</i>
+	  <i>Petal the Strong</i>
+	  <i>Petal the Swift</i>
+	  <i>Petal the Hardy</i>
+	  <i>Petal the Beloved</i>
+	  <i>Petal the Honored</i>
+	  <i>Petal the Skillful</i>
+	  <i>Petal the Loyal</i>
+	  <i>Petal the Happy</i>
+	  <i>Petal the Hale</i>
+	  <i>Petal the Clever</i>
+	  <i>Petal the Quick</i>
+	  <i>Petal the Quiet</i>
+	  <i>Petal the Iron</i>
+	  <i>Petal the Gold</i>
+	  <i>Petal the Dangerous</i>
+	  <i>Petal the Healthy</i>
+	  <i>Petal the Calm</i>
+	  <i>Petal the Fair</i>
+	  <i>Petal the Trustworthy</i>
+	  <i>Petal the Wild</i>
+	  <i>Glory the Free</i>
+	  <i>Glory the Strong</i>
+	  <i>Glory the Swift</i>
+	  <i>Glory the Hardy</i>
+	  <i>Glory the Beloved</i>
+	  <i>Glory the Honored</i>
+	  <i>Glory the Skillful</i>
+	  <i>Glory the Loyal</i>
+	  <i>Glory the Happy</i>
+	  <i>Glory the Hale</i>
+	  <i>Glory the Clever</i>
+	  <i>Glory the Quick</i>
+	  <i>Glory the Quiet</i>
+	  <i>Glory the Iron</i>
+	  <i>Glory the Gold</i>
+	  <i>Glory the Dangerous</i>
+	  <i>Glory the Healthy</i>
+	  <i>Glory the Calm</i>
+	  <i>Glory the Fair</i>
+	  <i>Glory the Trustworthy</i>
+	  <i>Glory the Wild</i>
+	  <i>Heart the Free</i>
+	  <i>Heart the Strong</i>
+	  <i>Heart the Swift</i>
+	  <i>Heart the Hardy</i>
+	  <i>Heart the Beloved</i>
+	  <i>Heart the Honored</i>
+	  <i>Heart the Skillful</i>
+	  <i>Heart the Loyal</i>
+	  <i>Heart the Happy</i>
+	  <i>Heart the Hale</i>
+	  <i>Heart the Clever</i>
+	  <i>Heart the Quick</i>
+	  <i>Heart the Quiet</i>
+	  <i>Heart the Iron</i>
+	  <i>Heart the Gold</i>
+	  <i>Heart the Dangerous</i>
+	  <i>Heart the Healthy</i>
+	  <i>Heart the Calm</i>
+	  <i>Heart the Fair</i>
+	  <i>Heart the Trustworthy</i>
+	  <i>Heart the Wild</i>
+	  <i>River the Free</i>
+	  <i>River the Strong</i>
+	  <i>River the Swift</i>
+	  <i>River the Hardy</i>
+	  <i>River the Beloved</i>
+	  <i>River the Honored</i>
+	  <i>River the Skillful</i>
+	  <i>River the Loyal</i>
+	  <i>River the Happy</i>
+	  <i>River the Hale</i>
+	  <i>River the Clever</i>
+	  <i>River the Quick</i>
+	  <i>River the Quiet</i>
+	  <i>River the Iron</i>
+	  <i>River the Gold</i>
+	  <i>River the Dangerous</i>
+	  <i>River the Healthy</i>
+	  <i>River the Calm</i>
+	  <i>River the Fair</i>
+	  <i>River the Trustworthy</i>
+	  <i>River the Wild</i>
+	  <i>Rose-who-Runs</i>
+	  <i>Rose-who-Hunts</i>
+	  <i>Rose-who-Makes</i>
+	  <i>Rose-who-Grows</i>
+	  <i>Rose-who-Travels</i>
+	  <i>Rose-who-Swims</i>
+	  <i>Rose-who-Triumphs</i>
+	  <i>Rose-who-Laughs</i>
+	  <i>Rose-who-Talks</i>
+	  <i>Rose-who-Fights</i>
+	  <i>Rose-who-Trains</i>
+	  <i>Rose-who-Learns</i>
+	  <i>Rose-who-Gathers</i>
+	  <i>Rose-who-Smiles</i>
+	  <i>Rose-who-Searches</i>
+	  <i>Water-who-Runs</i>
+	  <i>Water-who-Hunts</i>
+	  <i>Water-who-Makes</i>
+	  <i>Water-who-Grows</i>
+	  <i>Water-who-Travels</i>
+	  <i>Water-who-Swims</i>
+	  <i>Water-who-Triumphs</i>
+	  <i>Water-who-Laughs</i>
+	  <i>Water-who-Talks</i>
+	  <i>Water-who-Fights</i>
+	  <i>Water-who-Trains</i>
+	  <i>Water-who-Learns</i>
+	  <i>Water-who-Gathers</i>
+	  <i>Water-who-Smiles</i>
+	  <i>Water-who-Searches</i>
+	  <i>Rain-who-Runs</i>
+	  <i>Rain-who-Hunts</i>
+	  <i>Rain-who-Makes</i>
+	  <i>Rain-who-Grows</i>
+	  <i>Rain-who-Travels</i>
+	  <i>Rain-who-Swims</i>
+	  <i>Rain-who-Triumphs</i>
+	  <i>Rain-who-Laughs</i>
+	  <i>Rain-who-Talks</i>
+	  <i>Rain-who-Fights</i>
+	  <i>Rain-who-Trains</i>
+	  <i>Rain-who-Learns</i>
+	  <i>Rain-who-Gathers</i>
+	  <i>Rain-who-Smiles</i>
+	  <i>Rain-who-Searches</i>
+	  <i>Fire-who-Runs</i>
+	  <i>Fire-who-Hunts</i>
+	  <i>Fire-who-Makes</i>
+	  <i>Fire-who-Grows</i>
+	  <i>Fire-who-Travels</i>
+	  <i>Fire-who-Swims</i>
+	  <i>Fire-who-Triumphs</i>
+	  <i>Fire-who-Laughs</i>
+	  <i>Fire-who-Talks</i>
+	  <i>Fire-who-Fights</i>
+	  <i>Fire-who-Trains</i>
+	  <i>Fire-who-Learns</i>
+	  <i>Fire-who-Gathers</i>
+	  <i>Fire-who-Smiles</i>
+	  <i>Fire-who-Searches</i>
+	  <i>Earth-who-Runs</i>
+	  <i>Earth-who-Hunts</i>
+	  <i>Earth-who-Makes</i>
+	  <i>Earth-who-Grows</i>
+	  <i>Earth-who-Travels</i>
+	  <i>Earth-who-Swims</i>
+	  <i>Earth-who-Triumphs</i>
+	  <i>Earth-who-Laughs</i>
+	  <i>Earth-who-Talks</i>
+	  <i>Earth-who-Fights</i>
+	  <i>Earth-who-Trains</i>
+	  <i>Earth-who-Learns</i>
+	  <i>Earth-who-Gathers</i>
+	  <i>Earth-who-Smiles</i>
+	  <i>Earth-who-Searches</i>
+	  <i>Wind-who-Runs</i>
+	  <i>Wind-who-Hunts</i>
+	  <i>Wind-who-Makes</i>
+	  <i>Wind-who-Grows</i>
+	  <i>Wind-who-Travels</i>
+	  <i>Wind-who-Swims</i>
+	  <i>Wind-who-Triumphs</i>
+	  <i>Wind-who-Laughs</i>
+	  <i>Wind-who-Talks</i>
+	  <i>Wind-who-Fights</i>
+	  <i>Wind-who-Trains</i>
+	  <i>Wind-who-Learns</i>
+	  <i>Wind-who-Gathers</i>
+	  <i>Wind-who-Smiles</i>
+	  <i>Wind-who-Searches</i>
+	  <i>Gust-who-Runs</i>
+	  <i>Gust-who-Hunts</i>
+	  <i>Gust-who-Makes</i>
+	  <i>Gust-who-Grows</i>
+	  <i>Gust-who-Travels</i>
+	  <i>Gust-who-Swims</i>
+	  <i>Gust-who-Triumphs</i>
+	  <i>Gust-who-Laughs</i>
+	  <i>Gust-who-Talks</i>
+	  <i>Gust-who-Fights</i>
+	  <i>Gust-who-Trains</i>
+	  <i>Gust-who-Learns</i>
+	  <i>Gust-who-Gathers</i>
+	  <i>Gust-who-Smiles</i>
+	  <i>Gust-who-Searches</i>
+	  <i>Leaf-who-Runs</i>
+	  <i>Leaf-who-Hunts</i>
+	  <i>Leaf-who-Makes</i>
+	  <i>Leaf-who-Grows</i>
+	  <i>Leaf-who-Travels</i>
+	  <i>Leaf-who-Swims</i>
+	  <i>Leaf-who-Triumphs</i>
+	  <i>Leaf-who-Laughs</i>
+	  <i>Leaf-who-Talks</i>
+	  <i>Leaf-who-Fights</i>
+	  <i>Leaf-who-Trains</i>
+	  <i>Leaf-who-Learns</i>
+	  <i>Leaf-who-Gathers</i>
+	  <i>Leaf-who-Smiles</i>
+	  <i>Leaf-who-Searches</i>
+	  <i>Trunk-who-Runs</i>
+	  <i>Trunk-who-Hunts</i>
+	  <i>Trunk-who-Makes</i>
+	  <i>Trunk-who-Grows</i>
+	  <i>Trunk-who-Travels</i>
+	  <i>Trunk-who-Swims</i>
+	  <i>Trunk-who-Triumphs</i>
+	  <i>Trunk-who-Laughs</i>
+	  <i>Trunk-who-Talks</i>
+	  <i>Trunk-who-Fights</i>
+	  <i>Trunk-who-Trains</i>
+	  <i>Trunk-who-Learns</i>
+	  <i>Trunk-who-Gathers</i>
+	  <i>Trunk-who-Smiles</i>
+	  <i>Trunk-who-Searches</i>
+	  <i>Tree-who-Runs</i>
+	  <i>Tree-who-Hunts</i>
+	  <i>Tree-who-Makes</i>
+	  <i>Tree-who-Grows</i>
+	  <i>Tree-who-Travels</i>
+	  <i>Tree-who-Swims</i>
+	  <i>Tree-who-Triumphs</i>
+	  <i>Tree-who-Laughs</i>
+	  <i>Tree-who-Talks</i>
+	  <i>Tree-who-Fights</i>
+	  <i>Tree-who-Trains</i>
+	  <i>Tree-who-Learns</i>
+	  <i>Tree-who-Gathers</i>
+	  <i>Tree-who-Smiles</i>
+	  <i>Tree-who-Searches</i>
+	  <i>Root-who-Runs</i>
+	  <i>Root-who-Hunts</i>
+	  <i>Root-who-Makes</i>
+	  <i>Root-who-Grows</i>
+	  <i>Root-who-Travels</i>
+	  <i>Root-who-Swims</i>
+	  <i>Root-who-Triumphs</i>
+	  <i>Root-who-Laughs</i>
+	  <i>Root-who-Talks</i>
+	  <i>Root-who-Fights</i>
+	  <i>Root-who-Trains</i>
+	  <i>Root-who-Learns</i>
+	  <i>Root-who-Gathers</i>
+	  <i>Root-who-Smiles</i>
+	  <i>Root-who-Searches</i>
+	  <i>Spear-who-Runs</i>
+	  <i>Spear-who-Hunts</i>
+	  <i>Spear-who-Makes</i>
+	  <i>Spear-who-Grows</i>
+	  <i>Spear-who-Travels</i>
+	  <i>Spear-who-Swims</i>
+	  <i>Spear-who-Triumphs</i>
+	  <i>Spear-who-Laughs</i>
+	  <i>Spear-who-Talks</i>
+	  <i>Spear-who-Fights</i>
+	  <i>Spear-who-Trains</i>
+	  <i>Spear-who-Learns</i>
+	  <i>Spear-who-Gathers</i>
+	  <i>Spear-who-Smiles</i>
+	  <i>Spear-who-Searches</i>
+	  <i>Tooth-who-Runs</i>
+	  <i>Tooth-who-Hunts</i>
+	  <i>Tooth-who-Makes</i>
+	  <i>Tooth-who-Grows</i>
+	  <i>Tooth-who-Travels</i>
+	  <i>Tooth-who-Swims</i>
+	  <i>Tooth-who-Triumphs</i>
+	  <i>Tooth-who-Laughs</i>
+	  <i>Tooth-who-Talks</i>
+	  <i>Tooth-who-Fights</i>
+	  <i>Tooth-who-Trains</i>
+	  <i>Tooth-who-Learns</i>
+	  <i>Tooth-who-Gathers</i>
+	  <i>Tooth-who-Smiles</i>
+	  <i>Tooth-who-Searches</i>
+	  <i>Claw-who-Runs</i>
+	  <i>Claw-who-Hunts</i>
+	  <i>Claw-who-Makes</i>
+	  <i>Claw-who-Grows</i>
+	  <i>Claw-who-Travels</i>
+	  <i>Claw-who-Swims</i>
+	  <i>Claw-who-Triumphs</i>
+	  <i>Claw-who-Laughs</i>
+	  <i>Claw-who-Talks</i>
+	  <i>Claw-who-Fights</i>
+	  <i>Claw-who-Trains</i>
+	  <i>Claw-who-Learns</i>
+	  <i>Claw-who-Gathers</i>
+	  <i>Claw-who-Smiles</i>
+	  <i>Claw-who-Searches</i>
+	  <i>Gem-who-Runs</i>
+	  <i>Gem-who-Hunts</i>
+	  <i>Gem-who-Makes</i>
+	  <i>Gem-who-Grows</i>
+	  <i>Gem-who-Travels</i>
+	  <i>Gem-who-Swims</i>
+	  <i>Gem-who-Triumphs</i>
+	  <i>Gem-who-Laughs</i>
+	  <i>Gem-who-Talks</i>
+	  <i>Gem-who-Fights</i>
+	  <i>Gem-who-Trains</i>
+	  <i>Gem-who-Learns</i>
+	  <i>Gem-who-Gathers</i>
+	  <i>Gem-who-Smiles</i>
+	  <i>Gem-who-Searches</i>
+	  <i>Hope-who-Runs</i>
+	  <i>Hope-who-Hunts</i>
+	  <i>Hope-who-Makes</i>
+	  <i>Hope-who-Grows</i>
+	  <i>Hope-who-Travels</i>
+	  <i>Hope-who-Swims</i>
+	  <i>Hope-who-Triumphs</i>
+	  <i>Hope-who-Laughs</i>
+	  <i>Hope-who-Talks</i>
+	  <i>Hope-who-Fights</i>
+	  <i>Hope-who-Trains</i>
+	  <i>Hope-who-Learns</i>
+	  <i>Hope-who-Gathers</i>
+	  <i>Hope-who-Smiles</i>
+	  <i>Hope-who-Searches</i>
+	  <i>Sun-who-Runs</i>
+	  <i>Sun-who-Hunts</i>
+	  <i>Sun-who-Makes</i>
+	  <i>Sun-who-Grows</i>
+	  <i>Sun-who-Travels</i>
+	  <i>Sun-who-Swims</i>
+	  <i>Sun-who-Triumphs</i>
+	  <i>Sun-who-Laughs</i>
+	  <i>Sun-who-Talks</i>
+	  <i>Sun-who-Fights</i>
+	  <i>Sun-who-Trains</i>
+	  <i>Sun-who-Learns</i>
+	  <i>Sun-who-Gathers</i>
+	  <i>Sun-who-Smiles</i>
+	  <i>Sun-who-Searches</i>
+	  <i>Moon-who-Runs</i>
+	  <i>Moon-who-Hunts</i>
+	  <i>Moon-who-Makes</i>
+	  <i>Moon-who-Grows</i>
+	  <i>Moon-who-Travels</i>
+	  <i>Moon-who-Swims</i>
+	  <i>Moon-who-Triumphs</i>
+	  <i>Moon-who-Laughs</i>
+	  <i>Moon-who-Talks</i>
+	  <i>Moon-who-Fights</i>
+	  <i>Moon-who-Trains</i>
+	  <i>Moon-who-Learns</i>
+	  <i>Moon-who-Gathers</i>
+	  <i>Moon-who-Smiles</i>
+	  <i>Moon-who-Searches</i>
+	  <i>Sky-who-Runs</i>
+	  <i>Sky-who-Hunts</i>
+	  <i>Sky-who-Makes</i>
+	  <i>Sky-who-Grows</i>
+	  <i>Sky-who-Travels</i>
+	  <i>Sky-who-Swims</i>
+	  <i>Sky-who-Triumphs</i>
+	  <i>Sky-who-Laughs</i>
+	  <i>Sky-who-Talks</i>
+	  <i>Sky-who-Fights</i>
+	  <i>Sky-who-Trains</i>
+	  <i>Sky-who-Learns</i>
+	  <i>Sky-who-Gathers</i>
+	  <i>Sky-who-Smiles</i>
+	  <i>Sky-who-Searches</i>
+	  <i>Cloud-who-Runs</i>
+	  <i>Cloud-who-Hunts</i>
+	  <i>Cloud-who-Makes</i>
+	  <i>Cloud-who-Grows</i>
+	  <i>Cloud-who-Travels</i>
+	  <i>Cloud-who-Swims</i>
+	  <i>Cloud-who-Triumphs</i>
+	  <i>Cloud-who-Laughs</i>
+	  <i>Cloud-who-Talks</i>
+	  <i>Cloud-who-Fights</i>
+	  <i>Cloud-who-Trains</i>
+	  <i>Cloud-who-Learns</i>
+	  <i>Cloud-who-Gathers</i>
+	  <i>Cloud-who-Smiles</i>
+	  <i>Cloud-who-Searches</i>
+	  <i>Gleam-who-Runs</i>
+	  <i>Gleam-who-Hunts</i>
+	  <i>Gleam-who-Makes</i>
+	  <i>Gleam-who-Grows</i>
+	  <i>Gleam-who-Travels</i>
+	  <i>Gleam-who-Swims</i>
+	  <i>Gleam-who-Triumphs</i>
+	  <i>Gleam-who-Laughs</i>
+	  <i>Gleam-who-Talks</i>
+	  <i>Gleam-who-Fights</i>
+	  <i>Gleam-who-Trains</i>
+	  <i>Gleam-who-Learns</i>
+	  <i>Gleam-who-Gathers</i>
+	  <i>Gleam-who-Smiles</i>
+	  <i>Gleam-who-Searches</i>
+	  <i>Warrior-who-Runs</i>
+	  <i>Warrior-who-Hunts</i>
+	  <i>Warrior-who-Makes</i>
+	  <i>Warrior-who-Grows</i>
+	  <i>Warrior-who-Travels</i>
+	  <i>Warrior-who-Swims</i>
+	  <i>Warrior-who-Triumphs</i>
+	  <i>Warrior-who-Laughs</i>
+	  <i>Warrior-who-Talks</i>
+	  <i>Warrior-who-Fights</i>
+	  <i>Warrior-who-Trains</i>
+	  <i>Warrior-who-Learns</i>
+	  <i>Warrior-who-Gathers</i>
+	  <i>Warrior-who-Smiles</i>
+	  <i>Warrior-who-Searches</i>
+	  <i>Victor-who-Runs</i>
+	  <i>Victor-who-Hunts</i>
+	  <i>Victor-who-Makes</i>
+	  <i>Victor-who-Grows</i>
+	  <i>Victor-who-Travels</i>
+	  <i>Victor-who-Swims</i>
+	  <i>Victor-who-Triumphs</i>
+	  <i>Victor-who-Laughs</i>
+	  <i>Victor-who-Talks</i>
+	  <i>Victor-who-Fights</i>
+	  <i>Victor-who-Trains</i>
+	  <i>Victor-who-Learns</i>
+	  <i>Victor-who-Gathers</i>
+	  <i>Victor-who-Smiles</i>
+	  <i>Victor-who-Searches</i>
+	  <i>Flower-who-Runs</i>
+	  <i>Flower-who-Hunts</i>
+	  <i>Flower-who-Makes</i>
+	  <i>Flower-who-Grows</i>
+	  <i>Flower-who-Travels</i>
+	  <i>Flower-who-Swims</i>
+	  <i>Flower-who-Triumphs</i>
+	  <i>Flower-who-Laughs</i>
+	  <i>Flower-who-Talks</i>
+	  <i>Flower-who-Fights</i>
+	  <i>Flower-who-Trains</i>
+	  <i>Flower-who-Learns</i>
+	  <i>Flower-who-Gathers</i>
+	  <i>Flower-who-Smiles</i>
+	  <i>Flower-who-Searches</i>
+	  <i>Petal-who-Runs</i>
+	  <i>Petal-who-Hunts</i>
+	  <i>Petal-who-Makes</i>
+	  <i>Petal-who-Grows</i>
+	  <i>Petal-who-Travels</i>
+	  <i>Petal-who-Swims</i>
+	  <i>Petal-who-Triumphs</i>
+	  <i>Petal-who-Laughs</i>
+	  <i>Petal-who-Talks</i>
+	  <i>Petal-who-Fights</i>
+	  <i>Petal-who-Trains</i>
+	  <i>Petal-who-Learns</i>
+	  <i>Petal-who-Gathers</i>
+	  <i>Petal-who-Smiles</i>
+	  <i>Petal-who-Searches</i>
+	  <i>Glory-who-Runs</i>
+	  <i>Glory-who-Hunts</i>
+	  <i>Glory-who-Makes</i>
+	  <i>Glory-who-Grows</i>
+	  <i>Glory-who-Travels</i>
+	  <i>Glory-who-Swims</i>
+	  <i>Glory-who-Triumphs</i>
+	  <i>Glory-who-Laughs</i>
+	  <i>Glory-who-Talks</i>
+	  <i>Glory-who-Fights</i>
+	  <i>Glory-who-Trains</i>
+	  <i>Glory-who-Learns</i>
+	  <i>Glory-who-Gathers</i>
+	  <i>Glory-who-Smiles</i>
+	  <i>Glory-who-Searches</i>
+	  <i>Heart-who-Runs</i>
+	  <i>Heart-who-Hunts</i>
+	  <i>Heart-who-Makes</i>
+	  <i>Heart-who-Grows</i>
+	  <i>Heart-who-Travels</i>
+	  <i>Heart-who-Swims</i>
+	  <i>Heart-who-Triumphs</i>
+	  <i>Heart-who-Laughs</i>
+	  <i>Heart-who-Talks</i>
+	  <i>Heart-who-Fights</i>
+	  <i>Heart-who-Trains</i>
+	  <i>Heart-who-Learns</i>
+	  <i>Heart-who-Gathers</i>
+	  <i>Heart-who-Smiles</i>
+	  <i>Heart-who-Searches</i>
+	  <i>River-who-Runs</i>
+	  <i>River-who-Hunts</i>
+	  <i>River-who-Makes</i>
+	  <i>River-who-Grows</i>
+	  <i>River-who-Travels</i>
+	  <i>River-who-Swims</i>
+	  <i>River-who-Triumphs</i>
+	  <i>River-who-Laughs</i>
+	  <i>River-who-Talks</i>
+	  <i>River-who-Fights</i>
+	  <i>River-who-Trains</i>
+	  <i>River-who-Learns</i>
+	  <i>River-who-Gathers</i>
+	  <i>River-who-Smiles</i>
+	  <i>River-who-Searches</i>
+	  <i>One-who-Runs-Well</i>
+	  <i>One-who-Runs-Swiftly</i>
+	  <i>One-who-Runs-Quickly</i>
+	  <i>One-who-Runs-Often</i>
+	  <i>One-who-Runs-Forever</i>
+	  <i>One-who-Runs-Daily</i>
+	  <i>One-who-Runs-Oddly</i>
+	  <i>One-who-Runs-Cleverly</i>
+	  <i>One-who-Runs-Best</i>
+	  <i>One-who-Runs-Humbly</i>
+	  <i>One-who-Runs-Calmly</i>
+	  <i>One-who-Runs-Freely</i>
+	  <i>One-who-Runs-Wildly</i>
+	  <i>One-who-Hunts-Well</i>
+	  <i>One-who-Hunts-Swiftly</i>
+	  <i>One-who-Hunts-Quickly</i>
+	  <i>One-who-Hunts-Often</i>
+	  <i>One-who-Hunts-Forever</i>
+	  <i>One-who-Hunts-Daily</i>
+	  <i>One-who-Hunts-Oddly</i>
+	  <i>One-who-Hunts-Cleverly</i>
+	  <i>One-who-Hunts-Best</i>
+	  <i>One-who-Hunts-Humbly</i>
+	  <i>One-who-Hunts-Calmly</i>
+	  <i>One-who-Hunts-Freely</i>
+	  <i>One-who-Hunts-Wildly</i>
+	  <i>One-who-Makes-Well</i>
+	  <i>One-who-Makes-Swiftly</i>
+	  <i>One-who-Makes-Quickly</i>
+	  <i>One-who-Makes-Often</i>
+	  <i>One-who-Makes-Forever</i>
+	  <i>One-who-Makes-Daily</i>
+	  <i>One-who-Makes-Oddly</i>
+	  <i>One-who-Makes-Cleverly</i>
+	  <i>One-who-Makes-Best</i>
+	  <i>One-who-Makes-Humbly</i>
+	  <i>One-who-Makes-Calmly</i>
+	  <i>One-who-Makes-Freely</i>
+	  <i>One-who-Makes-Wildly</i>
+	  <i>One-who-Grows-Well</i>
+	  <i>One-who-Grows-Swiftly</i>
+	  <i>One-who-Grows-Quickly</i>
+	  <i>One-who-Grows-Often</i>
+	  <i>One-who-Grows-Forever</i>
+	  <i>One-who-Grows-Daily</i>
+	  <i>One-who-Grows-Oddly</i>
+	  <i>One-who-Grows-Cleverly</i>
+	  <i>One-who-Grows-Best</i>
+	  <i>One-who-Grows-Humbly</i>
+	  <i>One-who-Grows-Calmly</i>
+	  <i>One-who-Grows-Freely</i>
+	  <i>One-who-Grows-Wildly</i>
+	  <i>One-who-Travels-Well</i>
+	  <i>One-who-Travels-Swiftly</i>
+	  <i>One-who-Travels-Quickly</i>
+	  <i>One-who-Travels-Often</i>
+	  <i>One-who-Travels-Forever</i>
+	  <i>One-who-Travels-Daily</i>
+	  <i>One-who-Travels-Oddly</i>
+	  <i>One-who-Travels-Cleverly</i>
+	  <i>One-who-Travels-Best</i>
+	  <i>One-who-Travels-Humbly</i>
+	  <i>One-who-Travels-Calmly</i>
+	  <i>One-who-Travels-Freely</i>
+	  <i>One-who-Travels-Wildly</i>
+	  <i>One-who-Swims-Well</i>
+	  <i>One-who-Swims-Swiftly</i>
+	  <i>One-who-Swims-Quickly</i>
+	  <i>One-who-Swims-Often</i>
+	  <i>One-who-Swims-Forever</i>
+	  <i>One-who-Swims-Daily</i>
+	  <i>One-who-Swims-Oddly</i>
+	  <i>One-who-Swims-Cleverly</i>
+	  <i>One-who-Swims-Best</i>
+	  <i>One-who-Swims-Humbly</i>
+	  <i>One-who-Swims-Calmly</i>
+	  <i>One-who-Swims-Freely</i>
+	  <i>One-who-Swims-Wildly</i>
+	  <i>One-who-Triumphs-Well</i>
+	  <i>One-who-Triumphs-Swiftly</i>
+	  <i>One-who-Triumphs-Quickly</i>
+	  <i>One-who-Triumphs-Often</i>
+	  <i>One-who-Triumphs-Forever</i>
+	  <i>One-who-Triumphs-Daily</i>
+	  <i>One-who-Triumphs-Oddly</i>
+	  <i>One-who-Triumphs-Cleverly</i>
+	  <i>One-who-Triumphs-Best</i>
+	  <i>One-who-Triumphs-Humbly</i>
+	  <i>One-who-Triumphs-Calmly</i>
+	  <i>One-who-Triumphs-Freely</i>
+	  <i>One-who-Triumphs-Wildly</i>
+	  <i>One-who-Laughs-Well</i>
+	  <i>One-who-Laughs-Swiftly</i>
+	  <i>One-who-Laughs-Quickly</i>
+	  <i>One-who-Laughs-Often</i>
+	  <i>One-who-Laughs-Forever</i>
+	  <i>One-who-Laughs-Daily</i>
+	  <i>One-who-Laughs-Oddly</i>
+	  <i>One-who-Laughs-Cleverly</i>
+	  <i>One-who-Laughs-Best</i>
+	  <i>One-who-Laughs-Humbly</i>
+	  <i>One-who-Laughs-Calmly</i>
+	  <i>One-who-Laughs-Freely</i>
+	  <i>One-who-Laughs-Wildly</i>
+	  <i>One-who-Talks-Well</i>
+	  <i>One-who-Talks-Swiftly</i>
+	  <i>One-who-Talks-Quickly</i>
+	  <i>One-who-Talks-Often</i>
+	  <i>One-who-Talks-Forever</i>
+	  <i>One-who-Talks-Daily</i>
+	  <i>One-who-Talks-Oddly</i>
+	  <i>One-who-Talks-Cleverly</i>
+	  <i>One-who-Talks-Best</i>
+	  <i>One-who-Talks-Humbly</i>
+	  <i>One-who-Talks-Calmly</i>
+	  <i>One-who-Talks-Freely</i>
+	  <i>One-who-Talks-Wildly</i>
+	  <i>One-who-Fights-Well</i>
+	  <i>One-who-Fights-Swiftly</i>
+	  <i>One-who-Fights-Quickly</i>
+	  <i>One-who-Fights-Often</i>
+	  <i>One-who-Fights-Forever</i>
+	  <i>One-who-Fights-Daily</i>
+	  <i>One-who-Fights-Oddly</i>
+	  <i>One-who-Fights-Cleverly</i>
+	  <i>One-who-Fights-Best</i>
+	  <i>One-who-Fights-Humbly</i>
+	  <i>One-who-Fights-Calmly</i>
+	  <i>One-who-Fights-Freely</i>
+	  <i>One-who-Fights-Wildly</i>
+	  <i>One-who-Trains-Well</i>
+	  <i>One-who-Trains-Swiftly</i>
+	  <i>One-who-Trains-Quickly</i>
+	  <i>One-who-Trains-Often</i>
+	  <i>One-who-Trains-Forever</i>
+	  <i>One-who-Trains-Daily</i>
+	  <i>One-who-Trains-Oddly</i>
+	  <i>One-who-Trains-Cleverly</i>
+	  <i>One-who-Trains-Best</i>
+	  <i>One-who-Trains-Humbly</i>
+	  <i>One-who-Trains-Calmly</i>
+	  <i>One-who-Trains-Freely</i>
+	  <i>One-who-Trains-Wildly</i>
+	  <i>One-who-Learns-Well</i>
+	  <i>One-who-Learns-Swiftly</i>
+	  <i>One-who-Learns-Quickly</i>
+	  <i>One-who-Learns-Often</i>
+	  <i>One-who-Learns-Forever</i>
+	  <i>One-who-Learns-Daily</i>
+	  <i>One-who-Learns-Oddly</i>
+	  <i>One-who-Learns-Cleverly</i>
+	  <i>One-who-Learns-Best</i>
+	  <i>One-who-Learns-Humbly</i>
+	  <i>One-who-Learns-Calmly</i>
+	  <i>One-who-Learns-Freely</i>
+	  <i>One-who-Learns-Wildly</i>
+	  <i>One-who-Gathers-Well</i>
+	  <i>One-who-Gathers-Swiftly</i>
+	  <i>One-who-Gathers-Quickly</i>
+	  <i>One-who-Gathers-Often</i>
+	  <i>One-who-Gathers-Forever</i>
+	  <i>One-who-Gathers-Daily</i>
+	  <i>One-who-Gathers-Oddly</i>
+	  <i>One-who-Gathers-Cleverly</i>
+	  <i>One-who-Gathers-Best</i>
+	  <i>One-who-Gathers-Humbly</i>
+	  <i>One-who-Gathers-Calmly</i>
+	  <i>One-who-Gathers-Freely</i>
+	  <i>One-who-Gathers-Wildly</i>
+	  <i>One-who-Smiles-Well</i>
+	  <i>One-who-Smiles-Swiftly</i>
+	  <i>One-who-Smiles-Quickly</i>
+	  <i>One-who-Smiles-Often</i>
+	  <i>One-who-Smiles-Forever</i>
+	  <i>One-who-Smiles-Daily</i>
+	  <i>One-who-Smiles-Oddly</i>
+	  <i>One-who-Smiles-Cleverly</i>
+	  <i>One-who-Smiles-Best</i>
+	  <i>One-who-Smiles-Humbly</i>
+	  <i>One-who-Smiles-Calmly</i>
+	  <i>One-who-Smiles-Freely</i>
+	  <i>One-who-Smiles-Wildly</i>
+	  <i>One-who-Searches-Well</i>
+	  <i>One-who-Searches-Swiftly</i>
+	  <i>One-who-Searches-Quickly</i>
+	  <i>One-who-Searches-Often</i>
+	  <i>One-who-Searches-Forever</i>
+	  <i>One-who-Searches-Daily</i>
+	  <i>One-who-Searches-Oddly</i>
+	  <i>One-who-Searches-Cleverly</i>
+	  <i>One-who-Searches-Best</i>
+	  <i>One-who-Searches-Humbly</i>
+	  <i>One-who-Searches-Calmly</i>
+	  <i>One-who-Searches-Freely</i>
+	  <i>One-who-Searches-Wildly</i>
+	</mPopNameList>
+  </igRace>
+</core_data>

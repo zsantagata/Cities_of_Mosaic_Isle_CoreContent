@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_one_biome list_of_options</a> <b>list</b> <c>exposurerisk_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_biome_exposurerisk_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- BIOME tag: exposurerisk_adj -->
+
+  <!-- this file holds the implementation of a custom script which takes a biome and from it, returns a string that is an adjective phrase related to the biome's danger towards exposed people -->
+  <!-- example: scorching, frigid -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFTerrainBiome inBiome, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_biome_exposurerisk_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFTerrainBiome)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_biome_exposurerisk_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFTerrainBiome inBiome = (IFTerrainBiome)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inBiome == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_biome_exposurerisk_adj_phrase custom script received invalid arguments: inBiome cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	
+	List&lt;string&gt; possibleAdjs = new List&lt;string&gt;();
+	foreach(string tag in inBiome.getTagList())
+	{
+		if(tag.Contains("exposurerisk_adj:"))
+		{
+			possibleAdjs.Add(tag.Replace("exposurerisk_adj:", "").ToLower());
+		}
+	}
+	
+	if(possibleAdjs.Count &gt; 0)
+	{
+		outDescription = possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)];
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script popconsumption</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+	<!-- pop consumption works like this: -->
+	<!-- 1) if a pop is roughing it (no home and not in a delegation), it consumes nothing from the resource pool -->
+	<!-- 2) otherwise, a list of consumable resources accessible by the pop is assembled. -->
+	<!-- 3) the pop gets together a list of high-protein food to eat (even portions from all available) until its protein need is met or there is no more high-protein food to consume, whichever comes first -->
+	<!-- 4) after 3), the pop gets together a list of additional food to eat (even portions from all available, whatever its protein ratio) until its MCal need is met or there is no more food to consume, whichever comes first -->
+	<!-- 5) the total sum of protein & MCal is calculated by simple addition (and weighting in the case of protein), while the total quality of each are calculated using calcOutputFromInputs.  The quality multiplier and total sums are fed into PopHealth scripts. -->
+	<!-- 6) the highest quality HStasis, Wound Recovery, and Illness Recovery items accessible (assuming they have greater than 1.0 quantity) are fed into the PopHealth scripts (min quality is used if none are available) -->
+	<!-- 7) food resources are decremented from the resource pool here.  HStasis, wound recovery, and illness recovery items are not decremented here. -->
+	
+  <!-- this file holds the implementation of a custom script which handles the usual (food, hstasis, wound cure, ill cure) resources that a pop consumes from a resource pool each day -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop,
+	IFResourcePool inResPool //if this is null, the pop is roughing it
+	
+	There are eleven outputs:
+	bool outRoughingIt,
+	double outProtConsumed,
+	double outProtMult,
+	double outMCalConsumed,
+	double outMCalMult,
+	Int64 outHStasisMOID,
+	double outHStasisQual,
+	Int64 outWoundCureMOID,
+	double outWoundCureQual,
+	Int64 outIllnessCureMOID,
+	double outIllCureQual
+	-->
+	<i1><a>popConsumption</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop), typeof(IFResourcePool)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popConsumption custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	IFResourcePool inResPool = (IFResourcePool)inArguments[1];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+    double min = consts.getResourceQualityMin();
+			
+	//these are out variables; because there are so many we should declare them with their names and put them into toReturn later
+    bool outRoughingIt = (!inPop.hasHomeBuilding() &amp;&amp; !(inPop.hasDelegation() || (inPop.getPopLocation() == IFPop.ePopLocation.cInDelegation))) || (inResPool == null);
+    double outProtConsumed = 0.0d;
+    double outProtMult = 1.0d;
+    double outMCalConsumed = 0.0d;
+    double outMCalMult = 1.0d;
+	UInt32 outHStasisMOID = 0;
+    double outHStasisQual = min;
+    UInt32 outWoundCureMOID = 0;
+    double outWoundCureQual = min;
+	UInt32 outIllnessCureMOID = 0;
+    double outIllCureQual = min;
+			
+	//for reference:
+	double min_mcal_for_health = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out bool success);
+	if(!success) min_mcal_for_health = 2.0d;
+	double prot_value_even = customConsts.getIntConst("popHealth_protein protein_daily min", out success);
+	if(!success) prot_value_even = 0x100;
+	prot_value_even /= min_mcal_for_health;
+	
+	if (!outRoughingIt)
+    {
+		IFBuilding home = inPop.getHomeBuilding();
+		List&lt;double&gt; quantity_list = new List&lt;double&gt;();
+		List&lt;double&gt; quality_list = new List&lt;double&gt;();
+
+		int prot_sources_avail = 0;
+		int mcal_sources_avail = 0;
+        Int64 sum_prot_of_sources_avail = 0;
+        //first, create a big list with all the detail we need in it:
+        List&lt;Tuple&lt;IFResource, double, double&gt;&gt; resource_CurrentCount_LeftToEat = new List&lt;Tuple&lt;IFResource, double, double&gt;&gt;(); //resource_ptr, resource_pool_count, resource_pool_quality
+		List&lt;double&gt; amountConsumed = new List&lt;double&gt;(); //I'm not merging this with the list of tuples above because tuples don't change after creation (would need to recreate which is a pain).  Indexes are the same.
+
+        for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++) //start with moid of 1 because 0 is the default object
+        {
+            IFResource res_ptr = (IFResource)getAPI().getMOFromMOID("resources", moid);
+            if ((res_ptr.isFood() || res_ptr.isHStasis() || res_ptr.isDiseaseHeal() || res_ptr.isWoundHeal()) &amp;&amp; ((inPop.hasDelegation() || (inPop.getPopLocation() == IFPop.ePopLocation.cInDelegation)) || (home.getAccessibleResources()[moid])) &amp;&amp; getAPI().isRaceAllowedToConsumeResource(inPop.getRace(), res_ptr))
+            {
+                double amount_in_pool = inResPool.getResourceQuantity(res_ptr);
+                resource_CurrentCount_LeftToEat.Add(Tuple.Create(
+                    res_ptr
+                    , amount_in_pool
+                    , inResPool.getResourceQuality(res_ptr)
+                    ));
+				amountConsumed.Add(0.0d);
+                //count of protein/mcal available:
+				if (res_ptr.isFood() &amp;&amp; (amount_in_pool &gt; 0.0d))
+				{
+					mcal_sources_avail++;
+					if (res_ptr.getProteinRatio() &gt; prot_value_even)
+					{
+						prot_sources_avail++;
+						sum_prot_of_sources_avail += res_ptr.getProteinRatio();
+					}
+				}
+				//find best hstasis:
+				if (res_ptr.isHStasis() &amp;&amp; amount_in_pool &gt;= 1.0d)
+				{
+					double newQual = inResPool.getResourceQuality(res_ptr);
+					if (newQual &gt; outHStasisQual)
+					{
+						outHStasisMOID = (UInt32)moid;
+						outHStasisQual = newQual;
+					}
+				}
+				//find best woundHeal:
+				if (res_ptr.isWoundHeal() &amp;&amp; amount_in_pool &gt;= 1.0d)
+				{
+					double newQual = inResPool.getResourceQuality(res_ptr);
+					if (newQual &gt; outWoundCureQual)
+					{
+						outWoundCureMOID = (UInt32)moid;
+						outWoundCureQual = newQual;
+					}
+				}
+				//find best diseaseHeal:
+				if (res_ptr.isDiseaseHeal() &amp;&amp; amount_in_pool &gt;= 1.0d)
+				{
+					double newQual = inResPool.getResourceQuality(res_ptr);
+					if (newQual &gt; outIllCureQual)
+					{
+						outIllnessCureMOID = (UInt32)moid;
+						outIllCureQual = newQual;
+					}
+				}
+			}
+		}
+		addDebugMessage(inScriptInstance, "of " + resource_CurrentCount_LeftToEat.Count + " total consumable resources, " + mcal_sources_avail + " are food," + prot_sources_avail + " of which are protein-heavy, " + (outHStasisMOID == 0 ? "no hstasis goods are available" : "an hstasis good of quality " + outHStasisQual + " is available") + ", " + (outWoundCureMOID == 0 ? "no wound_cure goods are available" : "a wound_cure good of quality " + outWoundCureQual + " is available") + ", " + (outIllnessCureMOID == 0 ? "no illness_cure goods are available" : "an illness_cure good of quality " + outIllCureQual + " is available"));
+
+		//eat protein and then mcal
+		double protein_outMCalConsumed = 0;
+		if (prot_sources_avail != 0)
+		{
+			Int64 proteinDailyMin = customConsts.getIntConst("popHealth_protein protein_daily min", out success);
+			if(!success) proteinDailyMin = 0x100;
+			double consume_of_each = ((double)proteinDailyMin) / sum_prot_of_sources_avail; //if we want to consume Y amount of X different protein-heavy foods to meet the goal of (eating only a perfectly-even food) this is how to do it
+			for (int i = 0; i &lt; resource_CurrentCount_LeftToEat.Count; i++)
+			{
+				if (resource_CurrentCount_LeftToEat[i].Item1.isFood() &amp;&amp; resource_CurrentCount_LeftToEat[i].Item1.getProteinRatio() &gt; prot_value_even)
+				{
+					if (resource_CurrentCount_LeftToEat[i].Item2 &lt; consume_of_each)
+					{
+						outProtConsumed += (resource_CurrentCount_LeftToEat[i].Item2 * resource_CurrentCount_LeftToEat[i].Item1.getProteinRatio());
+						quantity_list.Add(resource_CurrentCount_LeftToEat[i].Item2 / consume_of_each);
+						quality_list.Add(resource_CurrentCount_LeftToEat[i].Item3);
+						protein_outMCalConsumed += resource_CurrentCount_LeftToEat[i].Item2;
+						amountConsumed[i] += resource_CurrentCount_LeftToEat[i].Item2;
+					}
+					else
+					{
+						outProtConsumed += (consume_of_each * resource_CurrentCount_LeftToEat[i].Item1.getProteinRatio());
+						quantity_list.Add(1.0d);
+						quality_list.Add(resource_CurrentCount_LeftToEat[i].Item3);
+						protein_outMCalConsumed += consume_of_each;
+						amountConsumed[i] += consume_of_each;
+					}
+				}
+			}
+
+			outProtMult = getAPI().calcOutputFromInputs(quantity_list, quality_list, false, true);
+			quantity_list = new List&lt;double&gt;();
+			quality_list = new List&lt;double&gt;();
+		}
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " consumed " + protein_outMCalConsumed + " MCal of protein-heavy foods, resulting in protein consumed of " + outProtConsumed + " with protein factor (due to quality) of " + outProtMult);
+
+		outMCalConsumed = protein_outMCalConsumed;
+		double non_prot_mcal_to_consume = min_mcal_for_health - protein_outMCalConsumed;
+
+		if (mcal_sources_avail &gt; 0)
+		{
+			double consume_of_each = non_prot_mcal_to_consume / mcal_sources_avail;
+			for (int i = 0; i &lt; resource_CurrentCount_LeftToEat.Count; i++)
+			{
+				if (resource_CurrentCount_LeftToEat[i].Item1.isFood())
+				{
+					if (resource_CurrentCount_LeftToEat[i].Item2 &lt; consume_of_each)
+					{
+						outMCalConsumed += resource_CurrentCount_LeftToEat[i].Item2;
+						outProtConsumed += (resource_CurrentCount_LeftToEat[i].Item2 * resource_CurrentCount_LeftToEat[i].Item1.getProteinRatio()); //still have to tally up protein from protein-light sources
+						quantity_list.Add(resource_CurrentCount_LeftToEat[i].Item2 / consume_of_each);
+						quality_list.Add(resource_CurrentCount_LeftToEat[i].Item3);
+						amountConsumed[i] += resource_CurrentCount_LeftToEat[i].Item2;
+					}
+					else
+					{
+						outMCalConsumed += consume_of_each;
+						outProtConsumed += (consume_of_each * resource_CurrentCount_LeftToEat[i].Item1.getProteinRatio()); //still have to tally up protein from protein-light sources
+						quantity_list.Add(1.0d);
+						quality_list.Add(resource_CurrentCount_LeftToEat[i].Item3);
+						amountConsumed[i] += consume_of_each;
+					}
+				}
+			}
+
+			outMCalMult = getAPI().calcOutputFromInputs(quantity_list, quality_list, false, true);
+		}
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " consumed " + outMCalConsumed + " MCal with MCal factor (due to quality) of " + outMCalMult + ", resulting in new total protein consumed of " + outProtConsumed);
+
+		//here is where the pop actually consumes food
+		for(int i = 0; i &lt; resource_CurrentCount_LeftToEat.Count; i++)
+		{
+			inResPool.subtractResource(resource_CurrentCount_LeftToEat[i].Item1.getMOID(), amountConsumed[i], inPop.getHomeBuilding(), inPop);
+		}
+	}
+	
+	//the pop has now consumed non-drug resources, so consume drugs now:
+	customScripts.runCustomScript("popDrugConsumption", new List&lt;object&gt;() { inPop, outRoughingIt }, out _);
+	
+	//all output variables are correct so assemble them in the right order now:
+	List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	toReturn.Add(outRoughingIt);
+	toReturn.Add(outProtConsumed);
+	toReturn.Add(outProtMult);
+	toReturn.Add(outMCalConsumed);
+	toReturn.Add(outMCalMult);
+	toReturn.Add((Int64)outHStasisMOID);
+	toReturn.Add(outHStasisQual);
+	toReturn.Add((Int64)outWoundCureMOID);
+	toReturn.Add(outWoundCureQual);
+	toReturn.Add((Int64)outIllnessCureMOID);
+	toReturn.Add(outIllCureQual);
+	return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

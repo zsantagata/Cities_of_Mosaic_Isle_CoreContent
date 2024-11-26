@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- as race happiness goes from min to max, desired drug consumption of a single pop goes ranges over the below -->
+	  <i1><a>popdrugconsumption min_happiness one_pop_desire quantity</a> <b>double</b> <c>2.5</c></i1>
+	  <i1><a>popdrugconsumption max_happiness one_pop_desire quantity</a> <b>double</b> <c>0.75</c></i1>
+	  
+	  <!-- the happiness added to the race is: (1 / race total pop count) * (happiness of one pop being fulfilled) * (actual output / average output reference) -->
+	  <!-- note that yes, in one day, pops of a race will decrease their desired drug intake because other pops around them are fulfilling theirs and making the race happy.  That's okay -->
+	  <i1><a>popdrugconsumption one_pop_fulfilled happiness proportion</a> <b>double</b> <c>0.35</c></i1> <!-- so if all pops of a race have access to enough quantity of one average-quality drug, race happiness will be increased by this every day -->
+	  
+	  <i1><a>popdrugconsumption happiness_cause name before_replace_text</a> <b>string</b>
+	  <c>Drug Consumption</c></i1>
+	  <i1><a>popdrugconsumption happiness_cause text_no_additionals before_replace_text</a> <b>string</b>
+	  <c>Pops have consumed some drugs to take the edge off.  This happiness will disappear when sobriety returns.</c></i1>
+	  <i1><a>popdrugconsumption happiness_cause text_additionals before_replace_text</a> <b>string</b>
+	  <c>Pops have consumed some drugs to take the edge off.  This happiness will disappear when sobriety returns.  Similarly, members of this race can consume [0] to increase their happiness.</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script popdrugconsumption</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+	<!-- pop drug consumption works like this: -->
+	<!-- 0) only loyal pops on the local map consume drugs -->
+	<!-- 1) if this is the first time the script is being run this day, then happiness from yesterday's drugs disappears (PSA: drugs are fleeting happiness, kids) -->
+	<!-- 2) if a pop is wounded, ill, or pregnant, it consumes nothing from the resource pool -->
+	<!-- 3) otherwise, a list of consumable drugs accessible by the pop is assembled.  If the pop is roughing it, this is all drugs available to their race; otherwise it depends on their home and race -->
+	<!-- 4) from the happiness of the race in the community, a total amount of drug quantity is calculated -->
+	<!-- 5) a random selection and quantity of drugs are chosen to be consumed, and consumed, by the pop -->
+	<!-- 6) based on the quantity and quality of drugs consumed, happiness is added to the race.  If the happiness value already exists, it is appended to (this prevents message spam on the happiness cause screen) -->
+	
+  <!-- this file holds the implementation of a custom script which handles the drug resources that a pop consumes from a resource pool each day, based on happiness -->
+  <!-- the inputs are: inPop, inRoughingIt.  There are no outputs -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop,
+	bool inRoughingIt
+	-->
+	<i1><a>popDrugConsumption</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop), typeof(bool)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popDrugConsumption custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	bool inRoughingIt = (bool)inArguments[1];
+	
+	if(inPop == null)
+	{
+		throw new ArgumentException("popDrugConsumption custom script received invalid arguments: inPop cannot be null");
+		return null;
+	}
+	if(inRoughingIt)
+	{
+		addDebugMessage(inScriptInstance, "pops without housing don't consume drugs from city stockpiles");
+		return null;
+	}
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	bool success = false;
+			
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+	
+	if(inPop.getCommunity() != localCommunity)
+	{
+		addDebugMessage(inScriptInstance, "only pops from the local community consume drugs from the local resource pool, returning early");
+		return null;
+	}
+	if(!getAPI().getPopsWithinLocalCommunityMap().Contains(inPop))
+	{
+		addDebugMessage(inScriptInstance, "only pops on the local community map consume drugs from the local resource pool, returning early");
+		return null;
+	}
+	
+	string happinessName = customConsts.getStringConst("popdrugconsumption happiness_cause name before_replace_text", out success);
+	if(!success) happinessName = "Drug Consumption";
+	string variableToLookFor = "popDrugConsumption_hasBeenRunToday";
+	IFHappinessCollection happiness = localCommunity.getDomesticComponent().getHappinessCollection();
+	if(variableHandler.getInt(variableToLookFor, out success) == 0)
+	{
+		variableHandler.storeIntVariable(-1L, variableToLookFor, 1L);
+		addDebugMessage(inScriptInstance, "first time script has run today, so clearing previous day's happiness from drugs");
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("races"); moid++)
+		{
+			IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+			if(race != null)
+			{
+				var allCauses = happiness.getAllCausesWithName(race, happinessName);
+				foreach(IFHappinessCause cause in allCauses)
+				{
+					happiness.removeHappinessCause(race, cause);
+				}
+			}
+		}
+	}
+	
+	if(inPop.isWounded() || inPop.isIll() || inPop.isPregnant())
+	{
+		addDebugMessage(inScriptInstance, "pops with health conditions do not consume drugs (although they might feel like they really need it), returning early");
+		return null;
+	}
+	
+	List&lt;IFResource&gt; resourcesToConsumeAsDrugs = new List&lt;IFResource&gt;();
+	List&lt;IFResource&gt; descriptionAdditionalResourcesToConsumeAsDrugs = new List&lt;IFResource&gt;();
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res != null)
+		{
+			bool checkForAvailable = false;
+			if(inPop.getRace().isResourceNotConsumedByThisRace(res))
+				continue;
+			if(inPop.getRace().isResourceNoHappinessFromConsuming(res))
+				continue;
+			if(res.isDrug())
+			{
+				checkForAvailable = true;
+			}
+			//check if the race treats this resource as a drug (AKA happiness-from-consumption)
+			else if(inPop.getRace().isResourceMoreHappinessFromConsuming(res)) //TODO when flags for "treat this resource as a drug" are implemented change this
+			{
+				checkForAvailable = true;
+				descriptionAdditionalResourcesToConsumeAsDrugs.Add(res);
+			}
+			
+			if(checkForAvailable &amp;&amp; getAPI().isRaceAllowedToConsumeResource(inPop.getRace(), res))
+			{
+				if(inPop.hasHomeBuilding() &amp;&amp; inPop.getHomeBuilding().getAccessibleResources()[moid])
+					resourcesToConsumeAsDrugs.Add(res);
+			}
+		}
+	}
+	
+	if(resourcesToConsumeAsDrugs.Count == 0)
+	{
+		addDebugMessage(inScriptInstance, "this pop has no access to any kinds of drugs, returning early");
+		return null;
+	}
+	
+	double minHappinessQuantityDesired = customConsts.getDoubleConst("popdrugconsumption min_happiness one_pop_desire quantity", out success);
+	if(!success) minHappinessQuantityDesired = 2.5d;
+	double maxHappinessQuantityDesired = customConsts.getDoubleConst("popdrugconsumption max_happiness one_pop_desire quantity", out success);
+	if(!success) maxHappinessQuantityDesired = 0.75d;
+	double minHappiness = consts.getHappinessMin();
+	double maxHappiness = consts.getHappinessMax();
+	double quantityDesired = (((happiness.getRaceHappiness(inPop.getRace()) - minHappiness) / (maxHappiness - minHappiness)) *
+		(maxHappinessQuantityDesired - minHappinessQuantityDesired)) + minHappinessQuantityDesired;
+	
+	//this actually consumes the drugs:
+	if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;() { localCommunity.getResourcePool(), true, false, resourcesToConsumeAsDrugs, quantityDesired, false, 
+		false, true /*prioritize highest-quality drugs*/, false, false, false, false }, out List&lt;object&gt; drugsConsumed, false, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+	{
+		List&lt;double&gt; quantities = new List&lt;double&gt;();
+		List&lt;double&gt; qualities = new List&lt;double&gt;();
+		double totalQuantity = (double)drugsConsumed[0];
+		if(totalQuantity == 0.0d)
+		{
+			addDebugMessage(inScriptInstance, "this pop has no access to any quantity of drugs, returning early");
+			return null;
+		}
+		
+		foreach(var kvpair in ((Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)drugsConsumed[2]))
+		{
+			quantities.Add(kvpair.Value.Item1);
+			qualities.Add(kvpair.Value.Item2);
+			localCommunity.getResourcePool().subtractResources(kvpair.Key, kvpair.Value.Item1, inPop.getHomeBuilding(), inPop);
+		}
+		
+		double OFI = getAPI().calcOutputFromInputs(quantities, qualities, false, true); //treat drugs as substitutes to one another
+		double outputFactor = OFI / consts.getAverageInputFactor();
+		
+		double happinessProportionCustomConst = customConsts.getDoubleConst("popdrugconsumption one_pop_fulfilled happiness proportion", out success);
+		if(!success) happinessProportionCustomConst = 0.35d;
+		
+		double happinessAdded = (maxHappiness - minHappiness) * happinessProportionCustomConst * outputFactor / localCommunity.getPopCountOfRace(inPop.getRace());
+		
+		//if the happiness cause already exists, change its quantity; otherwise add it
+		if(happiness.getAllCausesWithName(inPop.getRace(), happinessName).Count != 0)
+		{
+			happiness.getAllCausesWithName(inPop.getRace(), happinessName)[0].setCurrentValue(happiness.getAllCausesWithName(inPop.getRace(), happinessName)[0].getCurrentValue() + happinessAdded);
+		}
+		else
+		{
+			string happinessDescription = "";
+			if(descriptionAdditionalResourcesToConsumeAsDrugs.Count == 0)
+			{
+				happinessDescription = customConsts.getStringConst("popdrugconsumption happiness_cause text_no_additionals before_replace_text", out success);
+				if(!success) happinessDescription = "Pops have consumed some drugs to take the edge off.  This happiness will disappear when sobriety returns.";
+			}
+			else
+			{
+				happinessDescription = customConsts.getStringConst("popdrugconsumption happiness_cause text_additionals before_replace_text", out success);
+				if(!success) happinessDescription = "Pops have consumed some drugs to take the edge off.  This happiness will disappear when sobriety returns.  Similarly, members of this race can consume [0] to increase their happiness.";
+				
+				if(customScripts.runCustomScriptCheckTypes("replaceDescriptionMarkupKind_mult_resource_name_noun_list", new List&lt;object&gt;() { descriptionAdditionalResourcesToConsumeAsDrugs },
+					out List&lt;object&gt; returnDescription, false, typeof(string)))
+				{
+					happinessDescription = happinessDescription.Replace("[0]", returnDescription[0].ToString());
+				}
+			}
+			
+			happiness.addNewHappinessCauseToday(inPop.getRace(), happinessName, happinessDescription, happinessAdded, false);
+		}
+	}
+	
+	return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

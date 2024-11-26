@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of a scripts related to common buttons on a building's menu -->
+  <gamescripts name="default">
+	<!-- can hire pop at workplace has two input arguments: IFBuilding in question, IFPop in question.  There is one output: bool outCanPopBeHired. -->
+	<!-- this script is called when the pop selector needs to determine if a pop in its list is selected for possible hiring or skipped over -->
+	<!-- note that if the workplace is also a mustering point, the output of this script will be ANDed with the output of mCanAssignPopToMusteringPoint -->
+	<mCanHirePopAtWorkplace>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFBuilding workplace = (IFBuilding)inArguments[0];
+			IFPop inPop = (IFPop)inArguments[1];
+			
+			IFBuilding.eBuildingWaterStatus waterStatus = workplace.getBuildingWaterStatus();
+			
+			//TODO any individual considerations
+			if(           !inPop.hasWorkplaceBuilding()
+			   &amp;&amp; (workplace.getWorkplaceComponent().getWorkerPops().Count &lt; workplace.getBuildingKind().getMaxWorkers())
+			   &amp;&amp; inPop.isCapableOfWorking()
+			   &amp;&amp; (!inPop.isIll() || getAPI().canIllPopsOfRaceWorkInIndustry(inPop.getRace(), workplace.getBuildingKind().getIndustry())) //we need to check this here instead of in isCapableOfWorking because that function does not know what the industry of the proposed workplace is
+			   &amp;&amp; !inPop.getRace().isIndustryCannotWorkIn(workplace.getBuildingKind().getIndustry())
+			   &amp;&amp; !workplace.isBuildingDestroyed()
+			   &amp;&amp; (inPop.getPathfindingState() != "fighting") //TODO figure out how best to make this a const/accessible thing
+			   &amp;&amp; ((waterStatus == IFBuilding.eBuildingWaterStatus.cMixed) || (waterStatus == IFBuilding.eBuildingWaterStatus.cOverwaterEntirely &amp;&amp; inPop.getRace().isCanBreatheOverwater()) || (waterStatus == IFBuilding.eBuildingWaterStatus.cUnderwaterEntirely &amp;&amp; inPop.getRace().isCanBreatheUnderwater()))
+			  )
+			{
+				return new List&lt;object&gt;() { true };
+			}
+			
+			return new List&lt;object&gt;() { false };
+    </mCanHirePopAtWorkplace>
+	
+	<!-- can assign pop to mustering point has two input arguments: IFBuilding in question, IFPop in question.  There is one output: bool outCanPopBeAssigned. -->
+	<!-- this script is called when the pop selector needs to determine if a pop in its list is selected for possible assignment or skipped over -->
+	<!-- note that if the mustering point is also a workplace, the output of this script will be ANDed with the output of mCanHirePopAtWorkplace -->
+	<mCanAssignPopToMusteringPoint>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFBuilding musteringPoint = (IFBuilding)inArguments[0];
+			IFPop inPop = (IFPop)inArguments[1];
+			
+			IFBuilding.eBuildingWaterStatus waterStatus = musteringPoint.getBuildingWaterStatus();
+			
+			//TODO any individual considerations
+			if(           !inPop.hasMusteringPoint()
+			   &amp;&amp; inPop.isCapableOfMustering()
+			   &amp;&amp; !musteringPoint.isBuildingDestroyed()
+			   &amp;&amp; (inPop.getPathfindingState().ToLower() != "fighting") //TODO figure out how best to make this a const/accessible thing
+			   &amp;&amp; ((waterStatus == IFBuilding.eBuildingWaterStatus.cMixed) || (waterStatus == IFBuilding.eBuildingWaterStatus.cOverwaterEntirely &amp;&amp; inPop.getRace().isCanBreatheOverwater()) || (waterStatus == IFBuilding.eBuildingWaterStatus.cUnderwaterEntirely &amp;&amp; inPop.getRace().isCanBreatheUnderwater()))
+			  )
+			{
+				return new List&lt;object&gt;() { true };
+			}
+			
+			return new List&lt;object&gt;() { false };
+    </mCanAssignPopToMusteringPoint>
+	
+	<!-- fire pop at workplace has two input arguments: IFBuilding in question, IFPop in question.  There are no outputs. -->
+	<!-- this script is called when the button is clicked on a building's selection menu, or otherwise (such as through info view menus or assigning to a delegation) when the PLAYER takes action to remove the pop from their workplace.  This script is NOT called just generally when a pop is no longer working at its workplace -->
+	<!-- this is mostly a script because events or other things might want/need to know when a pop is fired by the player -->
+	<mFirePopAtWorkplace>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFBuilding workplace = (IFBuilding)inArguments[0];
+			IFPop inPop = (IFPop)inArguments[1];
+			
+			//just a check:
+			if(workplace.getWorkplaceComponent().getWorkerPops().Contains(inPop))
+			{
+				inPop.setWorkplaceBuilding(null);
+			}
+	
+			return null;
+	</mFirePopAtWorkplace>
+	
+	<!-- rotate output at workplace has one input arguments: IFBuilding in question.  There are no outputs. -->
+	<!-- this script is called when the button is clicked on a building's selection menu -->
+	<mRotateOutputResource>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFBuilding workplace = (IFBuilding)inArguments[0];
+			
+			bool can_go_direct_to_script = workplace.getBuildingKind().canOutputDirectToScript();
+			if(workplace.getBuildingKind().getOutputResources().Count == 0) //this building can only go direct to script
+			{
+				if(can_go_direct_to_script)
+				{
+					workplace.getWorkplaceComponent().setOutputResourceChosen(null);
+				}
+				//else this workplace is doing something we haven't considered, nothing else to do here:
+				return null;
+			}
+			
+			int old_index = workplace.getBuildingKind().getOutputResources().IndexOf(workplace.getWorkplaceComponent().getOutputResourceChosen());
+			if(old_index &lt; 0) //IndexOf can return -1 if not found
+			{
+				old_index = can_go_direct_to_script ? workplace.getBuildingKind().getOutputResources().Count : 0;
+			}
+			int new_index = (old_index &gt;= workplace.getBuildingKind().getOutputResources().Count) ? 0 : old_index + 1;
+			while(new_index != old_index) //general note: while loops are easier to accidentally make into infinite loops than for loops, so be careful about their conditions
+			{
+				if(new_index &lt; workplace.getBuildingKind().getOutputResources().Count)
+				{
+					IFResource next_resource = workplace.getBuildingKind().getOutputResources()[new_index];
+					//TODO a condition for "if this is a land-workplace, can the workplace actually output the resource given its terrain sources around?
+					workplace.getWorkplaceComponent().setOutputResourceChosen(next_resource);
+					return null;
+				}
+				else if(can_go_direct_to_script)
+				{
+					workplace.getWorkplaceComponent().setOutputResourceChosen(null);
+					return null;
+				}
+				new_index = (new_index &gt;= workplace.getBuildingKind().getOutputResources().Count) ? 0 : new_index + 1;
+			}
+			
+			return null;
+	</mRotateOutputResource>
+	
+  
+  
+  
+  </gamescripts>
+  
+</core_data>

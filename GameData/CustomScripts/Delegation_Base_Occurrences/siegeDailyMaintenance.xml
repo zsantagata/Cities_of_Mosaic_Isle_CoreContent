@@ -1,0 +1,192 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script siegedailymaintenance</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which handles day-over-day regular maintenance for delegations which are sieging a community, and the community under siege -->
+  <!-- unlike a normal foreign community's day-by-day, the foreign community under siege does not call any script relating to its economic strength calculation during the siege -->
+  <!-- the delegation is treated mostly as a normal delegation in contrast. -->
+  <!-- This script does not handle morale or other siege-specific considerations. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation
+	
+	There is no output. -->
+	<i1><a>siegeDailyMaintenance</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation)   }
+	  }, out _))
+	{
+		throw new ArgumentException("siegeDailyMaintenance custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	bool success = false;
+	
+	//siege camp (delegation side):
+	//deaths from wounds/illness/old age
+	//pop consumption and health calculation
+	//resource decay
+	//illness calculation
+	//wound calculation (exposure)
+	
+	List&lt;IFPop&gt; copiedListOfPops = new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()); //make darn certain that the collection of a foreach is not modified in the loop
+	foreach(IFPop pop in copiedListOfPops)
+	{
+		customScripts.runCustomScript("delegation_checkDeath", new List&lt;object&gt;() { pop }, out _);
+	}
+	
+	customScripts.runCustomScript("delegation_healthChange", new List&lt;object&gt;() { inDelegation }, out _); //deals with consumption and pop health changes
+	
+	customScripts.runCustomScript("delegation_illnesses", new List&lt;object&gt;() { inDelegation }, out _);
+	
+	customScripts.runCustomScript("delegation_births", new List&lt;object&gt;() { inDelegation }, out _);
+	
+	foreach(IFPop pop in copiedListOfPops)
+	{
+		customScripts.runCustomScript("popWoundFromExposure", new List&lt;object&gt;() { pop }, out _);
+	}
+	
+	//community under siege:
+	//deaths from wounds/illness/old age
+	//pop consumption and health calculation
+	//[no resource decay]
+	//illness spread (different calculation than delegation side)
+	//[no wound calculation]
+	
+	IFResourcePool communityResourcePool = inDelegation.getTargetCommunity().getResourcePool();
+	copiedListOfPops = new List&lt;IFPop&gt;(inDelegation.getTargetCommunity().getPopsLoyalToCommunity(true, false)); //make darn certain that the collection of a foreach is not modified in the loop
+	foreach(IFPop pop in copiedListOfPops)
+	{
+		if(pop.hasDelegation() || (pop.getPopLocation() != IFPop.ePopLocation.cInForeignCommunity))
+			continue;
+			
+		customScripts.runCustomScript("delegation_checkDeath", new List&lt;object&gt;() { pop }, out _);
+	
+		if(customScripts.runCustomScriptCheckTypes("popConsumption", new List&lt;object&gt;() { pop, communityResourcePool }, out List&lt;object&gt; consumptionOutputs, false, 
+			typeof(bool), typeof(double), typeof(double), typeof(double), typeof(double),
+			typeof(Int64), typeof(double), typeof(Int64), typeof(double), typeof(Int64), typeof(double)
+		  ))
+		{
+			bool roughing_it = (bool)consumptionOutputs[0];
+			double prot_consumed = (double)consumptionOutputs[1];
+			double prot_mult = (double)consumptionOutputs[2];
+			customScripts.runCustomScript("popHealth_protein", new List&lt;object&gt;() { pop, prot_consumed, prot_mult, roughing_it }, out _);
+		
+			double mcal_consumed = (double)consumptionOutputs[3];
+			double mcal_mult = (double)consumptionOutputs[4];
+			customScripts.runCustomScript("popHealth_MCal", new List&lt;object&gt;() { pop, mcal_consumed, mcal_mult, roughing_it }, out _);
+			
+			double waterAvailability = inDelegation.getBiomeOfCurrentLocation().getWaterAvailability();
+			customScripts.runCustomScript("popHealth_water", new List&lt;object&gt;() { pop, waterAvailability, false, roughing_it }, out _); //false because this pop does not have a home
+			
+			Int64 hstasis_moid = (Int64)consumptionOutputs[5];
+			double hstasis_qual = (double)consumptionOutputs[6];
+			IFResource hstasis_res = (IFResource)getAPI().getMOFromMOID("resources", hstasis_moid);
+			double biomeHStasisMin = customConsts.getDoubleConst("biome " + inDelegation.getBiomeOfCurrentLocation().getInternalName() + " hstasis min proportion", out success);
+			if(!success) biomeHStasisMin = 0.0d;
+			customScripts.runCustomScript("popHealth_HStasis", new List&lt;object&gt;() { pop, hstasis_res, communityResourcePool, biomeHStasisMin, hstasis_qual, roughing_it }, out _);
+			
+			Int64 woundCure_moid = (Int64)consumptionOutputs[7];
+			double woundCure_qual = (double)consumptionOutputs[8];
+			IFResource woundCure_res = (IFResource)getAPI().getMOFromMOID("resources", woundCure_moid);
+			customScripts.runCustomScript("popHealth_checkWoundCureItemUse", new List&lt;object&gt;() { pop, woundCure_res, communityResourcePool, woundCure_qual, roughing_it }, out _);
+			
+			Int64 illCure_moid = (Int64)consumptionOutputs[9];
+			double illCure_qual = (double)consumptionOutputs[10];
+			IFResource illCure_res = (IFResource)getAPI().getMOFromMOID("resources", illCure_moid);
+			customScripts.runCustomScript("popHealth_checkSickCureItemUse", new List&lt;object&gt;() { pop, illCure_res, communityResourcePool, illCure_qual, roughing_it }, out _);
+			
+			customScripts.runCustomScript("popHealth_overall", new List&lt;object&gt;() { pop }, out _);
+		}
+	}
+	
+	customScripts.runCustomScript("delegation_resourceDecay", new List&lt;object&gt;() { inDelegation }, out _);
+	
+	//now, for each undeclared pop, calculate the necessary food and hstasis resources to consume (undeclared pops do not consume anything else during a siege):
+	double food_to_consume_undeclared = 0.0d;
+	double hstasis_to_consume_undeclared = 0.0d;
+	double mcal_daily_min = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out success);
+	if(!success) mcal_daily_min = 2.0d;
+	double hstasisDaysPerUnit = customConsts.getDoubleConst("popHealth_HStasis hstasis death_days value", out success);
+	if(!success) hstasisDaysPerUnit = 21.0d;
+	double hstasis_daily_min = 1 / hstasisDaysPerUnit;
+	foreach(var kvpair in inDelegation.getTargetCommunity().getAdditionalUndeclaredPopCounts())
+	{
+		//TODO check for racial considerations
+		food_to_consume_undeclared += mcal_daily_min * kvpair.Value;
+		hstasis_to_consume_undeclared += hstasis_daily_min * kvpair.Value;
+	}
+	
+	//now go over the resource pool and try to consume this many resources:
+	List&lt;IFResource&gt; allFood = new List&lt;IFResource&gt;();
+	List&lt;IFResource&gt; allHStasis = new List&lt;IFResource&gt;();
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res != null)
+		{
+			if(!res.isNotInResourcePool())
+			{
+				if(res.isFood())
+				{
+					allFood.Add(res);
+				}
+				if(res.isHStasis())
+				{
+					allHStasis.Add(res);
+				}
+			}
+		}
+	}
+	if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;()
+		{ communityResourcePool, true, false, allFood,
+		  food_to_consume_undeclared, true, false, false, false, false, false, true }, //more random quantities
+		out List&lt;object&gt; outResourcesConsumedFD, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+	{
+		double actualResourcesConsumed = (double)outResourcesConsumedFD[0];
+		double averageResourceQualityConsumed = (double)outResourcesConsumedFD[1];
+		food_to_consume_undeclared -= actualResourcesConsumed;
+		//TODO: if there is remaining food that wants to be consumed, decrease morale of defenders
+	}
+	if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;()
+		{ communityResourcePool, true, false, allHStasis,
+		  hstasis_to_consume_undeclared, true, false, false, false, false, false, true }, //more random quantities
+		out List&lt;object&gt; outResourcesConsumedHS, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+	{
+		double actualResourcesConsumed = (double)outResourcesConsumedHS[0];
+		double averageResourceQualityConsumed = (double)outResourcesConsumedHS[1];
+		hstasis_to_consume_undeclared -= actualResourcesConsumed;
+		//TODO: if there is remaining hstasis that wants to be consumed, decrease morale of defenders
+	}
+	
+	//TODO: put a variable indicating to foreign AI scripts (and possible other delegations sieging this community) that resources have been consumed for food/hstasis for this community for this day, and check that before we do all this
+	
+	customScripts.runCustomScript("determineDefenderIllnesses", new List&lt;object&gt;() { inDelegation.getTargetCommunity() }, out _); 
+	
+	return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

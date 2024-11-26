@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation list_of_options</a> <b>list</b> <c>arrivingflavor_sentence</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  
+	  <!-- if a replacement is blank it is unusable -->
+	  <!-- [0] = delegation name noun phrase -->
+	  <!-- [1] = community name noun phrase -->
+	  <!-- [2] = community rand adj phrase -->
+	  <!-- [3] = delegation kind_adj_phrase -->
+	  <!-- [4] = delegation race_adj_phrase -->
+	  <!-- [5] = delegation health_adj_phrase -->
+	  <!-- [6] = biome far above noun phrase (land) --> <!-- blank if no land -->
+	  <!-- [7] = biome fluid noun phrase (land) --> <!-- blank if no land -->
+	  <!-- [8] = biome ground noun phrase (land) --> <!-- blank if no land -->
+	  <!-- [9] = biome weather noun phrase (land) --> <!-- blank if no land -->
+	  <!-- [10] = biome far above noun phrase (water) --> <!-- blank if no water -->
+	  <!-- [11] = biome fluid noun phrase (water) --> <!-- blank if no water -->
+	  <!-- [12] = biome ground noun phrase (water) --> <!-- blank if no water -->
+	  <!-- [13] = biome weather noun phrase (water) --> <!-- blank if no water -->
+	  <!-- [14] = player community name -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_selection_count</a> <b>int</b> <c>23</c></i1> <!-- this many sentences possible -->
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel0 before_replace_text</a> <b>string</b> <c>[0] has arrived at its destination, and the pops of [1] spot the delegation from afar.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel1 before_replace_text</a> <b>string</b> <c>[1] is just visible from where the pops of [0] put down their supplies, resting for a moment after the journey.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel2 before_replace_text</a> <b>string</b> <c>[0]'s [2] destination, [1], and the [3] delegation are both caught in one of the region's common [9].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel3 before_replace_text</a> <b>string</b> <c>[0]'s [2] destination, [1], and the [3] delegation are both caught in one of the region's common [13].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel4 before_replace_text</a> <b>string</b> <c>Our [3] [4] delegation has arrived at [1], and [0] expect to be done with business quickly.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel5 before_replace_text</a> <b>string</b> <c>The pops of [0] are [5] after their journey to [1], and are happy to idle a moment and watch the [6].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel6 before_replace_text</a> <b>string</b> <c>The pops of [0] are [5] after their journey to [1], and are happy to idle a moment and watch the [10].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel7 before_replace_text</a> <b>string</b> <c>Pops of [0] notice that the [7] near [1] carries the sounds and scents of the [1] community.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel8 before_replace_text</a> <b>string</b> <c>Pops of [0] notice that the [11] near [1] carries the sounds and scents of the [1] community.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel9 before_replace_text</a> <b>string</b> <c>In the [8] near [1] are markings of an abandoned camp, which our [5] pops repurpose for [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel10 before_replace_text</a> <b>string</b> <c>In the [12] near [1] are markings of an abandoned camp, which our [5] pops repurpose for [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel11 before_replace_text</a> <b>string</b> <c>Pops of the [3] delegation, [0], whisper their hopes into the [7] near [1], hoping the Lady will grant them favor.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel12 before_replace_text</a> <b>string</b> <c>Pops of the [3] delegation, [0], whisper their hopes into the [11] near [1], hoping the Lady will grant them favor.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel13 before_replace_text</a> <b>string</b> <c>[0] approaches [1] from where the [8] meets the [11], and make camp along the [2] community's shoreline.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel14 before_replace_text</a> <b>string</b> <c>The [9] of [1]'s region greets [0]'s arrival.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel15 before_replace_text</a> <b>string</b> <c>The [13] of [1]'s region greets [0]'s arrival.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel16 before_replace_text</a> <b>string</b> <c>Outside the [4] delegation's makeshift camp, [9] surrounds [0]'s destination: [1].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel17 before_replace_text</a> <b>string</b> <c>Outside the [4] delegation's makeshift camp, [13] surrounds [0]'s destination: [1].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel18 before_replace_text</a> <b>string</b> <c>[0] sets up camp where markings in the [8] show [1]'s pops travel through often.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel19 before_replace_text</a> <b>string</b> <c>[0] sets up camp where debris in the [12] show [1]'s pops travel through often.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel20 before_replace_text</a> <b>string</b> <c>The [6] of [1]'s region always seems to look down upon [9], though today it also sees [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel21 before_replace_text</a> <b>string</b> <c>The [10] of [1]'s region always seems to look down upon [13], though today it also sees [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel22 before_replace_text</a> <b>string</b> <c>[5], our [3] delegation [0] has arrived at [1].</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+  <!-- this file holds the implementation of a custom script which takes a community and from it, returns a string that is a full sentence descibing the community from the perspective of a visitor from the player community. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFDelegation inDelegation, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inDelegation == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence custom script received invalid arguments: inDelegation cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	int countOfReplacers = 15; //max replacer index + 1
+	List&lt;string&gt; replacers = new List&lt;string&gt;();
+	for(int i = 0; i &lt; countOfReplacers; i++)
+	{
+		replacers.Add("");
+	}
+	
+	//[0] = delegation name noun phrase
+	replacers[1] = "[one_delegation|name_noun_phrase:" + inDelegation.getUID() + "]";
+	
+	//[1] = community name noun phrase
+	replacers[1] = "[one_community|name_noun_phrase:" + inDelegation.getTargetCommunity().getUID() + "]";
+	
+	//[2] = community rand_adj_phrase
+	replacers[2] = "[one_community|rand_adj_phrase:" + inDelegation.getTargetCommunity().getUID() + "]";
+	
+	//[3] = kind_adj_phrase
+	replacers[3] = "[one_delegation|kind_adj_phrase:" + inDelegation.getUID() + "]";
+	
+	//[4] = race_adj_phrase
+	replacers[4] = "[one_delegation|race_adj_phrase:" + inDelegation.getUID() + "]";
+	
+	//[5] = health_adj_phrase
+	replacers[5] = "[one_delegation|health_adj_phrase:" + inDelegation.getUID() + "]";
+	
+	if((inDelegation.getTargetCommunity().getLandBiome() != null) &amp;&amp; (inDelegation.getTargetCommunity().getWaterRatio() != 1.0d))
+	{
+		//[6] = biome far above noun phrase
+		replacers[6] = "[one_biome|farabove_noun_phrase:" + inDelegation.getTargetCommunity().getLandBiome().getMOID() + "]";
+		
+		//[7] = biome fluid noun phrase
+		replacers[7] = "[one_biome|fluid_noun_phrase:" + inDelegation.getTargetCommunity().getLandBiome().getMOID() + "]";
+		
+		//[8] = biome ground noun phrase
+		replacers[8] = "[one_biome|ground_noun_phrase:" + inDelegation.getTargetCommunity().getLandBiome().getMOID() + "]";
+		
+		//[9] = biome weather noun phrase
+		replacers[9] = "[one_biome|weather_noun_phrase:" + inDelegation.getTargetCommunity().getLandBiome().getMOID() + "]";
+	}
+	if((inDelegation.getTargetCommunity().getWaterBiome() != null) &amp;&amp; (inDelegation.getTargetCommunity().getWaterRatio() != 0.0d))
+	{
+		//[10] = biome far above noun phrase
+		replacers[10] = "[one_biome|farabove_noun_phrase:" + inDelegation.getTargetCommunity().getWaterBiome().getMOID() + "]";
+		
+		//[11] = biome fluid noun phrase
+		replacers[11] = "[one_biome|fluid_noun_phrase:" + inDelegation.getTargetCommunity().getWaterBiome().getMOID() + "]";
+		
+		//[12] = biome ground noun phrase
+		replacers[12] = "[one_biome|ground_noun_phrase:" + inDelegation.getTargetCommunity().getWaterBiome().getMOID() + "]";
+		
+		//[13] = biome weather noun phrase
+		replacers[13] = "[one_biome|weather_noun_phrase:" + inDelegation.getTargetCommunity().getWaterBiome().getMOID() + "]";
+	}
+	
+	//[14] = player community name
+	replacers[14] = getAPI().getLocalCommunity().getDisplayName();
+	
+	//now that all replacers are assembled, iterate over all possible sentences and only include the ones that have all replacers:
+	Int64 sentenceCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_selection_count", out success);
+	List&lt;string&gt; possibleSentences = new List&lt;string&gt;();
+	for(int i = 0; i &lt; sentenceCount; i++)
+	{
+		string sentence = customConsts.getStringConst("replaceDescriptionMarkupKind_one_delegation_arrivingflavor_sentence rand_sel" + i + " before_replace_text", out success);
+		if(success)
+		{
+			//iterate over all replacers and if they are present in the sentence, check that they can be replaced:
+			bool validSentence = true;
+			for(int j = 0; (j &lt; countOfReplacers) &amp;&amp; validSentence; j++)
+			{
+				if(sentence.Contains("[" + j + "]") &amp;&amp; (replacers[j] == ""))
+				{
+					validSentence = false;
+				}
+			}
+			
+			if(validSentence)
+			{
+				possibleSentences.Add(sentence);
+			}
+		}
+	}
+	
+	if(possibleSentences.Count &gt; 0)
+	{
+		outDescription = possibleSentences[(int)getAPI().calcRandIntUnder(possibleSentences.Count)];
+	}
+	else
+	{
+		outDescription = "";
+	}
+	
+	for(int i = 0; i &lt; countOfReplacers; i++)
+	{
+		outDescription = outDescription.Replace("[" + i + "]", replacers[i]);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

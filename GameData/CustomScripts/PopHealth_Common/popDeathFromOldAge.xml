@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- pops will die of old age at some point after 1.0 - this of the getLifespanYearsAverage value. -->
+	  <i1><a>popdeathfromoldage ratio_of_average_to_start</a> <b>double</b> <c>0.1</c></i1>
+	  <!-- daily chance of probability of death is calculated like this: -->
+	  <!-- chance = (scale factor) * ((days alive - (lifespan days average value) * (1.0 - above)) / (lifespan days average value * above)) ^ 2
+		   where scale factor = 1.5 / (lifespan days average value * above)
+		   this makes death per day chance a parabola such that the sum of all chances before (lifespan days average value) is 50%.  Therefore the chance for a pop to die of old age before the getLifespanYearsAverage should be about 50%, but due to how probabilities work (if it dies before then it cannot die after), it is actually less.
+	  -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script popdeathfromoldage</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which checks if a pop should die of old age, and sets the pop dead if so -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop
+	
+	There is no output -->
+	<i1><a>popDeathFromOldAge</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popDeathFromOldAge custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	if(inPop == null)
+	{
+		throw new ArgumentException("popDeathFromOldAge custom script received invalid arguments: inPop cannot be null");
+		return null;
+	}
+	if(inPop.isDead())
+	{
+		return null;
+	}
+	  
+	//TODO any non-standard considerations
+	  
+	Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+	Int64 daysAliveSoFar = inPop.getDayOfBirth() - currentDate;
+	Int64 lifespanDaysAverageValue = inPop.getRace().getLifespanYearsAverage() * consts.getCalendarDaysPerYear();
+	
+	double ratio_of_average_to_start = customConsts.getDoubleConst("popdeathfromoldage ratio_of_average_to_start", out bool success);
+	if(!success) ratio_of_average_to_start = 0.1d;
+	
+	if(daysAliveSoFar &lt; (lifespanDaysAverageValue * (1.0d - ratio_of_average_to_start)))
+	{
+		addDebugMessage(inScriptInstance, inPop.getDebugName() + " is too young to die as a result of old age");
+		return null;
+	}
+	
+	double scale_factor = 1.5d / (ratio_of_average_to_start * lifespanDaysAverageValue);
+	double chanceOfDeath = scale_factor;
+	chanceOfDeath *= (daysAliveSoFar - (lifespanDaysAverageValue * (1.0d - ratio_of_average_to_start)));
+	chanceOfDeath /= (lifespanDaysAverageValue * ratio_of_average_to_start);
+	chanceOfDeath *= (daysAliveSoFar - (lifespanDaysAverageValue * (1.0d - ratio_of_average_to_start)));
+	chanceOfDeath /= (lifespanDaysAverageValue * ratio_of_average_to_start);
+	
+	//no difficulty consideration here
+	bool now_dead = getAPI().calcProb(chanceOfDeath);
+	addDebugMessage(inScriptInstance, inPop.getDebugName() + " is " + (now_dead ? "" : "not ") + "dead as a result of old age");
+	if(now_dead) inPop.setIsDead(true, IFPop.ePopDeathReason.cOldAge);
+	
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

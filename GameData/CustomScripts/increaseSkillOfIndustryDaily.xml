@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>industry_skill increase direct_count mult</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>industry_skill increase direct_count argument mult</a> <b>double</b> <c>1.0</c></i1> <!-- note that if Ln has an argument below 1.0d it will be negative, and arguments below or equal to 0.0d are invalid -->
+			<i1><a>industry_skill increase proportion mult</a> <b>double</b> <c>0.0025</c></i1> <!-- if a whole community does nothing but work in one industry for a day, this is the proportion of the range of skill that they increase, before direct count multiplier is considered -->
+			<i1><a>industry_skill increase leader add_max</a> <b>double</b> <c>0.00035</c></i1> <!-- if the leader is at max skill, and the community at min skill, and no workers are working in the industry, the leader will increase the community's skill by this amount daily -->
+			<i1><a>industry_skill increase leader mult_max</a> <b>double</b> <c>1.5</c></i1> <!-- if the leader is at max skill, and the community at min skill, the leader will increase community skill increase by this multiplier -->
+		
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script increaseskillofindustrydaily</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which increases a community's industry skill based on the count of pops working in the industry for one day. -->
+  <!-- this is a custom script so that unemployed pops can contribute to construction learning if they help build buildings -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	<!-- inputs to the function:
+	IFCommunity inCommunity, //should not be null
+	IFIndustry inIndustry, //should not be null
+	Int64 inTotalWorkerCount
+	
+	There are no outputs.
+	-->
+	<i1><a>increaseSkillOfIndustryDaily</a>
+	<b>
+		//input count and type check:
+		var customScripts = getAPI().getCustomScripts();
+		if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+			{typeof(IFCommunity), typeof(IFIndustry), typeof(Int64)}
+		  }, out _))
+		{
+			throw new ArgumentException("increaseSkillOfIndustryDaily custom script received invalid arguments");
+			return null;
+		}
+		
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		IFIndustry inIndustry = (IFIndustry)inArguments[1];
+		Int64 inTotalWorkerCount = (Int64)inArguments[2];
+		
+		if(inCommunity == null)
+		{
+			throw new ArgumentException("increaseSkillOfIndustryDaily custom script received invalid argument: inCommunity cannot be null");
+		}
+		if(!inCommunity.hasDomesticComponent())
+		{
+			throw new ArgumentException("increaseSkillOfIndustryDaily custom script received invalid argument: inCommunity must have domestic component but doesn't (inCommunity = " + inCommunity.getDebugName() + ")");
+		}
+		if(inIndustry == null)
+		{
+			throw new ArgumentException("increaseSkillOfIndustryDaily custom script received invalid argument: inIndustry cannot be null");
+		}
+		if(inTotalWorkerCount &lt; 0)
+		{
+			throw new ArgumentException("increaseSkillOfIndustryDaily custom script received invalid argument: inTotalWorkerCount cannot be negative (inTotalWorkerCount = " + inTotalWorkerCount + ")");
+		}
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		//if there are no pops working in the industry, no skill is gained
+		if(inTotalWorkerCount == 0)
+		{
+			return null;
+		}
+	
+		IFIndustrySkills skills = inCommunity.getDomesticComponent().getIndustrySkills();
+	    double skillMin = consts.getWorkerSkillMin();
+	    double skillMax = consts.getWorkerSkillMax();
+	
+		//TODO: any racial considerations
+		//there are three effects of industry skill increase:
+		//firstly, the direct count of people working in this industry means, naturally, each person may have a slightly different approach to performing the work.  A wider spread of approaches (assuming the workers are able and willing to identify which methods work best) means better approaches are found more rapidly.
+		//this is a multiplying effect on the total
+		double argumentMultiplier = customConsts.getDoubleConst("industry_skill increase direct_count mult", out bool success);
+		if(!success) argumentMultiplier = 1.0d;
+		double directCountMultiplier = customConsts.getDoubleConst("industry_skill increase direct_count argument mult", out success);
+		if(!success) directCountMultiplier = 1.0d;
+		double directCountEffect = directCountMultiplier * Math.Log(Math.Max(1.0d, argumentMultiplier * inTotalWorkerCount)); //natural log
+		  
+		//secondly, the proportion of people working in this industry is the strongest impact on how much skill increases:
+		Int64 totalAlivePops = (Int64)inCommunity.getPopsLoyalToCommunity(true, false).Count;
+		double proportion = inTotalWorkerCount / Math.Max(1.0d, totalAlivePops);
+		double proportionMultiplier = customConsts.getDoubleConst("industry_skill increase proportion mult", out success);
+		if(!success) proportionMultiplier = 0.005d;
+		  
+		//thirdly, if there is an Industry Leader for this industry, and their skill is greater than the community's skill, as part of their role they help improve the community's skill:
+		//this is partially additive and partially multiplicative
+		double leaderAdditive = customConsts.getDoubleConst("industry_skill increase leader add_max", out success);
+		if(!success) leaderAdditive = 0.00035d;
+		leaderAdditive *= (skills.getLeaderSkill(inIndustry) - skills.getAverageSkill(inIndustry)) / (skillMax - skillMin);
+		leaderAdditive = Math.Max(0.0d, leaderAdditive);
+		double leaderMult = customConsts.getDoubleConst("industry_skill increase leader mult_max", out success);
+		if(!success) leaderMult = 1.5d;
+		leaderMult -= 1.0d;
+		leaderMult *= (skills.getLeaderSkill(inIndustry) - skills.getAverageSkill(inIndustry)) / (skillMax - skillMin);
+		leaderMult = Math.Max(0.0d, leaderMult);
+		leaderMult += 1.0d;
+		
+		double increaseTotal = ((skillMax - skillMin) * ((leaderMult * proportion * proportionMultiplier * directCountEffect) + leaderAdditive));
+		double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("industry skill decay");
+		if(difficulty &lt;= 0.0d)
+		{
+			increaseTotal = skillMax;
+		}
+		else
+		{
+			increaseTotal /= difficulty;
+		}
+		
+		addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " skill in " + inIndustry.getDisplayName() + " is increasing by " + increaseTotal + " due to"
+			+ " inTotalWorkerCount=" + inTotalWorkerCount
+			+ " leaderMult=" + leaderMult
+			+ " leaderAdditive=" + leaderAdditive
+			+ " proportion=" + proportion
+			+ " proportionMultiplier=" + proportionMultiplier
+			+ " directCountEffect=" + directCountEffect
+			+ " difficulty=" + difficulty
+			);
+		skills.setAverageSkill(increaseTotal + skills.getAverageSkill(inIndustry), inIndustry);
+	  
+	    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

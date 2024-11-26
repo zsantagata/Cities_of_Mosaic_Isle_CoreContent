@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script clearsosdonotdeletemark</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which clears a mark of a group of pops, communities, and/or buildings which were marked as "do not delete". -->
+  <!-- the saveableObjects can have multiple marks, and this script will only clear the mark associated with inUniqueLabel -->
+  <!-- if SOs have no marks, they will be deleted whenever midnight processing sees fit -->
+  <!-- (this mark can be set by the script markSOsAsDoNotDelete when it is provided with an appropriate inUniqueLabel and pops/communities/buildings) -->
+  <!-- note that the actual value held by the marking variable does not matter; only the existence of the variable matters -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	List<IFPop> inPopsToClearMark, //can be null
+	List<IFCommunity> inCommunitiesToClearMark, //can be null
+	List<IFBuilding> inBuildingsToClearMark, //can be null
+	string inUniqueLabel //calls to this function should have the same inUniqueLabel as the (presumed) previous call to markSOsAsDoNotDelete
+	//inUniqueLabel should probably have an event report UID appended to it if it is associated with an event, so multiple instances of the event don't overwrite each other
+	
+	there is no output.
+	-->
+	<i1><a>clearSOsDoNotDeleteMark</a>
+	<b>
+		//input count and type check:
+		var customScripts = getAPI().getCustomScripts();
+		if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+			{typeof(List&lt;IFPop&gt;), typeof(List&lt;IFCommunity&gt;), typeof(List&lt;IFBuilding&gt;), typeof(string)}
+		  }, out _))
+		{
+			throw new ArgumentException("clearSOsDoNotDeleteMark custom script received invalid arguments");
+			return null;
+		}
+	  
+	    List&lt;IFPop&gt; inPopsToClearMark = (List&lt;IFPop&gt;)inArguments[0];
+	    List&lt;IFCommunity&gt; inCommunitiesToClearMark = (List&lt;IFCommunity&gt;)inArguments[1];
+	    List&lt;IFBuilding&gt; inBuildingsToClearMark = (List&lt;IFBuilding&gt;)inArguments[2];
+	    string inUniqueLabel = (string)inArguments[3];
+	  
+	    if(inPopsToClearMark == null)
+			inPopsToClearMark = new List&lt;IFPop&gt;();
+	    if(inCommunitiesToClearMark == null)
+			inCommunitiesToClearMark = new List&lt;IFCommunity&gt;();
+	    if(inBuildingsToClearMark == null)
+			inBuildingsToClearMark = new List&lt;IFBuilding&gt;();
+	  
+		var variableHandler = getAPI().getVariableHandler();
+		
+		foreach(IFPop pop in inPopsToClearMark)
+		{
+			//look for lower variable (let top variable expire on its own if it has no lowers):
+			string lowerVariableName = APIconsts.cDoNotDeleteSOVariableNames[(int)APIconsts.eSOsMarkableAsDoNotDelete.cPop] + pop.getUID() + "_" + inUniqueLabel;
+			IFConnectedVariable lowerCV = variableHandler.getConnectedVariable(lowerVariableName);
+			if(lowerCV != null)
+			{
+				variableHandler.clearConnectedVariable(lowerCV);
+			}
+		}
+		foreach(IFCommunity community in inCommunitiesToClearMark)
+		{
+			//look for lower variable (let top variable expire on its own if it has no lowers):
+			string lowerVariableName = APIconsts.cDoNotDeleteSOVariableNames[(int)APIconsts.eSOsMarkableAsDoNotDelete.cCommunity] + community.getUID() + "_" + inUniqueLabel;
+			IFConnectedVariable lowerCV = variableHandler.getConnectedVariable(lowerVariableName);
+			if(lowerCV != null)
+			{
+				variableHandler.clearConnectedVariable(lowerCV);
+			}
+		}
+		foreach(IFBuilding building in inBuildingsToClearMark)
+		{
+			//look for lower variable (let top variable expire on its own if it has no lowers):
+			string lowerVariableName = APIconsts.cDoNotDeleteSOVariableNames[(int)APIconsts.eSOsMarkableAsDoNotDelete.cBuilding] + building.getUID() + "_" + inUniqueLabel;
+			IFConnectedVariable lowerCV = variableHandler.getConnectedVariable(lowerVariableName);
+			if(lowerCV != null)
+			{
+				variableHandler.clearConnectedVariable(lowerCV);
+			}
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,383 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building list_of_options</a> <b>list</b> <c>activity_sentence</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence default before_replace_text</a> <b>string</b> <c>A building is clearly visible from nearby, standing out from its surroundings.</c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  
+	  <!-- if a replacement is blank it is unusable -->
+	  <!-- [0] = building name noun phrase -->
+	  <!-- [1] = buildingkind name -->
+	  <!-- [2] = construction material name --> <!-- blank if no construction material -->
+	  <!-- [3] = UNUSED? -->
+	  <!-- [4] = biome far above noun phrase (depending on water status) --> <!-- blank if not on local map -->
+	  <!-- [5] = biome fluid noun phrase (depending on water status) --> <!-- blank if not on local map -->
+	  <!-- [6] = biome ground noun phrase (depending on water status) --> <!-- blank if not on local map -->
+	  <!-- [7] = buildingkind shape top noun phrase -->
+	  <!-- [8] = buildingkind shape side noun phrase -->
+	  <!-- [9] = buildingkind shape middle noun phrase -->
+	  <!-- [10] = buildingkind shape bottom noun phrase -->
+	  
+	  <!-- the rand_sel0 sentences should only include things that may not be blank ([0] and [1]), so that there is always a valid sentence to be used -->
+	  
+	  <!-- A) activity = maintenance -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence selection_count</a> <b>int</b> <c>3</c></i1> <!-- durability is split this many ways -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel0 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 0 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel0 rand_sel0 before_replace_text</a> <b>string</b> <c>Scattered debris shows how [0] has been neglected by time and the [1]'s community both.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel0 rand_sel1 before_replace_text</a> <b>string</b> <c>The [2] of [0] reflects the toil of the community to construct the [1], but now it rests in silent decay.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel0 rand_sel2 before_replace_text</a> <b>string</b> <c>[6] is spread over the [10] of [0], undisturbed by cleaning or activity.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel1 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 1 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel1 rand_sel0 before_replace_text</a> <b>string</b> <c>It has been some time since pops have performed repairs on [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel1 rand_sel1 before_replace_text</a> <b>string</b> <c>A lone pop looks over the [2] [8] of [0], finding much in need of repair.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel1 rand_sel2 before_replace_text</a> <b>string</b> <c>Material to maintain the structure of [0] from [10] to [7] are present, but a pop passes by them without second thought.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel2 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 2 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel2 rand_sel0 before_replace_text</a> <b>string</b> <c>[0] is well-maintained in all its parts, and even now a pop is inspecting the [1].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel2 rand_sel1 before_replace_text</a> <b>string</b> <c>[5] gusts in a strong current outside the [8] of [0], but within the sturdy construction there is calm.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence durability_sentence value_sel2 rand_sel2 before_replace_text</a> <b>string</b> <c>An unhurried pop prods the solid [6] beneath [0], checking the [1] for signs of damage.</c></i1>
+	  
+	  <!-- C) activity = armed activity -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence selection_count</a> <b>int</b> <c>2</c></i1> <!-- mustering pop count is split this many ways if not empty -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence empty rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of totally empty -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence empty rand_sel0 before_replace_text</a> <b>string</b> <c>Any urgency of battle goes unheeded in the empty [1], [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence empty rand_sel1 before_replace_text</a> <b>string</b> <c>The [2] of [0] and the [6] beneath it threaten nothing, with no pops assigned.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence empty rand_sel2 before_replace_text</a> <b>string</b> <c>Beneath [7] is only a [1], [0], and a lack of practicing fighters.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence value_sel0 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 0 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence value_sel0 rand_sel0 before_replace_text</a> <b>string</b> <c>An understrength count of pops move through [0], silently readying for training or battle.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence value_sel0 rand_sel1 before_replace_text</a> <b>string</b> <c>A few pops look over equipment in the [1], in the hopes [0]'s training will guide them to victory.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence value_sel0 rand_sel2 before_replace_text</a> <b>string</b> <c>Around [0] are lone fighting pops, looking up at the [4] and trying to encourage themselves.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence value_sel1 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 1 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence value_sel1 rand_sel0 before_replace_text</a> <b>string</b> <c>Orders sound out in [0] as pops assemble in groups, preparing for combat.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence value_sel1 rand_sel1 before_replace_text</a> <b>string</b> <c>Equipment sounds against the [2] as the fighters assigned to [0] gather their gear and rush to their places.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence mustering_sentence value_sel1 rand_sel2 before_replace_text</a> <b>string</b> <c>The [6] around [0] clouds the [5] as groups of fighting pops move hurriedly around the [1].</c></i1>
+	  
+	  <!-- D) activity = productive activity or service activity -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence selection_count</a> <b>int</b> <c>2</c></i1> <!-- working pop count is split this many ways if not empty -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence empty rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of totally empty -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence empty rand_sel0 before_replace_text</a> <b>string</b> <c>Tools and toil are absent from [0], perhaps put to better use elsewhere.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence empty rand_sel1 before_replace_text</a> <b>string</b> <c>Old scraps of baskets lie still around the [10] of [0], and not a sound disturbs the [5].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence empty rand_sel2 before_replace_text</a> <b>string</b> <c>Around the [9] of [0] there is only [2] to be seen, with no one working.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence value_sel0 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 0 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence value_sel0 rand_sel0 before_replace_text</a> <b>string</b> <c>The few working pops of [0] have space aplenty to do [1] work.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence value_sel0 rand_sel1 before_replace_text</a> <b>string</b> <c>The [2] [1] workplaces of [0] hold a few pops hard at work.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence value_sel0 rand_sel2 before_replace_text</a> <b>string</b> <c>Under [7] and [4] there are many who do [1] work, but only a few in [0].</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence value_sel1 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 1 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence value_sel1 rand_sel0 before_replace_text</a> <b>string</b> <c>Pairs of pops working in [0] gather the products of their efforts together, eager to teach and learn from one another.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence value_sel1 rand_sel1 before_replace_text</a> <b>string</b> <c>[0]'s workers move around inside the [2] like a buzzing hive, bringing the sound of work to everywhere within.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence production_sentence value_sel1 rand_sel2 before_replace_text</a> <b>string</b> <c>Tallies and figures are drawn in the [6] around [0], counting up the constant efforts of the many working in the [1].</c></i1>
+	  
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence selection_count</a> <b>int</b> <c>2</c></i1> <!-- working pop count is split this many ways if not empty -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence empty rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of totally empty -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence empty rand_sel0 before_replace_text</a> <b>string</b> <c>[0] is empty of workers of any kind, and pops of the community pass by the [1] without a second thought.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence empty rand_sel1 before_replace_text</a> <b>string</b> <c>No pops work in [0], though rarely a pop can be seen resting against the [8] before returning to other tasks.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence empty rand_sel2 before_replace_text</a> <b>string</b> <c>[5] whips around the [2] of [0], the only activity in the empty workplace.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence value_sel0 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 0 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence value_sel0 rand_sel0 before_replace_text</a> <b>string</b> <c>Not many pops are present in [0]'s work space, though evidence of their efforts is clear to find lying about.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence value_sel0 rand_sel1 before_replace_text</a> <b>string</b> <c>A trickle of pops enter and leave the [0], working their best in the [2] [1].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence value_sel0 rand_sel2 before_replace_text</a> <b>string</b> <c>More workers could fit under the [7] of [0], but the few workers present do their best.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence value_sel1 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 1 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence value_sel1 rand_sel0 before_replace_text</a> <b>string</b> <c>Workers attempt to keep some order in [0], a feat made impossible by the flurry of activity in the crowded space.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence value_sel1 rand_sel1 before_replace_text</a> <b>string</b> <c>Groups of pops follow orders from different voices in [0], mixing chaos into the work within the [2] [8] of the workplace.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence service_sentence value_sel1 rand_sel2 before_replace_text</a> <b>string</b> <c>The [5] around [0] is filled with the sounds and sights of diligent effort, provided by the [1]'s many workers.</c></i1>
+	  
+	  <!-- E) activity = inhabitance activity -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence selection_count</a> <b>int</b> <c>2</c></i1> <!-- inhabitance pop count is split this many ways if not empty -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence empty rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of totally empty -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence empty rand_sel0 before_replace_text</a> <b>string</b> <c>[0] offers shelter to no pops at this time.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence empty rand_sel1 before_replace_text</a> <b>string</b> <c>The [5] is the only thing which disturbs the [6] around [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence empty rand_sel2 before_replace_text</a> <b>string</b> <c>From [7] to [10], no sign can be seen that any pop lives in [0].</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence value_sel0 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 0 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence value_sel0 rand_sel0 before_replace_text</a> <b>string</b> <c>Pops housed in [0] stretch themselves out and relax, enjoying the ample open space offered to them.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence value_sel0 rand_sel1 before_replace_text</a> <b>string</b> <c>Inhabitants of [0] rest easily, spreading out their possessions in the free space of the [2] [1].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence value_sel0 rand_sel2 before_replace_text</a> <b>string</b> <c>A small mark on the [8] of [0], written in [6] by one of the residents, indicates there is empty space available.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence value_sel1 rand_selection_count</a> <b>int</b> <c>3</c></i1> <!-- this many sentences for value_sel of 1 -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence value_sel1 rand_sel0 before_replace_text</a> <b>string</b> <c>The several pops of [0] show the strained attitudes of living in cramped housing, each seeking rare solitude around the [1].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence value_sel1 rand_sel1 before_replace_text</a> <b>string</b> <c>Sounds, sights, and smells of home life within [2] [1] are present in every part of [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence inhabitance_sentence value_sel1 rand_sel2 before_replace_text</a> <b>string</b> <c>Only at its strongest is the [5] around [0] as noisy as the small, crowded quarters of the many residents.</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_building_activity_sentence</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+  <!-- this file holds the implementation of a custom script which takes a building and from it, returns a string that is a full sentence describing what activity is expected, or actually occurring, at a building. -->
+  
+  <!-- activity is split like this: -->
+  <!-- A) neither workplace nor housing nor mustering point: activity is just maintaining the building -->
+  <!-- B) workplace and housing: choose between one of D and E -->
+  <!-- C) mustering point: armed activity -->
+  <!-- D) workplace: productive activity or service activity -->
+  <!-- E) housing: inhabitance activity -->
+  
+  <!-- note that only one of these will be chosen at a time -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFBuilding inBuilding, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_building_activity_sentence</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFBuilding)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_building_activity_sentence custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inBuilding == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_building_activity_sentence custom script received invalid arguments: inBuilding cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	int countOfReplacers = 11; //max replacer index + 1
+	List&lt;string&gt; replacers = new List&lt;string&gt;();
+	for(int i = 0; i &lt; countOfReplacers; i++)
+	{
+		replacers.Add("");
+	}
+	
+	//[0] = building name noun phrase
+	replacers[0] = "[one_building|name_noun_phrase:" + inBuilding.getUID() + "]";
+	
+	//[1] = buildingkind's name
+	replacers[1] = inBuilding.getBuildingKind().getDisplayName().ToLower();
+	
+	//[2] = construction material resource name, if it exists
+	if(inBuilding.getMadeOfResource() != null)
+	{
+		replacers[2] = inBuilding.getMadeOfResource().getDisplayName().ToLower();
+	}
+	
+	//[3] = UNUSED
+	
+	IFTerrainBiome biomeToUse = null; //if the building is not on the local map this will stay true
+	IFBuilding.eBuildingWaterStatus waterStatus = inBuilding.getBuildingWaterStatus();
+	IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+	if(map.isBuildingOnThisMap(inBuilding))
+	{
+		if((waterStatus == IFBuilding.eBuildingWaterStatus.cOverwaterEntirely) &amp;&amp; (map.getLandBiome() != null))
+		{
+			biomeToUse = map.getLandBiome();
+		}
+		else if((waterStatus == IFBuilding.eBuildingWaterStatus.cUnderwaterEntirely) &amp;&amp; (map.getWaterBiome() != null))
+		{
+			biomeToUse = map.getWaterBiome();
+		}
+		else if(waterStatus == IFBuilding.eBuildingWaterStatus.cMixed)
+		{
+			if((map.getLandBiome() != null) &amp;&amp; (map.getWaterBiome() != null))
+			{
+				biomeToUse = getAPI().calcRandIntUnder(2) == 0 ? map.getWaterBiome() : map.getLandBiome();
+			}
+			else if(map.getWaterBiome() != null)
+			{
+				biomeToUse = map.getWaterBiome();
+			}
+			else if(map.getLandBiome() != null)
+			{
+				biomeToUse = map.getLandBiome();
+			}
+		}
+	}
+	
+	if(biomeToUse != null)
+	{
+		//[4] = biome far above noun phrase
+		replacers[4] = "[one_biome|farabove_noun_phrase:" + biomeToUse.getMOID() + "]";
+		
+		//[5] = biome fluid noun phrase
+		replacers[5] = "[one_biome|fluid_noun_phrase:" + biomeToUse.getMOID() + "]";
+		
+		//[6] = biome ground noun phrase
+		replacers[6] = "[one_biome|ground_noun_phrase:" + biomeToUse.getMOID() + "]";
+	}
+	
+	//[7] = buildingkind shape top noun phrase
+	replacers[7] = "[one_buildingkind|shapetop_noun_phrase:" + inBuilding.getBuildingKind().getMOID() + "]";
+	
+	//[8] = buildingkind shape side noun phrase
+	replacers[8] = "[one_buildingkind|shapeside_noun_phrase:" + inBuilding.getBuildingKind().getMOID() + "]";
+	
+	//[9] = buildingkind shape middle noun phrase
+	replacers[9] = "[one_buildingkind|shapemiddle_noun_phrase:" + inBuilding.getBuildingKind().getMOID() + "]";
+	
+	//[10] = buildingkind shape bottom noun phrase
+	replacers[10] = "[one_buildingkind|shapebottom_noun_phrase:" + inBuilding.getBuildingKind().getMOID() + "]";
+	
+	
+	//find the appropriate sentence kind:
+	bool useHousingSentences = false;
+	bool useWorkingProductionSentences = false;
+	bool useWorkingServiceSentences = false;
+	string sentenceKind = ""; 
+	string valueSelString = "";
+	
+	if(inBuilding.isMusteringPoint())
+	{
+		sentenceKind = "mustering_sentence";
+		Int64 countOfAssignedPops = inBuilding.getMusteringPointComponent().getAssignedPops().Count;
+		if(countOfAssignedPops == 0)
+		{
+			valueSelString = "empty";
+		}
+		else
+		{
+			Int64 selectionCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_activity_sentence " + sentenceKind + " selection_count", out success);
+			if(!success) selectionCount = 2;
+			double fillRatio = inBuilding.getBuildingKind().getMaxWorkers() != 0 ? (countOfAssignedPops) / ((double)inBuilding.getBuildingKind().getMaxWorkers()) : (countOfAssignedPops / 12);
+			int selection = (int)(selectionCount * fillRatio);
+			if(selection == selectionCount) selection--;
+			valueSelString = "value_sel" + selection;
+		}
+	}
+	else if(inBuilding.isWorkplace() &amp;&amp; inBuilding.isHousing())
+	{
+		if(getAPI().calcRandIntUnder(2) == 0)
+		{
+			useHousingSentences = true;
+		}
+		else
+		{
+			useWorkingProductionSentences = (inBuilding.getBuildingKind().getOutputResources().Count != 0);
+			useWorkingServiceSentences = !useWorkingProductionSentences;
+		}
+	}
+	else if(inBuilding.isWorkplace())
+	{
+		useWorkingProductionSentences = (inBuilding.getBuildingKind().getOutputResources().Count != 0);
+		useWorkingServiceSentences = !useWorkingProductionSentences;
+	}
+	else if(inBuilding.isHousing())
+	{
+		useHousingSentences = true;
+	}
+	else
+	{
+		sentenceKind = "durability_sentence";
+		Int64 durabilityCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_activity_sentence " + sentenceKind + " selection_count", out success);
+		if(!success) durabilityCount = 3;
+		Int64 maxDurability = inBuilding.getMaxBuildingDurability();
+		Int64 currentDurability = inBuilding.getCurrentBuildingDurability();
+		double durabilityRatio = (currentDurability) / ((double)maxDurability);
+		int durabilityIndex = (int)(durabilityCount * durabilityRatio);
+		if(durabilityIndex == durabilityCount) durabilityIndex--;
+		valueSelString = "value_sel" + durabilityIndex;
+	}
+	
+	if(useHousingSentences)
+	{
+		sentenceKind = "inhabitance_sentence";
+		Int64 countOfAssignedPops = inBuilding.getHousingComponent().getHousedPops().Count;
+		if(countOfAssignedPops == 0)
+		{
+			valueSelString = "empty";
+		}
+		else
+		{
+			Int64 selectionCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_activity_sentence " + sentenceKind + " selection_count", out success);
+			if(!success) selectionCount = 2;
+			double fillRatio = (countOfAssignedPops) / ((double)inBuilding.getBuildingKind().getHousingCapacity());
+			int selection = (int)(selectionCount * fillRatio);
+			if(selection == selectionCount) selection--;
+			valueSelString = "value_sel" + selection;
+		}
+	}
+	else if(useWorkingProductionSentences || useWorkingServiceSentences)
+	{
+		sentenceKind = useWorkingProductionSentences ? "production_sentence" : "service_sentence";
+		Int64 countOfAssignedPops = inBuilding.getWorkplaceComponent().getWorkerPops().Count;
+		if(countOfAssignedPops == 0)
+		{
+			valueSelString = "empty";
+		}
+		else
+		{
+			Int64 selectionCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_activity_sentence " + sentenceKind + " selection_count", out success);
+			if(!success) selectionCount = 2;
+			double fillRatio = (countOfAssignedPops) / ((double)inBuilding.getBuildingKind().getMaxWorkers());
+			int selection = (int)(selectionCount * fillRatio);
+			if(selection == selectionCount) selection--;
+			valueSelString = "value_sel" + selection;
+		}
+	}
+	
+	
+	//now that all replacers are assembled and we know which sentence to generate, iterate over all possible sentences and only include the ones that have all replacers:
+	Int64 sentenceCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_activity_sentence " + sentenceKind + " " + valueSelString + " rand_selection_count", out success);
+	List&lt;string&gt; possibleSentences = new List&lt;string&gt;();
+	for(int i = 0; i &lt; sentenceCount; i++)
+	{
+		string sentence = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_activity_sentence " + sentenceKind + " " + valueSelString + " rand_sel" + i + " before_replace_text", out success);
+		if(success)
+		{
+			//iterate over all replacers and if they are present in the sentence, check that they can be replaced:
+			bool validSentence = true;
+			for(int j = 0; (j &lt; countOfReplacers) &amp;&amp; validSentence; j++)
+			{
+				if(sentence.Contains("[" + j + "]") &amp;&amp; (replacers[j] == ""))
+				{
+					validSentence = false;
+				}
+			}
+			
+			if(validSentence)
+			{
+				possibleSentences.Add(sentence);
+			}
+		}
+	}
+	
+	if(possibleSentences.Count &gt; 0)
+	{
+		outDescription = possibleSentences[(int)getAPI().calcRandIntUnder(possibleSentences.Count)];
+	}
+	else
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_activity_sentence default before_replace_text", out success);
+	}
+	
+	for(int i = 0; i &lt; countOfReplacers; i++)
+	{
+		outDescription = outDescription.Replace("[" + i + "]", replacers[i]);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

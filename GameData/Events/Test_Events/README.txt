@@ -1,0 +1,1 @@
+Events in this folder are meant only for me to test the game while developing it

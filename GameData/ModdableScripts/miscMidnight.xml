@@ -1,0 +1,576 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <!-- custom consts related to pop death: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+		<i1><a>mBuildingDurabilityDaily alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mBuildingDurabilityDaily alert before_replace_text</a> <b>string</b>
+		<c>A building has collapsed due to lack of maintenance.</c></i1>
+	
+		<i1><a>map building damage_daily value</a> <b>double</b> <c>1.0</c></i1> <!-- the base damage/decay rate of a building -->
+		<i1><a>map desolation recovery_empty_daily rate</a> <b>double</b> <c>0.35</c></i1> <!-- the base recovery rate of a tile which has desolation -->
+		
+		<i1><a>generatepopresources quality min</a> <b>double</b> <c>0.1</c></i1> <!-- proportion of the whole range -->
+		<i1><a>generatepopresources quality max</a> <b>double</b> <c>0.9</c></i1> <!-- proportion of the whole range -->
+	</mCustomVariableList>
+  </customconsts>
+  
+  <!-- this file holds the implementation of a few miscellaneous scripts that run during midnight processing -->
+  <gamescripts name="default">
+	<!-- building durability daily script has one input: the building in question.  There are no outputs. -->
+	<!-- this script is called once on each fully constructed, non-destroyed building on the map.  In general, buildings suffer wear and tear over time. -->
+	<mBuildingDurabilityDaily>
+		//input count check:
+		if(inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+
+		IFBuilding building = (IFBuilding)inArguments[0];
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		double daily_deg = customConsts.getDoubleConst("map building damage_daily value", out bool success);
+		if(!success) daily_deg = 1.0d;
+
+		addDebugMessage(inScriptInstance, "decaying " + building.getDebugName() + " durability by " + daily_deg + " from daily wear and tear");
+		Int64 maintenanceDurab = variableHandler.getInt("maintenancePost_repairTarget_blding" + building.getUID(), out success);
+		if(success &amp;&amp; ((maintenanceDurab - daily_deg) &gt; building.getMaxBuildingDurability()) &amp;&amp; (building.getCurrentBuildingDurability() == building.getMaxBuildingDurability()))
+		{
+			//don't degrade the building; it has been "overhealed" by a maintenance post so respect that and keep it at 100%
+		}
+		else
+		{
+			building.setCurrentBuildingDurability((Int64)(building.getCurrentBuildingDurability() - daily_deg));
+		}
+		
+		//if a building has decayed to 0 durability, alert the player:
+	    Int64 enable_if_not_zero = customConsts.getIntConst("mBuildingDurabilityDaily alert enable_if_not_zero", out success);
+	    if(!success) enable_if_not_zero = 0;
+		if((building.getCurrentBuildingDurability() == 0) &amp;&amp; (enable_if_not_zero != 0))
+		{
+			string text = customConsts.getStringConst("mBuildingDurabilityDaily alert before_replace_text", out success);
+			if(!success) text = "A building has collapsed due to lack of maintenance.";
+		
+			getAPI().createAlert(text, 255, 255, 255, false, null, building); //the numbers are r/g/b, and false is for not pausing
+		}
+
+		return null;
+  </mBuildingDurabilityDaily>
+	
+	<!-- desolation restoration daily script has one input: the local map.  There are no outputs. -->
+	<!-- this script is called once each day, and is meant to calculate all desolation changes that are not related to workplace production (that is taken care of in workplace scripts). -->
+	<mDesolationRestorationDaily>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+
+            IFMap map = (IFMap)inArguments[0];
+			var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			
+            List&lt;IFBuilding&gt; houses = new List&lt;IFBuilding&gt;();
+			List&lt;IFBuilding&gt; workplaces = new List&lt;IFBuilding&gt;(); //this is not exclusive with the above list (houses that are also workplaces will go into both, but only the appropriate list of pops will be considered based on the list)
+            bool success = false;
+
+            //first: overall restoration
+            double overall_desolation_restoration_increase = getAPI().getVariableHandler().getConnectedDouble("overallDesolationRestorationIncrease_map" + map.getUID(), out success);
+			double base_rate = customConsts.getDoubleConst("map desolation recovery_empty_daily rate", out success);
+			if(!success) base_rate = 0.35d;
+			addDebugMessage(inScriptInstance, "restoring desolation on land, base rate=" + (base_rate + overall_desolation_restoration_increase) + " (can be increased by buffs for specific resource parcels)");
+			HashSet&lt;IFTerrainSource&gt; already_printed = new HashSet&lt;IFTerrainSource&gt;();
+            for (int x = 0; x &lt; map.getMapDimensions().Item1; x++)
+            {
+                for (int y = 0; y &lt; map.getMapDimensions().Item2; y++)
+                {
+                    IFMapTile tile = map.getMapTiles()[x][y];
+                    if(tile.hasBuilding())
+                    {
+                        if(tile.getBuilding().isHousing() &amp;&amp; tile.isBuildingRoot())
+                        {
+                            houses.Add(tile.getBuilding());
+                        }
+						if(tile.getBuilding().isWorkplace() &amp;&amp; tile.isBuildingRoot())
+						{
+							workplaces.Add(tile.getBuilding());
+						}
+                    }
+                    //resource parcels restore desolation at their own pace
+                    if(tile.hasResourceParcel())
+                    {
+					    IFTerrainSource ls = tile.getResourceParcel().getTerrainSource();
+                        double terrainsource_desolation_restoration_increase = getAPI().getVariableHandler().getConnectedDouble(ls.getDisplayName() + "DesolationRestorationIncrease_map" + map.getUID(), out success);
+						if(success &amp;&amp; !already_printed.Contains(ls))
+    {
+    already_printed.Add(ls);
+    addDebugMessage(inScriptInstance, ls.getDebugName() + " has additional desolation change of " + terrainsource_desolation_restoration_increase + " (pos=restoration)");
+    }
+    tile.setDesolation(tile.getDesolation() - (tile.getResourceParcel().getTerrainSource().getDesolationRecoveryPerDay() + overall_desolation_restoration_increase + terrainsource_desolation_restoration_increase));
+    }
+    else
+    {
+    tile.setDesolation(tile.getDesolation() - (base_rate + overall_desolation_restoration_increase));
+    }
+    }
+    }
+
+    //second: restoration depending on pops in houses
+    foreach(IFBuilding house in houses)
+    {
+    double restoration_total = 0.0d; //this is summation of pops' impact on restoration around the house
+    foreach(IFPop pop in house.getHousingComponent().getHousedPops())
+    {
+    if (pop.getRace().hasTag("desolation housing restoration"))
+    {
+    double desoPopRestoreRate = customConsts.getDoubleConst("map desolation recovery_pop_daily rate", out success);
+    if(!success) desoPopRestoreRate = 0.02777777777d;//a single pop will cause restoration in 10 years, ignoring all else
+    double race_desolation_restoration_increase = getAPI().getVariableHandler().getConnectedDouble(pop.getRace().getDisplayName() + "DesolationRestorationIncrease_map" + map.getUID(), out success);
+    restoration_total += (desoPopRestoreRate + race_desolation_restoration_increase);
+    }
+    if (pop.getRace().hasTag("desolation housing damage"))
+    {
+    double desoPopDestroyRate = customConsts.getDoubleConst("map desolation worsen_pop_daily rate", out success);
+    if(!success) desoPopDestroyRate = 0.02777777777d; //a single pop will cause total desolation in 10 years, ignoring all else
+    double race_desolation_degradation_increase = getAPI().getVariableHandler().getConnectedDouble(pop.getRace().getDisplayName() + "DesolationDegradationIncrease_map" + map.getUID(), out success);
+    restoration_total -= (desoPopDestroyRate + race_desolation_degradation_increase);
+    }
+    }
+    if(restoration_total == 0.0d)
+    continue;
+    addDebugMessage(inScriptInstance, "restoring/increasing desolation around pops in housing " + house.getDebugName() + " by value of " + restoration_total);
+
+    //this code fetches all map tiles in a certain radius (the radius within which desolation will change)
+    double mapDesoPopRadius = customConsts.getDoubleConst("map desolation pop radius", out success);
+    if(!success) mapDesoPopRadius = 4.0d;
+    ReadOnlyCollection&lt;IFMapTile&gt; tiles = map.getMapTilesInBuildingRadius(house, mapDesoPopRadius);
+
+    foreach(IFMapTile tile in tiles)
+    {
+    tile.setDesolation(tile.getDesolation() - restoration_total);
+    }
+    }
+
+    //third: workplaces in the same way, depending on pops working there
+    foreach(IFBuilding workplace in workplaces)
+    {
+    double restoration_total = 0.0d; //this is summation of pops' impact on restoration around the workplace
+    foreach(IFPop pop in workplace.getWorkplaceComponent().getWorkerPops())
+    {
+    if (pop.getRace().hasTag("desolation workplace restoration"))
+    {
+    double desoPopRestoreRate = customConsts.getDoubleConst("map desolation recovery_pop_daily rate", out success);
+    if(!success) desoPopRestoreRate = 0.02777777777d;//a single pop will cause restoration in 10 years, ignoring all else
+    double race_desolation_restoration_increase = getAPI().getVariableHandler().getConnectedDouble(pop.getRace().getDisplayName() + "DesolationRestorationIncrease_map" + map.getUID(), out success);
+    restoration_total += (desoPopRestoreRate + race_desolation_restoration_increase);
+    }
+    if (pop.getRace().hasTag("desolation workplace damage"))
+    {
+    double desoPopDestroyRate = customConsts.getDoubleConst("map desolation worsen_pop_daily rate", out success);
+    if(!success) desoPopDestroyRate = 0.02777777777d; //a single pop will cause total desolation in 10 years, ignoring all else
+    double race_desolation_degradation_increase = getAPI().getVariableHandler().getConnectedDouble(pop.getRace().getDisplayName() + "DesolationDegradationIncrease_map" + map.getUID(), out success);
+    restoration_total -= (desoPopDestroyRate + race_desolation_degradation_increase);
+    }
+    }
+    if(restoration_total == 0.0d)
+    continue;
+    addDebugMessage(inScriptInstance, "restoring/increasing desolation around pops at workplace " + workplace.getDebugName() + " by value of " + restoration_total);
+
+    //this code fetches all map tiles in a certain radius (the radius within which desolation will change)
+    double mapDesoPopRadius = customConsts.getDoubleConst("map desolation pop radius", out success);
+    if(!success) mapDesoPopRadius = 4.0d;
+    ReadOnlyCollection&lt;IFMapTile&gt; tiles = map.getMapTilesInBuildingRadius(workplace, mapDesoPopRadius);
+
+                foreach(IFMapTile tile in tiles)
+                {
+                    tile.setDesolation(tile.getDesolation() - restoration_total);
+                }
+            }
+
+            return null;
+	</mDesolationRestorationDaily>
+	
+	<!-- does pop look for home script has one input: IFPop inPop.  There is one output: bool outPopLooksForNewHome -->
+	<!-- this script is called at the end of each day, once for each alive, non-hostile pop on the local map.  Note that Wanderers and foreign pops are included here -->
+	<mDoesPopLookForNewHome>
+		//input count check:
+		if (inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+		
+		var consts = getAPI().getConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		IFPop inPop = (IFPop)inArguments[0];
+		bool outPopLooksForNewHome = true;
+			
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		bool popIsLocal = (inPop.getCommunity() == localCommunity);
+		//if the pop is neutral or Wanderer, check that it still wants to be on the map:
+		if(!popIsLocal)
+		{
+			var customScripts = getAPI().getCustomScripts();
+			if(customScripts.runCustomScriptCheckTypes("doesNeutralPopDesireToStay", new List&lt;object&gt;() {inPop},
+				out List&lt;object&gt; desiresToStay, false, typeof(bool)))
+			{
+				if(!(bool)desiresToStay[0])
+				{
+					addDebugMessage(inScriptInstance, "the neutral pop " + inPop.getDebugName() + " does not wish to stay on the map and will not try to find a home");
+					outPopLooksForNewHome = false;
+					//in case some event or other strangeness assigned the pop some sort of home, clear it now:
+					if(inPop.hasHomeBuilding())
+						inPop.setHomeBuilding(null);
+				}
+			}
+		}
+			
+		if (outPopLooksForNewHome &amp;&amp; inPop.hasHomeBuilding())
+		{
+			bool hasWaterAccess = true;
+			bool hasFoodAccess = true;
+			//pops that have no access to food or water should look for other homes, otherwise they should stay where they are:
+			if (inPop.getWaterHealth() &lt; getAPI().getConsts().getHealthLowThreshold())
+			{
+				hasWaterAccess = false;
+				//check for water access:
+				double minimumQual = consts.getResourceQualityMin();
+				
+			    for(int i=1; i &lt; getAPI().getTotalCountOfMO("industries"); i++)
+			    {
+					IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", i);
+					if(industry.hasTag("water bearing") &amp;&amp; (inPop.getHomeBuilding().calcServiceQualityForIndustry((UInt64)i) != consts.getResourceQualityMin()))
+					{
+						hasWaterAccess = true;
+						break;
+					}
+			    }
+			}
+			if(hasWaterAccess)
+			{
+				if(inPop.getMCalHealth() &lt; getAPI().getConsts().getHealthLowThreshold())
+				{
+					hasFoodAccess = false;
+					//check for food access:
+					for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+					{
+						IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+						if(res != null)
+						{
+							if(res.isFood() &amp;&amp; inPop.getHomeBuilding().getAccessibleResources()[moid])
+							{
+								hasFoodAccess = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			if(hasFoodAccess &amp;&amp; hasWaterAccess)
+			{
+				outPopLooksForNewHome = false;
+			}
+		}
+	
+	    return new List&lt;object&gt;() { outPopLooksForNewHome };
+	</mDoesPopLookForNewHome>
+	
+	<!-- finding a house for a pop has two inputs: IFPop inPop, List<IFBuilding> inHousingBuildings.  There are no outputs -->
+	<!-- this script is called once at the end of each day and called a number of times equal to how many pops returned true for the mDoesPopLookForNewHome script, once each on those pops -->
+	<mFindHouseForPop>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+            var variableHandler = getAPI().getVariableHandler();
+			IFPop inPop = (IFPop)inArguments[0];
+			List&lt;IFBuilding&gt; inHousingBuildings = (List&lt;IFBuilding&gt;)inArguments[1];
+
+			addDebugMessage(inScriptInstance, "finding a house for pop " + inPop.getDebugName());
+			int index_of_most_promising = -1;
+			IFCommunity localCommunity = getAPI().getLocalCommunity();
+			bool popIsLocal = (inPop.getCommunity() == localCommunity);
+			bool popIsWanderer = (inPop.getCommunity().isWanderers());
+			bool popIsNeutral = !popIsLocal &amp;&amp; !popIsWanderer;
+			bool popIsLeader = ((Int64)inPop.getCommunity().getLeaderCollection().getLeaderFlagsForPop(inPop)) != 0;
+			
+			for (int i = 0; i &lt; inHousingBuildings.Count; i++)
+            {
+				IFBuildingKind bkind = inHousingBuildings[i].getBuildingKind();
+                if (inHousingBuildings[i].getHousingComponent().getHousedPops().Count != bkind.getHousingCapacity())
+                {
+                    if (!bkind.hasTag("housing only certain races") || inPop.getRace().getBuildingsToTreatAsHousing().Contains(bkind))
+                    {
+                        if (getAPI().isRaceAllowedToHouseInBKnd(inPop.getRace(), bkind))
+                        {
+                            IFBuilding.eBuildingWaterStatus water_status = inHousingBuildings[i].getBuildingWaterStatus();
+                            if (   (inPop.getRace().isCanBreatheOverwater() &amp;&amp; water_status == IFBuilding.eBuildingWaterStatus.cOverwaterEntirely)
+                                || (inPop.getRace().isCanBreatheUnderwater() &amp;&amp; water_status == IFBuilding.eBuildingWaterStatus.cUnderwaterEntirely)
+                                || (water_status == IFBuilding.eBuildingWaterStatus.cMixed)
+                               )
+                            {
+								//now check that the pop kind matches those that the building can house:
+								//(without any relevant tags, by default allow normal pops and leaders)
+								if(popIsWanderer &amp;&amp; !bkind.hasTag("housing wanderers"))
+									continue;
+								if(popIsNeutral &amp;&amp; !bkind.hasTag("housing foreign delegations"))
+									continue;
+								if(popIsLeader &amp;&amp; bkind.hasTag("houses no leaders"))
+									continue;
+								if(!popIsWanderer &amp;&amp; bkind.hasTag("housing only wanderers"))
+									continue;
+								if(!popIsNeutral &amp;&amp; bkind.hasTag("housing only foreign delegations"))
+									continue;
+								if(!popIsLeader &amp;&amp; bkind.hasTag("houses only leaders"))
+									continue;
+									
+								if(popIsNeutral &amp;&amp; bkind.hasTag("housing only one delegation"))
+								{
+									//check other pops in the housing: they must be of the same delegation as this pop
+									bool skipThisBuilding = false;
+									foreach(IFPop pop in inHousingBuildings[i].getHousingComponent().getHousedPops())
+									{
+										if(pop.getDelegation() != inPop.getDelegation())
+										{
+											skipThisBuilding = true;
+											break;
+										}
+									}
+									if(skipThisBuilding)
+										continue;
+								}
+							
+                                if (index_of_most_promising == -1)
+                                {
+                                    index_of_most_promising = i;
+                                }
+                                else if (inHousingBuildings[index_of_most_promising].getHousingComponent().calculateHousingQualityForPop(inPop) &lt; inHousingBuildings[i].getHousingComponent().calculateHousingQualityForPop(inPop))
+								{
+									index_of_most_promising = i;
+								}
+							}
+						}
+					}
+				}
+			}
+			if (index_of_most_promising != -1)
+			{
+				inPop.setHomeBuilding(inHousingBuildings[index_of_most_promising]);
+				addDebugMessage(inScriptInstance, "putting pop in house " + inHousingBuildings[index_of_most_promising].getDebugName());
+			}
+
+			return new List&lt;object&gt;();
+	</mFindHouseForPop>
+	
+	<!-- calculating a distribution network has one input: IFMap inMap (the local map; technically this could be gathered from a comiAPISpace call but may as well pass it in).  There are no outputs -->
+	<!-- this script is called once at the end of each day -->
+	<mCalculateDistributionNetwork>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			IFMap inMap = (IFMap)inArguments[0];
+			
+            //variables:
+            List&lt;bool&gt; all_resources_disallowed = new List&lt;bool&gt;();
+            all_resources_disallowed.AddRange(Enumerable.Repeat(false, getAPI().getTotalCountOfMO("resources")));
+            Dictionary&lt;IFBuilding, HashSet&lt;IFBuildingKind&gt;&gt; buildingUIDs_to_distroBKs = new Dictionary&lt;IFBuilding, HashSet&lt;IFBuildingKind&gt;&gt;();
+			
+			for (int x = 0; x &lt; inMap.getMapDimensions().Item1; x++)
+            {
+                for (int y = 0; y &lt; inMap.getMapDimensions().Item2; y++)
+                {
+                    if (inMap.getMapTiles()[x][y].isBuildingRoot())
+                    {
+                        IFBuilding center_building = inMap.getMapTiles()[x][y].getBuilding();
+                        if (center_building.getBuildingKind().getIndustry() != null &amp;&amp; center_building.getBuildingKind().getIndustry().isDistribution())
+                        {
+                            ReadOnlyCollection&lt;IFMapTile&gt; tiles = inMap.getMapTilesInBuildingRadius(center_building);
+
+    addDebugMessage(inScriptInstance, center_building.getDebugName() + " is a distribution building, checking tiles in radius");
+    foreach (var tile in tiles)
+    {
+    if (tile.hasBuilding())
+    {
+    IFBuilding tgt_build = tile.getBuilding();
+    if (!buildingUIDs_to_distroBKs.ContainsKey(tgt_build))
+    {
+    buildingUIDs_to_distroBKs.Add(tgt_build, new HashSet&lt;IFBuildingKind&gt;());
+    }
+    if (!buildingUIDs_to_distroBKs[tgt_build].Contains(center_building.getBuildingKind()))
+    {
+    buildingUIDs_to_distroBKs[tgt_build].Add(center_building.getBuildingKind());
+    addDebugMessage(inScriptInstance, center_building.getDebugName() + " is the first of its buildingKind (" + center_building.getBuildingKind().getDisplayName() + ") to serve " + tgt_build.getDisplayName());
+    }
+    }
+    }
+    }
+    else //else saves some cycles; the above will necessarily add a distro building to the dictionary.  We're here because center_building isn't distro
+    {
+    if (!buildingUIDs_to_distroBKs.ContainsKey(center_building))
+    {
+    buildingUIDs_to_distroBKs.Add(center_building, new HashSet&lt;IFBuildingKind&gt;());
+                            }
+                        }
+                    }
+                }
+            }
+
+            //once all that is done and buildingUIDs_to_distroMOIDs is calculated, process it:
+            foreach (var item in buildingUIDs_to_distroBKs)
+            {
+                List&lt;bool&gt; this_building_allowed_resources = new List&lt;bool&gt;(all_resources_disallowed);
+                foreach (IFBuildingKind bk in item.Value)
+                {
+                    ReadOnlyCollection&lt;bool&gt; to_or_in = getAPI().getResourcesEnabledListForDistributionBuildingKind(bk);
+    for (int i = 0; i &lt; to_or_in.Count; i++)
+                    {
+                        this_building_allowed_resources[i] = this_building_allowed_resources[i] || to_or_in[i];
+                    }
+                }
+                item.Key.setAccessibleResources(this_building_allowed_resources);
+            }
+			
+			return null;
+	</mCalculateDistributionNetwork>
+	
+	<!-- prediction strength script has one input: IFCommunity inLocalCommunity.  There is one output: double outPredictionStrength. -->
+	<!-- this script is called once at the end of each day, on the local community only. -->
+	<mCalculateLocalPredictionStrength>
+		//input count check:
+		if(inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+
+		IFCommunity inLocalCommunity = (IFCommunity)inArguments[0];
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//prediction strength goes from 0.0d to 100.0d and the domestic component itself will apply these bounds.  0.0d base:
+		double outPredictionStrength = 0.0d;
+		bool success = false;
+		
+		//fetch additions, subtractions, addition_mult and subtraction_mult from variableHandler.  Create them if they do not exist:
+		IFConnectedVariable predStrengthAdditions = variableHandler.getConnectedVariable("predictionStrengthAdditions_community" + inLocalCommunity.getUID());
+		if(predStrengthAdditions == null)
+		{
+			variableHandler.addConnectedDouble("predictionStrengthAdditions_community" + inLocalCommunity.getUID(), 0.0d, out predStrengthAdditions, -1L, IFConnectedVariable.eCombinationType.cAdd);
+		}
+		IFConnectedVariable predStrengthSubtractions = variableHandler.getConnectedVariable("predictionStrengthSubtractions_community" + inLocalCommunity.getUID());
+		if(predStrengthSubtractions == null)
+		{
+			variableHandler.addConnectedDouble("predictionStrengthSubtractions_community" + inLocalCommunity.getUID(), 0.0d, out predStrengthSubtractions, -1L, IFConnectedVariable.eCombinationType.cAdd);
+		}
+		
+		IFConnectedVariable predStrengthAdditionMult = variableHandler.getConnectedVariable("predictionStrengthAdditionMult_community" + inLocalCommunity.getUID());
+		if(predStrengthAdditionMult == null)
+		{
+			variableHandler.addConnectedDouble("predictionStrengthAdditionMult_community" + inLocalCommunity.getUID(), 0.0d, out predStrengthAdditionMult, -1L, IFConnectedVariable.eCombinationType.cMult);
+		}
+		IFConnectedVariable predStrengthSubtractionMult = variableHandler.getConnectedVariable("predictionStrengthSubtractionMult_community" + inLocalCommunity.getUID());
+		if(predStrengthSubtractionMult == null)
+		{
+			variableHandler.addConnectedDouble("predictionStrengthSubtractionMult_community" + inLocalCommunity.getUID(), 0.0d, out predStrengthSubtractionMult, -1L, IFConnectedVariable.eCombinationType.cMult);
+		}
+		
+		outPredictionStrength = Math.Abs(predStrengthAdditions.getVariableAsDouble() * predStrengthAdditionMult.getVariableAsDouble()) - Math.Abs(predStrengthSubtractions.getVariableAsDouble() * predStrengthSubtractionMult.getVariableAsDouble());
+
+		return new List&lt;object&gt;() { outPredictionStrength };
+  </mCalculateLocalPredictionStrength>
+	
+	<!-- generate pop resources has no inputs.  There are no outputs. -->
+	<!-- this script will be called once during midnight processing, and is meant to generate the resource that all pops in the community harvest from their own bodies when they have the time to sit down and do so -->
+	<!-- i.e. when they are housed -->
+	<mGeneratePopResources>
+		//no inputs
+		
+		IFCommunity inLocalCommunity = getAPI().getLocalCommunity();
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+	
+		//tally up housed pops in the local map by their associated resource pool:
+		Dictionary&lt;IFResourcePool, List&lt;IFPop&gt;&gt; resourcePoolToPops = new Dictionary&lt;IFResourcePool, List&lt;IFPop&gt;&gt;();
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			if(pop.isDead())
+				continue;
+			if(!pop.hasHomeBuilding())
+				continue;
+			if(pop.getRace().getResourcesToGenerateWhileHoused().Count == 0)
+				continue;
+			IFResourcePool poolToAddTo = null;
+			if(pop.getCommunity() == inLocalCommunity)
+			{
+				poolToAddTo = inLocalCommunity.getResourcePool();
+			}
+			else if(pop.hasDelegation())
+			{
+				poolToAddTo = pop.getDelegation().getResourcePool();
+			}
+			
+			if(poolToAddTo != null)
+			{
+				if(!resourcePoolToPops.ContainsKey(poolToAddTo))
+				{
+					resourcePoolToPops.Add(poolToAddTo, new List&lt;IFPop&gt;());
+				}
+				resourcePoolToPops[poolToAddTo].Add(pop);
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, pop.getDebugName() + " on local community map has no place to put its generated resources (not loyal or in delegation)");
+			}
+		}
+		
+		if(resourcePoolToPops.Count == 0)
+		{
+			addDebugMessage(inScriptInstance, "no pops on local community map create resources to add to the local community pool or their delegation pool");
+			return null;
+		}
+		
+		double minQual = consts.getResourceQualityMin();
+		double maxQual = consts.getResourceQualityMax();
+		
+		double minProp = customConsts.getDoubleConst("generatepopresources quality min", out bool success);
+		if(!success) minProp = 0.1d;
+		double maxProp = customConsts.getDoubleConst("generatepopresources quality max", out success);
+		if(!success) maxProp = 0.9d;
+		
+		double minHealth = consts.getHealthMin();
+		double maxHealth = consts.getHealthMax();
+		
+		double minAddVal = minProp * (maxQual - minQual) + minQual;
+		double maxAddVal = maxProp * (maxQual - minQual) + minQual;
+		
+		//add the resources per pop:
+		foreach(var kvpair in resourcePoolToPops)
+		{
+			foreach(IFPop pop in kvpair.Value)
+			{
+				double quality = (((double)(pop.getOverallHealth() - minHealth)) / (maxHealth - minHealth)) * (maxAddVal - minAddVal) + minAddVal;
+			
+				foreach(var tuple in pop.getRace().getResourcesToGenerateWhileHoused())
+				{
+					kvpair.Key.addResourcesOfQuality(tuple.Item1, tuple.Item2, quality, null, pop);
+				}
+			}
+		}
+	
+		return null;
+	</mGeneratePopResources>
+	
+  </gamescripts>
+  
+</core_data>

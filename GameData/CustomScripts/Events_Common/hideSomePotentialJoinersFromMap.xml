@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- for keeping pops off the map, lying wildness is equal to the chance any given pop is off the map -->
+			<i1><a>hideSomePotentialJoinersFromMap lying_wildness min</a> <b>double</b> <c>0.05</c></i1> <!-- if the joiners are going to lie they may as well try to make their lie have positive consequences -->
+			<i1><a>hideSomePotentialJoinersFromMap lying_wildness max</a> <b>double</b> <c>0.95</c></i1> <!-- someone needs to appear before the community -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script hideSomePotentialJoinersFromMap</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which hides some pops from the player community while the potential joiners (emigrants/Wanderers) are being considered -->
+  <!-- at least one pop will stay on the map.  The location that the pops will be sent to is cInDelegation -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus,
+	Int64 inEventReportUID,
+	string inAdditionalLabel,
+	Int64 inExpiryDateAssociation,
+	List<IFPop> inPopsPotentiallyJoining, //cannot be null and will have no effect if empty
+	double inLyingWildness //from min to 1.0d.  If it is outside, a random value will be used.
+	-->
+	
+	<!-- output:
+	List<IFPop> outPopsOnMap, //can only be empty if there are no valid pops.  Will not be null
+	List<IFPop> outPopsOffMap, //can be empty but will not be null
+	-->
+	<i1><a>hideSomePotentialJoinersFromMap</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(string), typeof(Int64), typeof(List&lt;IFPop&gt;), typeof(double)}
+	      }, out _))
+	    {
+			throw new ArgumentException("hideSomePotentialJoinersFromMap custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		string inAdditionalLabel = (string)inArguments[2];
+		Int64 inExpiryDateAssociation = (Int64)inArguments[3];
+		List&lt;IFPop&gt; inPopsPotentiallyJoining = (List&lt;IFPop&gt;)inArguments[4];
+		double inLyingWildness = (double)inArguments[5];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		if(inPopsPotentiallyJoining == null)
+		{
+			throw new ArgumentException("hideSomePotentialJoinersFromMap custom script received invalid arguments: inPopsPotentiallyJoining cannot be null");
+			return null;
+		}
+		double lyingWildnessMin = customConsts.getDoubleConst("hideSomePotentialJoinersFromMap lying_wildness min", out bool success);
+		if(!success) lyingWildnessMin = 0.05d;
+		double lyingWildnessMax = customConsts.getDoubleConst("hideSomePotentialJoinersFromMap lying_wildness max", out success);
+		if(!success) lyingWildnessMax = 0.95d;
+		if(inLyingWildness &lt; lyingWildnessMin || inLyingWildness &gt; lyingWildnessMax)
+		{
+			double newVal = lyingWildnessMin + (lyingWildnessMax - lyingWildnessMin) * getAPI().calcRand();
+			addDebugMessage(inScriptInstance, "changing inLyingWildness from " + inLyingWildness + " to " + newVal);
+			inLyingWildness = newVal;
+		}
+		
+		List&lt;IFPop&gt; outPopsOnMap = new List&lt;IFPop&gt;();
+		List&lt;IFPop&gt; outPopsOffMap = new List&lt;IFPop&gt;();
+		
+		//iterate over all pops:
+		foreach(IFPop pop in inPopsPotentiallyJoining)
+		{
+			if(getAPI().calcProb(inLyingWildness))
+			{
+				outPopsOffMap.Add(pop);
+			}
+			else
+			{
+				outPopsOnMap.Add(pop);
+			}
+		}
+		if((outPopsOnMap.Count == 0) &amp;&amp; (outPopsOffMap.Count != 0))
+		{
+			outPopsOnMap.Add(outPopsOffMap[0]);
+			outPopsOffMap.RemoveAt(0);
+		}
+		
+		if(outPopsOffMap.Count != 0)
+		{
+			addDebugMessage(inScriptInstance, "putting " + outPopsOffMap.Count + " of " + inPopsPotentiallyJoining.Count + " pops off map");
+			foreach(IFPop pop in outPopsOffMap)
+			{
+				pop.removePopFromMap(IFPop.ePopLocation.cInDelegation);
+			}
+			customScripts.runCustomScript("storeOrFetchPopsForEvent", new List&lt;object&gt;() { inEventStatus, inEventReportUID, true, outPopsOffMap, inAdditionalLabel + "hidingPops" /* appending "hidingPops" prevents silly issues where an inAdditionalLabel of empty string overwrites variables for the whole list of pops for this event */,
+				inExpiryDateAssociation, -1L, 0.0d }, out _);
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "no pops hiding off map of " + inPopsPotentiallyJoining.Count + " pops");
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outPopsOnMap, outPopsOffMap };
+		return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

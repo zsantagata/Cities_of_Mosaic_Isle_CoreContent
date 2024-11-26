@@ -1,0 +1,1240 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to hardcoded alerts: -->
+  
+  <!-- The following is the full list of alert identifiers for hard-coded alerts, and a description of when they happen and what their inDetailsToReplace are:
+  ALERT_IDENTIFIER || DESCRIPTION OF ALERT || DESCRIPTION OF inDetailsToReplace
+  neutrals_fully_left || When the last neutral of a non-hostile community has left the map || [0]=IFCommunity in question
+  leader_wounded || When an industry or racial or City leader becomes wounded, and was not previously || [0]=IFPop in question
+  leader_ill || When an industry or racial or City leader becomes ill, and was not previously || [0]=IFPop in question
+  leader_dead || When an industry or racial or City leader becomes dead, and was not previously || [0]=IFPop in question
+  leader_stepdown || When an industry or racial or City leader is removed from their position for disloyalty (or industry leader lack of skill).  Alert script is called before it happens. || [0]=IFPop in question
+  leader_new || When a new industry or racial or City leader takes up the position.  Alert script is called after it happens. || [0]=IFPop in question
+  race_unhappy || When a race in the community's happiness falls below a customizable threshold || [0]=IFRace in question
+  delegation_waiting_resolve || When a delegation causes the game to pause because it is waiting for resolution || [0]=IFDelegation in question
+  delegation_returned || When a delegation's pops return to the player community and give any resources back.  Alert script is called after it happens. || [0]=IFDelegation in question
+  pop_starving || When pops in the community have MCal health of 0 after midnight processing || [0]=Int64 of pops starving
+  pop_proteinless || When pops in the community have protein health of 0 after midnight processing || [0]=Int64 of pops proteinless
+  pop_exposed || When pops in the community have hstasis health of 0 after midnight processing || [0]=Int64 of pops exposed
+  pop_dehydrated || When pops in the community have water health of 0 after midnight processing || [0]=Int64 of pops dehydrated
+  pop_wounds_exposure || When pops in the community suffer wounds from exposure during midnight processing || [0]=Int64 of pops suffering wounds
+  pop_wounds_workplace || When pops in the community suffer wounds from workplace accidents during midnight processing || [0]=Int64 of pops suffering wounds
+  pop_death_wounds || When pops in the community die from their wounds during midnight processing || [0]=Int64 of pops dying
+  pop_death_illness || When pops in the community die from their illnesses during midnight processing || [0]=Int64 of pops dying
+  pop_death_oldage || When pops in the community die from old age during midnight processing || [0]=Int64 of pops dying
+  pop_illness || When pops in the community become ill during midnight processing || [0]=Int64 of pops dying
+  foreign_delegation_arrival_nonviolent || When a foreign trade/diplomacy/emigration delegation arrives at the player community || [0]=IFDelegation in question
+  foreign_delegation_arrival_violent || When a foreign war/raiding delegation arrives at the player community || [0]=IFDelegation in question
+  community_deleted || When (right before, actually) a foreign community is deleted || [0]=IFCommunity in question
+  prisoners_converted || When a delegation comes back to the player community and there are pops not loyal to the community (who then become loyal) || [0]=Int64 of pops converted
+  player_nolongermaster || When a community is no longer a servant of the player community || [0]=IFCommunity in question
+  player_nolongerservant || When a community is no longer the master of the player community || [0]=IFCommunity in question
+  player_nowmaster || When a community becomes a servant of the player community || [0]=IFCommunity in question
+  player_nowservant || When a community becomes the master of the player community || [0]=IFCommunity in question
+  -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+		<i1><a>mHardCodedAlert neutrals_fully_left alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert neutrals_fully_left alert before_replace_text</a> <b>string</b>
+		<c>All [0] pops have left the map.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_neutrals_fully_left</a> <b>int</b> <c>1</c></i1>
+	
+		<i1><a>mHardCodedAlert leader_wounded alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert leader_wounded alert before_replace_text</a> <b>string</b>
+		<c>The [0] [1] has been wounded.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_leader_wounded</a> <b>int</b> <c>1</c></i1>
+	
+		<i1><a>mHardCodedAlert leader_ill alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert leader_ill alert before_replace_text</a> <b>string</b>
+		<c>The [0] [1] has become ill.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_leader_ill</a> <b>int</b> <c>1</c></i1>
+	
+		<i1><a>mHardCodedAlert leader_dead alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert leader_dead alert before_replace_text</a> <b>string</b>
+		<c>The [0] [1] is now dead!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_leader_dead</a> <b>int</b> <c>1</c></i1>
+	
+		<i1><a>mHardCodedAlert leader_dead alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert leader_dead alert before_replace_text</a> <b>string</b>
+		<c>The [0] [1] is now dead!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_leader_dead</a> <b>int</b> <c>1</c></i1>
+	
+		<i1><a>mHardCodedAlert leader_stepdown alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert leader_stepdown alert before_replace_text</a> <b>string</b>
+		<c>The [0] [1] has been stripped of the title.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_leader_stepdown</a> <b>int</b> <c>1</c></i1>
+	
+		<i1><a>mHardCodedAlert leader_new alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert leader_new alert before_replace_text</a> <b>string</b>
+		<c>[0] has risen to a position of [1] leadership.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_leader_new</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert leader_new alert city_leader before_replace_text</a> <b>string</b>
+		<c>City</c></i1>
+		<i1><a>mHardCodedAlert leader_new alert race_leader before_replace_text</a> <b>string</b>
+		<c>[0]</c></i1>
+		<i1><a>mHardCodedAlert leader_new alert industry_leader before_replace_text</a> <b>string</b>
+		<c>[0] industry</c></i1>
+		
+		<i1><a>mHardCodedAlert race_unhappy alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert race_unhappy alert before_replace_text</a> <b>string</b>
+		<c>[0] of the community are unhappy.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_race_unhappy</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert delegation_waiting_resolve alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert delegation_waiting_resolve alert before_replace_text</a> <b>string</b>
+		<c>Delegation [0] is expected to return now.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_delegation_waiting_resolve</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert delegation_returned alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert delegation_returned alert before_replace_text</a> <b>string</b>
+		<c>Pops from delegation [0] have returned.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_delegation_returned</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert pop_starving alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert pop_starving alert before_replace_text</a> <b>string</b>
+		<c>[0] pops in the community lack food!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_pop_starving</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert pop_proteinless alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert pop_proteinless alert before_replace_text</a> <b>string</b>
+		<c>[0] pops in the community lack protein!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_pop_proteinless</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert pop_exposed alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert pop_exposed alert before_replace_text</a> <b>string</b>
+		<c>[0] pops in the community lack protection from the elements!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_pop_exposed</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert pop_dehydrated alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert pop_dehydrated alert before_replace_text</a> <b>string</b>
+		<c>[0] pops in the community lack water!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_pop_dehydrated</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert pop_wounds_exposure alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert pop_wounds_exposure alert before_replace_text</a> <b>string</b>
+		<c>[0] pops in the community became wounded due to exposure!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_pop_wounds_exposure</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert pop_wounds_workplace alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert pop_wounds_workplace alert before_replace_text</a> <b>string</b>
+		<c>[0] pops in the community became wounded in work accidents!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_pop_wounds_workplace</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert pop_death_wounds alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert pop_death_wounds alert before_replace_text</a> <b>string</b>
+		<c>[0] pops in the community died from their wounds!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_pop_death_wounds</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert pop_death_illness alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert pop_death_illness alert before_replace_text</a> <b>string</b>
+		<c>[0] pops in the community died from illness!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_pop_death_illness</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert pop_death_oldage alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert pop_death_oldage alert before_replace_text</a> <b>string</b>
+		<c>[0] pops in the community died from old age.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_pop_death_oldage</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert pop_illness alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert pop_illness alert before_replace_text</a> <b>string</b>
+		<c>[0] pops in the community have contracted an illness.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_pop_illness</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert foreign_delegation_arrival_nonviolent alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert foreign_delegation_arrival_nonviolent alert before_replace_text</a> <b>string</b>
+		<c>A [0] delegation from [1] has arrived.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_foreign_delegation_arrival_nonviolent</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert foreign_delegation_arrival_violent alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert foreign_delegation_arrival_violent alert before_replace_text</a> <b>string</b>
+		<c>A [0] delegation from [1] is attacking our community!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_foreign_delegation_arrival_violent</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert community_deleted alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert community_deleted alert before_replace_text</a> <b>string</b>
+		<c>No living pops remain loyal to [0], and the community has been lost.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_community_deleted</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert prisoners_converted alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert prisoners_converted alert before_replace_text</a> <b>string</b>
+		<c>A returning delegation has brought [0] prisoners, who have joined our community.</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_prisoners_converted</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert player_nolongermaster alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert player_nolongermaster alert before_replace_text</a> <b>string</b>
+		<c>Our community is no longer the master of [0].</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_player_nolongermaster</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert player_nolongerservant alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert player_nolongerservant alert before_replace_text</a> <b>string</b>
+		<c>Our community is no longer the servant of [0]!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_player_nolongerservant</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert player_nowmaster alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert player_nowmaster alert before_replace_text</a> <b>string</b>
+		<c>Our community is now the master community of [0].</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_player_nowmaster</a> <b>int</b> <c>1</c></i1>
+		
+		<i1><a>mHardCodedAlert player_nowservant alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mHardCodedAlert player_nowservant alert before_replace_text</a> <b>string</b>
+		<c>Our community is now a servant community of [0]!</c></i1>
+		<i1><a>log_script_custom script hardcodedAlert_player_nowservant</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a script (and consts and sub-scripts) which handle(s) hard-coded alerts -->
+  <gamescripts name="default">
+	<!-- alert script has two input arguments: string inAlertIdentifier and List<object> inDetailsToReplace.  inDetailsToReplace can be empty but it will not be null.  There are no outputs. -->
+	<!-- this script is called whenever the C# code has encountered something which I, the dev, think should possibly be told to the player in the form of an alert.  This script and the consts exist because players and modders might disagree and want to customize their alerts :) -->
+	<mHardcodedAlert>
+	//input count check:
+	if (inArguments.Length &lt; 2)
+	{
+		return null;
+	}
+	
+	string inAlertIdentifier = (string)inArguments[0];
+	List&lt;object&gt; inDetailsToReplace = (List&lt;object&gt;)inArguments[1];
+	
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("hardcodedAlert_" + inAlertIdentifier.ToLower(), inDetailsToReplace, out _))
+	{
+		addDebugMessage(inScriptInstance, "failed to run (or possibly find) alert subscript with name " + "hardcodedAlert_" + inAlertIdentifier.ToLower());
+	}
+	
+	return null;
+    </mHardcodedAlert>
+  </gamescripts>
+  
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	<!-- hardcodedAlert_neutrals_fully_left has one input: IFCommunity inCommunity.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle neutrals_fully_left alerts -->
+	<i1><a>hardcodedAlert_neutrals_fully_left</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_neutrals_fully_left custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert neutrals_fully_left alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert neutrals_fully_left alert before_replace_text", out success);
+		if(!success) text = "All [0] pops have left the map.";
+		text = text.Replace("[0]", inCommunity.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_leader_wounded has one input: IFPop inPop.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle leader_wounded alerts -->
+	<i1><a>hardcodedAlert_leader_wounded</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_leader_wounded custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFPop inPop = (IFPop)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert leader_wounded alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert leader_wounded alert before_replace_text", out success);
+		if(!success) text = "The [0] [1] has been wounded.";
+		if(customScripts.runCustomScriptCheckTypes("leaderDescription", new List&lt;object&gt;() { inPop }, out List&lt;object&gt; outputs, false, typeof(string)))
+		{
+			text = text.Replace("[0]", (string)outputs[0]);
+		}
+		else
+		{
+			text = text.Replace("[0] ", ""); //take out an additional space
+		}
+		text = text.Replace("[1]", inPop.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, false, inPop); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_leader_ill has one input: IFPop inPop.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle leader_ill alerts -->
+	<i1><a>hardcodedAlert_leader_ill</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_leader_ill custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFPop inPop = (IFPop)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert leader_ill alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert leader_ill alert before_replace_text", out success);
+		if(!success) text = "The [0] [1] has become ill.";
+		if(customScripts.runCustomScriptCheckTypes("leaderDescription", new List&lt;object&gt;() { inPop }, out List&lt;object&gt; outputs, false, typeof(string)))
+		{
+			text = text.Replace("[0]", (string)outputs[0]);
+		}
+		else
+		{
+			text = text.Replace("[0] ", ""); //take out an additional space
+		}
+		text = text.Replace("[1]", inPop.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, false, inPop); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_leader_dead has one input: IFPop inPop.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle leader_dead alerts -->
+	<i1><a>hardcodedAlert_leader_dead</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_leader_dead custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFPop inPop = (IFPop)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert leader_dead alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert leader_dead alert before_replace_text", out success);
+		if(!success) text = "The [0] [1] is now dead!";
+		if(customScripts.runCustomScriptCheckTypes("leaderDescription", new List&lt;object&gt;() { inPop }, out List&lt;object&gt; outputs, false, typeof(string)))
+		{
+			text = text.Replace("[0]", (string)outputs[0]);
+		}
+		else
+		{
+			text = text.Replace("[0] ", ""); //take out an additional space
+		}
+		text = text.Replace("[1]", inPop.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, false, inPop); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_leader_stepdown has one input: IFPop inPop.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle leader_stepdown alerts -->
+	<i1><a>hardcodedAlert_leader_stepdown</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_leader_stepdown custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFPop inPop = (IFPop)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert leader_stepdown alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert leader_stepdown alert before_replace_text", out success);
+		if(!success) text = "The [0] [1] has been stripped of the title.";
+		if(customScripts.runCustomScriptCheckTypes("leaderDescription", new List&lt;object&gt;() { inPop }, out List&lt;object&gt; outputs, false, typeof(string)))
+		{
+			text = text.Replace("[0]", (string)outputs[0]);
+		}
+		else
+		{
+			text = text.Replace("[0] ", ""); //take out an additional space
+		}
+		text = text.Replace("[1]", inPop.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, false, inPop); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_leader_new has one input: IFPop inPop.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle leader_new alerts -->
+	<i1><a>hardcodedAlert_leader_new</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_leader_new custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFPop inPop = (IFPop)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert leader_new alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert leader_new alert before_replace_text", out success);
+		if(!success) text = "[0] has risen to a position of [1] leadership.";
+		
+		text = text.Replace("[0]", inPop.getDisplayName());
+		
+		string desc_replacer = "";
+		IFLeaderCollection leaders = inPop.getCommunity().getLeaderCollection();
+		if(leaders.getCityLeader() == inPop)
+		{
+			desc_replacer = customConsts.getStringConst("mHardCodedAlert leader_new alert city_leader before_replace_text", out success);
+			if(!success) desc_replacer = "City";
+		}
+		if(leaders.getRaceLeader(inPop.getRace()) == inPop)
+		{
+			desc_replacer = customConsts.getStringConst("mHardCodedAlert leader_new alert race_leader before_replace_text", out success);
+			if(!success) desc_replacer = "[0]";
+			desc_replacer = desc_replacer.Replace("[0]", inPop.getRace().getAdjective());
+		}
+		if(leaders.getIndustryLeaders().Contains(inPop))
+		{
+			desc_replacer = customConsts.getStringConst("mHardCodedAlert leader_new alert industry_leader before_replace_text", out success);
+			if(!success) desc_replacer = "[0] industry";
+			desc_replacer = desc_replacer.Replace("[0]", leaders.getIndustryLedByPop(inPop).getDisplayName());
+		}
+		
+		text = text.Replace("[1]", desc_replacer);
+		
+		getAPI().createAlert(text, 255, 255, 255, false, inPop); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_race_unhappy has one input: IFRace inRace.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle race_unhappy alerts -->
+	<i1><a>hardcodedAlert_race_unhappy</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFRace)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_race_unhappy custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFRace inRace = (IFRace)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert race_unhappy alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert race_unhappy alert before_replace_text", out success);
+		if(!success) text = "[0] of the community are unhappy.";
+		text = text.Replace("[0]", inRace.getPluralNoun());
+		
+		getAPI().createAlert(text, 255, 255, 255, false, null, null, null, null, -1.0d, -1.0d, false, 5); //the numbers are r/g/b, and false is for not pausing. 5 = race happiness
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_delegation_waiting_resolve has one input: IFDelegation inDelegation.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle delegation_waiting_resolve alerts -->
+	<i1><a>hardcodedAlert_delegation_waiting_resolve</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFDelegation)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_delegation_waiting_resolve custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert delegation_waiting_resolve alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert delegation_waiting_resolve alert before_replace_text", out success);
+		if(!success) text = "Delegation [0] is expected to return now.";
+		text = text.Replace("[0]", inDelegation.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, false, null, null, null, inDelegation); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_delegation_returned has one input: IFDelegation inDelegation.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle delegation_returned alerts -->
+	<i1><a>hardcodedAlert_delegation_returned</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFDelegation)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_delegation_returned custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert delegation_returned alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert delegation_returned alert before_replace_text", out success);
+		if(!success) text = "Pops from delegation [0] have returned.";
+		text = text.Replace("[0]", inDelegation.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_pop_starving has one input: Int64 inCountOfPopsStarving.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle pop_starving alerts -->
+	<i1><a>hardcodedAlert_pop_starving</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_pop_starving custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCountOfPopsStarving = (Int64)inArguments[0];
+	  if(inCountOfPopsStarving &lt;= 0)
+	  {
+		addDebugMessage(inScriptInstance, "Not sending count of pops starving alert because count is zero or negative: " + inCountOfPopsStarving);
+		return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert pop_starving alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert pop_starving alert before_replace_text", out success);
+		if(!success) text = "[0] pops in the community lack food!";
+		text = text.Replace("[0]", inCountOfPopsStarving.ToString());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_pop_proteinless has one input: Int64 inCountOfPopsProteinless.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle pop_proteinless alerts -->
+	<i1><a>hardcodedAlert_pop_proteinless</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_pop_proteinless custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCountOfPopsProteinless = (Int64)inArguments[0];
+	  if(inCountOfPopsProteinless &lt;= 0)
+	  {
+		addDebugMessage(inScriptInstance, "Not sending count of pops proteinless alert because count is zero or negative: " + inCountOfPopsProteinless);
+		return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert pop_proteinless alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert pop_proteinless alert before_replace_text", out success);
+		if(!success) text = "[0] pops in the community lack protein!";
+		text = text.Replace("[0]", inCountOfPopsProteinless.ToString());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_pop_exposed has one input: Int64 inCountOfPopsExposed.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle pop_exposed alerts -->
+	<i1><a>hardcodedAlert_pop_exposed</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_pop_exposed custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCountOfPopsExposed = (Int64)inArguments[0];
+	  if(inCountOfPopsExposed &lt;= 0)
+	  {
+		addDebugMessage(inScriptInstance, "Not sending count of pops exposed alert because count is zero or negative: " + inCountOfPopsExposed);
+		return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert pop_exposed alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert pop_exposed alert before_replace_text", out success);
+		if(!success) text = "[0] pops in the community lack protection from the elements!";
+		text = text.Replace("[0]", inCountOfPopsExposed.ToString());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_pop_dehydrated has one input: Int64 inCountOfPopsDehydrated.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle pop_dehydrated alerts -->
+	<i1><a>hardcodedAlert_pop_dehydrated</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_pop_dehydrated custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCountOfPopsDehydrated = (Int64)inArguments[0];
+	  if(inCountOfPopsDehydrated &lt;= 0)
+	  {
+		addDebugMessage(inScriptInstance, "Not sending count of pops dehydrated alert because count is zero or negative: " + inCountOfPopsDehydrated);
+		return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert pop_dehydrated alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert pop_dehydrated alert before_replace_text", out success);
+		if(!success) text = "[0] pops in the community lack water!";
+		text = text.Replace("[0]", inCountOfPopsDehydrated.ToString());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_pop_wounds_exposure has one input: Int64 inCountOfWoundsFromExposure.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle pop_wounds_exposure alerts -->
+	<i1><a>hardcodedAlert_pop_wounds_exposure</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_pop_wounds_exposure custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCountOfWoundsFromExposure = (Int64)inArguments[0];
+	  if(inCountOfWoundsFromExposure &lt;= 0)
+	  {
+		addDebugMessage(inScriptInstance, "Not sending count of pops wounded from exposure alert because count is zero or negative: " + inCountOfWoundsFromExposure);
+		return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert pop_wounds_exposure alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert pop_wounds_exposure alert before_replace_text", out success);
+		if(!success) text = "[0] pops in the community became wounded due to exposure!";
+		text = text.Replace("[0]", inCountOfWoundsFromExposure.ToString());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_pop_wounds_workplace has one input: Int64 inCountOfWoundsFromAccidents.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle pop_wounds_workplace alerts -->
+	<i1><a>hardcodedAlert_pop_wounds_workplace</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_pop_wounds_workplace custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCountOfWoundsFromAccidents = (Int64)inArguments[0];
+	  if(inCountOfWoundsFromAccidents &lt;= 0)
+	  {
+		addDebugMessage(inScriptInstance, "Not sending count of pops wounded in accidents alert because count is zero or negative: " + inCountOfWoundsFromAccidents);
+		return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert pop_wounds_workplace alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert pop_wounds_workplace alert before_replace_text", out success);
+		if(!success) text = "[0] pops in the community became wounded in work accidents!";
+		text = text.Replace("[0]", inCountOfWoundsFromAccidents.ToString());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_pop_death_wounds has one input: Int64 inCountOfDeathsFromWounds.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle pop_death_wounds alerts -->
+	<i1><a>hardcodedAlert_pop_death_wounds</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_pop_death_wounds custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCountOfDeathsFromWounds = (Int64)inArguments[0];
+	  if(inCountOfDeathsFromWounds &lt;= 0)
+	  {
+		addDebugMessage(inScriptInstance, "Not sending count of pops dead from wounds alert because count is zero or negative: " + inCountOfDeathsFromWounds);
+		return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert pop_death_wounds alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert pop_death_wounds alert before_replace_text", out success);
+		if(!success) text = "[0] pops in the community died from their wounds!";
+		text = text.Replace("[0]", inCountOfDeathsFromWounds.ToString());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_pop_death_illness has one input: Int64 inCountOfDeathsFromIllness.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle pop_death_illness alerts -->
+	<i1><a>hardcodedAlert_pop_death_illness</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_pop_death_illness custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCountOfDeathsFromIllness = (Int64)inArguments[0];
+	  if(inCountOfDeathsFromIllness &lt;= 0)
+	  {
+		addDebugMessage(inScriptInstance, "Not sending count of pops dead from illness alert because count is zero or negative: " + inCountOfDeathsFromIllness);
+		return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert pop_death_illness alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert pop_death_illness alert before_replace_text", out success);
+		if(!success) text = "[0] pops in the community died from illness!";
+		text = text.Replace("[0]", inCountOfDeathsFromIllness.ToString());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_pop_death_oldage has one input: Int64 inCountOfDeathsFromOldAge.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle pop_death_oldage alerts -->
+	<i1><a>hardcodedAlert_pop_death_oldage</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_pop_death_oldage custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCountOfDeathsFromOldAge = (Int64)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert pop_death_oldage alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert pop_death_oldage alert before_replace_text", out success);
+		if(!success) text = "[0] pops in the community died from old age.";
+		text = text.Replace("[0]", inCountOfDeathsFromOldAge.ToString());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_pop_illness has one input: Int64 inCountOfNewIllnesses.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle pop_illness alerts -->
+	<i1><a>hardcodedAlert_pop_illness</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_pop_illness custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCountOfNewIllnesses = (Int64)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert pop_illness alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert pop_illness alert before_replace_text", out success);
+		if(!success) text = "[0] pops in the community have contracted an illness.";
+		text = text.Replace("[0]", inCountOfNewIllnesses.ToString());
+		
+		getAPI().createAlert(text, 200, 255, 200, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_foreign_delegation_arrival_nonviolent has one input: IFDelegation inDelegation.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle foreign_delegation_arrival_nonviolent alerts -->
+	<i1><a>hardcodedAlert_foreign_delegation_arrival_nonviolent</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFDelegation)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_foreign_delegation_arrival_nonviolent custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	  if(inDelegation == null)
+	  {
+		  throw new ArgumentException("hardcodedAlert_foreign_delegation_arrival_nonviolent custom script received invalid arguments: inDelegation cannot be null");
+		  return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert foreign_delegation_arrival_nonviolent alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert foreign_delegation_arrival_nonviolent alert before_replace_text", out success);
+		if(!success) text = "A [0] delegation from [1] has arrived.";
+		text = text.Replace("[0]", getAPI().getTranslatedStrings().getDisplayStringOfName(IFDelegation.cDelegationTypeNames[(int)inDelegation.getDelegationType()]));
+		text = text.Replace("[1]", inDelegation.getSourceCommunity().getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, true, inDelegation.getPopsInDelegation()[0]); //the numbers are r/g/b, and true is for pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_foreign_delegation_arrival_violent has one input: IFDelegation inDelegation.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle foreign_delegation_arrival_violent alerts -->
+	<i1><a>hardcodedAlert_foreign_delegation_arrival_violent</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFDelegation)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_foreign_delegation_arrival_violent custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	  if(inDelegation == null)
+	  {
+		  throw new ArgumentException("hardcodedAlert_foreign_delegation_arrival_violent custom script received invalid arguments: inDelegation cannot be null");
+		  return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert foreign_delegation_arrival_violent alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert foreign_delegation_arrival_violent alert before_replace_text", out success);
+		if(!success) text = "A [0] delegation from [1] is attacking our community!";
+		text = text.Replace("[0]", getAPI().getTranslatedStrings().getDisplayStringOfName(IFDelegation.cDelegationTypeNames[(int)inDelegation.getDelegationType()]));
+		text = text.Replace("[1]", inDelegation.getSourceCommunity().getDisplayName());
+		
+		getAPI().createAlert(text, 255, 200, 200, true, inDelegation.getPopsInDelegation()[0]); //the numbers are r/g/b, and true is for pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_community_deleted has one input: IFCommunity inCommunity.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle community_deleted alerts -->
+	<i1><a>hardcodedAlert_community_deleted</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_community_deleted custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("hardcodedAlert_community_deleted custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert community_deleted alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert community_deleted alert before_replace_text", out success);
+		if(!success) text = "No living pops remain loyal to [0], and the community has been lost.";
+		text = text.Replace("[0]", inCommunity.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, false, null, null, inCommunity); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_prisoners_converted has one input: Int64 inCount.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle prisoners_converted alerts -->
+	<i1><a>hardcodedAlert_prisoners_converted</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Int64)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_prisoners_converted custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  Int64 inCount = (Int64)inArguments[0];
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert prisoners_converted alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert prisoners_converted alert before_replace_text", out success);
+		if(!success) text = "A returning delegation has brought [0] prisoners, who have joined our community.";
+		text = text.Replace("[0]", inCount.ToString());
+		
+		getAPI().createAlert(text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_player_nolongermaster has one input: IFCommunity inCommunity.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle player_nolongermaster alerts -->
+	<i1><a>hardcodedAlert_player_nolongermaster</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_player_nolongermaster custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("hardcodedAlert_player_nolongermaster custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert player_nolongermaster alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert player_nolongermaster alert before_replace_text", out success);
+		if(!success) text = "Our community is no longer the master of [0].";
+		text = text.Replace("[0]", inCommunity.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, false, null, null, inCommunity); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_player_nolongerservant has one input: IFCommunity inCommunity.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle player_nolongerservant alerts -->
+	<i1><a>hardcodedAlert_player_nolongerservant</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_player_nolongerservant custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("hardcodedAlert_player_nolongerservant custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert player_nolongerservant alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert player_nolongerservant alert before_replace_text", out success);
+		if(!success) text = "Our community is no longer the servant of [0]!";
+		text = text.Replace("[0]", inCommunity.getDisplayName());
+		
+		getAPI().createAlert(text, 200, 255, 200, false, null, null, inCommunity); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- hardcodedAlert_player_nowmaster has one input: IFCommunity inCommunity.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle player_nowmaster alerts -->
+	<i1><a>hardcodedAlert_player_nowmaster</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_player_nowmaster custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("hardcodedAlert_player_nowmaster custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert player_nowmaster alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert player_nowmaster alert before_replace_text", out success);
+		if(!success) text = "Our community is now the master community of [0].";
+		text = text.Replace("[0]", inCommunity.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 255, 255, false, null, null, inCommunity); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+
+	<!-- hardcodedAlert_player_nowservant has one input: IFCommunity inCommunity.  It has no outputs. -->
+	<!-- this script is called by mHardcodedAlert to handle player_nowservant alerts -->
+	<i1><a>hardcodedAlert_player_nowservant</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("hardcodedAlert_player_nowservant custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	  var customConsts = getAPI().getCustomConsts();
+	  IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("hardcodedAlert_player_nowservant custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+	  }
+	  
+	  //here, send the alert:
+	  Int64 enable_if_not_zero = customConsts.getIntConst("mHardCodedAlert player_nowservant alert enable_if_not_zero", out bool success);
+	  if(!success) enable_if_not_zero = 0;
+	  if(enable_if_not_zero != 0)
+	  {
+		string text = customConsts.getStringConst("mHardCodedAlert player_nowservant alert before_replace_text", out success);
+		if(!success) text = "Our community is now a servant community of [0]!";
+		text = text.Replace("[0]", inCommunity.getDisplayName());
+		
+		getAPI().createAlert(text, 255, 200, 200, false, null, null, inCommunity); //the numbers are r/g/b, and false is for not pausing
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+  
+</core_data>

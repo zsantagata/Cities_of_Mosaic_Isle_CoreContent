@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of a script (and consts and sub-scripts) which handle(s) foreign delegations arriving at foreign communities -->
+  <gamescripts name="default">
+	<!-- foreign delegation at foreign community has one input: IFDelegation inDelegationInQuestion.  There are no outputs. -->
+	<!-- this script is called during midnight processing on each foreign-sourced delegation that arrives at its foreign destination, and handles destination-community and delegation changes as a result -->
+	<mForeignDelegationAtForeignCommunityEvaluation>
+		//input count check:
+		if (inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+		
+		IFDelegation inDelegationInQuestion = (IFDelegation)inArguments[0];
+		
+		string kindGroup = "";
+		if((inDelegationInQuestion.getDelegationType() == IFDelegation.eDelegationType.cWar) || (inDelegationInQuestion.getDelegationType() == IFDelegation.eDelegationType.cRaiding))
+		{
+			kindGroup = "violent";
+		}
+		else if(inDelegationInQuestion.getDelegationType() == IFDelegation.eDelegationType.cEmigration)
+		{
+			kindGroup = "emigration";
+		}
+		else
+		{
+			kindGroup = "trade";
+		}
+		
+		var customScripts = getAPI().getCustomScripts();
+		if(!customScripts.runCustomScript("foreignDelegationAtForeignCommunity_" + kindGroup, new List&lt;object&gt;() { inDelegationInQuestion }, out _))
+		{
+			addDebugMessage(inScriptInstance, "failed to run (or possibly find) foreign delegation subscript with name " + "foreignDelegationAtForeignCommunity_" + kindGroup);
+		}
+		
+		return null;
+    </mForeignDelegationAtForeignCommunityEvaluation>
+  </gamescripts>
+</core_data>

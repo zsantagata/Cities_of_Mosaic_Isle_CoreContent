@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>delegation_foodCountToLaunch war mult</a> <b>double</b> <c>1.0</c></i1> <!-- pops may want extra food for their siege but it is by no means required -->
+	  <i1><a>delegation_foodCountToLaunch raiding mult</a> <b>double</b> <c>1.0</c></i1> <!-- pops may want extra food for their siege but it is by no means required -->
+	  <i1><a>delegation_foodCountToLaunch diplomacy mult</a> <b>double</b> <c>1.0</c></i1>
+	  <i1><a>delegation_foodCountToLaunch trade mult</a> <b>double</b> <c>1.0</c></i1>
+	  <i1><a>delegation_foodCountToLaunch emigration mult</a> <b>double</b> <c>0.0</c></i1> <!-- the player can kick out pops with nothing -->
+	  <i1><a>delegation_foodCountToLaunch settlement mult</a> <b>double</b> <c>0.5</c></i1> <!-- pops may want extra food at the start of a new settlement but it is by no means required -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script delegation_foodCountToLaunch</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which calculates how much food a group of pops would need before the delegation can be launched -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	ReadOnlyCollection<IFPop> inPopsOnDelegation,
+	IFDelegation.eDelegationType inDelegationType,
+	double inExpectedDaysToJourney
+	
+	output:
+	double outFoodCount
+	-->
+	<i1><a>delegation_foodCountToLaunch</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(ReadOnlyCollection&lt;IFPop&gt;), typeof(IFDelegation.eDelegationType), typeof(double)   }
+	  }, out _))
+	{
+		throw new ArgumentException("delegation_foodCountToLaunch custom script received invalid arguments");
+		return null;
+	}
+	  
+	ReadOnlyCollection&lt;IFPop&gt; inPopsOnDelegation = (ReadOnlyCollection&lt;IFPop&gt;)inArguments[0];
+	IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[1];
+	double inExpectedDaysToJourney = (double)inArguments[2];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	double kindMult = 1.0d;
+	switch(inDelegationType)
+	{
+		case IFDelegation.eDelegationType.cWar:
+			kindMult = customConsts.getDoubleConst("delegation_foodCountToLaunch war mult", out success);
+		break;
+		case IFDelegation.eDelegationType.cRaiding:
+			kindMult = customConsts.getDoubleConst("delegation_foodCountToLaunch raiding mult", out success);
+		break;
+		case IFDelegation.eDelegationType.cDiplomacy:
+			kindMult = customConsts.getDoubleConst("delegation_foodCountToLaunch diplomacy mult", out success);
+		break;
+		case IFDelegation.eDelegationType.cTrade:
+			kindMult = customConsts.getDoubleConst("delegation_foodCountToLaunch trade mult", out success);
+		break;
+		case IFDelegation.eDelegationType.cEmigration:
+			kindMult = customConsts.getDoubleConst("delegation_foodCountToLaunch emigration mult", out success);
+		break;
+		case IFDelegation.eDelegationType.cSettlement:
+			kindMult = customConsts.getDoubleConst("delegation_foodCountToLaunch settlement mult", out success);
+		break;
+	
+		default:
+			success = false;
+		break;
+	}
+	if(!success) kindMult = 1.0d;
+	
+	double difficultyMult = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("pop resource consumption");
+	
+	double min_mcal_for_health = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out success);
+	if(!success) min_mcal_for_health = 2.0d;
+	
+	//TODO racial considerations of the pops on the delegation; they may eat more or less
+	
+	double outFoodCount = min_mcal_for_health * inPopsOnDelegation.Count * kindMult * difficultyMult * inExpectedDaysToJourney;
+	
+    return new List&lt;object&gt;() { outFoodCount };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

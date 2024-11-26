@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script clearPopsWantToStayFromEvent</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which clears pops' desires to stay which are usually established by events, using the variableHandler -->
+  <!-- note that clearPopsStoredVariablesForEvent implements similar functionality.  This script should be called when pops' desires to stay should be cleared but not other variables (an example of when this is: an event that can EXPIRE does so, therefore resolution text has not yet been calculated but the pops want to leave) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus,
+	Int64 inEventReportUID,
+	string inAdditionalLabel //some events have multiple groups of pops they want to store/fetch
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>clearPopsWantToStayFromEvent</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(string)}
+	      }, out _))
+	    {
+			throw new ArgumentException("clearPopsWantToStayFromEvent custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		string inAdditionalLabel = (string)inArguments[2];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("storeOrFetchPopsForEvent custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReportUID &lt; 0)
+		{
+			throw new ArgumentException("storeOrFetchPopsForEvent custom script received invalid arguments: inEventReportUID cannot be negative");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//first: fetch all the pop UIDs we want to clear:
+		Int64 popCount = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPopCount_report" + inEventReportUID, out bool success);
+		if(!success)
+		{
+			addDebugMessage(inScriptInstance, "could not find pops to clear for event MOID=" + inEventStatus.getUID() + " event report UID=" + inEventReportUID + " inAdditionalLabel=" + inAdditionalLabel);
+			return null;
+		}
+		
+		IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+		for(int index = 0; index &lt; popCount; index++)
+		{
+			Int64 uid = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPopUID" + index + "_report" + inEventReportUID, out success);
+			if(!success) continue;
+			
+			IFConnectedVariable cv = variableHandler.getConnectedVariable("evt" + inEventStatus.getUID() + "report" + inEventReportUID + "_desireToStayOnMap_pop" + uid);
+			if(cv == null)
+			{
+				continue;
+			}
+			variableHandler.clearConnectedVariable(cv);
+			
+			//if these neutral pops are in housing or workplaces, kick them out:
+			IFPop pop = (IFPop)getAPI().getSO("pops", uid);
+			if(pop == null)
+			{
+				continue;
+			}
+				
+			if((pop.getPopLocation() == IFPop.ePopLocation.cInHome) &amp;&amp; pop.hasHomeBuilding())
+			{
+				Tuple&lt;double, double&gt; loc = map.getRandomEdgeOfBuilding(pop.getHomeBuilding());
+				pop.placePopOnMapLocation(loc.Item1, loc.Item2);
+				pop.setHomeBuilding(null);
+			}
+			else if((pop.getPopLocation() == IFPop.ePopLocation.cInWorkplace) &amp;&amp; pop.hasWorkplaceBuilding())
+			{
+				Tuple&lt;double, double&gt; loc = map.getRandomEdgeOfBuilding(pop.getWorkplaceBuilding());
+				pop.placePopOnMapLocation(loc.Item1, loc.Item2);
+				pop.setWorkplaceBuilding(null);
+			}
+			//otherwise, reset the pathfinding for pops that are currently on the map:
+			else if(pop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap)
+			{
+				pop.forcePathfindingState("Idle", true);
+				pop.setPathfindingRecalculationUrgent();
+			}
+		}
+		
+	    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

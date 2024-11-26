@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of a few miscellaneous scripts -->
+  
+  <!-- custom consts related to pop death: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+		<i1><a>pophealth illness_from_environment threshold</a> <b>int</b> <c>0x7F00</c></i1> <!-- pops are unlikely to get a disease from the environment if their overall health is greater than this, unless they have minimum mcal/water/protein health -->
+		<i1><a>pophealth illness_from_environment healthy_pop_check_sick_anyway rate</a> <b>double</b> <c>0.001</c></i1> <!-- this is the small random chance that an otherwise healthy pop (see above threshold) gets a disease from the environment -->
+		<i1><a>pophealth illness_from_environment rate</a> <b>double</b> <c>0.10</c></i1> <!-- this is the base chance that a pop will get an illness from the environment -->
+		<i1><a>pophealth illness_roughing mult</a> <b>double</b> <c>2.0</c></i1> <!-- this is the multiplier on the chance for a pop to get an illness if the pop is roughing it -->
+		
+		<i1><a>pophealth illness_desolation radius</a> <b>double</b> <c>4.0</c></i1> <!-- the radius of desolation in tiles that impacts pops -->
+		<i1><a>popHealth illness_desolation mult</a> <b>double</b> <c>3.0</c></i1> <!-- the maximum increase of illness chance due to desolation -->
+		
+		<i1><a>popillness environment worse chance</a> <b>double</b> <c>0.5</c></i1> <!-- this is the multiplier on the chance for an environmental illness to be more severe on average, rather than less severe -->
+		<i1><a>popillness environment multiplier min</a> <b>double</b> <c>0.1</c></i1> <!-- this is the minimum relative severity of an environmental illness -->
+		<i1><a>popillness environment multiplier max</a> <b>double</b> <c>4.0</c></i1> <!-- this is the maximum relative severity of an environmental illness -->
+		<i1><a>popillness days min</a> <b>int</b> <c>2</c></i1> <!-- this is the minimum days of an illness, before chance-based severity -->
+		<i1><a>popillness days max</a> <b>int</b> <c>18</c></i1> <!-- this is the maximum days of an illness, before chance-based severity -->
+		
+		<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+		<i1><a>log_script_custom script commonIllnessFromEnvironment</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+  <gamescripts name="default">
+	<!-- pops can get illnesses from the environment, or from other pops in the same housing or same workplace.  These scripts are called on all non-dead, not-in-delegation pops of the player community. -->
+	
+	<!-- the scripts are called in the following order: mPopIllnessFromEnvironment, mPopIllnessFromOthersInHousing, mPopIllnessFromOthersInWorkplace -->
+	<!-- (that is the order in which they appear in this file) -->
+	<!-- all scripts are called for one pop, then the next pop is considered.  These scripts are called at midnight.  All these scripts are called, even if a pop gets an illness from a previous script. -->
+  
+    <!-- pop illness from environment script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopIllnessFromEnvironment>
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	  return null;
+	}
+	  
+	IFPop pop = (IFPop)inArguments[0]; //remember that this is called for all non-dead pops on the local map
+	//this is common to this function and sieges:
+	getAPI().getCustomScripts().runCustomScript("commonIllnessFromEnvironment", new List&lt;object&gt;() { pop }, out _);
+	
+	return null;
+  </mPopIllnessFromEnvironment>
+	
+    <!-- pop illness from others in housing script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopIllnessFromOthersInHousing>
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	    return null;
+	}
+	  
+	IFPop pop = (IFPop)inArguments[0];
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+    //if the pop is not in housing, end the script:
+    if(!pop.hasHomeBuilding())
+    {
+		addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " does not have housing and therefore cannot get sick from other pops in its housing");
+		return null;
+    }
+	
+    bool outPopNowSick = false;
+    IFPop outPopSickFrom = null;
+
+    //if the pop is already sick, greatly reduce the chance of extending (likely the same) illness:
+    bool pop_already_ill = pop.isIll();
+    bool success = false;
+    if(pop_already_ill)
+    {
+		//TODO maybe make this based off of housing's buildingKind?  or its qualities?
+		double chance_to_ignore_contracting_new_illness_housing = customConsts.getDoubleConst("popHealth illness_from_housing already_ill_ignore rate", out success);
+		if(!success) chance_to_ignore_contracting_new_illness_housing = 0.98d;
+		if(getAPI().calcProb(chance_to_ignore_contracting_new_illness_housing))
+		{
+			addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " is already ill and has successfully stayed away from others in the same housing");
+			return null;
+		}
+		addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " is already ill but has possibly been exposed to other sick pops in the same housing");
+    }
+
+    //count how many other sick pops there are in housing, and additional factor for their race:
+    List&lt;IFPop&gt; sickPopsList = new List&lt;IFPop&gt;();
+    int num_sick_pops_same_race = 0;
+    IFBuilding housing = pop.getHomeBuilding();
+    foreach(IFPop alt_pop in housing.getHousingComponent().getHousedPops())
+    {
+		if(alt_pop == pop)
+		{
+			continue;
+		}
+		if(alt_pop.isIll())
+		{
+			sickPopsList.Add(alt_pop);
+			if(alt_pop.getRace() == pop.getRace())
+			{
+				num_sick_pops_same_race++;
+			}
+		}
+    }
+
+    if(sickPopsList.Count == 0)
+    {
+		addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " is not housing with any other sick pops");
+		return null;
+    }
+    else
+    {
+		addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " is housing with " + sickPopsList.Count + " other sick pops, " + num_sick_pops_same_race + " of which are the same race");
+    }
+
+    //an easy way to do this is to have a probability per other sick pop that the sickness spreads
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("illness danger");
+    for(int i = 0; i &lt; sickPopsList.Count; i++)
+	{
+	    double chance_pop_sickens = 0.0d;
+	    if(sickPopsList[i].getRace() == pop.getRace())
+		{
+			chance_pop_sickens = customConsts.getDoubleConst("popHealth illness_from_housing same_race rate", out success);
+			if(!success) chance_pop_sickens = 0.025d;
+		}
+		else
+		{
+			chance_pop_sickens = customConsts.getDoubleConst("popHealth illness_from_housing different_race rate", out success);
+			if(!success) chance_pop_sickens = 0.01d;
+		}
+		if(getAPI().calcProb(chance_pop_sickens * difficulty))
+		{
+			outPopNowSick = true;
+			outPopSickFrom = sickPopsList[i];
+			break;
+		}
+    }
+
+    addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + (outPopNowSick ? " gets sick from another sick pop in housing: " + outPopSickFrom.getDebugName() + "!" : " does not get sick from other sick pops in housing"));
+    if(outPopNowSick)
+	{
+		pop.addIllness(false, outPopSickFrom);
+	}
+    return null;
+  </mPopIllnessFromOthersInHousing>
+    
+    <!-- pop illness from others in workplace script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopIllnessFromOthersInWorkplace>
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	    return null;
+	}
+	
+	IFPop pop = (IFPop)inArguments[0];
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	//if the pop is not working, end the script:
+    if(!pop.hasWorkplaceBuilding())
+    {
+		addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " does not have a workplace and therefore cannot get sick from other pops in its workplace");
+		return null;
+    }
+	
+    bool outPopNowSick = false;
+    IFPop outPopSickFrom = null;
+
+    //if the pop is already sick, greatly reduce the chance of extending (likely the same) illness:
+    bool pop_already_ill = pop.isIll();
+    if(pop_already_ill)
+    {
+		double chance_to_ignore_contracting_new_illness_workplace = customConsts.getDoubleConst("popHealth illness_from_workplace already_ill_ignore rate", out bool success);
+		if(!success) chance_to_ignore_contracting_new_illness_workplace = 0.90d; //this should be less than for housing, because working necessarily means moving around and expending effort, likely with others
+		if(getAPI().calcProb(chance_to_ignore_contracting_new_illness_workplace))
+		{
+			addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " is already ill and has successfully stayed away from others in the same workplace");
+			return null;
+		}
+		addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " is already ill but has possibly been exposed to other sick pops in the same workplace");
+    }
+
+    //count how many other sick pops there are in workplace, and additional factor for their race:
+    List&lt;IFPop&gt; sickPopsList = new List&lt;IFPop&gt;();
+    int num_sick_pops_same_race = 0;
+    IFBuilding workplace = pop.getWorkplaceBuilding();
+    foreach(IFPop alt_pop in workplace.getWorkplaceComponent().getWorkerPops())
+    {
+		if(alt_pop == pop)
+		{
+			continue;
+		}
+		if(alt_pop.isIll())
+		{
+			sickPopsList.Add(alt_pop);
+			if(alt_pop.getRace() == pop.getRace())
+			{
+				num_sick_pops_same_race++;
+			}
+		}
+    }
+
+    if(sickPopsList.Count == 0)
+    {
+		addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " is not working with any other sick pops");
+		return null;
+    }
+    else
+    {
+		addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " is working with " + sickPopsList.Count + " other sick pops, " + num_sick_pops_same_race + " of which are the same race");
+    }
+
+    //an easy way to do this is to have a probability per other sick pop that the sickness spreads
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("illness danger");
+    for(int i = 0; i &lt; sickPopsList.Count; i++)
+	{
+	    double chance_pop_sickens = 0.0d;
+	    if(sickPopsList[i].getRace() == pop.getRace())
+		{
+			chance_pop_sickens = customConsts.getDoubleConst("popHealth illness_from_workplace same_race rate", out bool success);
+			if(!success) chance_pop_sickens = 0.025d; //the same value as per housing, for now.  The main difference is that pops working while ill can much more easily worsen their illness, and of course expose *both* their workplace and their housing
+		}
+		else
+		{
+			chance_pop_sickens = customConsts.getDoubleConst("popHealth illness_from_workplace different_race rate", out bool success);
+			if(!success) chance_pop_sickens = 0.01d; //the same value as per housing, for now.  The main difference is that pops working while ill can much more easily worsen their illness, and of course expose *both* their workplace and their housing
+		}
+		if(getAPI().calcProb(chance_pop_sickens * difficulty))
+		{
+			outPopNowSick = true;
+			outPopSickFrom = sickPopsList[i];
+			break;
+		}
+    }
+	
+	addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + (outPopNowSick ? " gets sick from another sick pop in workplace: " + outPopSickFrom.getDebugName() + "!" : " does not get sick from other sick pops in workplace"));
+    if(outPopNowSick)
+	{
+		pop.addIllness(false, outPopSickFrom);
+	}
+    return null;
+  </mPopIllnessFromOthersInWorkplace>
+  
+	<!-- pops becoming ill has four inputs: IFPop inPop, bool inSourceEnvironment, IFPop inOtherPopSource, UInt64 inDaysIll.  There are no outputs -->
+	<!-- this script SHOULD BE called in order to add an illness to a pop.  It is technically possible, but not recommended, to add an illness directly through calling setIllDayOver.  The IFPop function addIllness is a passthrough to this script (so it must not be called in this script).  The last three inputs have priority ordering: if the bool is true, or if IFPop is not null, the remaining inputs don't matter. -->
+	<mPopAddIllness>
+	//input count check:
+	if (inArguments.Length &lt; 4)
+	{
+		return null;
+	}
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	IFPop inPop = (IFPop)inArguments[0];
+	bool inSourceEnvironment = (bool)inArguments[1];
+	IFPop inOtherPopSource = (IFPop)inArguments[2];
+	UInt64 inDaysIll = (UInt64)inArguments[3]; //this is re-used as the number of days the pop will be wounded, if any of the above inputs indicate this is not necessary
+	
+	bool success = false;
+	if(inSourceEnvironment)
+	{
+		//illness from the environment could be anything from bad allergies to malaria or the bubonic plague.  For this case, we have a multiplier on the seriousness of the disease.
+		//this multiplier is stored, and re-used for others who get infected through contact with this pop
+		
+		double biome_mult = 1.0d;
+		IFTerrainBiome biome = null;
+		IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+		if(inPop.getPopLocation() == IFPop.ePopLocation.cInDelegation)
+		{
+			biome = inPop.getDelegation().getBiomeOfCurrentLocation();
+		}
+		else if(   (inPop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap)
+		        || ((inPop.getPopLocation() == IFPop.ePopLocation.cInHome) &amp;&amp; inPop.hasHomeBuilding() &amp;&amp; map.isBuildingOnThisMap(inPop.getHomeBuilding()))
+		        || ((inPop.getPopLocation() == IFPop.ePopLocation.cInWorkplace) &amp;&amp; inPop.hasWorkplaceBuilding() &amp;&amp; map.isBuildingOnThisMap(inPop.getWorkplaceBuilding()))
+		       )
+		{
+			biome = getAPI().calcProb(map.getWaterRatio()) ? getAPI().getLocalCommunity().getWaterBiome() : getAPI().getLocalCommunity().getLandBiome();
+		}
+		else if((inPop.getPopLocation() == IFPop.ePopLocation.cInForeignCommunity) &amp;&amp; (inPop.getCommunity() != getAPI().getLocalCommunity()))
+		{
+			biome = getAPI().calcProb(inPop.getCommunity().getWaterRatio()) ? inPop.getCommunity().getWaterBiome() : inPop.getCommunity().getLandBiome();
+		}
+		if(biome != null)
+		{
+			biome_mult = customConsts.getDoubleConst("biome " + biome.getInternalName() + " disease strength factor", out success);
+			if(!success) biome_mult = 1.0d;
+		}
+		biome_mult = Math.Max(0.0d, biome_mult);
+		
+		double multWorseProb = customConsts.getDoubleConst("popIllness environment worse chance", out success); //TODO this should be a stored variable based off of a custom const base
+		if(!success) multWorseProb = 0.5d;
+		double multMin = customConsts.getDoubleConst("popIllness environment multiplier min", out success);
+		if(!success) multMin = 0.1d;
+		double multMax = customConsts.getDoubleConst("popIllness environment multiplier max", out success);
+		if(!success) multMax = 4.0d;
+		Int64 daysMin = customConsts.getIntConst("popIllness days min", out success);
+		if(!success) daysMin = 2L;
+		Int64 daysMax = customConsts.getIntConst("popIllness days max", out success);
+		if(!success) daysMax = 18L;
+		
+		double mult = biome_mult * (getAPI().calcProb(multWorseProb) ? (getAPI().calcRand()*(multMax - 1.0d) + 1.0d) : (getAPI().calcRand()*(1.0d - multMin) + multMin));
+		inDaysIll = (UInt64)(mult * (getAPI().calcRandIntUnder(daysMax - daysMin + 1) + daysMin));
+		if(inDaysIll &lt; 0)
+		{
+			inDaysIll = 0;
+		}
+		else
+		{
+			variableHandler.storeDoubleVariable(getAPI().getCalendar().getCurrentDate() + (Int64)inDaysIll + 2, "illness_multiplier_pop" + inPop.getUID(), mult);
+		}
+	}
+	else if(inOtherPopSource != null)
+	{
+		//this implies that the illness is a communicable disease.  In this case, the multiplier of the pop who had this disease originally is used:
+		Int64 daysMin = customConsts.getIntConst("popIllness days min", out success);
+		if(!success) daysMin = 2L;
+		Int64 daysMax = customConsts.getIntConst("popIllness days max", out success);
+		if(!success) daysMax = 18L;
+		double mult = variableHandler.getDouble("illness_multiplier_pop" + inOtherPopSource.getUID(), out success);
+		if((mult &lt;= 0.0d) || !success)
+		{
+			mult = 1.0d;
+		}
+		inDaysIll = (UInt64)(mult * (getAPI().calcRandIntUnder(daysMax - daysMin + 1) + daysMin));
+		if(inDaysIll &lt; 0)
+		{
+			inDaysIll = 0;
+		}
+		else
+		{
+			variableHandler.storeDoubleVariable(getAPI().getCalendar().getCurrentDate() + (Int64)inDaysIll + 2, "illness_multiplier_pop" + inPop.getUID(), mult);
+		}
+	}
+	
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("illness danger");
+	inDaysIll = (UInt64)(inDaysIll * difficulty);
+	if(inDaysIll != 0)
+	{
+		if(inPop.isIll())
+		{
+			//if this pop is already ill, combine the days ill by using sqrt of squares:
+			Int64 original = inPop.getIllDayOver() - getAPI().getCalendar().getCurrentDate();
+			Int64 addition = (Int64)Math.Sqrt((Int64)(inDaysIll * inDaysIll) + original * original);
+			addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + "'s illness has worsened and will now be ill for the next " + addition + " days");
+			inPop.setIllDayOver((Int64)(getAPI().getCalendar().getCurrentDate() + addition));
+		}
+		else
+		{
+			//make the pop ill:
+			addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " has contracted an illness that will last " + inDaysIll + " days");
+			inPop.setIllDayOver(getAPI().getCalendar().getCurrentDate() + (Int64)inDaysIll);
+		}
+	}
+
+    List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	return toReturn;
+	</mPopAddIllness>
+	
+  </gamescripts>
+
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop
+	
+	There is no output -->
+	<i1><a>commonIllnessFromEnvironment</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("commonIllnessFromEnvironment custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	//TODO modify this per biome
+	double threshold_health = customConsts.getIntConst("popHealth illness_from_environment threshold", out bool success); 
+	if(!success) threshold_health = 0x7F00;
+	double min_health = consts.getHealthMin();
+	double current_health = inPop.getOverallHealth();
+	  
+    if(   (inPop.getMCalHealth() == min_health)
+	   || (inPop.getProteinHealth() == min_health)
+	   || (inPop.getWaterHealth() == min_health)
+	  )
+    {
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " has minimum of MCal or Protein or Water, forcing illness");
+		inPop.addIllness(true);
+		return null;
+    }
+
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("illness danger");
+
+    //let there be a small chance that this is bypassed, meaning a completely healthy pop can still get sick:
+    bool healthy_pop_getting_sick = false;
+    //TODO modify this per biome.  Also note that this is the chance that a healthy pop gets *evaluated*, not the chance a healthy pop *actually becomes sick*
+    double chance_healthy_pop_check_sick = customConsts.getDoubleConst("popHealth illness_from_environment healthy_pop_check_sick_anyway rate", out success);
+    if(!success) chance_healthy_pop_check_sick = 0.001d;
+	chance_healthy_pop_check_sick *= difficulty;
+    if(getAPI().calcProb(chance_healthy_pop_check_sick) &amp;&amp; (current_health &gt; threshold_health))
+    {
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " has overall health above minimum threshold, but due to random chance will be evaluated for sickness anyway");
+		healthy_pop_getting_sick = true;
+    }
+    else if(current_health &gt; threshold_health)
+    {
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " has overall health above minimum threshold, will get no illness from environment");
+		return null;
+    }
+
+    //TODO modify this per biome
+    double rate = customConsts.getDoubleConst("popHealth illness_from_environment rate", out success);
+    if(!success) rate = 0.10d;
+    double prob = 0.0d;
+    if(healthy_pop_getting_sick)
+    {
+		prob = 0.5d;
+    }
+    else
+    {
+		prob = threshold_health - current_health;
+		prob = (prob) / (threshold_health - min_health);
+    }
+    prob = prob * rate;
+    addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " probability of environmental illness starting at " + prob.ToString());
+
+    //here: use illResistProb from housing, and modify probability by surrounding desolation
+    if(inPop.hasHomeBuilding() &amp;&amp; getAPI().getPopsWithinLocalCommunityMap().Contains(inPop))
+    {
+		//first: deal with desolation:
+		double desolation_increase = 0.0d;
+
+		//this code fetches all map tiles in a certain radius (the radius within which desolation will impact pop health in homes)
+		IFBuildingKind kind = inPop.getHomeBuilding().getBuildingKind();
+		IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+		double illness_deso_radius = customConsts.getDoubleConst("popHealth illness_desolation radius", out success);
+		if(!success) illness_deso_radius = 4.0d;
+		ReadOnlyCollection&lt;IFMapTile&gt; tiles = map.getMapTilesInBuildingRadius(inPop.getHomeBuilding(), illness_deso_radius);
+		foreach(IFMapTile tile in tiles)
+		{
+			desolation_increase += tile.getDesolation();
+		}
+		desolation_increase /= tiles.Count; //now desolation_increase has the average desolation of the area, from 0.0d to 100.0d
+		//desolation can make a pop this many times more likely to get a disease:
+		double max_mult_from_deso = customConsts.getDoubleConst("popHealth illness_desolation mult", out success);
+		if(!success) max_mult_from_deso = 3.0d;
+		desolation_increase = ((max_mult_from_deso - 1.0d) * (desolation_increase / consts.getDesolationMaxTileValue()));
+		desolation_increase += 1.0d;
+		prob = prob * desolation_increase;
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " probability of environmental illness increasing by a factor of " + desolation_increase + " to " + prob.ToString() + " based on desolation of housing area");
+
+		//second: buffs
+		double decrease_from_buffs = 1.0d - getAPI().getVariableHandler().getConnectedDouble("illResistProb_building" + inPop.getHomeBuilding().getUID(), out success);
+		if(success)
+		{
+			if(decrease_from_buffs &gt; 1.0d)
+				decrease_from_buffs = 1.0d;
+			if(decrease_from_buffs &lt; 0.0d)
+				decrease_from_buffs = 0.0d;
+			prob = prob * decrease_from_buffs;
+			addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " probability of environmental illness decreasing to " + prob.ToString() + " based on decrease from buffs, raw buff value (decrease ratio) = " + (1.0d - decrease_from_buffs).ToString());
+		}
+    }
+    else if(getAPI().getPopsWithinLocalCommunityMap().Contains(inPop) || (inPop.getPopLocation() != IFPop.ePopLocation.cInForeignCommunity))
+    {
+		//when not living in a house there is a probability increase of illness:
+		double roughing_mult = customConsts.getDoubleConst("popHealth illness_roughing mult", out success);
+		if(!success) roughing_mult = 2.0d;
+		prob = prob * roughing_mult;
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " probability of environmental illness increasing to " + prob.ToString() + " based on lack of housing");
+    }
+	else //the pop is in a foreign community so we assume it has shelter of some sort, but we don't have the map for it
+	{
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " no further changes from being in a foreign community");
+	}
+
+    if(            (inPop.isWounded())
+		&amp;&amp; (inPop.getHStasisHealth() &lt; threshold_health)
+      )
+    {
+		prob = prob + prob;
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " probability of environmental illness increasing to " + prob.ToString() + " as a result of being wounded with low HStasis");
+    }
+
+	prob *= difficulty;
+    if(prob &gt; 1.0d)
+	{
+		prob = 1.0d;
+	}
+	else if(prob &lt; 0.0d)
+    {
+		prob = 0.0d;
+    }
+    bool gets_sick = getAPI().calcProb(prob);
+    addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + (gets_sick ? " gets sick from the environment!" : " does not get sick from the environment"));
+
+	if(gets_sick)
+	{
+		inPop.addIllness(true);
+	}
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+</core_data>

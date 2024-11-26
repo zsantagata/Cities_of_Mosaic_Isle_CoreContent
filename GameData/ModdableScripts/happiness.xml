@@ -1,0 +1,913 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- note that the following consts are "proportions of the full happiness range" instead of direct values: -->
+			<i1><a>happiness from_health max</a> <b>double</b> <c>0.075</c></i1>
+			<i1><a>happiness from_health min</a> <b>double</b> <c>-0.6</c></i1>
+			<i1><a>happiness from_resources max</a> <b>double</b> <c>0.35</c></i1>
+			<i1><a>happiness from_resources min</a> <b>double</b> <c>-0.25</c></i1>
+			<i1><a>happiness from_housing max</a> <b>double</b> <c>0.45</c></i1>
+			<i1><a>happiness from_housing min</a> <b>double</b> <c>-0.45</c></i1>
+			<i1><a>happiness starving penalty</a> <b>double</b> <c>-0.5</c></i1>
+			
+			<i1><a>happiness unemployed per_pop bonus</a> <b>double</b> <c>0.005</c></i1>
+			
+			<i1><a>happiness kin same_housing per_pop bonus</a> <b>double</b> <c>0.001</c></i1>
+			<i1><a>happiness kin same_housing per_pop penalty</a> <b>double</b> <c>-0.0025</c></i1>
+			<i1><a>happiness kin neighbor per_pop bonus</a> <b>double</b> <c>0.0005</c></i1>
+			<i1><a>happiness kin neighbor per_pop penalty</a> <b>double</b> <c>0</c></i1>
+			<i1><a>happiness kin neighbor radius</a> <b>double</b> <c>5</c></i1>
+			<i1><a>happiness kin community absolute threshold</a> <b>int</b> <c>75</c></i1>
+			<i1><a>happiness kin community proportion threshold</a> <b>double</b> <c>0.25</c></i1>
+			<i1><a>happiness kin community bonus</a> <b>double</b> <c>0.075</c></i1>
+			<i1><a>happiness kin community penalty</a> <b>double</b> <c>-0.075</c></i1>
+			
+			<i1><a>happiness mates housed bonus max</a> <b>double</b> <c>0.1</c></i1> <!-- if all pops of a race are housed with compatible pops, this is the maximum that the bonus could be -->
+			<i1><a>happiness mates housed bonus per_pop</a> <b>double</b> <c>0.0025</c></i1> <!-- if a pop of a race is housed with compatible pops, this is the per-pop bonus -->
+			<i1><a>happiness mates none_available penalty max</a> <b>double</b> <c>-0.4</c></i1> <!-- if all pops of a race have no mates available to them, this is the maximum that the penalty could be -->
+			<i1><a>happiness mates none_available penalty per_pop</a> <b>double</b> <c>-0.01</c></i1> <!-- if a pop of a race has no mates available to them, this is the per-pop penalty -->
+			
+			<i1><a>happiness jealousy resources penalty</a> <b>double</b> <c>-0.1</c></i1>
+			<i1><a>happiness jealousy housing penalty</a> <b>double</b> <c>-0.05</c></i1>
+			<i1><a>happiness jealousy much_better_or_worse threshold</a> <b>double</b> <c>0.5</c></i1>
+			<i1><a>happiness jealousy military_skill_better threshold</a> <b>double</b> <c>0.5</c></i1>
+			<i1><a>happiness jealousy race_better penalty per_race</a> <b>double</b> <c>-0.075</c></i1>
+			<i1><a>happiness jealousy race_worse_threat penalty per_race</a> <b>double</b> <c>-0.025</c></i1>
+			<i1><a>happiness jealousy race_worse_nothreat bonus per_race</a> <b>double</b> <c>0.025</c></i1>
+			
+			<i1><a>happiness industry_leader bonus per_leader</a> <b>double</b> <c>0.005</c></i1>
+			
+			<i1><a>happiness illness different_race_penalty per_pop</a> <b>double</b> <c>-0.0025</c></i1>
+			<i1><a>happiness illness same_race_penalty per_pop</a> <b>double</b> <c>-0.005</c></i1>
+			
+			<i1><a>happiness death same_race starting_value</a> <b>double</b> <c>-0.0125</c></i1>
+			
+			<i1><a>happiness cause_decay decrease_per_day absolute_value max</a> <b>double</b> <c>0.0175</c></i1> <!-- a single happiness cause's impact can only decrease by this much per day -->
+			<i1><a>happiness cause_decay decrease_per_day absolute_value per_day max</a> <b>double</b> <c>0.0025</c></i1> <!-- a single happiness cause's impact can only decrease by (this much * days since it happened) per day -->
+			<i1><a>happiness cause_decay exponential decrease ratio</a> <b>double</b> <c>0.2</c></i1> <!-- a single happiness cause's impact, day over day, becomes (1 - this) * previous day's impact, with the above max and below threshold taken into account -->
+			<i1><a>happiness cause_decay absolute_value_removal threshold</a> <b>double</b> <c>0.001</c></i1> <!-- when a happiness cause's value is less than this, and it is not permanent or a base value, it is removed -->
+			
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of happiness-related scripts -->
+  <gamescripts name="default">
+	<!-- race happiness changes can come from: housing quality/consumed resources/health, employment, proximity to kin, access to mates, jealousy of others, count of industry leaders, illness in the community, deaths of pops, and events -->
+  
+	<!-- the scripts are called in the following order: mHappinessIndividualCombinationBase, mHappinessEmploymentFactor, mHappinessKinFactor, mHappinessMatesFactor, mHappinessJealousyFactor, mHappinessIndustryLeaderCountFactor, mHappinessIllnessCommunityFactor -->
+	<!-- (that is the order in which they appear in this file) -->
+	<!-- all the above scripts are called for one race, then the next race is considered.  These scripts are called at midnight.  However, happiness from temporal events is reflected in racial happiness immediately. -->
+	<!-- then, mHappinessSpecificCauseDecay is called on all non-permanent happiness causes, and mHappinessDeathsOfPops is called exactly once -->
+  
+	<!-- happiness individual combination has three inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation, and a Dictionary<IFResource,double> of resources those pops consume -->
+	<!-- there is one output: the new value for individual combination's contribution to happiness -->
+	<mHappinessIndividualCombinationBase>
+            //input count check:
+            if (inArguments.Length &lt; 3)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFRace inRace = (IFRace)inArguments[0];
+			List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[1];
+			Dictionary&lt;IFResource,double&gt; inResourcesConsumed = (Dictionary&lt;IFResource,double&gt;)inArguments[2];
+			
+			double minHappiness = consts.getHappinessMin();
+			double maxHappiness = consts.getHappinessMax();
+            double minQual = consts.getResourceQualityMin();
+            double maxQual = consts.getResourceQualityMax();
+			
+			if(inPops.Count == 0)
+				return new List&lt;object&gt;() { 0.0d };
+			
+			//this is a combination of housing quality, health, and resources consumed
+			//TODO any racial considerations
+			
+			double min_mcal_for_health = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out bool success);
+			if(!success) min_mcal_for_health = 2.0d;
+			double expectedFoodConsumed = min_mcal_for_health * inPops.Count;
+			double averageHousingQuality = 0.0d;
+			double totalResourcesConsumed = 0.0d;
+			double averageResourceConsumedQuality = 0.0d;
+			double averageOverallHealth = 0.0d;
+			
+			for(int i = 0; i &lt; inPops.Count; i++)
+			{
+				if(inPops[i].hasHomeBuilding())
+				{
+					averageHousingQuality += inPops[i].getHomeBuilding().getHousingComponent().getHousingQuality();
+				}
+				else
+				{
+					averageHousingQuality += minQual;
+				}
+				averageOverallHealth += inPops[i].getOverallHealth();
+			}
+			averageHousingQuality /= inPops.Count;
+			averageOverallHealth /= inPops.Count;
+			
+			IFResourcePool resPool = inPops[0].getCommunity().getResourcePool();
+			foreach(var kvpair in inResourcesConsumed)
+			{
+				if(kvpair.Value &lt;= 0)
+				{
+					continue;
+				}
+				if(kvpair.Key.isFood())
+				{
+					expectedFoodConsumed -= kvpair.Value;
+				}
+				double resQual = resPool.getResourceQuality(kvpair.Key);
+				averageResourceConsumedQuality = (averageResourceConsumedQuality * totalResourcesConsumed + kvpair.Value * resQual) / (totalResourcesConsumed + kvpair.Value);
+				totalResourcesConsumed += kvpair.Value;
+			}
+
+			addDebugMessage(inScriptInstance, "for race " + inRace.getDebugName() + ", averageHousingQuality=" + averageHousingQuality + " averageOverallHealth=" + averageHousingQuality + " expectedFoodConsumed=" + expectedFoodConsumed + " averageResourceConsumedQuality=" + averageResourceConsumedQuality);
+			bool notEnoughFood = (expectedFoodConsumed &gt; 0);
+			
+			//now we must translate housing quality and resource quality into happiness
+			averageHousingQuality -= minQual;
+			averageHousingQuality /= (maxQual - minQual); //averageHousingQuality is now from 0.0 (min) to 1.0 (max)
+			double housingImpactMax = customConsts.getDoubleConst("happiness from_housing max", out success);
+			if(!success) housingImpactMax = 0.45d;
+			double housingImpactMin = customConsts.getDoubleConst("happiness from_housing min", out success);
+			if(!success) housingImpactMin = -0.45d;
+			double housingImpact = (housingImpactMax - housingImpactMin) * averageHousingQuality + housingImpactMin;
+			
+			averageResourceConsumedQuality -= minQual;
+			averageResourceConsumedQuality /= (maxQual - minQual); //averageResourceConsumedQuality is now from 0.0 (min) to 1.0 (max)
+			double resourcesImpactMax = customConsts.getDoubleConst("happiness from_resources max", out success);
+			if(!success) resourcesImpactMax = 0.35d;
+			double resourcesImpactMin = customConsts.getDoubleConst("happiness from_resources min", out success);
+			if(!success) resourcesImpactMin = -0.25d;
+			double resourcesImpact = (resourcesImpactMax - resourcesImpactMin) * averageHousingQuality + resourcesImpactMin;
+			
+			//now we must translate health into happiness:
+			double healthMax = (double)consts.getHealthMax();
+			double healthMin = (double)consts.getHealthMin();
+			averageOverallHealth -= healthMin;
+			averageOverallHealth /= (healthMax - healthMin);
+			double healthImpactMax = customConsts.getDoubleConst("happiness from_health max", out success);
+			if(!success) healthImpactMax = 0.075d;
+			double healthImpactMin = customConsts.getDoubleConst("happiness from_health min", out success);
+			if(!success) healthImpactMin = -0.6d;
+			double healthImpact = (healthImpactMax - healthImpactMin) * averageOverallHealth + healthImpactMin;
+			
+			double starvingImpact = customConsts.getDoubleConst("happiness starving penalty", out success);
+			if(!success) starvingImpact = -0.5d;
+			if(!notEnoughFood) starvingImpact = 0.0d;
+			
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("base happiness expectation");
+			double outHappiness = 0.0d;
+			if(difficulty &lt;= 0.0d)
+			{
+				outHappiness = maxHappiness - minHappiness;
+			}
+			else
+			{
+				if(housingImpact &lt; 0.0d)
+					housingImpact *= difficulty;
+				else
+					housingImpact /= difficulty;
+					
+				if(resourcesImpact &lt; 0.0d)
+					resourcesImpact *= difficulty;
+				else
+					resourcesImpact /= difficulty;
+					
+				if(healthImpact &lt; 0.0d)
+					healthImpact *= difficulty;
+				else
+					healthImpact /= difficulty;
+					
+				if(starvingImpact &lt; 0.0d)
+					starvingImpact *= difficulty;
+				else
+					starvingImpact /= difficulty;
+					
+				outHappiness = (housingImpact + resourcesImpact + healthImpact + starvingImpact) * (maxHappiness - minHappiness);
+			}
+			//limit between max and -max
+			outHappiness = Math.Min(maxHappiness - minHappiness, outHappiness);
+			outHappiness = Math.Max(minHappiness - maxHappiness, outHappiness);
+			
+			addDebugMessage(inScriptInstance, "from 0 to 1 (of full happiness range), after difficulty adjustment, housingImpact=" + housingImpact + " resourcesImpact=" + resourcesImpact + " healthImpact=" + healthImpact + " starvingImpact=" + starvingImpact);
+			
+			return new List&lt;object&gt;() { outHappiness };
+	</mHappinessIndividualCombinationBase>
+	
+	<!-- happiness employment factor has two inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation -->
+	<!-- there is one output: the new value for employment's contribution to happiness -->
+	<mHappinessEmploymentFactor>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFRace inRace = (IFRace)inArguments[0];
+			List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[1];
+			
+			double minHappiness = consts.getHappinessMin();
+			double maxHappiness = consts.getHappinessMax();
+			
+			//TODO any racial considerations
+			//TODO any building considerations
+			//most pops are a bit happier if they don't need to work, all else equal:
+			
+			double unemployedImpact = 0.0d;
+			double unemployedPerPopBonus = customConsts.getDoubleConst("happiness unemployed per_pop bonus", out bool success);
+			if(!success) unemployedPerPopBonus = 0.005d;
+			
+			for(int i = 0; i &lt; inPops.Count; i++)
+			{
+				if(!inPops[i].hasWorkplaceBuilding())
+				{
+					unemployedImpact += unemployedPerPopBonus;
+				}
+			}
+			
+			addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " unemployedImpact=" + unemployedImpact);
+			
+			double outHappiness = (unemployedImpact) * (maxHappiness - minHappiness);
+			return new List&lt;object&gt;() { outHappiness };
+	</mHappinessEmploymentFactor>
+	
+	<!-- happiness kin factor has two inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation -->
+	<!-- there is one output: the new value for kin's contribution to happiness -->
+	<mHappinessKinFactor>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFRace inRace = (IFRace)inArguments[0];
+			List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[1];
+			
+			if(inPops.Count == 0)
+				return new List&lt;object&gt;() { 0.0d };
+			
+			double minHappiness = consts.getHappinessMin();
+			double maxHappiness = consts.getHappinessMax();
+			
+			//TODO any racial considerations
+			
+			//firstly, determine if the absolute and relative counts of this race in the community warrant a bonus/penalty:
+			Int64 absThresh = customConsts.getIntConst("happiness kin community absolute threshold", out bool success);
+			if(!success) absThresh = 75L;
+			bool absoluteNotMet = (absThresh &gt; inPops.Count);
+			
+			double propThresh = customConsts.getDoubleConst("happiness kin community proportion threshold", out success);
+			if(!success) propThresh = 0.25d;
+			Int64 totalPopCount = 0;
+			foreach(IFPop pop in inPops[0].getCommunity().getPopsLoyalToCommunity(true, false))
+			{
+				if(!pop.hasDelegation())
+				{
+					totalPopCount++;
+				}
+			}
+			double realProp = ((double)inPops.Count) / totalPopCount;
+			bool proportionNotMet = (propThresh &gt; realProp);
+			
+			double communityKinImpact = 0.0d;
+			if(absoluteNotMet &amp;&amp; proportionNotMet)
+			{
+				double penalty = customConsts.getDoubleConst("happiness kin community penalty", out success);
+				if(!success) penalty = -0.075;
+				communityKinImpact += penalty;
+			}
+			else if(!absoluteNotMet &amp;&amp; !proportionNotMet)
+    {
+    double bonus = customConsts.getDoubleConst("happiness kin community bonus", out success);
+    if(!success) bonus = -0.075;
+    communityKinImpact += bonus;
+    }
+
+    addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " has totalPopCount=" + totalPopCount + " and realProp=" + realProp + " which makes communityKinImpact=" + communityKinImpact);
+
+    //next, determine per pop if that pop has any pops of the same race in its housing:
+    double countAloneInHome = 0;
+    double countWithOtherInHome = 0;
+    double countNeighbors = 0;
+    double countNoNeighbors = 0;
+    IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+    double neighborRadius = customConsts.getDoubleConst("happiness kin neighbor radius", out success);
+    if(!success) neighborRadius = 5.0d;
+    for(int i = 0; i &lt; inPops.Count; i++)
+			{
+				IFPop pop = inPops[i];
+				if(pop.hasHomeBuilding())
+				{
+					IFBuilding home = pop.getHomeBuilding();
+					bool hasHousingOther = false;
+					foreach(IFPop otherPop in home.getHousingComponent().getHousedPops())
+					{
+						if(otherPop == pop)
+							continue;
+						if(otherPop.getRace() == inRace)
+						{
+							hasHousingOther = true;
+							countWithOtherInHome++;
+							break;
+						}
+					}
+					if(!hasHousingOther) countAloneInHome++;
+					
+					ReadOnlyCollection&lt;IFMapTile&gt; neighborTiles = map.getMapTilesInBuildingRadius(home, neighborRadius);
+					bool hasNeighbor = false;
+					foreach(IFMapTile tile in neighborTiles)
+					{
+						if(tile.hasBuilding())
+						{
+							IFBuilding otherBuilding = tile.getBuilding();
+							if(otherBuilding.isHousing() &amp;&amp; otherBuilding != home)
+							{
+								foreach(IFPop otherPop in otherBuilding.getHousingComponent().getHousedPops())
+								{
+									if(otherPop.getRace() == inRace)
+									{
+										hasNeighbor = true;
+										countNeighbors++;
+										break;
+									}
+								}
+								if(hasNeighbor)
+									break;
+							}
+						}
+					}
+					if(!hasNeighbor) countNoNeighbors++;
+				}
+			}
+			
+			double alonePenaltyPerPop = customConsts.getDoubleConst("happiness kin same_housing per_pop penalty", out success);
+			if(!success) alonePenaltyPerPop = -0.0025d;
+			double notAloneBonusPerPop = customConsts.getDoubleConst("happiness kin same_housing per_pop bonus", out success);
+			if(!success) notAloneBonusPerPop = 0.001d;
+			double sameHousingImpact = alonePenaltyPerPop * countAloneInHome + notAloneBonusPerPop * countWithOtherInHome;
+			
+			double noNeighborPenaltyPerPop = customConsts.getDoubleConst("happiness kin neighbor per_pop penalty", out success);
+			if(!success) noNeighborPenaltyPerPop = 0.0d;
+			double yesNeighborBonusPerPop = customConsts.getDoubleConst("happiness kin neighbor per_pop bonus", out success);
+			if(!success) yesNeighborBonusPerPop = 0.0005d;
+			double neighborImpact = noNeighborPenaltyPerPop * countNoNeighbors + yesNeighborBonusPerPop * countNeighbors;
+			
+			addDebugMessage(inScriptInstance, "countAloneInHome=" + countAloneInHome + " countWithOtherInHome=" + countWithOtherInHome + " countNeighbors=" + countNeighbors + " countNoNeighbors=" + countNoNeighbors + " which makes sameHousingImpact=" + sameHousingImpact + " and neighborImpact=" + neighborImpact);
+			
+			double outHappiness = (communityKinImpact + sameHousingImpact + neighborImpact) * (maxHappiness - minHappiness);
+			return new List&lt;object&gt;() { outHappiness };
+	</mHappinessKinFactor>
+	
+	<!-- happiness mates factor has two inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation -->
+	<!-- there is one output: the new value for mates's contribution to happiness -->
+	<mHappinessMatesFactor>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFRace inRace = (IFRace)inArguments[0];
+			List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[1];
+			
+			if(inPops.Count == 0)
+				return new List&lt;object&gt;() { 0.0d };
+			
+			double minHappiness = consts.getHappinessMin();
+			double maxHappiness = consts.getHappinessMax();
+			
+			//TODO any racial considerations
+			//pops generally do not consider it the City Leader's burden to enable each individual to mate, but does consider it the City Leader's burden to make sure compatible pops exist in the community at all
+			//if there are compatible pops in the same housing, small bonus
+			//else if there are compatible pops in the community, or the pop is already pregnant, or the pop cannot have children anyway, no penalty
+			
+			Int64 countOfPopsHousedWithPotentialMates = 0;
+			Int64 countOfWantingPops = 0; //this is not necessarily just "all of them" because some races have different conditions between the sexes
+			
+			bool crossBreeder = inRace.isCrossBreedPossible();
+			bool fathers = inRace.isCanFatherChildren();
+			bool mothers = inRace.isCanMotherChildren();
+			
+			//prepare "what potential mates the community has available" by iterating once over all community pops here:
+			IFCommunity community = inPops[0].getCommunity();
+			bool crossBreedFathersAvailable = false;
+			bool crossBreedMothersAvailable = false;
+			bool sameRaceFathersAvailable = false;
+			bool sameRaceMothersAvailable = false;
+			bool otherRaceFathersAvailable = false;
+			bool otherRaceMothersAvailable = false;
+			foreach(IFPop pop in community.getPopsLoyalToCommunity(true, false))
+			{
+				if(pop.hasDelegation())
+					continue;
+			
+				IFPop.ePopSex sex = pop.getSex();
+				IFRace race = pop.getRace();
+				if(race.isCrossBreedPossible())
+				{
+					if(race.isCanFatherChildren() &amp;&amp; ((sex == IFPop.ePopSex.cMale) || (sex == IFPop.ePopSex.cUnisexBoth)))
+					{
+						crossBreedFathersAvailable = true;
+					}
+					if(race.isCanMotherChildren() &amp;&amp; ((sex == IFPop.ePopSex.cFemale) || (sex == IFPop.ePopSex.cUnisexBoth)))
+					{
+						crossBreedMothersAvailable = true;
+					}
+				}
+				else if(crossBreeder)
+				{
+					if(race.isCanFatherChildren() &amp;&amp; ((sex == IFPop.ePopSex.cMale) || (sex == IFPop.ePopSex.cUnisexBoth)))
+					{
+						otherRaceFathersAvailable = true;
+					}
+					if(race.isCanMotherChildren() &amp;&amp; ((sex == IFPop.ePopSex.cFemale) || (sex == IFPop.ePopSex.cUnisexBoth)))
+					{
+						otherRaceMothersAvailable = true;
+					}
+				}
+				else if(race == inRace)
+				{
+					if(race.isCanFatherChildren() &amp;&amp; ((sex == IFPop.ePopSex.cMale) || (sex == IFPop.ePopSex.cUnisexBoth)))
+					{
+						sameRaceFathersAvailable = true;
+					}
+					if(race.isCanMotherChildren() &amp;&amp; ((sex == IFPop.ePopSex.cFemale) || (sex == IFPop.ePopSex.cUnisexBoth)))
+					{
+						sameRaceMothersAvailable = true;
+					}
+				}
+			}
+			
+			for(int i = 0; i &lt; inPops.Count; i++)
+			{
+				IFPop pop = inPops[i];
+				bool considerFatherhood = fathers &amp;&amp; ((pop.getSex() == IFPop.ePopSex.cMale) || (pop.getSex() == IFPop.ePopSex.cUnisexBoth));
+				bool considerMotherhood = mothers &amp;&amp; ((pop.getSex() == IFPop.ePopSex.cFemale) || (pop.getSex() == IFPop.ePopSex.cUnisexBoth));
+				if((!considerFatherhood &amp;&amp; !considerMotherhood) || pop.isPregnant())
+					continue;
+					
+				if(pop.hasHomeBuilding())
+				{
+					bool continueOuter = false;
+					foreach(IFPop otherPop in pop.getHomeBuilding().getHousingComponent().getHousedPops())
+					{
+						if(otherPop == pop)
+							continue;
+						if(pop.canMakeBabyWithPop(otherPop))
+						{
+							countOfPopsHousedWithPotentialMates++;
+							continueOuter = true;
+							break;
+						}
+					}
+					if(continueOuter)
+						continue;
+				}
+				
+				bool otherInCommunity = false;
+				//while we call canMakeBabyWithPop directly on all other pops in the pop's housing, that's too inefficient for the whole community
+				//so use considerFatherhood, considerMotherhood, and crossBreeder to calculate things:
+				if(considerFatherhood &amp;&amp; (crossBreedMothersAvailable || sameRaceMothersAvailable))
+				{
+					continue;
+				}
+				if(considerFatherhood &amp;&amp; crossBreeder &amp;&amp; otherRaceMothersAvailable)
+				{
+					continue;
+				}
+				if(considerMotherhood &amp;&amp; (crossBreedFathersAvailable || sameRaceFathersAvailable))
+				{
+					continue;
+				}
+				if(considerMotherhood &amp;&amp; crossBreeder &amp;&amp; otherRaceFathersAvailable)
+				{
+					continue;
+				}
+				countOfWantingPops++;
+			}
+			
+			double noMatesMaxPenalty = customConsts.getDoubleConst("happiness mates none_available penalty max", out bool success);
+			if(!success) noMatesMaxPenalty = -0.4d;
+			double noMatesPerPopPenalty = customConsts.getDoubleConst("happiness mates none_available penalty per_pop", out success);
+			if(!success) noMatesPerPopPenalty = -0.01d;
+			double housedMatesMaxBonus = customConsts.getDoubleConst("happiness mates housed bonus max", out success);
+			if(!success) housedMatesMaxBonus = 0.1d;
+			double housedMatesPerPopBonus = customConsts.getDoubleConst("happiness mates housed bonus per_pop", out success);
+			if(!success) housedMatesPerPopBonus = 0.0025d;
+			
+			double noMatesPenalty = noMatesPerPopPenalty * countOfWantingPops;
+			if(noMatesMaxPenalty &gt; noMatesPenalty) //remember, it's negative here
+			{
+				noMatesPenalty = noMatesMaxPenalty;
+			}
+			double housedMatesBonus = housedMatesPerPopBonus * countOfPopsHousedWithPotentialMates;
+			if(housedMatesBonus &gt; housedMatesMaxBonus)
+    {
+    housedMatesBonus = housedMatesMaxBonus;
+    }
+    addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " has " + countOfWantingPops + " pops without mates and " + countOfPopsHousedWithPotentialMates + " pops with mates in the same housing, making penalty of " + noMatesPenalty + " and bonus of " + housedMatesBonus);
+
+    double outHappiness = (noMatesPenalty + housedMatesBonus) * (maxHappiness - minHappiness);
+    return new List&lt;object&gt;() { outHappiness };
+	</mHappinessMatesFactor>
+	
+	<!-- happiness jealousy factor has two inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation -->
+	<!-- there is one output: the new value for jealousy's contribution to happiness -->
+	<mHappinessJealousyFactor>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFRace inRace = (IFRace)inArguments[0];
+			List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[1];
+			
+			if(inPops.Count == 0)
+				return new List&lt;object&gt;() { 0.0d };
+			IFCommunity community = inPops[0].getCommunity();
+				
+			double minHappiness = consts.getHappinessMin();
+			double maxHappiness = consts.getHappinessMax();
+			
+			//this script takes care of three, similar effects:
+			//first, if this race is denied access to resources or housing, and other races have access to that resource or housing, this race will be unhappy
+			//second, if this race sees another race with much better living standards (individual combination base) than them, this race will be envious
+			//third, if this race sees another race with much worse living standards (individual combination base) than them, this race will be slightly nervous or slightly happy, depending on pop count and average military skill difference
+			
+			//TODO recent development work in IFIndustrySkill and IFCommunity and IFDomesticCommunityComponent means this can be cleaned up/reduced
+			Dictionary&lt;IFRace, Int64&gt; popCounts = new Dictionary&lt;IFRace, Int64&gt;();
+			Dictionary&lt;IFRace, double&gt; militaryProwess = new Dictionary&lt;IFRace, double&gt;();
+			foreach(IFPop pop in community.getPopsLoyalToCommunity(true, false))
+			{
+				if(pop.hasDelegation())
+					continue;
+				
+				if(!popCounts.ContainsKey(pop.getRace()))
+				{
+					popCounts.Add(pop.getRace(), 0L);
+				}
+				popCounts[pop.getRace()]++;
+				if(!militaryProwess.ContainsKey(pop.getRace()))
+				{
+					militaryProwess.Add(pop.getRace(), 0.0d);
+				}
+				militaryProwess[pop.getRace()] += pop.getSoldierSkill();
+			}
+			double soldierMin = (double)consts.getSoldierSkillMin();
+			double soldierMax = (double)consts.getSoldierSkillMax();
+			//this loop translates all military prowess into a range of 0.0d to 1.0d
+			foreach(var kvpair in militaryProwess)
+			{
+				militaryProwess[kvpair.Key] /= popCounts[kvpair.Key];
+				militaryProwess[kvpair.Key] -= soldierMin;
+				militaryProwess[kvpair.Key] /= (soldierMax - soldierMin);
+			}
+			
+			//we need to make hashsets of all housing kinds and all resources:
+			HashSet&lt;IFBuildingKind&gt; housingKindsDenied = new HashSet&lt;IFBuildingKind&gt;();
+			HashSet&lt;IFResource&gt; resourcePoolResourcesDenied = new HashSet&lt;IFResource&gt;();
+			Int64 totalCountOfBuildingKinds = getAPI().getTotalCountOfMO("buildingkinds");
+			Int64 totalCountOfResources = getAPI().getTotalCountOfMO("resources");
+			for(int i = 1; i &lt; totalCountOfBuildingKinds; i++)
+			{
+				IFBuildingKind bkind = (IFBuildingKind)getAPI().getMOFromMOID("buildingkinds", i);
+				if(bkind.isHousing() &amp;&amp; !getAPI().isRaceAllowedToHouseInBKnd(inRace, bkind))
+				{
+					housingKindsDenied.Add(bkind);
+				}
+			}
+			for(int i = 1; i &lt; totalCountOfResources; i++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+				if(!res.isNotInResourcePool() &amp;&amp; !getAPI().isRaceAllowedToConsumeResource(inRace, res))
+				{
+					resourcePoolResourcesDenied.Add(res);
+				}
+			}
+			
+			bool deniedResourcesOthersHave = false;
+			bool deniedHousingOthersHave = false;
+			foreach(IFRace race in popCounts.Keys)
+			{
+				if(race == inRace)
+					continue;
+				if(!deniedResourcesOthersHave)
+				{
+					foreach(IFResource res in resourcePoolResourcesDenied)
+					{
+						if(getAPI().isRaceAllowedToConsumeResource(race, res))
+						{
+							deniedResourcesOthersHave = true;
+							break;
+						}
+					}
+				}
+				if(!deniedHousingOthersHave)
+				{
+					foreach(IFBuildingKind bkind in housingKindsDenied)
+					{
+						if(getAPI().isRaceAllowedToHouseInBKnd(race, bkind))
+						{
+							deniedHousingOthersHave = true;
+							break;
+						}
+					}
+				}
+			}
+			
+			double deniedResourcePenalty = customConsts.getDoubleConst("happiness jealousy resources penalty", out bool success);
+			if(!success) deniedResourcePenalty = -0.1d;
+			if(!deniedResourcesOthersHave) deniedResourcePenalty = 0.0d;
+			double deniedHousingPenalty = customConsts.getDoubleConst("happiness jealousy housing penalty", out success);
+			if(!success) deniedHousingPenalty = -0.05d;
+			if(!deniedHousingOthersHave) deniedHousingPenalty = 0.0d;
+			
+			//now check living standards:
+			var causes = community.getDomesticComponent().getHappinessCollection().getAllCausesWithName(inRace, "Standard of Living"); //TODO make this translatable
+			Int64 countRacesDoingMuchBetter = 0;
+			Int64 countRacesDoingMuchWorseAndYesThreat = 0;
+			Int64 countRacesDoingMuchWorseAndNoThreat = 0;
+			if(causes.Count == 1)
+			{
+				double thisRaceStandard = causes[0].getCurrentValue();
+				//divide all standards by the full range of happiness -- note that this won't necessarily be between 0.0d and 1.0d because a single cause's contribution can be beyond min and max happiness
+				thisRaceStandard /= (maxHappiness - minHappiness);
+				
+				double betterWorseThreshold = customConsts.getDoubleConst("happiness jealousy much_better_or_worse threshold", out success);
+				if(!success) betterWorseThreshold = 0.5d;
+				double militarySkillThreshold = customConsts.getDoubleConst("happiness jealousy military_skill_better threshold", out success);
+				if(!success) militarySkillThreshold = 0.5d;
+				
+				foreach(IFRace race in popCounts.Keys)
+				{
+					if(race == inRace)
+						continue;
+						
+					causes = community.getDomesticComponent().getHappinessCollection().getAllCausesWithName(race, "Standard of Living"); //TODO make this translatable
+					if(causes.Count != 1)
+						continue;
+					double otherRaceStandard = causes[0].getCurrentValue();
+					otherRaceStandard /= (maxHappiness - minHappiness);
+					
+					if(otherRaceStandard - betterWorseThreshold &gt; thisRaceStandard)
+					{
+						countRacesDoingMuchBetter++;
+					}
+					else if(otherRaceStandard + betterWorseThreshold &lt; thisRaceStandard)
+					{
+						//being outnumbered at all, or having a military skill much greater on average than this race, will make this race nervous instead of happy about the difference between standards of living:
+						if(popCounts[inRace] &lt; popCounts[race])
+						{
+							countRacesDoingMuchWorseAndYesThreat++;
+						}
+						else if(militaryProwess[inRace] + militarySkillThreshold &lt; militaryProwess[race])
+						{
+							countRacesDoingMuchWorseAndYesThreat++;
+						}
+						else
+						{
+							countRacesDoingMuchWorseAndNoThreat++;
+						}
+					}
+				}
+			}
+    //else, something messed up; just continue
+
+    double perRaceBetterPenalty = customConsts.getDoubleConst("happiness jealousy race_better penalty per_race", out success);
+    if(!success) perRaceBetterPenalty = -0.075d;
+    double perRaceThreatPenalty = customConsts.getDoubleConst("happiness jealousy race_worse_threat penalty per_race", out success);
+    if(!success) perRaceThreatPenalty = -0.025d;
+    double perRaceNoThreatBonus = customConsts.getDoubleConst("happiness jealousy race_worse_nothreat bonus per_race", out success);
+    if(!success) perRaceNoThreatBonus = 0.025d;
+
+    double othersDoingBetterPenalty = perRaceBetterPenalty * countRacesDoingMuchBetter;
+    double othersDoingWorseThreatPenalty = perRaceThreatPenalty * countRacesDoingMuchWorseAndYesThreat;
+    double othersDoingWorseNoThreatBonus = perRaceNoThreatBonus * countRacesDoingMuchWorseAndNoThreat;
+
+    addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " othersDoingWorseNoThreatBonus=" + othersDoingWorseNoThreatBonus + " othersDoingWorseThreatPenalty=" + othersDoingWorseThreatPenalty + " othersDoingBetterPenalty=" + othersDoingBetterPenalty + " deniedHousingPenalty=" + deniedHousingPenalty + " deniedResourcePenalty=" + deniedResourcePenalty);
+
+    double outHappiness = (othersDoingWorseNoThreatBonus + othersDoingWorseThreatPenalty + othersDoingBetterPenalty + deniedHousingPenalty + deniedResourcePenalty) * (maxHappiness - minHappiness);
+    return new List&lt;object&gt;() { outHappiness };
+	</mHappinessJealousyFactor>
+  
+	<!-- happiness industry leader count factor has three inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation, List<IFPop> industry leaders of this race (included in the previous List<IFPop> as well) -->
+	<!-- there is one output: the new value for industry leader count's contribution to happiness -->
+	<mHappinessIndustryLeaderCountFactor>
+            //input count check:
+            if (inArguments.Length &lt; 3)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFRace inRace = (IFRace)inArguments[0];
+			List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[1];
+			List&lt;IFPop&gt; inLeaderPops = (List&lt;IFPop&gt;)inArguments[2];
+
+    double minHappiness = consts.getHappinessMin();
+    double maxHappiness = consts.getHappinessMax();
+
+    //TODO: any racial considerations
+    double perLeaderBonus = customConsts.getDoubleConst("happiness industry_leader bonus per_leader", out bool success);
+    if(!success) perLeaderBonus = 0.005d;
+    double totalBonus = perLeaderBonus * inLeaderPops.Count;
+
+    addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " gets bonus of " + totalBonus + " from industry leader count of " + inLeaderPops.Count);
+
+    double outHappiness = totalBonus * (maxHappiness - minHappiness);
+    return new List&lt;object&gt;() { outHappiness };
+	</mHappinessIndustryLeaderCountFactor>
+	
+	<!-- happiness community illness factor has four inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation, List<IFPop> all ill pops in the community, List<IFPop> all ill pops of this race (included in the second and third arguments as well) -->
+	<!-- there is one output: the new value for community illness's contribution to happiness -->
+	<mHappinessIllnessCommunityFactor>
+            //input count check:
+            if (inArguments.Length &lt; 4)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFRace inRace = (IFRace)inArguments[0];
+			List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[1];
+			List&lt;IFPop&gt; inAllSickPops = (List&lt;IFPop&gt;)inArguments[2];
+			List&lt;IFPop&gt; inSickPopsThisRace = (List&lt;IFPop&gt;)inArguments[3];
+
+    double minHappiness = consts.getHappinessMin();
+    double maxHappiness = consts.getHappinessMax();
+
+    //TODO: any racial considerations
+    //the penalty for sick pops is indeed per pop -- this is arguably realistic, but I mostly use this for gameplay reasons.
+    //the penalty of sick pops per pop, and of deaths per pop, with no consideration for total pop size, is a major factor that limits community size
+    double penaltyPerOtherRace = customConsts.getDoubleConst("happiness illness different_race_penalty per_pop", out bool success);
+    if(!success) penaltyPerOtherRace = -0.0025d;
+    double penaltyPerSameRace = customConsts.getDoubleConst("happiness illness same_race_penalty per_pop", out success);
+    if(!success) penaltyPerSameRace = -0.005d;
+
+    double totalPenalty = (penaltyPerSameRace * inSickPopsThisRace.Count) + (penaltyPerOtherRace * (inAllSickPops.Count - inSickPopsThisRace.Count));
+
+    addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " has happiness penalty of " + totalPenalty + " due to " + inSickPopsThisRace.Count + " sick pops of race and " + inAllSickPops.Count + " sick pops total");
+
+    double outHappiness = (totalPenalty) * (maxHappiness - minHappiness);
+    return new List&lt;object&gt;() { outHappiness };
+	</mHappinessIllnessCommunityFactor>
+	
+	<!-- happiness cause decay has two inputs: the IFRace which the cause is attached to, and the IFHappinessCause itself -->
+	<!-- there is no output; this script instead should change the happiness cause's value directly -->
+	<mHappinessSpecificCauseDecay>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFRace inRace = (IFRace)inArguments[0];
+			IFHappinessCause cause = (IFHappinessCause)inArguments[1];
+			
+			if(cause.getStartDate() &gt;= getAPI().getCalendar().getCurrentDate())
+			{
+				//what are you doing?
+				return null;
+			}
+			
+			double minHappiness = consts.getHappinessMin();
+			double maxHappiness = consts.getHappinessMax();
+			
+			IFHappinessCollection happinessCollection = getAPI().getLocalCommunity().getDomesticComponent().getHappinessCollection();
+			
+			//the math for happiness decay is important because it forms the basis of the balance between choosing to make pops in the community happy against other considerations
+			//if you want to know the philosophy behind the exponential decrease, look up 'hedonic treadmill'
+			//there are four considerations that I use:
+			//A) at some point a racial community stops considering a past benefit as a reason to support the current City Leader (or a past harm a reason to withhold support)
+			//  i) therefore, happiness causes are removed when their impact is below a certain threshold -- that's an easy way to clean it up for gameplay purposes as well
+			//B) when something is fresh in the mind, it stays fresh for a while
+			//  i) therefore, happiness cause impact can only decrease by a max which is related to how many days have passed since it happened
+			//C) people tend to use memories, and the past, to estimate how the future will be
+			//  i) therefore, happiness cause impact can only decrease by a max per day (independent of B, above)
+			//D) time continues on, and the past grows ever further.  The people of Mosaic Isle are practical; they are unlikely to hold unproductive grudges or loyalties.  Tomorrow is always a different day.
+			//  i) therefore, happiness cause impact decreases in absolute value every day.
+			//E) if there are no pops left alive of this race (in delegations or otherwise), the happiness cause is forgotten
+			
+			//TODO : any racial considerations
+			
+			double absValThresholdRemoval = customConsts.getDoubleConst("happiness cause_decay absolute_value_removal threshold", out bool success);
+			if(!success) absValThresholdRemoval = 0.001d;
+			double absValDecreaseMax = customConsts.getDoubleConst("happiness cause_decay decrease_per_day absolute_value max", out success);
+			if(!success) absValDecreaseMax = 0.0175d;
+			double absValDecreasePerDayMax = customConsts.getDoubleConst("happiness cause_decay decrease_per_day absolute_value per_day max", out success);
+			if(!success) absValDecreasePerDayMax = 0.0025d;
+			double multDecreaseFactor = customConsts.getDoubleConst("happiness cause_decay exponential decrease ratio", out success);
+			if(!success) multDecreaseFactor = 0.2d;
+			
+			//first, translate the current impact into a range based on happiness' range:
+			double impactOfThisCause = cause.getCurrentValue() / (maxHappiness - minHappiness);
+			
+			//find what we will decrease the impact by:
+			double decreaseMax = Math.Min(absValDecreaseMax, absValDecreasePerDayMax * (getAPI().getCalendar().getCurrentDate() - cause.getStartDate()));
+			double decrease = Math.Min(decreaseMax, Math.Abs(impactOfThisCause) * multDecreaseFactor);
+			
+			//difficulty impact:
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("happiness decay");
+			if(impactOfThisCause &lt; 0.0d) //this causes unhappiness
+			{
+				if(difficulty &lt;= 0.0d)
+				{
+					decrease = Math.Abs(impactOfThisCause);
+				}
+				else
+				{
+					decrease /= difficulty;
+				}
+			}
+			else //this causes happiness
+			{
+				decrease *= difficulty;
+			}
+			decrease = Math.Min(decrease, Math.Abs(impactOfThisCause));
+			
+			double newImpactOfThisCause = Math.Abs(impactOfThisCause) - decrease;
+			if(impactOfThisCause &lt; 0.0d) newImpactOfThisCause *= -1.0d;
+			
+			newImpactOfThisCause *= (maxHappiness - minHappiness);
+			
+			bool anyPopsLeft = (getAPI().getLocalCommunity().getPopCountOfRace(inRace) != 0);
+			
+			if((newImpactOfThisCause &lt; absValThresholdRemoval) || !anyPopsLeft)
+			{
+				happinessCollection.removeHappinessCause(inRace, cause);
+			}
+			else
+			{
+				cause.setCurrentValue(newImpactOfThisCause);
+			}
+			
+			return null;
+	</mHappinessSpecificCauseDecay>
+	
+	<!-- happiness deaths of pops has one inputs: the List<IFPop> of pops that have died in the community since yesterday -->
+	<!-- there is no output; this script instead should create happiness causes related to pop deaths -->
+	<mHappinessDeathsOfPops>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			List&lt;IFPop&gt; inDeadPops = (List&lt;IFPop&gt;)inArguments[0];
+			
+			if(inDeadPops.Count == 0)
+				return null;
+			
+			double minHappiness = consts.getHappinessMin();
+			double maxHappiness = consts.getHappinessMax();
+			
+			//TODO any racial considerations
+			//TODO if they were leaders, an extra penalty
+			
+			//the death of a pop causes unhappiness in that pop's racial community:
+			IFHappinessCollection happinessCollection = inDeadPops[0].getCommunity().getDomesticComponent().getHappinessCollection();
+			double initialImpact = customConsts.getDoubleConst("happiness death same_race starting_value", out bool success);
+			if(!success) initialImpact = -0.0125d;
+			for(int i = 0; i &lt; inDeadPops.Count; i++)
+			{
+				happinessCollection.addNewHappinessCauseToday(inDeadPops[i].getRace(), "Pop Death", "Death of " + inDeadPops[i].getDisplayName(), initialImpact, false);
+			}
+
+			return null;
+  </mHappinessDeathsOfPops>
+  
+  </gamescripts>
+  
+</core_data>

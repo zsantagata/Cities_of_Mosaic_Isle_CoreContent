@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_buildingkind invalid_buildingkind_error before_replace_text</a> <b>string</b> <c>INVALID_BUILDINGKINDS</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind list_of_options</a> <b>list</b> <c>mult_buildingkind</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_mult_buildingkind list_of_options</a> <b>list</b> <c></c></i1> <!-- the individual script files will add to this, one by one.  MUST ALL BE LOWERCASE -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_buildingkind</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a markup text and from it, makes a request to a lower script to generate text that will replace the markup -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	string inMarkup,
+	List<Dictionary<IFResource, Tuple<double, double>>> inListsOfResources //ignored by this script
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_mult_buildingkind</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(string), typeof(List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_buildingkind custom script received invalid arguments");
+		return null;
+	}
+	  
+	string inMarkup = (string)inArguments[0];
+	List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt; inListsOfResources = (List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;)inArguments[1];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	//before anything else, check if the |uniquify option is set:
+	bool uniquifyIDs = false;
+	if(inMarkup.Contains("|uniquify"))
+	{
+		uniquifyIDs = true;
+		inMarkup = inMarkup.Replace("|uniquify", "");
+	}
+	
+	ReadOnlyCollection&lt;string&gt; possibleOptions = customConsts.getListConst("replaceDescriptionMarkupKind_mult_buildingkind list_of_options", out success);
+	if(!success)
+	{
+		addDebugMessage(inScriptInstance, "list of options could not be found");
+		return new List&lt;object&gt;() { outDescription };
+	}
+	
+	string default_option = "name_noun_list";
+
+	//find the string between the | and : characters:
+	string optionString = default_option;
+	int optionStartLoc = inMarkup.IndexOf("|");
+	int optionEndLoc = inMarkup.IndexOf(":");
+	if((optionStartLoc != -1) &amp;&amp; (optionEndLoc != -1))
+	{
+		string toCheck = inMarkup.Substring(optionStartLoc + 1, optionEndLoc - (optionStartLoc + 1));
+		if(possibleOptions.Contains(toCheck.ToLower()))
+		{
+			optionString = toCheck.ToLower();
+		}
+	}
+	
+	//gather the buildingkinds from the indicated numbers:
+	bool error = false;
+	List&lt;IFBuildingKind&gt; buildingkinds = new List&lt;IFBuildingKind&gt;();
+	string ids = inMarkup.Substring(optionEndLoc + 1);
+	ids = ids.Substring(0, ids.Length - 1);
+	foreach(string entry in ids.Split(','))
+	{
+		if(Int64.TryParse(entry, out Int64 idAsInt))
+		{
+			IFBuildingKind buildingkind = (IFBuildingKind)getAPI().getMOFromMOID("buildingkinds", idAsInt);
+			if(buildingkind == null)
+			{
+				error = true;
+				addDebugMessage(inScriptInstance, "markup indicated invalid MOID of buildingkind, MOID=" + idAsInt);
+				break;
+			}
+			buildingkinds.Add(buildingkind);
+		}
+		else
+		{
+			error = true;
+			addDebugMessage(inScriptInstance, "unable to parse markup for id; id string=\"" + entry + "\" and markup=" + inMarkup);
+			break;
+		}
+	}
+	
+	if(!error)
+	{
+		if(customScripts.doesCustomScriptExistWithName("replaceDescriptionMarkupKind_mult_buildingkind" + "_" + optionString))
+		{
+			if(customScripts.runCustomScriptCheckTypes("replaceDescriptionMarkupKind_mult_buildingkind" + "_" + optionString, new List&lt;object&gt;() { buildingkinds }, out List&lt;object&gt; replacedMarkup, false, typeof(string)))
+			{
+				outDescription = (string)replacedMarkup[0];
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "markup kind script replaceDescriptionMarkupKind_mult_buildingkind" + "_" + optionString + " did not execute correctly; something went wrong; terminating replacement");
+				error = true;
+			}
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "markup kind script replaceDescriptionMarkupKind_mult_buildingkind" + "_" + optionString + " does not exist despite markup kind and option being valid; something went wrong; terminating replacement");
+			error = true;
+		}
+	}
+	
+	if(error)
+	{
+		string errorReplacer = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_buildingkind invalid_buildingkind_error before_replace_text", out success);
+		if(!success) errorReplacer = "INVALID_BUILDINGKINDS";
+		outDescription = errorReplacer;
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

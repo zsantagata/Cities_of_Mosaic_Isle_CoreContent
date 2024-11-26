@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+		<i1><a>popHealth_protein protein_daily min</a> <b>int</b> <c>0x100</c></i1> <!-- how much protein does a pop need to consume a day for full health -->
+		<i1><a>popHealth_protein protein_roughing ratio</a> <b>double</b> <c>0.1</c></i1> <!-- what proportion of protein needs are met when a pop is roughing it -->
+		<i1><a>popHealth_protein protein death_days value</a> <b>double</b> <c>21.0</c></i1> <!-- how many days without protein will cause protein health to drop from max to min -->
+		<i1><a>popHealth_protein protein recovery_days value</a> <b>double</b> <c>4.0</c></i1> <!-- how many days of full protein need med will cause protein health to rise from min to max -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script pophealth_protein</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which handles pop protein health from whatever situation the pop is in -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop,
+	double inProteinConsumed,
+	double inProteinMultiplier,
+	bool inRoughingIt
+	
+	There is no output -->
+	<i1><a>popHealth_protein</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop), typeof(double), typeof(double), typeof(bool)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popHealth_protein custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	double inProteinConsumed = (double)inArguments[1];
+	double inProteinMultiplier = (double)inArguments[2];
+	bool inRoughingIt = (bool)inArguments[3];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	//TODO any race or other non-standard considerations
+	  
+	double daily_protein_need_met = 0;
+	bool success = false;
+	if(!inRoughingIt)
+	{
+		Int64 dailyProteinMin = customConsts.getIntConst("popHealth_protein protein_daily min", out success);
+		if(!success) dailyProteinMin = 0x100;
+		daily_protein_need_met = inProteinConsumed * inProteinMultiplier / dailyProteinMin;
+	}
+	else if (inRoughingIt &amp;&amp; inPop.isPopNoHealthStatus())
+    {
+		daily_protein_need_met = customConsts.getDoubleConst("popHealth_protein protein_roughing ratio", out success);
+		if(!success) daily_protein_need_met = 0.1d;
+    }
+
+    // protein needs decay slowly and recover quickly
+    // protein has 21 days to death at 0.0 need met and 4 days to recovery at 1.5* need met by default consts
+
+    double deathDays = customConsts.getDoubleConst("popHealth_protein protein death_days value", out success);
+    if(!success) deathDays = 21.0d;
+    double recoveryDays = customConsts.getDoubleConst("popHealth_protein protein recovery_days value", out success);
+    if(!success) recoveryDays = 4.0d;
+	
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("pop health decay");
+	if(difficulty &gt; 0.0d)
+	{
+		recoveryDays *= difficulty;
+		deathDays /= difficulty;
+	}
+
+    //just a line between days to death at 0.0 and days to recovery at 1.5
+    double shift_from_current_protein_health = 1 / (1.5d * deathDays);
+    shift_from_current_protein_health = shift_from_current_protein_health + ( 1 / (1.5d * recoveryDays) );
+    shift_from_current_protein_health = shift_from_current_protein_health * daily_protein_need_met;
+    shift_from_current_protein_health = shift_from_current_protein_health - ( 1.0d / deathDays);
+    shift_from_current_protein_health = shift_from_current_protein_health * (consts.getHealthMax() - consts.getHealthMin());
+    addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " increasing protein health by " + shift_from_current_protein_health.ToString() + " as a result of daily protein need met at ratio " + daily_protein_need_met.ToString());
+
+    inPop.setProteinHealth(inPop.getProteinHealth() + shift_from_current_protein_health);
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

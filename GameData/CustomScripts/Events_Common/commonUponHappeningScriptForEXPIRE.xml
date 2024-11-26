@@ -1,0 +1,314 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- these are the default values used if the EXPIRE event itself does not provide any: -->
+			<i1><a>commonUponHappeningScriptForEXPIRE base_desire_to_stay default</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>commonUponHappeningScriptForEXPIRE wound_desire_to_stay_additive default</a> <b>double</b> <c>-2.5</c></i1>
+			<i1><a>commonUponHappeningScriptForEXPIRE ill_desire_to_stay_additive default</a> <b>double</b> <c>-1.0</c></i1>
+			<i1><a>commonUponHappeningScriptForEXPIRE health_max_additive default</a> <b>double</b> <c>0.2</c></i1>
+			<i1><a>commonUponHappeningScriptForEXPIRE health_min_additive default</a> <b>double</b> <c>-1.0</c></i1>
+			<i1><a>commonUponHappeningScriptForEXPIRE other_pops_dead_additive default</a> <b>double</b> <c>-0.7</c></i1>
+			<i1><a>commonUponHappeningScriptForEXPIRE other_pops_offmap_additive default</a> <b>double</b> <c>0.0</c></i1>
+			<i1><a>commonUponHappeningScriptForEXPIRE collective_ratio default</a> <b>double</b> <c>1.0</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script commonUponHappeningScriptForEXPIRE</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which performs many of the common actions expected of an EXPIRE event's uponHappening script -->
+  <!-- the summary is:
+A) assemble common parameters for desires of pops to stay on map
+B) fetch the original IFEventStatus
+C) fetch the list of IFEventReport UIDs associated with this EXPIRE event
+D) for each IFEventReport UID in the list from C, do the following:
+
+E) fetch the list of pops associated with the IFEventReport UID
+F) if it does not exist, continue
+G) calculate (fetch specific [variable] parameters) and store the desires of all pops to stay on the map (remember that pop desire to stay on the map can only decrease from the same event)
+H) if there are no pops from this event that want to stay on the map (combined reason, not specific to this expire event), add the IFEventReport UID to a list of "need to expire" UIDs
+I) for each IFEventReport UID in the list from H, do the following:
+
+J) perform the specific and appropriate task for the event expiring (this means add the IFEventReport UID to the return values and let the uponHappening script take care of it)
+K) clear variables associated with the expire event (but not any non-expire variables!)
+
+L) if the size of the IFEventReport list from H and C are the same, disable the EXPIRE event and clear force date.  Otherwise, force date tomorrow.
+  -->
+  <!-- if something needs to happen not in this summary or differently, the specific EXPIRE event's uponHappening script must take care of it instead -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus, //this should be the event status of the EXPIRE event
+	
+	//note for these input parameters, double.MaxValue will be used to indicate "use default values"
+	//also note that variableHandler could contain values that change these for a specific event report UID; these are "base"
+	double inBaseDesireToStay,
+	double inWoundDesireToStayAdditive,
+	double inIllnessDesireToStayAdditive,
+	double inHealthMaxDesireToStayAdditive, //based on actual health goes from this to the below
+	double inHealthMinDesireToStayAdditive,
+	double inOtherPopsInConsiderationDeadAdditive, //per other pop dead
+	double inOtherPopsInConsiderationOffMapAdditive, //per other pop off map, including ones who left already or never came on the map
+	double inCollectiveRatio //from 0.0 to 1.0 (besides double.MaxValue).  A pop's final desire to stay value will be (1.0d - this) * their own + this * average of all pops in consideration for the same event report UID
+	-->
+	
+	<!-- output: 
+	List<Int64> outEventReportUIDsNowExpired //will not be null but may be empty
+	-->
+	<i1><a>commonUponHappeningScriptForEXPIRE</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(double), typeof(double), typeof(double), typeof(double),
+			 typeof(double), typeof(double), typeof(double), typeof(double)}
+	      }, out _))
+	    {
+			throw new ArgumentException("commonUponHappeningScriptForEXPIRE custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		double inBaseDesireToStay = (double)inArguments[1];
+		double inWoundDesireToStayAdditive = (double)inArguments[2];
+		double inIllnessDesireToStayAdditive = (double)inArguments[3];
+		double inHealthMaxDesireToStayAdditive = (double)inArguments[4];
+		double inHealthMinDesireToStayAdditive = (double)inArguments[5];
+		double inOtherPopsInConsiderationDeadAdditive = (double)inArguments[6];
+		double inOtherPopsInConsiderationOffMapAdditive = (double)inArguments[7];
+		double inCollectiveRatio = (double)inArguments[8];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("commonUponHappeningScriptForEXPIRE custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		List&lt;Int64&gt; outEventReportUIDsNowExpired = new List&lt;Int64&gt;();
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		bool success = false;
+		
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		
+		//custom consts:
+		double baseDesireToStay = customConsts.getDoubleConst("commonUponHappeningScriptForEXPIRE base_desire_to_stay default", out success);
+		if(!success) baseDesireToStay = 1.0d;
+		double woundDesireToStay = customConsts.getDoubleConst("commonUponHappeningScriptForEXPIRE wound_desire_to_stay_additive default", out success);
+		if(!success) woundDesireToStay = -2.5d;
+		double illnessDesireToStay = customConsts.getDoubleConst("commonUponHappeningScriptForEXPIRE ill_desire_to_stay_additive default", out success);
+		if(!success) illnessDesireToStay = -1.0d;
+		double healthMaxDesireToStay = customConsts.getDoubleConst("commonUponHappeningScriptForEXPIRE health_max_additive default", out success);
+		if(!success) healthMaxDesireToStay = 0.2d;
+		double healthMinDesireToStay = customConsts.getDoubleConst("commonUponHappeningScriptForEXPIRE health_min_additive default", out success);
+		if(!success) healthMinDesireToStay = -1.0d;
+		double otherPopsDeadDesireToStay = customConsts.getDoubleConst("commonUponHappeningScriptForEXPIRE other_pops_dead_additive default", out success);
+		if(!success) otherPopsDeadDesireToStay = -0.7d;
+		double otherPopsOffMapDesireToStay = customConsts.getDoubleConst("commonUponHappeningScriptForEXPIRE other_pops_offmap_additive default", out success);
+		if(!success) otherPopsOffMapDesireToStay = 0.0d;
+		double collectiveRatio = customConsts.getDoubleConst("commonUponHappeningScriptForEXPIRE collective_ratio default", out success);
+		if(!success) collectiveRatio = 1.0d;
+		
+		//A)
+		if(inBaseDesireToStay == double.MaxValue)
+			inBaseDesireToStay = baseDesireToStay;
+		if(inWoundDesireToStayAdditive == double.MaxValue)
+			inWoundDesireToStayAdditive = woundDesireToStay;
+		if(inIllnessDesireToStayAdditive == double.MaxValue)
+			inIllnessDesireToStayAdditive = illnessDesireToStay;
+		if(inHealthMaxDesireToStayAdditive == double.MaxValue)
+			inHealthMaxDesireToStayAdditive = healthMaxDesireToStay;
+		if(inHealthMinDesireToStayAdditive == double.MaxValue)
+			inHealthMinDesireToStayAdditive = healthMinDesireToStay;
+		if(inOtherPopsInConsiderationDeadAdditive == double.MaxValue)
+			inOtherPopsInConsiderationDeadAdditive = otherPopsDeadDesireToStay;
+		if(inOtherPopsInConsiderationOffMapAdditive == double.MaxValue)
+			inOtherPopsInConsiderationOffMapAdditive = otherPopsOffMapDesireToStay;
+		if(inCollectiveRatio == double.MaxValue)
+			inCollectiveRatio = collectiveRatio;
+		
+		//B)
+		IFEvent expireEvt = (IFEvent)getAPI().getMOFromMOID("events", inEventStatus.getUID());
+		string nonExpireName = expireEvt.getInternalName().Replace(" EXPIRE", "");
+		IFEvent nonExpireEvt = (IFEvent)getAPI().getMOFromInternalName("events", nonExpireName);
+		if((nonExpireEvt == null) || (nonExpireEvt == expireEvt))
+		{
+			addDebugMessage(inScriptInstance, "could not find non-expiry event from EXPIRE event " + expireEvt.getInternalName());
+			toReturn.Add(outEventReportUIDsNowExpired);
+			return toReturn;
+		}
+		
+		IFEventStatus nonExpireEvtStatus = (IFEventStatus)getAPI().getSO("eventstatuses", nonExpireEvt.getMOID());
+		if(nonExpireEvtStatus == null)
+		{
+			addDebugMessage(inScriptInstance, "could not find non-expiry event status for non-EXPIRE event " + nonExpireEvt.getInternalName());
+			toReturn.Add(outEventReportUIDsNowExpired);
+			return toReturn;
+		}
+		
+		//C)
+		string listName = "evt_" + expireEvt.getInternalName() + "_listOfEventReportUIDsActive";
+		IFConnectedVariable cvListOfUIDs = null;
+		List&lt;Int64&gt; listOfUIDs = new List&lt;Int64&gt;();
+		if(variableHandler.connectedVariableExists(listName))
+		{
+			cvListOfUIDs = variableHandler.getConnectedVariable(listName);
+			foreach(var lower in cvListOfUIDs.getLowers())
+			{
+				if(lower.getVariableKind() == APIconsts.eVariableKind.cInt)
+				{
+					listOfUIDs.Add(lower.getVariableAsInt());
+				}
+			}
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "could not find connected-variable list of event report UIDs active");
+		}
+		
+		//E
+		if(customScripts.runCustomScriptCheckTypes("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { nonExpireEvtStatus, -1L, false, false, null }, out List&lt;object&gt; variablesForEventUID, false,
+			typeof(Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;)))
+		{
+			var listsOfPops = (Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;)variablesForEventUID[0];
+			addDebugMessage(inScriptInstance, "found lists of pops associated with event " + nonExpireEvt.getInternalName() + ", count=" + listsOfPops.Count);
+		
+			//D)
+			foreach(Int64 uid in listOfUIDs)
+			{
+				List&lt;IFPop&gt; allPopsAssociatedWithEventReport = null;
+				if(listsOfPops.ContainsKey(uid))
+				{
+					allPopsAssociatedWithEventReport = listsOfPops[uid];
+				}
+				else //F
+				{
+					outEventReportUIDsNowExpired.Add(uid);
+					continue;
+				}
+				if(allPopsAssociatedWithEventReport.Count == 0)
+				{
+					outEventReportUIDsNowExpired.Add(uid);
+					continue;
+				}
+				
+				//G
+				//first, count number of pops dead and off map:
+				int popCountDead = 0;
+				int popCountOffMap = 0;
+				foreach(IFPop pop in allPopsAssociatedWithEventReport)
+				{
+					if(pop.isDead())
+						popCountDead++;
+					if(!getAPI().getPopsWithinLocalCommunityMap().Contains(pop))
+						popCountOffMap++;
+				}
+				
+				double HealthMin = consts.getHealthMin();
+				double HealthMax = consts.getHealthMax();
+				
+				Dictionary&lt;IFPop, double&gt; popDesiresToStay = new Dictionary&lt;IFPop, double&gt;();
+				double totalDesireToStay = 0.0d;
+				foreach(IFPop pop in allPopsAssociatedWithEventReport)
+				{
+					//per pop: fetch specific variables relating to this pop's desire to stay:
+					double baseDesireToStayOverride = variableHandler.getConnectedDouble("pop_" + pop.getUID() + "_desireToStayModifier_baseDesireToStayOverride", out success);
+					if(!success) baseDesireToStayOverride = baseDesireToStay;
+					double woundDesireToStayOverride = variableHandler.getConnectedDouble("pop_" + pop.getUID() + "_desireToStayModifier_woundDesireToStayOverride", out success);
+					if(!success) woundDesireToStayOverride = woundDesireToStay;
+					double illnessDesireToStayOverride = variableHandler.getConnectedDouble("pop_" + pop.getUID() + "_desireToStayModifier_illnessDesireToStayOverride", out success);
+					if(!success) illnessDesireToStayOverride = illnessDesireToStay;
+					double healthMaxDesireToStayOverride = variableHandler.getConnectedDouble("pop_" + pop.getUID() + "_desireToStayModifier_healthMaxDesireToStayOverride", out success);
+					if(!success) healthMaxDesireToStayOverride = healthMaxDesireToStay;
+					double healthMinDesireToStayOverride = variableHandler.getConnectedDouble("pop_" + pop.getUID() + "_desireToStayModifier_healthMinDesireToStayOverride", out success);
+					if(!success) healthMinDesireToStayOverride = healthMinDesireToStay;
+					double otherPopsDeadDesireToStayOverride = variableHandler.getConnectedDouble("pop_" + pop.getUID() + "_desireToStayModifier_otherPopsDeadDesireToStayOverrideOverride", out success);
+					if(!success) otherPopsDeadDesireToStayOverride = otherPopsDeadDesireToStay;
+					double otherPopsOffMapDesireToStayOverride = variableHandler.getConnectedDouble("pop_" + pop.getUID() + "_desireToStayModifier_otherPopsOffMapDesireToStayOverride", out success);
+					if(!success) otherPopsOffMapDesireToStayOverride = otherPopsOffMapDesireToStay;
+					
+					double popDesire = baseDesireToStayOverride;
+					if(pop.isWounded())
+						popDesire += woundDesireToStayOverride;
+					if(pop.isIll())
+						popDesire += illnessDesireToStayOverride;
+					popDesire += healthMinDesireToStayOverride + (healthMaxDesireToStayOverride - healthMinDesireToStayOverride) * (pop.getOverallHealth() - HealthMin) / (HealthMax - HealthMin);
+					popDesire += popCountDead * otherPopsDeadDesireToStayOverride;
+					popDesire += otherPopsOffMapDesireToStayOverride * popCountOffMap;
+					
+					popDesiresToStay.Add(pop, popDesire);
+					totalDesireToStay += popDesire;
+				}
+				totalDesireToStay /= allPopsAssociatedWithEventReport.Count;
+				
+				Int64 latestDateUntilWhichAnyPopWishesToStay = Int64.MinValue;
+				foreach(IFPop pop in allPopsAssociatedWithEventReport)
+				{
+					double collectiveRatioOverride = variableHandler.getConnectedDouble("pop_" + pop.getUID() + "_desireToStayModifier_collectiveRatioOverride", out success);
+					if(!success) collectiveRatioOverride = collectiveRatio;
+					collectiveRatioOverride = Math.Min(1.0d, Math.Max(0.0d, collectiveRatioOverride));
+					double newCollectiveValue = popDesiresToStay[pop] * (1 - collectiveRatioOverride) + collectiveRatioOverride * totalDesireToStay;
+					addDebugMessage(inScriptInstance, pop.getDebugName() + " has desire to stay from event report uid=" + uid + " of " + newCollectiveValue + " from non-collective value of " + popDesiresToStay[pop]);
+					
+					//store desire to stay:
+					string thisEventThisPopDesireName = "evt" + nonExpireEvtStatus.getUID() + "report" + uid + "_desireToStayOnMap_pop" + pop.getUID();
+					IFConnectedVariable thisEventCV = variableHandler.getConnectedVariable(thisEventThisPopDesireName);
+					if(thisEventCV != null)
+					{
+						if(thisEventCV.getExpirationDate() &gt; latestDateUntilWhichAnyPopWishesToStay)
+							latestDateUntilWhichAnyPopWishesToStay = thisEventCV.getExpirationDate();
+					
+						if(newCollectiveValue &lt; thisEventCV.getVariableAsDouble())
+							thisEventCV.setVariable(newCollectiveValue);
+					}
+				}
+				
+				//H
+				bool clearUID = false;
+				if(latestDateUntilWhichAnyPopWishesToStay &lt;= currentDate)
+				{
+					clearUID = true;
+				}
+				
+				if(clearUID)
+				{
+					//J
+					outEventReportUIDsNowExpired.Add(uid);
+					
+					//K)
+					customScripts.runCustomScriptCheckTypes("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { nonExpireEvtStatus, uid, false, true, null }, out _, false,
+						typeof(Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;));
+					customScripts.runCustomScript("clearPopsWantToStayFromEvent", new List&lt;object&gt;() { nonExpireEvtStatus, uid, "" }, out _);
+				}
+			}
+		}
+		
+		//L)
+		if(outEventReportUIDsNowExpired.Count == listOfUIDs.Count)
+		{
+			//disable the EXPIRE event and clear force date
+			//force date is automatically cleared when it happens
+			inEventStatus.setEnabled(false);
+		}
+		else
+		{
+			//make force date tomorrow
+			inEventStatus.setForceDate(currentDate + 1);
+		}
+		
+		return new List&lt;object&gt;() { outEventReportUIDsNowExpired };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

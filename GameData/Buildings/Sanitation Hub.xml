@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>sanitation_hub effect_prob max</a> <b>double</b> <c>0.45</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <igBuildingKind name="Sanitation Hub">
+    <Encyclopedia_Entry>
+	  <full_path>Buildings/Sanitation Hub</full_path>
+	  <body_text>Sanitation Hub.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mBuildingKindQualities>0x38006</mBuildingKindQualities><!-- 0x2 = overwater enable, 0x4 = passable, 0x8000 = this is a service workplace (outputs no goods), 0x10000 = workplace can use no inputs, 0x20000 = workplace forces best quality (only valid for service industry buildings) -->
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+
+	<mPopDaysToBuild>1</mPopDaysToBuild>
+	<mBaseDurability>100</mBaseDurability>
+	
+	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive).  If nothing exists, this building does not require any resources to build -->
+	</mResourcesToBuild>
+	
+	<mBeautyValue>-25</mBeautyValue>
+	<mBeautyRadius>6</mBeautyRadius>
+    <mBeautySynergyBuildings>
+	</mBeautySynergyBuildings>
+	
+    <mSSIDs>
+		<i>Sanitation Hub</i>
+	</mSSIDs>
+	
+	<mMaxWorkers>8</mMaxWorkers>
+	<mIndustry>Doctoring</mIndustry>
+	<mRadius>9</mRadius>
+	
+	<mRequiredResourceInputs><!-- basic list of names: if the workplace is on at all, these resources must be consumed -->
+	</mRequiredResourceInputs>
+	
+	<mOutputResources><!-- basic list of names: possibilities, chosen by player in the moment.  Not all created at once -->
+	</mOutputResources>
+	
+	<mScriptCalledDaily></mScriptCalledDaily> <!-- exactly what it says on the tin: if this building is fully constructed, this script is called daily.  First input is the building itself. -->
+	<mScriptCalledBetweenOutputCalculationAndResolution>
+		//script intent: as the output quality of this building increases, the probability of getting disease from any source decreases
+	
+		//common to all workplace scripts:
+		if(inArguments.Length &lt; 7)
+		{
+		  return null;
+		}
+		IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+		Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInput = (Dictionary&lt;IFResource, double&gt;)inArguments[1];
+		Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)inArguments[2];
+		Dictionary&lt;IFResource, double&gt; inResourcesCreated = (Dictionary&lt;IFResource, double&gt;)inArguments[3];
+		double inQuality = (double)inArguments[4];
+		bool inWorkplaceOn = (bool)inArguments[5];
+		bool inJustPredicting = (bool)inArguments[6];
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		var customConsts = getAPI().getCustomConsts();
+		var consts = getAPI().getConsts();
+		var customScripts = getAPI().getCustomScripts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		string outPredictionText = "";
+		
+		//start of unique part of script:
+		if(!inJustPredicting) //this script has very little to do if we are just predicting
+		{
+			double min_quality_possible = consts.getResourceQualityMin();
+			double max_quality_possible = consts.getResourceQualityMax();
+		
+			//this code fetches all buildings in a radius and puts them in a set (a set has unique entries, meaning a single building is in the set only once)
+			IFBuildingKind kind = inWorkplace.getBuildingKind();
+			IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+			ReadOnlyCollection&lt;IFMapTile&gt; tiles = map.getMapTilesInBuildingRadius(inWorkplace);
+			HashSet&lt;IFBuilding&gt; served_buildings = new HashSet&lt;IFBuilding&gt;();
+			for(int i = 0; i &lt; tiles.Count; i++)
+			{
+				if(tiles[i].hasBuilding())
+				{
+					if(tiles[i].getBuilding().isHousing() || tiles[i].getBuilding().isWorkplace()) //pops cannot get sick relating to non-housing, non-workplace buildings
+					{
+						if(!served_buildings.Contains(tiles[i].getBuilding()))
+						{
+							served_buildings.Add(tiles[i].getBuilding());
+							addDebugMessage(inScriptInstance, tiles[i].getBuilding().getDebugName() + " has a tile within radius and is served by this Sanitation Hub");
+						}
+					}
+				}
+			}
+			foreach(IFBuilding blding in served_buildings)
+			{
+				//use variableHandler to store the probability that a pop working/living in target buildings will resist getting a disease
+				double disease_resist = customConsts.getDoubleConst("sanitation_hub effect_prob max", out success);
+				if(!success) disease_resist = 0.45d;
+
+				//first change the lower (contributor) buff; for service qualities we say total quality experienced by housing = sqrt(sum of squares of buildings) so use the same thing here for buff calculation
+				//(have to do that manually because sqrt(sum of squares) is not a combination type)
+				//also, since quality can go negative, we have to take min quality away from the actual values used in such a combination.  This is the sum that is stored.  However when we are using the quality, we must add min quality back in.
+				double existing_quality_sum = variableHandler.getDouble("sanitationHub_serviceQuality_building" + blding.getUID(), out success); //success does not matter here; the default value of 0 is acceptable
+				double quality_to_use = min_quality_possible + Math.Sqrt((existing_quality_sum * existing_quality_sum) + (inQuality - min_quality_possible) * (inQuality - min_quality_possible));
+				if(quality_to_use &gt; max_quality_possible)
+				{
+					quality_to_use = max_quality_possible;
+				}
+				disease_resist *= (quality_to_use - min_quality_possible);
+				disease_resist /= (max_quality_possible - min_quality_possible);
+
+				variableHandler.storeDoubleVariable(getAPI().getCalendar().getCurrentDate(), "sanitationHub_serviceQuality_building" + blding.getUID(), quality_to_use - min_quality_possible);
+				addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " changes Sanitation-Hub-based chance of resisting disease to " + disease_resist.ToString() + " for building + " + blding.getDebugName());
+			
+				//now that we have calculated disease resist contribution from all sanitationHub, store it as a connectedVariable
+				//three situations: both cv already exist, neither already exist, the upper variable already exists.  lower var existing without upper shouldn't happen because this script wouldn't let that situation happen
+				bool lower_var_exists = variableHandler.connectedVariableExists("sanitationHub_illResistProb_building" + blding.getUID());
+				bool upper_var_exists = variableHandler.connectedVariableExists("illResistProb_building" + blding.getUID());
+				bool both_exist = lower_var_exists &amp;&amp; upper_var_exists;
+				bool neither_exist = !(lower_var_exists || upper_var_exists);
+
+				if (neither_exist)
+				{
+					//create both and connect them
+					variableHandler.addConnectedDouble("sanitationHub_illResistProb_building" + blding.getUID(), disease_resist, out IFConnectedVariable lower, getAPI().getCalendar().getCurrentDate(), IFConnectedVariable.eCombinationType.cAdd);
+					variableHandler.addConnectedDouble("illResistProb_building" + blding.getUID(), disease_resist, out IFConnectedVariable upper, getAPI().getCalendar().getCurrentDate(), IFConnectedVariable.eCombinationType.cAdd);
+					variableHandler.connectVariables(lower, upper);
+				}
+				else if(both_exist)
+				{
+					//change the lower and the upper will update
+					variableHandler.getConnectedVariable("sanitationHub_illResistProb_building" + blding.getUID()).setVariable(disease_resist);
+				}
+				else
+				{
+					//create the lower and attach it to the upper and the upper will update
+					variableHandler.addConnectedDouble("sanitationHub_illResistProb_building" + blding.getUID(), disease_resist, out IFConnectedVariable lower, getAPI().getCalendar().getCurrentDate(), IFConnectedVariable.eCombinationType.cAdd);
+					variableHandler.connectVariables(lower, variableHandler.getConnectedVariable("illResistProb_building" + blding.getUID()));
+				}
+			}
+		}
+		
+		//outputs: generally if they do not need to be changed, don't modify the values going out, even as a "sanity/safety check".  Doing so would force changes to this script if other scripts change (from, for example, mods)
+		toReturn.Add(inResourcesConsumedAsInput);
+		toReturn.Add(inResourcesConsumedOtherwise);
+		toReturn.Add(inResourcesCreated);
+		toReturn.Add(inQuality);
+		toReturn.Add(inWorkplaceOn);
+		toReturn.Add(outPredictionText);
+		return toReturn;
+	</mScriptCalledBetweenOutputCalculationAndResolution> 
+	
+	<mOutputResourceQuanDailyFactor>0.545</mOutputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make output goods per day approximately equal to 1 for a single unskilled worker using one perfectly-average common good, for a workplace that does not work the land. -->
+	<mInputResourceQuanDailyFactor>1</mInputResourceQuanDailyFactor> <!-- This value will make input goods per day approximately equal to 1, spread over all inputs (not counting those which are required to be consumed TODO figure that out?). -->
+	
+	<mIsHousing>0</mIsHousing> <!-- bool, true if nonzero -->
+	<mIsWorkplace>1</mIsWorkplace> <!-- bool, true if nonzero -->
+	
+	<mTagList>
+	  <i1>road benefit increase leader control count</i1>
+	  <i1>workplace ignore worker skill</i1>
+	  <i1>workers happiness malus</i1>
+	  <i1>workers health malus</i1>
+	  
+	  <!-- description tags: -->
+	  <i1>description_shape_top_noun:thatches</i1>
+	  <i1>description_shape_side_noun:walls</i1>
+	  <i1>description_shape_middle_noun:buckets</i1>
+	  <i1>description_shape_bottom_noun:floors</i1>
+	</mTagList>
+  </igBuildingKind>
+  
+  
+</core_data>

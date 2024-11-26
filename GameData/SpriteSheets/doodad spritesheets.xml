@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  
+  <spritesheet name="Coral">
+    <mSheetTypeName>igTerrainDoodad</mSheetTypeName>
+	<mPath>_Previs Map Objects/Doodads/Coral SS [Cold Water, Warm Water, Temperate Water]</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Pool">
+    <mSheetTypeName>igTerrainDoodad</mSheetTypeName>
+	<mPath>_Previs Map Objects/Doodads/Pool SS [~, Cold Water, Warm Water, Temperate Water]</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Stone Obstacle">
+    <mSheetTypeName>igTerrainDoodad</mSheetTypeName>
+	<mPath>_Previs Map Objects/Doodads/Stone Obstacle SS [~]</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+</core_data>

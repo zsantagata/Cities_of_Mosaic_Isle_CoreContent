@@ -1,0 +1,315 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the Wandering state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: A pop is wandering if it has no specific need to do anything and no other pathfinding state (probably a more specific one) has taken precedence.  This pop wanders around the map for aesthetic reasons -->
+		<i1><a>Wandering</a> 
+		<b>2.75</b><c>17.5</c></i1>
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to Wandering: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_Wandering -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>pathfinding_state_Wandering reached_destination radius</a> <b>double</b> <c>2.75</c></i1> <!-- if a pop is closer than this to its destination when pathfinding occurs, it will transition to Idle -->
+			
+			<i1><a>pathfinding_state_Wandering choose_destination home weight</a> <b>double</b> <c>30.0</c></i1> <!-- this is the default weight for a pop in this state choosing to wander near its own home, if it has one -->
+			<i1><a>pathfinding_state_Wandering choose_destination workplace weight</a> <b>double</b> <c>30.0</c></i1> <!-- this is the default weight for a pop in this state choosing to wander near its own workplace, if it has one -->
+			<i1><a>pathfinding_state_Wandering choose_destination random_building weight</a> <b>double</b> <c>10.0</c></i1> <!-- this is the default weight for a pop in this state choosing to wander near a random building on the map -->
+			<i1><a>pathfinding_state_Wandering choose_destination nearby weight</a> <b>double</b> <c>45.0</c></i1> <!-- this is the default weight for a pop in this state choosing to wander near its current location -->
+			<i1><a>pathfinding_state_Wandering choose_destination random weight</a> <b>double</b> <c>15.0</c></i1> <!-- this is the default weight for a pop in this state choosing to wander at a random point on the map -->
+			
+			<i1><a>pathfinding_state_Wandering choose_destination nearby distance</a> <b>double</b> <c>7.5</c></i1> <!-- when a pop chooses to wander nearby, it chooses a spot within its current X position plus/minus this and its current Y position plus/minus this -->
+			
+			<i1><a>pathfinding_state_Wandering wander_again chance</a> <b>double</b> <c>0.5</c></i1> <!-- when a pop chooses a new state, they will choose to wander again with this probability; otherwise they will Idle -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_wandering_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_wandering_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_wandering</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to Wandering: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_Wandering -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_Wandering_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_Wandering_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_Wandering_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//there is only one consideration for entering this state: a pop should not be Wandering during battle or if it is mustered
+				toReturn.Add(!inBattleOngoing &amp;&amp; !inPop.isMustered());
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_Wandering_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_Wandering_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_Wandering_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//there are five potential targets for a pop entering the Wandering state: home, workplace, a random building, a nearby location, a random location on the map
+				double homeWeight = customConsts.getDoubleConst("pathfinding_state_Wandering choose_destination home weight", out bool success);
+				if(!success) homeWeight = 30.0d;
+				double workplaceWeight = customConsts.getDoubleConst("pathfinding_state_Wandering choose_destination workplace weight", out success);
+				if(!success) workplaceWeight = 30.0d;
+				double randomBuildingWeight = customConsts.getDoubleConst("pathfinding_state_Wandering choose_destination random_building weight", out success);
+				if(!success) randomBuildingWeight = 10.0d;
+				
+				double nearbyWeight = customConsts.getDoubleConst("pathfinding_state_Wandering choose_destination nearby weight", out success);
+				if(!success) nearbyWeight = 45.0d;
+				double randomWeight = customConsts.getDoubleConst("pathfinding_state_Wandering choose_destination random weight", out success);
+				if(!success) randomWeight = 15.0d;
+				
+				if((homeWeight &lt; 0.0d) || !inPop.hasHomeBuilding())
+					homeWeight = 0.0d;
+				if((workplaceWeight &lt; 0.0d) || !inPop.hasWorkplaceBuilding())
+					workplaceWeight = 0.0d;
+				if((randomBuildingWeight &lt; 0.0d) || (inLocalMap.getAllBuildingsOnMap().Count == 0))
+					randomBuildingWeight = 0.0d;
+				if(nearbyWeight &lt; 0.0d) nearbyWeight = 0.0d;
+				if(randomWeight &lt; 0.0d) randomWeight = 0.0d;
+					
+				double totalWeight = homeWeight + workplaceWeight + randomBuildingWeight + nearbyWeight + randomWeight;
+				if(totalWeight &lt;= 0.0d)
+				{
+					randomWeight = 1.0d;
+					totalWeight = 1.0d;
+				}
+				
+				//now that the weights have been set up, find the appropriate target:
+				double randVal = getAPI().calcRand() * totalWeight;
+				bool targetHome = (randVal &lt; homeWeight);
+				bool targetWorkplace = (randVal &lt; workplaceWeight) &amp;&amp; !(targetHome);
+				bool targetRandomBuilding = (randVal &lt; randomBuildingWeight) &amp;&amp; !(targetHome || targetWorkplace);
+				bool targetNearby = (randVal &lt; nearbyWeight) &amp;&amp; !(targetHome || targetWorkplace || targetRandomBuilding);
+				bool targetRandom = !(targetHome || targetWorkplace || targetRandomBuilding || targetNearby);
+				
+				IFBuilding buildingTarget = null;
+				double mapXTgt = -1.0d;
+				double mapYTgt = -1.0d;
+				if(targetHome)
+				{
+					buildingTarget = inPop.getHomeBuilding();
+				}
+				else if(targetWorkplace)
+				{
+					buildingTarget = inPop.getWorkplaceBuilding();
+				}
+				else if(targetRandomBuilding)
+				{
+					ReadOnlyCollection&lt;IFBuilding&gt; allBuildings = inLocalMap.getAllBuildingsOnMap();
+					buildingTarget = allBuildings[(int)getAPI().calcRandIntUnder(allBuildings.Count)];
+				}
+				else if(targetNearby)
+				{
+					double max_dist = customConsts.getDoubleConst("pathfinding_state_Wandering choose_destination nearby distance", out success);
+					if(!success) max_dist = 7.5d;
+				
+					mapXTgt = inPop.getMapLocationX() + ((getAPI().calcRandIntUnder(2) == 1 ? -1 : 1) * (getAPI().calcRand() * max_dist));
+					mapYTgt = inPop.getMapLocationY() + ((getAPI().calcRandIntUnder(2) == 1 ? -1 : 1) * (getAPI().calcRand() * max_dist));
+					
+					if(mapXTgt &lt; 0.0d)
+						mapXTgt = 0.0d;
+					if(mapYTgt &lt; 0.0d)
+						mapYTgt = 0.0d;
+					if(mapXTgt &gt; inLocalMap.getMapDimensions().Item1)
+						mapXTgt = inLocalMap.getMapDimensions().Item1;
+					if(mapYTgt &gt; inLocalMap.getMapDimensions().Item2)
+						mapYTgt = inLocalMap.getMapDimensions().Item2;
+				}
+				else //if(targetRandom)
+				{
+					mapXTgt = inLocalMap.getMapDimensions().Item1 * getAPI().calcRand();
+					mapYTgt = inLocalMap.getMapDimensions().Item2 * getAPI().calcRand();
+					
+					if(mapXTgt &lt; 0.0d)
+						mapXTgt = 0.0d;
+					if(mapYTgt &lt; 0.0d)
+						mapYTgt = 0.0d;
+					if(mapXTgt &gt; inLocalMap.getMapDimensions().Item1)
+						mapXTgt = inLocalMap.getMapDimensions().Item1;
+					if(mapYTgt &gt; inLocalMap.getMapDimensions().Item2)
+						mapYTgt = inLocalMap.getMapDimensions().Item2;
+				}
+				
+				toReturn.Add(buildingTarget);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(mapXTgt);
+				toReturn.Add(mapYTgt);
+				
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_Wandering" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+
+				addDebugMessage(inScriptInstance, "default state_Wandering script is finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//if we are somehow in battle unexpectedly, transition this pop based on its loyalty and mustered status:
+				if(inBattleOngoing)
+				{
+					string newState = "";
+					if(inPop.getCommunity() == getAPI().getLocalCommunity())
+					{
+						if(inPop.isMustered())
+						{
+							newState = "Idle";
+						}
+						else
+						{
+							newState = "UnmusteredInBattle";
+						}
+					}
+					else if(getAPI().getHostileCommunities().Contains(inPop.getCommunity()))
+					{
+						newState = "EnemyIdleEval";
+					}
+					else
+					{
+						newState = "UnmusteredInBattle";
+					}
+					//construct toReturn as necessary:
+					toReturn.Add(newState);
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//for Wandering, it doesn't really matter if we've reached the destination or not, or if the destination is still valid or not; we're just moving for aesthetic reasons anyway
+				//so randomly choose between Idle and Wandering again:
+				double wander_again_chance = customConsts.getDoubleConst("pathfinding_state_Wandering wander_again chance", out bool success);
+				if(!success) wander_again_chance = 0.5d;
+				
+				if(getAPI().calcRand() &lt; wander_again_chance)
+				{
+					if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Wandering", inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+					{
+						if((bool)validTgt[0])
+						{
+							addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should stay in the Wandering state due to: " + " pop was Wandering and decided to keep Wandering");
+							toReturn.Add("Wandering");
+							toReturn.Add((IFBuilding)validTgt[1]);
+							toReturn.Add((IFPop)validTgt[2]);
+							toReturn.Add((bool)validTgt[3]);
+							toReturn.Add((double)validTgt[4]);
+							toReturn.Add((double)validTgt[5]);
+							return toReturn;
+						}
+					}
+				}
+				else //Idle
+				{
+					//yeah it's just the Idle state but call the appropriate custom scripts anyway:
+					if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Idle", inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+					{
+						//this should always be true because we should always be able to transition to the Idle state
+						if((bool)validTgt[0])
+						{
+							addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the Idle state due to: " + " pop was Wandering and decided to Idle now");
+							toReturn.Add("Idle");
+							toReturn.Add((IFBuilding)validTgt[1]);
+							toReturn.Add((IFPop)validTgt[2]);
+							toReturn.Add((bool)validTgt[3]);
+							toReturn.Add((double)validTgt[4]);
+							toReturn.Add((double)validTgt[5]);
+							return toReturn;
+						}
+					}
+				}
+				
+				//we failed to call a script correctly somehow.  Transition to Idle instead:
+				addDebugMessage(inScriptInstance, "custom scripts indicated pop could not stay in the Wandering state so pop is transitioning directly to Idle state");
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_Wandering</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

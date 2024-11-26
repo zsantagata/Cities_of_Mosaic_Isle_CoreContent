@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script delegation_healthchange</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which handles part of day-over-day regular maintenance for delegations or a siege camp -->
+  <!-- this script handles health changes as a result of consuming resources/water -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation
+	
+	There are no outputs -->
+	<i1><a>delegation_healthChange</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation)   }
+	  }, out _))
+	{
+		throw new ArgumentException("delegation_healthChange custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	IFResourcePool resourcePool = inDelegation.getResourcePool();
+	double waterRatio = inDelegation.getBiomeOfCurrentLocation().getWaterAvailability();
+	double hstasisMinimum = customConsts.getDoubleConst("biome " + inDelegation.getBiomeOfCurrentLocation().getInternalName() + " hstasis min proportion", out bool success);
+	if(!success) hstasisMinimum = 0.0d;
+	
+	foreach(IFPop pop in inDelegation.getPopsInDelegation())
+	{
+		//all these calculations are common to this and delegation-related scripts, so each is a custom script:
+		if(customScripts.runCustomScriptCheckTypes("popConsumption", new List&lt;object&gt;() { pop, resourcePool },
+			out List&lt;object&gt; consumptionOutputs, true,
+			typeof(bool), typeof(double), typeof(double), typeof(double), typeof(double),
+			typeof(Int64), typeof(double), typeof(Int64), typeof(double), typeof(Int64), typeof(double)
+			))
+		{
+			bool roughing_it = (bool)consumptionOutputs[0]; //should always be false
+			double prot_consumed = (double)consumptionOutputs[1];
+			double prot_mult = (double)consumptionOutputs[2];
+			double mcal_consumed = (double)consumptionOutputs[3];
+			double mcal_mult = (double)consumptionOutputs[4];
+			Int64 hstasis_moid = (Int64)consumptionOutputs[5];
+			double hstasis_item_qual = (double)consumptionOutputs[6];
+			Int64 woundcure_moid = (Int64)consumptionOutputs[7];
+			double woundcure_item_qual = (double)consumptionOutputs[8];
+			Int64 illcure_moid = (Int64)consumptionOutputs[9];
+			double illcure_item_qual = (double)consumptionOutputs[10];
+		
+			IFResource hstasis_res = (IFResource)getAPI().getMOFromMOID("resources", hstasis_moid);
+			IFResource woundcure_res = (IFResource)getAPI().getMOFromMOID("resources", woundcure_moid);
+			IFResource illcure_res = (IFResource)getAPI().getMOFromMOID("resources", illcure_moid);
+		
+			customScripts.runCustomScript("popHealth_protein", new List&lt;object&gt;() { pop, prot_consumed, prot_mult, roughing_it }, out _);
+		  
+			customScripts.runCustomScript("popHealth_MCal", new List&lt;object&gt;() { pop, mcal_consumed, mcal_mult, roughing_it }, out _);
+		  
+			customScripts.runCustomScript("popHealth_water", new List&lt;object&gt;() { pop, waterRatio, false, roughing_it }, out _); //TODO: if there is a healthy pop in the delegation to help a wounded/ill pop, the wounded/ill pop should get some water
+		  
+			customScripts.runCustomScript("popHealth_HStasis", new List&lt;object&gt;() { pop, hstasis_res, resourcePool, hstasisMinimum, hstasis_item_qual, roughing_it }, out _);
+	  
+			customScripts.runCustomScript("popHealth_checkWoundCureItemUse", new List&lt;object&gt;() { pop, woundcure_res, resourcePool, woundcure_item_qual, roughing_it }, out _);
+	  
+			customScripts.runCustomScript("popHealth_checkSickCureItemUse", new List&lt;object&gt;() { pop, illcure_res, resourcePool, illcure_item_qual, roughing_it }, out _);
+			
+			customScripts.runCustomScript("popHealth_overall", new List&lt;object&gt;() { pop }, out _);
+		}
+		else //if the consumption script throws an error, don't bother continuing with the next pop
+		{
+			break;
+		}
+	}
+	
+	return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

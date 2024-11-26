@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of the script for a single pop to consume resources from a resource pool -->
+  <gamescripts name="default">
+	<!-- pops consume resources day by day for their health.  This script is called on all non-dead, not-in-delegation pops of the player community. -->
+  
+	<!-- pop consumption works like this: -->
+	<!-- 1) if a pop is roughing it, it consumes nothing from the resource pool -->
+	<!-- 2) otherwise, a list of consumable resources accessible by the pop is assembled. -->
+	<!-- 3) the pop gets together a list of high-protein food to eat (even portions from all available) until its protein need is met or there is no more high-protein food to consume, whichever comes first -->
+	<!-- 4) after 3), the pop gets together a list of additional food to eat (even portions from all available, whatever its protein ratio) until its MCal need is met or there is no more food to consume, whichever comes first -->
+	<!-- 5) the total sum of protein & MCal is calculated by simple addition (and weighting in the case of protein), while the total quality of each are calculated using calcOutputFromInputs.  The quality multiplier and total sums are fed into PopHealth scripts. -->
+	<!-- 6) the highest quality HStasis, Wound Recovery, and Illness Recovery items accessible (assuming they have greater than 1.0 quantity) are fed into the PopHealth scripts (min quality is used if none are available) -->
+	<!-- 7) resources are decremented from the resourcepool automatically, outside of scripts. -->
+	<!-- 8) when each component of a pop's health has been calculated, some overlap and some boundary conditions are calculated, and total health calculated -->
+	
+	<!-- pops consuming resources each day has two inputs: IFPop inPop, IFResourcePool inResPool.  There are eleven outputs: bool outRoughingIt, double outProteinConsumed, double outProteinMult, double outMCalConsumed, double outMCalMult, Int64 outHStasisMOID, double outQualOfHStasisItem, Int64 outWoundCureMOID, double outQualOfWoundCureItem, Int64 outIllCureMOID, double outQualOfIllCureItem -->
+	<!-- This script must determine what resources the pop consumes, and actually consume (FOOD ONLY) resources by subtracting them from the resourcePool (other resources being consumed has a gate in other PopHealth* scripts, so don't jump the gun here; those scripts return a bool to indicate something should be consumed, and C# code takes care of it).  This script must also determine the inputs for the other popHealth* scripts.  -->
+	<mPopConsumeDaily>
+		//input count check:
+		if (inArguments.Length &lt; 2)
+		{
+			return null;
+		}
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var customScripts = getAPI().getCustomScripts();
+		IFPop inPop = (IFPop)inArguments[0];
+		IFResourcePool inResPool = (IFResourcePool)inArguments[1];
+			
+		//the calculation is common to this and delegation-related scripts, so it is a custom script:
+		if(customScripts.runCustomScriptCheckTypes("popConsumption", new List&lt;object&gt;() { inPop, inResPool },
+			out List&lt;object&gt; consumptionOutputs, true,
+			typeof(bool), typeof(double), typeof(double), typeof(double), typeof(double),
+			typeof(Int64), typeof(double), typeof(Int64), typeof(double), typeof(Int64), typeof(double)
+			))
+		{
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add((bool)consumptionOutputs[0]);
+			toReturn.Add((double)consumptionOutputs[1]);
+			toReturn.Add((double)consumptionOutputs[2]);
+			toReturn.Add((double)consumptionOutputs[3]);
+			toReturn.Add((double)consumptionOutputs[4]);
+			toReturn.Add((Int64)consumptionOutputs[5]);
+			toReturn.Add((double)consumptionOutputs[6]);
+			toReturn.Add((Int64)consumptionOutputs[7]);
+			toReturn.Add((double)consumptionOutputs[8]);
+			toReturn.Add((Int64)consumptionOutputs[9]);
+			toReturn.Add((double)consumptionOutputs[10]);
+			
+			return toReturn;
+		}
+		
+		//something went wrong with the custom script, nothing to do but allow an error:
+		addDebugMessage(inScriptInstance, "custom script popConsumption either threw, or did not return expected output types");
+		return null;
+	</mPopConsumeDaily>
+  
+  </gamescripts>
+  
+</core_data>

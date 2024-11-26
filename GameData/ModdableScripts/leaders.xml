@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to scripts in this file: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	  <!-- leaders will step down if: -->
+	  <!-- the leader is no longer a member of the local community -->
+	  <!-- the race leader is not of the race being led -->
+	  <!-- the industry leader is less skilled than the average of the community, and the leader skill is not above a very high threshold -->
+	  <i1><a>leaderstepdown industry skill_high_threshold ratio</a> <b>double</b> <c>0.925</c></i1>
+
+	</mCustomVariableList>
+  </customconsts>
+  
+  <gamescripts name="default">
+	<!-- choose new city leader for local community has no input arguments.  There is one output: IFPop outNewCityLeader. -->
+	<!-- this script is called on the first non-military frame there is no City Leader.  If this script returns null, it will not be called again this day. -->
+    <mChooseNewCityLeaderLocalCommunity>
+	//no inputs
+	
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+	IFLeaderCollection leaders = localCommunity.getLeaderCollection();
+	
+	List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	
+	//scenarios (or specific events) may make it so that a specific pop should be the City Leader.
+	//If that is the case, and that pop is alive and loyal to the community, make it the City Leader.
+	Int64 uidOfForcedCityLeader = variableHandler.getInt("forced City Leader popUID", out bool success);
+	if(success)
+	{
+		IFPop pop = (IFPop)getAPI().getSO("pops", (UInt64)uidOfForcedCityLeader);
+		if(pop != null)
+		{
+			if(!pop.isDead() &amp;&amp; (pop.getCommunity() == localCommunity))
+			{
+				toReturn.Add(pop);
+			}
+		}
+	}
+	
+	if(toReturn.Count == 0)
+	{
+		//since it is not the case that a specific pop should be the City Leader, the default calculation is that the City Leader is the Race Leader of the most populous race
+		//however, if that Race Leader does not exist, that race has lost its chance to advance its leader to City Leader: go down the line by count of pops
+		List&lt;Tuple&lt;IFRace, int&gt;&gt; orderedRaceList = new List&lt;Tuple&lt;IFRace, int&gt;&gt;();
+		foreach(var kvpair in localCommunity.getLoyalPopsByRace(true, false))
+		{
+			int count = kvpair.Value.Count;
+			IFRace race = kvpair.Key;
+			bool inserted = false;
+			for(int i = 0; i &lt; orderedRaceList.Count; i++)
+			{
+				if(orderedRaceList[i].Item2 &lt; count)
+				{
+					orderedRaceList.Insert(i, Tuple.Create(race, count));
+					inserted = true;
+					break;
+				}
+			}
+			if(!inserted)
+			{
+				orderedRaceList.Add(Tuple.Create(race, count));
+			}
+		}
+		for(int i = 0; i &lt; orderedRaceList.Count; i++)
+		{
+			IFRace race = orderedRaceList[i].Item1;
+			//the second element of the tuple is not used here; it is only used for ordering
+			if(leaders.hasRaceLeader(race))
+			{
+				IFPop pop = leaders.getRaceLeader(race);
+				//the new leader must be not dead, and should be loyal:
+				if(!pop.isDead() &amp;&amp; (pop.getCommunity() == localCommunity))
+				{
+					toReturn.Add(pop);
+					break;
+				}
+			}
+		}
+	}
+	
+	if(toReturn.Count == 0)
+	{
+		//if no Race Leader exists, it's probably because pop count in the community is very low.  Choose a random pop to be City Leader:
+		List&lt;IFPop&gt; allPops = new List&lt;IFPop&gt;(localCommunity.getPopsLoyalToCommunity());
+		while(allPops.Count != 0)
+		{
+			int index = (int)getAPI().calcRandIntUnder(allPops.Count);
+			IFPop pop = allPops[index];
+			if(!pop.isDead())
+			{
+				toReturn.Add(pop);
+				break;
+			}
+			//else
+			allPops.RemoveAt(index);
+		}
+	}
+	
+	if(toReturn.Count == 0)
+	{
+		//if we have reached here, there is no pop in the community who could be a valid City Leader
+		toReturn.Add(null);
+	}
+	
+	return toReturn;
+    </mChooseNewCityLeaderLocalCommunity>
+	
+	<!-- leader stepdown has no input arguments.  There is no output. -->
+	<!-- this script is called once during midnight processing. -->
+    <mLeaderStepdown>
+	//no inputs
+	
+	var consts = getAPI().getConsts();
+	var customScripts = getAPI().getCustomScripts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+	IFLeaderCollection leaders = localCommunity.getLeaderCollection();
+	IFIndustrySkills skills = localCommunity.getDomesticComponent().getIndustrySkills();
+	
+	double highThresholdRatio = customConsts.getDoubleConst("leaderstepdown industry skill_high_threshold ratio", out bool success);
+	if(!success) highThresholdRatio = 0.925d;
+	double highThreshold = highThresholdRatio * (consts.getWorkerSkillMax() - consts.getWorkerSkillMin()) + consts.getWorkerSkillMin();
+	
+	//store "step-downs" in this dict so that checking for the variables is easier:
+	//0 = industry leader, 1 = race leader, 2 = city leader
+	Dictionary&lt;int, List&lt;IFPop&gt;&gt; leadersToStepDown = new Dictionary&lt;int, List&lt;IFPop&gt;&gt;();
+	leadersToStepDown.Add(0, new List&lt;IFPop&gt;());
+	leadersToStepDown.Add(1, new List&lt;IFPop&gt;());
+	leadersToStepDown.Add(2, new List&lt;IFPop&gt;());
+	
+	for (int moid = 1; moid &lt; getAPI().getTotalCountOfMO("industries"); moid++)
+	{
+		IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", moid);
+		if(industry == null)
+			continue;
+		if (leaders.hasIndustryLeader(industry) &amp;&amp; (leaders.getIndustryLeader(industry).getCommunity() != localCommunity)) //non-loyal leaders will always step down
+		{
+			leadersToStepDown[0].Add(leaders.getIndustryLeader(industry));
+		}
+		if (skills.getLeaderSkill(industry) &gt;= highThreshold) //very skilled leaders will simply not step down, even if the community is also skilled
+			continue;
+		if ((skills.getLeaderSkill(industry) &lt; skills.getAverageSkill(industry)) &amp;&amp; leaders.hasIndustryLeader(industry)) //leaders less skilled than the community will step down
+		{
+			leadersToStepDown[0].Add(leaders.getIndustryLeader(industry));
+		}
+	}
+	
+	for (int moid = 1; moid &lt; getAPI().getTotalCountOfMO("races"); moid++)
+	{
+		IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+		if(race != null)
+		{
+			if (leaders.hasRaceLeader(race) &amp;&amp; (leaders.getRaceLeader(race).getCommunity() != localCommunity)) //non-loyal leaders will always step down
+			{
+				leadersToStepDown[1].Add(leaders.getRaceLeader(race));
+			}
+			else if(leaders.hasRaceLeader(race) &amp;&amp; (leaders.getRaceLeader(race).getRace() != race)) //if the leader is not of the race it should not be the race leader
+			{
+				leadersToStepDown[1].Add(leaders.getRaceLeader(race));
+			}
+		}
+	}
+	
+	if (leaders.hasCityLeader() &amp;&amp; (leaders.getCityLeader().getCommunity() != localCommunity)) //non-loyal leaders will always step down
+	{
+		leadersToStepDown[2].Add(leaders.getCityLeader());
+	}
+	
+	foreach(var kvpair in leadersToStepDown)
+	{
+		bool industryLeader = (kvpair.Key == 0);
+		bool raceLeader = (kvpair.Key == 1);
+		bool cityLeader = (kvpair.Key == 2);
+		foreach(IFPop pop in kvpair.Value)
+		{
+			List&lt;string&gt; connectedVariableNamesToCheckForExistence = new List&lt;string&gt;();
+		
+			//check general variables:
+			//citywide no-leader-stepdown:
+			connectedVariableNamesToCheckForExistence.Add("localCommunity_noAnyLeaderStepdown_all");
+			
+			//check this-kind-of-leader-specific variables:
+			//industry this-industry-leader-no-stepdown:
+			if(industryLeader)
+				connectedVariableNamesToCheckForExistence.Add("localCommunity_noIndustryLeaderStepdown_all");
+			//race this-race-leader-no-stepdown:
+			if(raceLeader)
+				connectedVariableNamesToCheckForExistence.Add("localCommunity_noRaceLeaderStepdown_all");
+			//city leader no-stepdown:
+			if(cityLeader)
+				connectedVariableNamesToCheckForExistence.Add("localCommunity_noCityLeaderStepdown_all");
+			
+			//check this-pop-specific variables:
+			//anything this-pop-no-stepdown:
+			connectedVariableNamesToCheckForExistence.Add("localCommunity_noAnyLeaderStepdown_pop" + pop.getUID());
+			//industry leader this-pop-no-stepdown:
+			if(industryLeader)
+				connectedVariableNamesToCheckForExistence.Add("localCommunity_noIndustryLeaderStepdown_pop" + pop.getUID());
+			//race leader this-pop-no-stepdown:
+			if(raceLeader)
+				connectedVariableNamesToCheckForExistence.Add("localCommunity_noRaceLeaderStepdown_pop" + pop.getUID());
+			//city leader this-pop-no-stepdown:
+			if(cityLeader)
+				connectedVariableNamesToCheckForExistence.Add("localCommunity_noCityLeaderStepdown_pop" + pop.getUID());
+			
+			bool stepdown = true;
+			foreach(string name in connectedVariableNamesToCheckForExistence)
+			{
+				if(variableHandler.connectedVariableExists(name))
+				{
+					stepdown = false;
+					break;
+				}
+			}
+			
+			if(stepdown)
+			{
+				//send the hardcoded alert (tbh it's not hardcoded any more since this script was taken out of C# code and put here but w/e):
+				customScripts.runCustomScript("hardcodedAlert_leader_stepdown", new List&lt;object&gt;() { pop }, out _);
+				if(industryLeader)
+				{
+					leaders.setIndustryLeader(null, leaders.getIndustryLedByPop(pop));
+				}
+				else if(raceLeader)
+				{
+					leaders.setRaceLeader(null, pop.getRace());
+				}
+				else if(cityLeader)
+				{
+					leaders.setCityLeader(null);
+				}
+			}
+		}
+	}
+	
+	return null;
+	</mLeaderStepdown>
+  
+  </gamescripts>
+  
+</core_data>

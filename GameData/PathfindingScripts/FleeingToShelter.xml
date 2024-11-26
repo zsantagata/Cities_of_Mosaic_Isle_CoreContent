@@ -1,0 +1,311 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the FleeingToShelter state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: A pop is fleeing to shelter if it is a loyal/neutral pop, unwounded, does not have a mustering point and is unmustered, and has a home or workplace on the map it wants to hide in. -->
+		<i1><a>FleeingToShelter</a>
+		<b>1.5</b><c>1.51</c></i1>
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to FleeingToShelter: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_FleeingToShelter -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>pathfinding_state_FleeingToShelter jump_to_home_or_workplace radius</a> <b>double</b> <c>1.0</c></i1> <!-- if a pop is closer than this to its home or workplace when pathfinding occurs, it will hide there -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_fleeingtoshelter_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_fleeingtoshelter_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_fleeingtoshelter</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to FleeingToShelter: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_FleeingToShelter -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_FleeingToShelter_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_FleeingToShelter_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_FleeingToShelter_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//conditions:
+				//A) the pop is neutral or loyal and unmustered, and it is during battle
+				//B) the pop has a home or workplace on the local map that is accessible
+				bool neutral = (inPop.getCommunity() != getAPI().getLocalCommunity()) &amp;&amp; !getAPI().isHostileCommunity(inPop.getCommunity());
+				bool unmustered = (inPop.getCommunity() == getAPI().getLocalCommunity());
+				bool first_consideration = (neutral || unmustered) &amp;&amp; inBattleOngoing &amp;&amp; !inPop.hasMusteringPoint();
+				bool second_consideration = inPop.hasHomeBuilding() &amp;&amp; getAPI().isBuildingAccessibleByPop(inPop, inPop.getHomeBuilding());
+				if(!second_consideration) second_consideration = inPop.hasWorkplaceBuilding() &amp;&amp; getAPI().isBuildingAccessibleByPop(inPop, inPop.getWorkplaceBuilding());
+				
+				toReturn.Add(first_consideration &amp;&amp; second_consideration);
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_FleeingToShelter_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_FleeingToShelter_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_FleeingToShelter_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//if the path to a building makes it closer to another building, the pop could run back and forth.  Store the decision of target and recall it
+				if(inPop.getPathfindingState() == "FleeingToShelter")
+				{
+					if(customScripts.runCustomScriptCheckTypes("getUIDOfExistingPathfindingTarget", new List&lt;object&gt;() {inPop}, out List&lt;object&gt; validTgt, false, typeof(Int64)))
+					{
+						Int64 tgtUID = (Int64)validTgt[0];
+						if(tgtUID != -1)
+						{
+							IFBuilding tgtBldingInner = (IFBuilding)getAPI().getSO("buildings", (UInt64)tgtUID);
+							if(tgtBldingInner != null)
+							{
+								if(!tgtBldingInner.isBuildingDestroyed())
+								{
+									//keep target building and bypass everything else:
+									toReturn.Add(tgtBldingInner);
+									toReturn.Add(null);
+									toReturn.Add(false);
+									toReturn.Add(-1.0d);
+									toReturn.Add(-1.0d);
+									return toReturn;
+								}
+							}
+						}
+					}
+				}
+				
+				//determine if home or workplace is closer:
+				double distHome = getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, inPop.getHomeBuilding(), inLocalMap);
+				double distWorkplace = getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, inPop.getWorkplaceBuilding(), inLocalMap);
+				if(!getAPI().isBuildingAccessibleByPop(inPop, inPop.getHomeBuilding()))
+				{
+					distHome = double.MaxValue;
+				}
+				if(!getAPI().isBuildingAccessibleByPop(inPop, inPop.getWorkplaceBuilding()))
+				{
+					distWorkplace = double.MaxValue;
+				}
+				
+				//prefer home building:
+				IFBuilding tgtBlding = distHome &lt;= distWorkplace ? inPop.getHomeBuilding() : inPop.getWorkplaceBuilding();
+				//store target:
+				customScripts.runCustomScript("setUIDOfExistingPathfindingTarget", new List&lt;object&gt;() {inPop, (tgtBlding == null ? -1L : (Int64)tgtBlding.getUID())}, out List&lt;object&gt; _);
+				
+				toReturn.Add(tgtBlding);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_FleeingToShelter" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+
+				addDebugMessage(inScriptInstance, "default state_FleeingToShelter script is finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//first and foremost: if the pop has a workplace or home nearby, hide there:
+				double hideInBuildingDistance = customConsts.getDoubleConst("pathfinding_state_FleeingToShelter jump_to_home_or_workplace radius", out bool success);
+				if(!success) hideInBuildingDistance = 1.0d;
+				if(inPop.hasHomeBuilding() &amp;&amp; (hideInBuildingDistance &gt; getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, inPop.getHomeBuilding(), inLocalMap)))
+				{
+					//check if the home is hideable:
+					if(customScripts.runCustomScriptCheckTypes("buildingDamageCanHideHere", new List&lt;object&gt;() {inPop.getHomeBuilding()},
+						out List&lt;object&gt; canHide, false, typeof(bool)))
+					{
+						if((bool)canHide[0])
+						{
+							inPop.removePopFromMap(IFPop.ePopLocation.cInHome);
+							addDebugMessage(inScriptInstance, "pop is sheltering in home; removing from map (pathfinding scripts will return information for Idle state)");
+							toReturn.Add("Idle");
+							toReturn.Add(null);
+							toReturn.Add(null);
+							toReturn.Add(false);
+							toReturn.Add(-1.0d);
+							toReturn.Add(-1.0d);
+							return toReturn;
+						}
+					}
+				}
+				if(inPop.hasWorkplaceBuilding() &amp;&amp; (hideInBuildingDistance &gt; getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, inPop.getWorkplaceBuilding(), inLocalMap)))
+				{
+					//check if the workplace is hideable:
+					if(customScripts.runCustomScriptCheckTypes("buildingDamageCanHideHere", new List&lt;object&gt;() {inPop.getWorkplaceBuilding()},
+						out List&lt;object&gt; canHide, false, typeof(bool)))
+					{
+						if((bool)canHide[0])
+						{
+							inPop.removePopFromMap(IFPop.ePopLocation.cInWorkplace);
+							addDebugMessage(inScriptInstance, "pop is sheltering in workplace; removing from map (pathfinding scripts will return information for Idle state)");
+							toReturn.Add("Idle");
+							toReturn.Add(null);
+							toReturn.Add(null);
+							toReturn.Add(false);
+							toReturn.Add(-1.0d);
+							toReturn.Add(-1.0d);
+							return toReturn;
+						}
+					}
+				}
+				
+				//if there is an enemy nearby, flee from that enemy
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"FleeingHostile", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt3, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt3[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop should transition to the FleeingHostile state due to: " + " there is an enemy nearby");
+						toReturn.Add("FleeingHostile");
+						toReturn.Add((IFBuilding)validTgt3[1]);
+						toReturn.Add((IFPop)validTgt3[2]);
+						toReturn.Add((bool)validTgt3[3]);
+						toReturn.Add((double)validTgt3[4]);
+						toReturn.Add((double)validTgt3[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the FleeingHostile state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if the home/workplace is still valid, target it:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"FleeingToShelter", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop should stay in the FleeingToShelter state due to: " + " the target is still valid");
+						toReturn.Add("FleeingToShelter");
+						toReturn.Add((IFBuilding)validTgt[1]);
+						toReturn.Add((IFPop)validTgt[2]);
+						toReturn.Add((bool)validTgt[3]);
+						toReturn.Add((double)validTgt[4]);
+						toReturn.Add((double)validTgt[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not stay in the FleeingToShelter state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//we're here because the pop can no longer shelter in its home or workplace but there is no enemy nearby; transition to UnmusteredInBattle
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"UnmusteredInBattle", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt2, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt2[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the UnmusteredInBattle state due to: " + " pop no longer sees hostiles nearby");
+						toReturn.Add("UnmusteredInBattle");
+						toReturn.Add((IFBuilding)validTgt2[1]);
+						toReturn.Add((IFPop)validTgt2[2]);
+						toReturn.Add((bool)validTgt2[3]);
+						toReturn.Add((double)validTgt2[4]);
+						toReturn.Add((double)validTgt2[5]);
+						return toReturn;
+					}
+				}
+				//we failed to call a script correctly somehow.  Transition to Idle instead:
+				addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the UnmusteredInBattle state so pop is transitioning directly to Idle state");
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_FleeingToShelter</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

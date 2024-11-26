@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igResource name="remove_me">
+  <!-- default is fine because it will be removed later, but anything could work; nothing prevents this igResource from being removed -->
+  <!-- though if associated custom consts exist those will need to be removed separately -->
+  </igResource>
+  
+  <igResource name="remove_me" kind="remove">
+  <!-- nothing here matters -->
+  </igResource>
+  
+  <!-- this demonstrates removing from a custom list -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+		
+	    <i1><a>example_list</a> <b>list</b> <c>[REMOVE]world,how,QWERTYUIOP</c></i1> <!-- QWERTYUIOP is not present at this point so there's nothing to remove; if added later this removal won't be remembered so get the ordering correct -->
+		
+		</mCustomVariableList>
+	</customconsts>
+	
+</core_data>

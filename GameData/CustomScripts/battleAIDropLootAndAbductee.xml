@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script battleaidroplootandabductee</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which will drop an enemy's loot or abducted pop, because they do not want to continue hauling them or are unable to do so -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	<!-- drop loot and abductee has one input argument: IFPop inPop.  There is no output. -->
+	<!-- this script is called during battle, when a pop no longer wants to, or is unable to, haul something away from the battlefield. -->
+	<i1><a>battleAIDropLootAndAbductee</a>
+	<b>
+		//input count and type check:
+		var customScripts = getAPI().getCustomScripts();
+		if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+			{typeof(IFPop)}
+			}, out _))
+		{
+			throw new ArgumentException("battleAIDropLootAndAbductee custom script received invalid arguments");
+			return null;
+		}
+					
+		IFPop inPop = (IFPop)inArguments[0];
+		if(inPop == null)
+		{
+			throw new ArgumentException("battleAIDropLootAndAbductee custom script received invalid argument: inPop must not be null");
+			return null;
+		}
+		  
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		  
+		//if a pop is abducting another, drop the abducted pop here:
+		Int64 uidOfAbductingVictim = variableHandler.getInt("battleAI_UIDOfPopAbductedBy_pop" + inPop.getUID(), out bool success);
+		if(success)
+		{
+			variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_UIDOfPopAbductedBy_pop" + inPop.getUID(), Int64.MinValue);
+			IFPop pop = (IFPop)getAPI().getSO("pops", uidOfAbductingVictim);
+			if(pop != null)
+			{
+				addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " is dropping abducted pop " + pop.getDebugName() + " on the ground at " + inPop.getMapLocationX() + "," + inPop.getMapLocationY());
+				variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_UIDOfAbductorOf_pop" + uidOfAbductingVictim, Int64.MinValue);
+				pop.setMapLocation(inPop.getMapLocationX(), inPop.getMapLocationY());
+				pop.forcePathfindingState(pop.isDead() ? "Dead" : (pop.isWounded() ? "Wounded" : "Idle"), true);
+			}
+		}
+		//if a pop has stolen goods or otherwise has those variables stored, clear them here:
+		IFConnectedVariable listPlunderedResources = variableHandler.getConnectedVariable("battleAI_listOfPlunderedResourceCounts_pop" + inPop.getUID());
+		if(listPlunderedResources != null)
+		{
+			IFResourcePool resPool = getAPI().getLocalCommunity().getResourcePool();
+			addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " is returning stolen resources to the community resource pool");
+			foreach(IFConnectedVariable cv in listPlunderedResources.getLowers())
+			{
+				string name = cv.getInternalName(); //the name of the resource variables is structured as "battleAI_plundered" + resource.getInternalName() + "Amount_pop" + pop.getUID(), but remember (when manipulating exact strings) that most things in COMI are lowercase only
+				name = name.Replace("battleai_plundered", "");
+				if(name.IndexOf("amount") != -1) //in the event some wrongly-named CV has been added to this list, prevent an exception from being thrown (the res will be null anyway)
+				{
+					name = name.Substring(0, name.IndexOf("amount"));
+				}
+				IFResource res = (IFResource)getAPI().getMOFromInternalName("resources", name);
+				double amount = cv.getVariableAsDouble();
+				if(res != null)
+				{
+					resPool.addResourcesOfQuality(res, amount, resPool.getResourceQuality(res));
+				}
+			}
+			variableHandler.clearConnectedVariable(listPlunderedResources); //the lowers shouldn't be connected to anything else so we don't need to iterate over them and call cleanUpVariable
+		}
+	  
+		return null;
+	</b>
+	</i1>
+	
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

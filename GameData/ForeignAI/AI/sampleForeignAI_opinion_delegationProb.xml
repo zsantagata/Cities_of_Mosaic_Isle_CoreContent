@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script sampleforeignai_opinion_delegationprob</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which handles probability multiplier for a community to send a delegation to the player given that the community holds a specific opinion -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunity
+	-->
+	
+	<!-- output: (each of these will be 0.0d or greater; they are multiplied into the common probabilities to determine daily chance to send a delegation)
+	double outWarProbabilityMod,
+	double outRaidingProbabilityMod,
+	double outDiplomacyProbabilityMod,
+	double outTradeProbabilityMod,
+	double outEmigrationProbabilityMod
+	-->
+	<i1><a>sampleForeignAI_opinion_delegationProb</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("sampleforeignai_opinion_delegationprob custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		if(inCommunity == null)
+		{
+		  throw new ArgumentException("sampleforeignai_opinion_delegationprob custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		string opinion = inCommunity.getOpinion();
+		//opinion is used in one of these two sentences:
+		//"They feel ____ towards us"
+		//"They see us as ____"
+		//strip that here:
+		//TODO a better internal expression of opinion (make it a dictionary with string of quality (such as "aggression") to value between 0 and 100):
+		opinion = opinion.Replace("They feel ","").Replace(" towards us", "");
+		opinion = opinion.Replace("They see us as ", "");
+		opinion = opinion.Replace(".", "");
+		
+		//note to self (NTS): unless it matches the opinion to send overall fewer/more delegations, the probabilities here should sum up to around 5.0d.  Other code takes care of frequency of sending delegations; this is balance
+		if(opinion.ToLower() == "vermin") //fewer due to lack of notice
+		{
+			return new List&lt;object&gt;() { 2.25d, 0.15d, 0.0d, 0.0d, 0.1d };
+		}
+		else if(opinion.ToLower() == "beneath notice") //fewer due to lack of notice
+		{
+			return new List&lt;object&gt;() { 1.0d, 1.0d, 0.05d, 0.05d, 0.4d };
+		}
+		else if(opinion.ToLower() == "charitable")
+		{
+			return new List&lt;object&gt;() { 0.0d, 0.0d, 2.1d, 2.1d, 0.8d };
+		}
+		else if(opinion.ToLower() == "troublemakers")
+		{
+			return new List&lt;object&gt;() { 0.75d, 0.75d, 0.5d, 1.0d, 2.0d };
+		}
+		else if(opinion.ToLower() == "condescending")
+		{
+			return new List&lt;object&gt;() { 0.25d, 0.0d, 2.5d, 1.25d, 1.0d };
+		}
+		else if(opinion.ToLower() == "manageable threat")
+		{
+			return new List&lt;object&gt;() { 1.5d, 1.5d, 0.25d, 0.0d, 1.75d };
+		}
+		else if(opinion.ToLower() == "deadly foe")
+		{
+			return new List&lt;object&gt;() { 0.5d, 2.5d, 0.0d, 0.0d, 2.0d };
+		}
+		else if(opinion.ToLower() == "loose cannon") //fewer due to fear
+		{
+			return new List&lt;object&gt;() { 0.05d, 0.25d, 0.55d, 0.25d, 0.4d };
+		}
+		else if(opinion.ToLower() == "appeasable") //fewer due to fear
+		{
+			return new List&lt;object&gt;() { 0.0d, 0.0d, 1.0d, 1.0d, 0.75d };
+		}
+		else if(opinion.ToLower() == "exploitable")
+		{
+			return new List&lt;object&gt;() { 1.0d, 1.0d, 1.0d, 1.0d, 1.0d };
+		}
+		else if(opinion.ToLower() == "patriarchal")
+		{
+			return new List&lt;object&gt;() { 1.5d, 0.0d, 1.0d, 1.0d, 1.5d };
+		}
+		else if(opinion.ToLower() == "competitor") //more due to perceived equality
+		{
+			return new List&lt;object&gt;() { 0.35d, 0.65d, 0.5d, 1.0d, 3.5d };
+		}
+		else if(opinion.ToLower() == "ally") //more due to perceived equality
+		{
+			return new List&lt;object&gt;() { 0.0d, 0.0d, 2.0d, 2.0d, 2.0d };
+		}
+		else if(opinion.ToLower() == "foe") //more due to perceived equality
+		{
+			return new List&lt;object&gt;() { 2.0d, 2.0d, 0.0d, 0.0d, 2.0d };
+		}
+		else if(opinion.ToLower() == "respectful")
+		{
+			return new List&lt;object&gt;() { 0.0d, 0.0d, 1.0d, 1.5d, 2.5d };
+		}
+		else if(opinion.ToLower() == "opportunistic")
+		{
+			return new List&lt;object&gt;() { 0.0d, 0.5d, 1.5d, 1.0d, 2.0d };
+		}
+		else if(opinion.ToLower() == "submissive") //slightly fewer due to fear
+		{
+			return new List&lt;object&gt;() { 0.0d, 0.0d, 1.75d, 1.75d, 1.25d };
+		}
+		
+	    return new List&lt;object&gt;() { 1.0d, 1.0d, 1.0d, 1.0d, 1.0d };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

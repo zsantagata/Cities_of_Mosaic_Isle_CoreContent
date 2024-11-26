@@ -1,0 +1,322 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igResource name="Alcohol">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Goods/Alcohol</full_path>
+	  <body_text>Alcohol.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x10</mResourceQualities><!--drug-->
+	<mDecaySpeed>-0.001225</mDecaySpeed> <!--alcohol increases in quality over time if left alone-->
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>0</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>drug</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:warming</i1>
+		<i1>use_adj:inebriating</i1>
+		<i1>use_noun:drink</i1>
+		<i1>qual_low_adj:swill</i1>
+		<i1>qual_low_adj:disgusting</i1>
+		<i1>qual_low_adj:harsh</i1>
+		<i1>qual_high_adj:aged</i1>
+		<i1>qual_high_adj:fine</i1>
+		<i1>qual_high_adj:refined</i1>
+		<i1>property_adj:sterile</i1>
+		<i1>property_adj:fragrant</i1>
+		<i1>degrade_noun:vinegar</i1>
+	</mTagList>
+  </igResource>
+  <!-- this is an example of how to change the display name of a moddable object, for translation or other purposes
+  <igResource name="Alcohol" display_name="Booze">
+  </igResource>
+  -->
+  
+  <igResource name="Armor">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Equipment/Armor</full_path>
+	  <body_text>Armor.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x420</mResourceQualities><!--military equipment, enable manual breakdown-->
+	<mDecaySpeed>0.0006125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>3</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Clothes</a>
+		<b>1</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>milequip</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:equipped</i1>
+		<i1>use_noun:equipment</i1>
+		<i1>use_noun:gear</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_low_adj:patchy</i1>
+		<i1>qual_low_adj:worn</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>qual_high_adj:sturdy</i1>
+		<i1>qual_high_adj:hardy</i1>
+		<i1>property_adj:fitted</i1>
+		<i1>degrade_noun:scraps</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Bandages">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Goods/Bandages</full_path>
+	  <body_text>Bandages.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x4</mResourceQualities><!--wound heal-->
+	<mDecaySpeed>0.005</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>4</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Cotton</a>
+		<b>0.35</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>woundHeal</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:healing</i1>
+		<i1>use_noun:medical supply</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_low_adj:patchy</i1>
+		<i1>qual_low_adj:worn</i1>
+		<i1>qual_low_adj:dirty</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>property_adj:wrapped</i1>
+		<i1>degrade_noun:scraps</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Clothes">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Goods/Clothes</full_path>
+	  <body_text>Clothes.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x2</mResourceQualities><!--hstasis-->
+	<mDecaySpeed>0.0025</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>8</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Cotton</a>
+		<b>2.5</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>hstasis</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:carried</i1>
+		<i1>use_noun:clothing</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_low_adj:patchy</i1>
+		<i1>qual_low_adj:dirty</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>qual_high_adj:colorful</i1>
+		<i1>property_adj:covering</i1>
+		<i1>degrade_noun:scraps</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Jewelry">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Goods/Jewelry</full_path>
+	  <body_text>Jewelry.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x0</mResourceQualities>
+	<mDecaySpeed>0.0006125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>23</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Clothes</a>
+		<b>0.015</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+	  <i1>conspicuous consumption</i1>
+	  <i1>cannot be made in a building</i1>
+	  
+		<!-- description tags: -->
+		<i1>use_adj:carried</i1>
+		<i1>use_noun:decoration</i1>
+		<i1>qual_low_adj:broken</i1>
+		<i1>qual_low_adj:ugly</i1>
+		<i1>qual_high_adj:shiny</i1>
+		<i1>qual_high_adj:colorful</i1>
+		<i1>property_adj:accessory</i1>
+		<i1>degrade_noun:pebbles</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Monument">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Goods/Monument</full_path>
+	  <body_text>Monument.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x40</mResourceQualities><!--only one-->
+	<mDecaySpeed>0.0006125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>33</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Granite</a>
+		<b>10</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>only one</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:visible</i1>
+		<i1>use_noun:decoration</i1>
+		<i1>qual_low_adj:damaged</i1>
+		<i1>qual_low_adj:cracked</i1>
+		<i1>qual_high_adj:beautiful</i1>
+		<i1>qual_high_adj:impressive</i1>
+		<i1>property_adj:tall</i1>
+		<i1>degrade_noun:rubble</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Smokes">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Goods/Smokes</full_path>
+	  <body_text>Smokes.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x10</mResourceQualities><!--drug-->
+	<mDecaySpeed>0.005</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>43</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>drug</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:calming</i1>
+		<i1>use_adj:inebriating</i1>
+		<i1>use_noun:smoke</i1>
+		<i1>qual_low_adj:disgusting</i1>
+		<i1>qual_low_adj:harsh</i1>
+		<i1>qual_high_adj:flavored</i1>
+		<i1>qual_high_adj:fine</i1>
+		<i1>property_adj:fragrant</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Tonics">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Goods/Tonics</full_path>
+	  <body_text>Tonics.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x8</mResourceQualities><!--disease heal-->
+	<mDecaySpeed>0.0025</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>47</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Alcohol</a>
+		<b>0.15</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>illHeal</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:healing</i1>
+		<i1>use_noun:medical supply</i1>
+		<i1>qual_low_adj:unclean</i1>
+		<i1>qual_low_adj:harsh</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>qual_high_adj:refined</i1>
+		<i1>property_adj:liquid</i1>
+		<i1>degrade_noun:spoilage</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Weaponry">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Equipment/Weaponry</full_path>
+	  <body_text>Weaponry.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x20</mResourceQualities><!--military equipment-->
+	<mDecaySpeed>0.0006125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>49</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>milequip</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:equipped</i1>
+		<i1>use_noun:equipment</i1>
+		<i1>use_noun:gear</i1>
+		<i1>qual_low_adj:broken</i1>
+		<i1>qual_low_adj:dull</i1>
+		<i1>qual_low_adj:worn</i1>
+		<i1>qual_high_adj:sturdy</i1>
+		<i1>qual_high_adj:sharp</i1>
+		<i1>qual_high_adj:dangerous</i1>
+		<i1>property_adj:carried</i1>
+		<i1>degrade_noun:scraps</i1>
+	</mTagList>
+  </igResource>
+  
+</core_data>

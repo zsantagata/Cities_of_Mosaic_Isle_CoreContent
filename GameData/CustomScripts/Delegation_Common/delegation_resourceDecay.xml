@@ -1,0 +1,224 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script delegation_resourceDecay</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which reduces the quality of goods held by a delegation for one day's impact -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation
+	
+	no output
+	-->
+	<i1><a>delegation_resourceDecay</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation)   }
+	  }, out _))
+	{
+		throw new ArgumentException("delegation_resourceDecay custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	if(inDelegation == null)
+	{
+		throw new ArgumentException("delegation_resourceDecay custom script received invalid arguments: inDelegation cannot be null");
+		return null;
+	}
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	IFResourcePool delPool = inDelegation.getResourcePool();
+	
+	//first, gather all livestock that need to eat, and what they can eat:
+	List&lt;IFResource&gt; allFood = new List&lt;IFResource&gt;();
+	List&lt;IFResource&gt; animalSourcedFood = new List&lt;IFResource&gt;();
+	List&lt;IFResource&gt; plantSourcedFood = new List&lt;IFResource&gt;();
+	List&lt;IFResource&gt; liveStockEatAnything = new List&lt;IFResource&gt;();
+	List&lt;IFResource&gt; liveStockEatAnimalSourcedFoodOnly = new List&lt;IFResource&gt;();
+	List&lt;IFResource&gt; liveStockEatPlantSourcedFoodOnly = new List&lt;IFResource&gt;();
+	
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res != null)
+		{
+			if(!res.isNotInResourcePool())
+			{
+				if(delPool.getResourceQuantity(res) == 0.0d)
+					continue;
+			
+				if(res.isFood())
+				{
+					allFood.Add(res);
+					if(res.hasTag("animal-food"))
+					{
+						animalSourcedFood.Add(res);
+					}
+					if(res.hasTag("plant-food"))
+					{
+						plantSourcedFood.Add(res);
+					}
+				}
+				if(res.hasTag("animal"))
+				{
+					if(res.hasTag("eats-animal-food-only"))
+					{
+						liveStockEatAnimalSourcedFoodOnly.Add(res);
+					}
+					else if(res.hasTag("eats-plant-food-only"))
+					{
+						liveStockEatPlantSourcedFoodOnly.Add(res);
+					}
+					else
+					{
+						liveStockEatAnything.Add(res);
+					}
+				}
+			}
+		}
+	}
+	
+	//calculate animal feed per 1.0 animals of each kind:
+	double vertex = customConsts.getDoubleConst("animal_husbandry_workplace_production production_speed vertex", out bool success);
+	if(!success) vertex = 0.01d;
+	double lowerNumerator = customConsts.getDoubleConst("animal_husbandry_workplace_production production_speed lower_than_vertex numerator", out success);
+	if(!success) lowerNumerator = 0.07d;
+	double greaterNumerator = customConsts.getDoubleConst("animal_husbandry_workplace_production production_speed greater_than_vertex numerator", out success);
+	if(!success) greaterNumerator = 0.22136d;
+	double lowerExponent = customConsts.getDoubleConst("animal_husbandry_workplace_production production_speed lower_than_vertex exponent", out success);
+	if(!success) lowerExponent = -0.5d;
+	double greaterExponent = customConsts.getDoubleConst("animal_husbandry_workplace_production production_speed greater_than_vertex exponent", out success);
+	if(!success) greaterExponent = -0.75d;
+	
+	double eatAnythingQuanWantToEat = 0.0d;
+	double eatAnimalSourcedFoodQuanWantToEat = 0.0d;
+	double eatPlantSourcedFoodQuanWantToEat = 0.0d;
+	foreach(IFResource res in liveStockEatPlantSourcedFoodOnly)
+	{
+		double productionSpeed = res.getProductionSpeed();
+		double feedOneAnimal = (productionSpeed &lt; vertex ? lowerNumerator * Math.Pow(productionSpeed, lowerExponent) : greaterNumerator * Math.Pow(productionSpeed, greaterExponent));
+		eatPlantSourcedFoodQuanWantToEat += feedOneAnimal * delPool.getResourceQuantity(res);
+		addDebugMessage(inScriptInstance, res.getDebugName() + " feed for one animal = " + feedOneAnimal + " and quantity of animals in pool = " + delPool.getResourceQuantity(res));
+	}
+	foreach(IFResource res in liveStockEatAnimalSourcedFoodOnly)
+	{
+		double productionSpeed = res.getProductionSpeed();
+		double feedOneAnimal = (productionSpeed &lt; vertex ? lowerNumerator * Math.Pow(productionSpeed, lowerExponent) : greaterNumerator * Math.Pow(productionSpeed, greaterExponent));
+		eatAnimalSourcedFoodQuanWantToEat += feedOneAnimal * delPool.getResourceQuantity(res);
+		addDebugMessage(inScriptInstance, res.getDebugName() + " feed for one animal = " + feedOneAnimal + " and quantity of animals in pool = " + delPool.getResourceQuantity(res));
+	}
+	foreach(IFResource res in liveStockEatAnything)
+	{
+		double productionSpeed = res.getProductionSpeed();
+		double feedOneAnimal = (productionSpeed &lt; vertex ? lowerNumerator * Math.Pow(productionSpeed, lowerExponent) : greaterNumerator * Math.Pow(productionSpeed, greaterExponent));
+		eatAnythingQuanWantToEat += feedOneAnimal * delPool.getResourceQuantity(res);
+		addDebugMessage(inScriptInstance, res.getDebugName() + " feed for one animal = " + feedOneAnimal + " and quantity of animals in pool = " + delPool.getResourceQuantity(res));
+	}
+	
+	//let the animals eat:
+	double plantAnimalFeedActualToDesireRatio = 0.0d;
+	double animalAnimalFeedActualToDesireRatio = 0.0d;
+	double anyAnimalFeedActualToDesireRatio = 0.0d;
+	
+	if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;()
+		{ delPool, true, false, plantSourcedFood,
+		  eatPlantSourcedFoodQuanWantToEat, true, false, false, false, false, false, true }, //randomize quantities
+		out List&lt;object&gt; outResourcesConsumedPlant, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+	{
+		double quantityEaten = (double)outResourcesConsumedPlant[0];
+		if(eatPlantSourcedFoodQuanWantToEat == 0.0d)
+		{
+			plantAnimalFeedActualToDesireRatio = 1.0d;
+		}
+		else
+		{
+			plantAnimalFeedActualToDesireRatio = quantityEaten / eatPlantSourcedFoodQuanWantToEat;
+		}
+	}
+	if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;()
+		{ delPool, true, false, animalSourcedFood,
+		  eatAnimalSourcedFoodQuanWantToEat, true, false, false, false, false, false, true }, //randomize quantities
+		out List&lt;object&gt; outResourcesConsumedAnimal, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+	{
+		double quantityEaten = (double)outResourcesConsumedAnimal[0];
+		if(eatAnimalSourcedFoodQuanWantToEat == 0.0d)
+		{
+			animalAnimalFeedActualToDesireRatio = 1.0d;
+		}
+		else
+		{
+			animalAnimalFeedActualToDesireRatio = quantityEaten / eatAnimalSourcedFoodQuanWantToEat;
+		}
+	}
+	if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;()
+		{ delPool, true, false, allFood,
+		  eatAnythingQuanWantToEat, true, false, false, false, false, false, true }, //randomize quantities
+		out List&lt;object&gt; outResourcesConsumedAny, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+	{
+		double quantityEaten = (double)outResourcesConsumedAny[0];
+		if(eatAnythingQuanWantToEat == 0.0d)
+		{
+			anyAnimalFeedActualToDesireRatio = 1.0d;
+		}
+		else
+		{
+			anyAnimalFeedActualToDesireRatio = quantityEaten / eatAnythingQuanWantToEat;
+		}
+	}
+	
+	//now, degrade resources:
+	double biomeDegradeRatio = inDelegation.getBiomeOfCurrentLocation().getBiomeQualityDecayStrength();
+	double fullQualRange = consts.getResourceQualityMax() - consts.getResourceQualityMin();
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res != null)
+		{
+			if(!res.isNotInResourcePool())
+			{
+				double degradeRatio = biomeDegradeRatio;
+				if(liveStockEatAnything.Contains(res))
+				{
+					degradeRatio *= anyAnimalFeedActualToDesireRatio;
+				}
+				else if(liveStockEatAnimalSourcedFoodOnly.Contains(res))
+				{
+					degradeRatio *= animalAnimalFeedActualToDesireRatio;
+				}
+				else if(liveStockEatPlantSourcedFoodOnly.Contains(res))
+				{
+					degradeRatio *= plantAnimalFeedActualToDesireRatio;
+				}
+				
+				//TODO include variableHandler variables here
+				
+				degradeRatio *= res.getDecaySpeed();
+				delPool.changeResourceQuality(res, Math.Min(0.0d, -1.0d * degradeRatio * fullQualRange)); //resources which improve over time do not improve when they are being hauled by delegations
+			}
+		}
+	}
+	
+	customScripts.runCustomScript("handleResourcesFullyDecayed", new List&lt;object&gt;() { delPool }, out _);
+	
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

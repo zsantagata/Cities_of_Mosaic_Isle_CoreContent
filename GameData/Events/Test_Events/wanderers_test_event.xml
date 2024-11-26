@@ -1,0 +1,590 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- strictly speaking, an igEvent could check anything.  I can't add enough custom variables to setup "anything", so these are mostly the common bits. -->
+		
+			<i1><a>wanderers_test_event days_to_stay</a> <b>int</b> <c>6</c></i1> <!-- how many days the Wanderers will stay -->
+			
+			<i1><a>wanderers_test_event resource moids</a> <b>string</b> <c></c></i1> <!-- moids separated by commas.  If empty, the resource pool will autogen -->
+			<i1><a>wanderers_test_event resource counts</a> <b>string</b> <c></c></i1> <!-- values separated by commas -->
+			<i1><a>wanderers_test_event resource qualities</a> <b>string</b> <c></c></i1> <!-- proportional values separated by commas -->
+			<i1><a>wanderers_test_event resource autogen quantity</a> <b>double</b> <c>5000.0</c></i1> <!-- only used if moids is the empty string -->
+			
+			<!-- pops are generated directly, rather than using fetchOrReify on the source community -->
+			<i1><a>wanderers_test_event pops totalCount</a> <b>int</b> <c>15</c></i1> <!-- must be 1 or greater -->
+			<i1><a>wanderers_test_event pops races</a> <b>string</b> <c></c></i1> <!-- if absent, will use default race(s) as generateWandererGroup.  MOIDs separated by commas -->
+			<i1><a>wanderers_test_event pops race weights</a> <b>string</b> <c></c></i1> <!-- should be same count as above.  weights separated by commas -->
+			
+			<i1><a>wanderers_test_event pops healths</a> <b>string</b> <c></c></i1> <!-- if absent, will use default.  proportional values separated by commas -->
+			<i1><a>wanderers_test_event pops health weights</a> <b>string</b> <c></c></i1> <!-- if absent, will use equal weights.  weights separated by commas -->
+			<i1><a>wanderers_test_event pops soldier skills</a> <b>string</b> <c></c></i1> <!-- if absent, will use default.  proportional values separated by commas -->
+			<i1><a>wanderers_test_event pops soldier skill weights</a> <b>string</b> <c></c></i1> <!-- if absent, will use equal weights.  weights separated by commas -->
+			<i1><a>wanderers_test_event pops soldier equipment counts</a> <b>string</b> <c></c></i1> <!-- if absent, will use default.  proportional values separated by commas -->
+			<i1><a>wanderers_test_event pops soldier equipment count weights</a> <b>string</b> <c></c></i1> <!-- if absent, will use equal weights.  weights separated by commas -->
+			
+			<i1><a>wanderers_test_event arrival event override</a> <b>string</b> <c>regular_assign</c></i1> <!-- could be: none, regular_assign, or a specific name -->
+			<i1><a>wanderers_test_event use setupHealthOfWanderersOrEmigrants if_nonzero</a> <b>int</b> <c>1</c></i1> <!-- -->
+			
+			<i1><a>wanderers_test_event map forced buildingkind uids</a> <b>string</b> <c></c></i1> <!-- moids separated by commas.  If empty, no additional buildings will be built on the map -->
+			<i1><a>wanderers_test_event map forced buildingkind counts</a> <b>string</b> <c></c></i1> <!-- moids separated by commas.  If an entry is empty or zero/negative, one building will be built on the map for the appropriate uid -->
+			
+			<!-- logging const for an event's upon-happening script is always "log_script_event undercase_event_name upon happening" where undercase_event_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_event wanderers_test_event upon happening</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+
+  <igEvent name="wanderers_test_event">
+  <mTypeOfEvent>0</mTypeOfEvent> <!-- 0 = normal event (happens in community over time), 1 = player-sourced delegation arrives at foreign location event, 2 = player-sourced delegation while traveling event, 3 = simultaneous with other occurrence event -->
+  <mSimultaneousWithOccurrence>0x0</mSimultaneousWithOccurrence> <!-- does not matter unless mTypeOfEvent is 3 -->
+  
+  <mDefaultEnabled>0</mDefaultEnabled> <!-- enable the event -->
+  <mDefaultMTTH>0x1</mDefaultMTTH> <!-- trigger the event on every day -->
+  
+  <!-- no gate conditions for the test event: -->
+  <mScriptWhichGatesHappening>
+	List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	toReturn.Add(true);
+	return toReturn;
+  </mScriptWhichGatesHappening>
+  
+  <mInvisible>0</mInvisible>
+  <mDefaultMenuText>
+	The wanderers test has been set up.  If you are seeing this text, wanderers_test_event did not correctly override its default text.
+  </mDefaultMenuText>
+  
+  <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+  <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+  
+  
+  <mScriptUponHappening>
+    //input count check:
+    if (inArguments.Length &lt; 2)
+    {
+		return null;
+    }
+			
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var customScripts = getAPI().getCustomScripts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+	IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+	bool success = false;
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+  
+	string reportTextOverride = "";
+	
+    //first, generate the resources associated with the wanderers:
+	string resourceMOIDs = customConsts.getStringConst("wanderers_test_event resource moids", out success);
+	if(!success) resourceMOIDs = "";
+	string resourceCounts = customConsts.getStringConst("wanderers_test_event resource counts", out success);
+	if(!success) resourceCounts = "";
+	string resourceQuals = customConsts.getStringConst("wanderers_test_event resource qualities", out success);
+	if(!success) resourceQuals = "";
+	double autogenQuantity = customConsts.getDoubleConst("wanderers_test_event resource autogen quantity", out success);
+	if(!success) autogenQuantity = 5000.0d;
+	
+	List&lt;string&gt; resourceMOIDStrings = new List&lt;string&gt;(resourceMOIDs.Split(','));
+	List&lt;string&gt; resourceCountStrings = new List&lt;string&gt;(resourceCounts.Split(','));
+	List&lt;string&gt; resourceQualStrings = new List&lt;string&gt;(resourceQuals.Split(','));
+	
+	int countToUse = resourceMOIDStrings.Count;
+	int countOfResAdded = 0;
+	if((resourceMOIDStrings.Count != resourceCountStrings.Count) || (resourceQualStrings.Count != resourceCountStrings.Count))
+	{
+		countToUse = Math.Min(Math.Min(resourceMOIDStrings.Count, resourceCountStrings.Count), resourceQualStrings.Count);
+		addDebugMessage(inScriptInstance, "counts of entries in wanderer resource custom consts are mismatched; using minimum count of " + countToUse);
+	}
+	
+	Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; wandererResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+	
+	for(int i = 0; i &lt; countToUse; i++)
+	{
+		try
+		{
+			Int64 moid = Int64.Parse(resourceMOIDStrings[i]);
+			double count = double.Parse(resourceCountStrings[i]);
+			double qual = double.Parse(resourceQualStrings[i]);
+			
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res != null)
+			{
+				wandererResources.Add(res, Tuple.Create(count, qual));
+				reportTextOverride += "Wanderers have " + count + " (qual=" + qual + ") of resource " + res.getDisplayName() + "\n";
+				countOfResAdded++;
+			}
+		}
+		catch
+		{
+			addDebugMessage(inScriptInstance, "couldn't parse one of moid=" + resourceMOIDStrings[i] + " or count=" + resourceCountStrings[i] + " or qual=" + resourceQualStrings[i]);
+		}
+	}
+	
+	double maxQual = consts.getResourceQualityMax();
+	double minQual = consts.getResourceQualityMin();
+	double avgQual = (maxQual + minQual) / 2;
+	
+	if(countOfResAdded == 0)
+	{
+		//auto-gen foreign community resources:
+		//choose up to 20 resources:
+		Int64 resourceTypeCount = 1 + getAPI().calcRandIntUnder(20);
+		double resourceCountLeftToAdd = autogenQuantity;
+		
+		while(resourceTypeCount &gt; 0)
+		{
+			resourceTypeCount--;
+			double quantityToAdd = getAPI().calcRand() * resourceCountLeftToAdd;
+			if(resourceTypeCount == 0)
+				quantityToAdd = resourceCountLeftToAdd;
+			
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", 1 + getAPI().calcRandIntUnder(getAPI().getTotalCountOfMO("resources") - 1));
+			if(res != null)
+			{
+				resourceCountLeftToAdd -= quantityToAdd;
+				if(!res.isNotInResourcePool() &amp;&amp; !wandererResources.ContainsKey(res))
+				{
+					wandererResources.Add(res, Tuple.Create(quantityToAdd, avgQual));
+					reportTextOverride += "Wanderers have " + quantityToAdd + " (avgQual=" + avgQual + ") of resource " + res.getDisplayName() + "\n";
+				}
+			}
+		}
+	}
+	
+	
+	//secondly, generate the pops:
+	Int64 popCount = customConsts.getIntConst("wanderers_test_event pops totalCount", out success);
+	if(!success) popCount = 15;
+	string popRacesMOIDs = customConsts.getStringConst("wanderers_test_event pops races", out success);
+	if(!success) popRacesMOIDs = "";
+	string popRacesWeights = customConsts.getStringConst("wanderers_test_event pops race weights", out success);
+	if(!success) popRacesWeights = "";
+	
+	string popHealthsStrings = customConsts.getStringConst("wanderers_test_event pops healths", out success);
+	if(!success) popHealthsStrings = "";
+	string popHealthWeightsStrings = customConsts.getStringConst("wanderers_test_event pops health weights", out success);
+	if(!success) popHealthWeightsStrings = "";
+	string popSoldierSkillsStrings = customConsts.getStringConst("wanderers_test_event pops soldier skills", out success);
+	if(!success) popSoldierSkillsStrings = "";
+	string popSoldierSkillWeightsStrings = customConsts.getStringConst("wanderers_test_event pops soldier skill weights", out success);
+	if(!success) popSoldierSkillWeightsStrings = "";
+	string popSoldierEquipCountsStrings = customConsts.getStringConst("wanderers_test_event pops soldier equipment counts", out success);
+	if(!success) popSoldierEquipCountsStrings = "";
+	string popSoldierEquipCountWeightsStrings = customConsts.getStringConst("wanderers_test_event pops soldier equipment count weights", out success);
+	if(!success) popSoldierEquipCountWeightsStrings = "";
+	
+	if(popCount &lt;= 0)
+	{
+		addDebugMessage(inScriptInstance, "popCount of " + popCount + " is invalid so using default value of 15");
+		popCount = 15;
+	}
+	
+	List&lt;string&gt; racesMOIDsStrings = new List&lt;string&gt;(popRacesMOIDs.Split(','));
+	List&lt;string&gt; racesWeightsStrings = new List&lt;string&gt;(popRacesWeights.Split(','));
+	
+	List&lt;string&gt; popsHealthsStrings = new List&lt;string&gt;(popHealthsStrings.Split(','));
+	List&lt;string&gt; popsHealthWeightsStrings = new List&lt;string&gt;(popHealthWeightsStrings.Split(','));
+	List&lt;string&gt; popsSoldierSkillsStrings = new List&lt;string&gt;(popSoldierSkillsStrings.Split(','));
+	List&lt;string&gt; popsSoldierSkillsWeightsStrings = new List&lt;string&gt;(popSoldierSkillWeightsStrings.Split(','));
+	List&lt;string&gt; popsSoldierEquipCountsStrings = new List&lt;string&gt;(popSoldierEquipCountsStrings.Split(','));
+	List&lt;string&gt; popsSoldierEquipCountWeightsStrings = new List&lt;string&gt;(popSoldierEquipCountWeightsStrings.Split(','));
+	
+	List&lt;IFRace&gt; popRaces = new List&lt;IFRace&gt;();
+	foreach(string str in racesMOIDsStrings)
+	{
+		if(Int64.TryParse(str, out Int64 toAdd))
+		{
+			//filter valid values:
+			IFRace race1 = (IFRace)getAPI().getMOFromMOID("races", toAdd);
+			if(race1 == null)
+				continue;
+			if(race1.isHiddenFromPlayerSight())
+				continue;
+			
+			popRaces.Add(race1);
+		}
+	}
+	double totalRaceWeight = 0.0d;
+	List&lt;double&gt; raceWeights = new List&lt;double&gt;();
+	foreach(string str in racesWeightsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt;= 0.0d)
+				continue;
+			
+			raceWeights.Add(toAdd);
+			totalRaceWeight += toAdd;
+		}
+	}
+	
+	double minHealth = consts.getHealthMin();
+	double maxHealth = consts.getHealthMax();
+	List&lt;double&gt; popHealths = new List&lt;double&gt;();
+	foreach(string str in popsHealthsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt; 0.0d)
+				continue;
+			if(toAdd &gt; 1.0d)
+				continue;
+				
+			popHealths.Add(toAdd * (maxHealth - minHealth) + minHealth);
+		}
+	}
+	double totalHealthWeight = 0.0d;
+	List&lt;double&gt; popHealthWeights = new List&lt;double&gt;();
+	foreach(string str in popsHealthWeightsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt;= 0.0d)
+				continue;
+				
+			popHealthWeights.Add(toAdd);
+			totalHealthWeight += toAdd;
+		}
+	}
+	
+	double ssMin = consts.getSoldierSkillMin();
+	double ssMax = consts.getSoldierSkillMax();
+	List&lt;double&gt; popSoldierSkills = new List&lt;double&gt;();
+	foreach(string str in popsSoldierSkillsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt; 0.0d)
+				continue;
+			if(toAdd &gt; 1.0d)
+				continue;
+			
+			popSoldierSkills.Add(toAdd * (ssMax - ssMin) + ssMin);
+		}
+	}
+	double totalSSWeight = 0.0d;
+	List&lt;double&gt; popSoldierSkillWeights = new List&lt;double&gt;();
+	foreach(string str in popsSoldierSkillsWeightsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt;= 0.0d)
+				continue;
+				
+			popSoldierSkillWeights.Add(toAdd);
+			totalSSWeight += toAdd;
+		}
+	}
+	
+	List&lt;Int64&gt; popEquipCounts = new List&lt;Int64&gt;();
+	foreach(string str in popsSoldierEquipCountsStrings)
+	{
+		if(Int64.TryParse(str, out Int64 toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt; 0)
+				continue;
+		
+			popEquipCounts.Add(toAdd);
+		}
+	}
+	double totalEquipWeight = 0.0d;
+	List&lt;double&gt; popEquipCountWeights = new List&lt;double&gt;();
+	foreach(string str in popsSoldierEquipCountWeightsStrings)
+	{
+		if(double.TryParse(str, out double toAdd))
+		{
+			//filter valid values:
+			if(toAdd &lt;= 0.0d)
+				continue;
+				
+			popEquipCountWeights.Add(toAdd);
+			totalEquipWeight += toAdd;
+		}
+	}
+	
+	if(popRaces.Count != raceWeights.Count)
+	{
+		addDebugMessage(inScriptInstance, "something really dumb happened: popRaces.Count was != raceWeights.Count; " + popRaces.Count + "!=" + raceWeights.Count);
+		return null;
+	}
+	if(popSoldierSkills.Count != popSoldierSkillWeights.Count)
+	{
+		addDebugMessage(inScriptInstance, "something really dumb happened: popSoldierSkills.Count was != popSoldierSkillWeights.Count; " + popSoldierSkills.Count + "!=" + popSoldierSkillWeights.Count);
+		return null;
+	}
+	if(popEquipCounts.Count != popEquipCountWeights.Count)
+	{
+		addDebugMessage(inScriptInstance, "something really dumb happened: popEquipCounts.Count was != popEquipCountWeights.Count; " + popEquipCounts.Count + "!=" + popEquipCountWeights.Count);
+		return null;
+	}
+	
+	//now assemble the inputs to generateWandererGroup:
+	List&lt;IFRace&gt; inputRaces = new List&lt;IFRace&gt;();
+	List&lt;double&gt; inputHealths = new List&lt;double&gt;(); //this is used for all health inputs
+	List&lt;double&gt; inputSoldierSkills = new List&lt;double&gt;();
+	List&lt;Int64&gt; inputEquipmentCounts = new List&lt;Int64&gt;();
+	
+	IFRace race = null;
+	if(popRaces.Count != 0)
+	{
+		double randVal = getAPI().calcRand() * totalRaceWeight;
+		double weightSoFar = 0.0d;
+		for(int i = 0; i &lt; raceWeights.Count; i++)
+		{
+			weightSoFar += raceWeights[i];
+			if(weightSoFar &gt;= randVal)
+			{
+				race = popRaces[i];
+				break;
+			}
+		}
+	}
+	if(race != null)
+		inputRaces.Add(race);
+	
+	double soldierSkill = double.MinValue;
+	if(popSoldierSkills.Count != 0)
+	{
+		double randVal = getAPI().calcRand() * totalSSWeight;
+		double weightSoFar = 0.0d;
+		for(int i = 0; i &lt; popSoldierSkillWeights.Count; i++)
+		{
+			weightSoFar += popSoldierSkillWeights[i];
+			if(weightSoFar &gt;= randVal)
+			{
+				soldierSkill = popSoldierSkills[i];
+				break;
+			}
+		}
+	}
+	if(soldierSkill != double.MinValue)
+		inputSoldierSkills.Add(soldierSkill);
+	
+	Int64 equipCount = -1;
+	if(popEquipCounts.Count != 0)
+	{
+		double randVal = getAPI().calcRand() * totalEquipWeight;
+		double weightSoFar = 0.0d;
+		for(int i = 0; i &lt; popEquipCountWeights.Count; i++)
+		{
+			weightSoFar += popEquipCountWeights[i];
+			if(weightSoFar &gt;= randVal)
+			{
+				equipCount = popEquipCounts[i];
+				break;
+			}
+		}
+	}
+	if(equipCount != -1)
+		inputEquipmentCounts.Add(equipCount);
+	
+	double healthVal = double.MaxValue;
+	if(popHealths.Count != 0)
+	{
+		double randVal = getAPI().calcRand() * totalSSWeight;
+		double weightSoFar = 0.0d;
+		for(int i = 0; i &lt; popHealthWeights.Count; i++)
+		{
+			weightSoFar += popHealthWeights[i];
+			if(weightSoFar &gt;= randVal)
+			{
+				healthVal = popHealths[i];
+				break;
+			}
+		}
+	}
+	if(healthVal != double.MaxValue)
+		inputHealths.Add(healthVal);
+	
+	//generate the pops but don't put them on the map yet:
+	List&lt;IFPop&gt; wandererPops = new List&lt;IFPop&gt;();
+	if(customScripts.runCustomScriptCheckTypes("generateWandererGroup", new List&lt;object&gt;() { inputRaces, null, null, null, null, inputHealths, inputHealths, inputHealths, inputHealths, inputSoldierSkills, inputEquipmentCounts, null, popCount, false },
+		out List&lt;object&gt; generatedWanderers, false, typeof(List&lt;IFPop&gt;)))
+	{
+		wandererPops = (List&lt;IFPop&gt;)generatedWanderers[0];
+		reportTextOverride += wandererPops.Count + " wanderer pops generated.  ";
+	}
+	else
+	{
+		addDebugMessage(inScriptInstance, "wanderers not generated successfully for some reason");
+	}
+	
+	//now that the wanderers have been generated (but before they are placed on map), perform other setup:
+	//A) setup wanderer healths if desired
+	//B) force certain events for the wanderers if desired
+	//C) add certain buildings to the map if desired
+	
+	//A)
+	Int64 setupWandererHealthsIfNonZero = customConsts.getIntConst("wanderers_test_event use setupHealthOfWanderersOrEmigrants if_nonzero", out success);
+	if(!success) setupWandererHealthsIfNonZero = 1;
+	if(setupWandererHealthsIfNonZero != 0)
+	{
+		reportTextOverride += "Calling setupHealthOfWanderersOrEmigrants.  ";
+		customScripts.runCustomScript("setupHealthOfWanderersOrEmigrants", new List&lt;object&gt;() { wandererPops, null, -1.0d }, out _);
+	}
+	
+	//B)
+	string arrivalOverrideEventName = customConsts.getStringConst("wanderers_test_event arrival event override", out success);
+	if(!success) arrivalOverrideEventName = "none";
+	
+	if(arrivalOverrideEventName == "none")
+	{
+		getAPI().setSimultaneousEventToForceNext(null, true, false, false, false);
+		reportTextOverride += "Forcing no arrival event.  ";
+	}
+	else if(arrivalOverrideEventName == "regular_assign")
+	{
+		//nothing to do specifically
+		reportTextOverride += "Allowing any arrival event.  ";
+	}
+	else
+	{
+		//find the event name:
+		IFEvent evt = (IFEvent)getAPI().getMOFromInternalName("events", arrivalOverrideEventName);
+		if(evt == null)
+		{
+			addDebugMessage(inScriptInstance, "event with name " + arrivalOverrideEventName + " could not be found; will force null event for arrival event");
+			reportTextOverride += "Forcing no arrival event (failure to find event " + arrivalOverrideEventName + ".  ";
+		}
+		else
+		{
+			reportTextOverride += "Forcing arrival event " + arrivalOverrideEventName + ".  ";
+		}
+		getAPI().setSimultaneousEventToForceNext(evt, true, false, false, false);
+	}
+	
+	//C)
+	//we may need buildings on the map:
+	string forcedBuildingUIDs = customConsts.getStringConst("wanderers_test_event map forced buildingkind uids", out success);
+	if(!success) forcedBuildingUIDs = "";
+	string forcedBuildingCounts = customConsts.getStringConst("wanderers_test_event map forced buildingkind counts", out success);
+	if(!success) forcedBuildingCounts = "";
+	
+	Dictionary&lt;IFBuildingKind, Int64&gt; buildingsToPlaceOnMap = new Dictionary&lt;IFBuildingKind, Int64&gt;();
+	List&lt;string&gt; forcedBuildingUIDStrings = new List&lt;string&gt;(forcedBuildingUIDs.Split(','));
+	List&lt;string&gt; forcedBuildingCountStrings = new List&lt;string&gt;(forcedBuildingCounts.Split(','));
+	Int64 countOfBuildingsToAdd = 0;
+	for(int i = 0; i &lt; forcedBuildingUIDStrings.Count; i++)
+	{
+		if(Int64.TryParse(forcedBuildingUIDStrings[i], out Int64 uid))
+		{
+			IFBuildingKind bkind = (IFBuildingKind)getAPI().getMOFromMOID("buildingkinds", uid);
+			if(bkind == null)
+				continue;
+			if((forcedBuildingCountStrings.Count &gt; i) &amp;&amp; Int64.TryParse(forcedBuildingCountStrings[i], out Int64 buildingCount))
+			{
+				if(buildingCount &gt;= 1)
+				{
+					buildingsToPlaceOnMap.Add(bkind, buildingCount);
+					countOfBuildingsToAdd += buildingCount;
+				}
+				else
+				{
+					buildingsToPlaceOnMap.Add(bkind, 1);
+					countOfBuildingsToAdd += 1;
+				}
+			}
+		}
+	}
+	
+	//add all these buildings:
+	reportTextOverride += "\n";
+	addDebugMessage(inScriptInstance, "adding " + countOfBuildingsToAdd + " buildings to map because event (probably) wants them");
+	IFMap map = localCommunity.getDomesticComponent().getMap();
+	foreach(var kvpair in buildingsToPlaceOnMap)
+	{
+		IFBuildingKind bkind = kvpair.Key;
+		double countThisKind = kvpair.Value;
+		
+		reportTextOverride += "Adding " + countThisKind + " buildings of kind " + bkind.getDisplayName() + "\n";
+		
+		while(countThisKind &gt; 0)
+		{
+			int x_origin = (int)(getAPI().calcRandIntUnder(map.getMapDimensions().Item1));
+			int y_origin = (int)(getAPI().calcRandIntUnder(map.getMapDimensions().Item2));
+			int x_max = (int)(x_origin + bkind.getWidth());
+			int y_max = (int)(y_origin + bkind.getHeight());
+			if(x_max &gt;= map.getMapDimensions().Item1)
+				continue;
+			if(y_max &gt;= map.getMapDimensions().Item2)
+				continue;
+			//check all tiles:
+			bool cannotBuild = false;
+			List&lt;IFMapTile&gt; allTiles = new List&lt;IFMapTile&gt;();
+			for(int x = x_origin; (x &lt; x_max) &amp;&amp; !cannotBuild; x++)
+			{
+				for(int y = y_origin; (y &lt; y_max) &amp;&amp; !cannotBuild; y++)
+				{
+					IFMapTile tile = map.getMapTiles()[x][y];
+					if(!tile.isBuildable())
+					{
+						cannotBuild = true;
+					}
+					allTiles.Add(tile);
+				}
+			}
+			if(cannotBuild)
+				continue;
+			//create the new building:
+			IFBuilding newlyCreatedBuilding = getAPI().createBuildingNotPlaced(bkind, x_origin, y_origin, null);
+			newlyCreatedBuilding.setBuildingFullyBuilt();
+			addDebugMessage(inScriptInstance, "Building " + newlyCreatedBuilding.getDisplayName() + " (UID=" + newlyCreatedBuilding.getUID() + ") placed on map.");
+			for(int i = 0; i &lt; allTiles.Count; i++)
+			{
+				allTiles[i].setBuilding(newlyCreatedBuilding, i == 0, IFMapTileObject.eMapItemOrientation.cOriginal);
+			}
+			countThisKind--;
+		}
+	}
+	
+	//now, store Wanderers' desire to stay on map, resources associated with the Wanderers, and place the Wanderers on the map:
+	Int64 daysToStay = customConsts.getIntConst("wanderers_test_event days_to_stay", out success);
+	if(!success) daysToStay = 6;
+	Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+	
+	customScripts.runCustomScript("storeOrFetchPopsForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, wandererPops, "", currentDate + daysToStay + 2, currentDate + daysToStay,
+		10.0d}, out _);
+	customScripts.runCustomScript("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, wandererResources, "", currentDate + daysToStay + 2, false}, out _);
+	getAPI().putPopsFromListOnMap(wandererPops);
+	
+	inEventReport.setReportTextOverride(reportTextOverride);
+	inEventStatus.setEnabled(false);
+	
+	List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	return toReturn;
+  </mScriptUponHappening>
+  
+    <mChoiceCombo>
+      <i>
+        <name>Dismiss</name>
+        <appears_script>
+					List&lt;object&gt; toReturn = new List&lt;object&gt;();
+                         toReturn.Add(true);
+                     return toReturn;
+        </appears_script>
+        <selection_script>
+
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+			Go to the event report resolution screen.
+        </prechoice>
+        <resolution>
+			The wanderers have already arrrived.
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  
+  </igEvent>
+  
+</core_data>

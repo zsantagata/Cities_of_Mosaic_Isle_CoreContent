@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of a few miscellaneous scripts relating to pregnancy -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+		<i1><a>housing pops_make_baby rate</a> <b>double</b> <c>0.025</c></i1> <!-- this is the chance that any given pop in housing initiates making a child -->
+		
+	</mCustomVariableList>
+  </customconsts>
+  
+  <gamescripts name="default">
+	<!-- pops who share housing, and are compatible with one another, can cause a pregnancy.  (The Public Private Quarters can also cause a pregnancy, but that is fully taken care of by its workplace scripts.) -->
+  
+	<!-- housing pregnancy check script has one input: the housing building in question.  There are no outputs. -->
+	<!-- this script is called once on housing which holds pops at the end of each day.  While the Public Private Quarters is a workplace which can create pregnancies, pregnancies can also be created by certain pairs individuals on their own. -->
+	<mHousingPregnancyCheck>
+	  //input count check:
+	  if(inArguments.Length &lt; 1)
+	  {
+	    return null;
+	  }
+	  
+	  //NOTE yeah technically pops that don't house together and aren't based in a Public Private Quarters could also attempt to make children, but that's A) computationally more expensive for B) not much change to gameplay and C) diminishes the player's control
+	  //it's not enough to strain suspension of disbelief so I'm leaving it like this
+	  
+	  IFBuilding building = (IFBuilding)inArguments[0];
+	  var customConsts = getAPI().getCustomConsts();
+	  
+	  //this chance is calculated per pop, but once it is true, the calculation stops and the 'target pop' is removed from housed_pops.
+	  //(Due to the time and effort generally spent surviving each day, let's say if a person attempts making a child during a given day they're happy with that.)
+	  double chance_of_babymaking_attempt = customConsts.getDoubleConst("housing pops_make_baby rate", out bool success);
+	  if(!success) chance_of_babymaking_attempt = 0.025d; //note that this probability must consider that a pop could choose a different partner: of an incompatible race, of an incompatible sex, or already pregnant.  (Because those are skipped in constructing potential_mates.)
+	  
+	  //A pop has 100% chance to try to make a baby from Public Private Quarters if set to the appropriate outputs, but pops simply living in houses together may not attempt to make a child each day.
+	  //Also this script only cares about pops who could indeed potentially make children together.  Other interactions are not modelled here (but I'm sure they are somewhere on the internet)
+	  List&lt;IFPop&gt; housed_pops = new List&lt;IFPop&gt;(building.getHousingComponent().getHousedPops()); //we're going to be referencing this a lot so declare a variable to prevent many function calls
+	  for(int i = 0; i &lt; housed_pops.Count; i++)
+	  {
+		List&lt;IFPop&gt; potential_mates = new List&lt;IFPop&gt;();
+	    //only consider pops with index greater than i, to prevent doubling up
+		for(int j = i + 1; j &lt; housed_pops.Count; j++)
+    {
+    if(housed_pops[i].canMakeBabyWithPop(housed_pops[j])) //this will return false if either pop has a health condition.  (I guess wounded or ill pops could become pregnant but let's say they avoid it for their health.)
+    {
+    potential_mates.Add(housed_pops[j]);
+    }
+    }
+    addDebugMessage(inScriptInstance, "pop " + housed_pops[i].getDebugName() + " has " + potential_mates.Count + " potential mates in the same housing");
+    if(potential_mates.Count != 0)
+    {
+    for(int j = 0; j &lt; potential_mates.Count; j++)
+    {
+    if(getAPI().calcProb(chance_of_babymaking_attempt))
+    {
+    //NTS: don't remove the 'source pop' from housed_pops as it would mess up the for loop
+    housed_pops.Remove(potential_mates[j]);
+    addDebugMessage(inScriptInstance, "pop " + housed_pops[i].getDebugName() + " is housed with pop " + potential_mates[j].getDebugName() + " and might make a baby");
+    housed_pops[i].letMakeBabyWithPop(potential_mates[j]);
+    break;
+    }
+    }
+    }
+    }
+
+    return null;
+  </mHousingPregnancyCheck>
+	
+	<!-- calculating if two pops can make a baby together has two inputs: IFPop inPopOne, IFPop inPopTwo.  (The code of this function should be written so that the order of the inputs should not matter.)  There is one output: bool outCanPopsMakeBaby -->
+	<!-- this script is called once every time the IFPop function canMakeBabyWithPop is called (that function is a passthrough) -->
+	<mCanPopsMakeBaby>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			IFPop inPopOne = (IFPop)inArguments[0];
+			IFPop inPopTwo = (IFPop)inArguments[1];
+			bool canMakeBaby = false;
+			
+			if(inPopOne.isPopNoHealthStatus() &amp;&amp; inPopTwo.isPopNoHealthStatus())
+			{
+              //check the two pops are not equal (no pops can self-impregnate):
+              if (inPopOne != inPopTwo)
+			  {
+				  //check race compatability:
+				  if(    (inPopOne.getRace() == inPopTwo.getRace())
+					  || inPopOne.getRace().isCrossBreedPossible()
+					  || inPopTwo.getRace().isCrossBreedPossible()
+				    )
+				  {
+					  bool this_can_mother = (inPopTwo.getRace().isCanMotherChildren() &amp;&amp; ((inPopTwo.getSex() == IFPop.ePopSex.cFemale) || (inPopTwo.getSex() == IFPop.ePopSex.cUnisexBoth))) &amp;&amp; !inPopTwo.isPregnant();
+					  bool this_can_father = inPopTwo.getRace().isCanFatherChildren() &amp;&amp; ((inPopTwo.getSex() == IFPop.ePopSex.cMale) || (inPopTwo.getSex() == IFPop.ePopSex.cUnisexBoth));
+					  bool other_can_mother = (inPopOne.getRace().isCanMotherChildren() &amp;&amp; ((inPopOne.getSex() == IFPop.ePopSex.cFemale) || (inPopOne.getSex() == IFPop.ePopSex.cUnisexBoth))) &amp;&amp; !inPopOne.isPregnant();
+					  bool other_can_father = inPopOne.getRace().isCanFatherChildren() &amp;&amp; ((inPopOne.getSex() == IFPop.ePopSex.cMale) || (inPopOne.getSex() == IFPop.ePopSex.cUnisexBoth));
+					  canMakeBaby = (this_can_mother &amp;&amp; other_can_father) || (this_can_father &amp;&amp; other_can_mother);
+				  }
+			  }
+			}
+			
+			return new List&lt;object&gt;() { canMakeBaby };
+	</mCanPopsMakeBaby>
+	
+	<!-- letting two pops make a baby together has two inputs: IFPop inPopOne, IFPop inPopTwo.  (The code of this function should be written so that the order of the inputs should not matter.)  There are no outputs -->
+	<!-- this script is called once every time the IFPop function letMakeBabyWithPop is called (that function is a passthrough).  This script can have a chance of not actually making a pop pregnant, which is why the word 'let' is in the name -->
+	<mLetPopsMakeBaby>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			IFPop inPopOne = (IFPop)inArguments[0];
+			IFPop inPopTwo = (IFPop)inArguments[1];
+			
+			var toReturn = new List&lt;object&gt;();
+    if(!inPopOne.canMakeBabyWithPop(inPopTwo))
+    return toReturn;
+
+    //TODO: check pure chance that an attempt doesn't take
+    //TODO: check chance that a potential mother attempts to avoid pregnancy, based on food history and production and storage, racial happiness
+
+    IFPop mother_pop = null;
+    IFPop father_pop = null;
+    //figure out mother: if both can mother, choose randomly
+    if(!inPopOne.getRace().isCanMotherChildren())
+    {
+    mother_pop = inPopTwo;
+    father_pop = inPopOne;
+    }
+    else if(!inPopTwo.getRace().isCanMotherChildren())
+    {
+    mother_pop = inPopOne;
+    father_pop = inPopTwo;
+    }
+    else
+    {
+    if(getAPI().calcProb(1, 2))
+    {
+    mother_pop = inPopOne;
+    father_pop = inPopTwo;
+    }
+    else
+    {
+    mother_pop = inPopTwo;
+    father_pop = inPopOne;
+    }
+    }
+
+    IFRace race_of_baby = mother_pop.getRace();
+    if(getAPI().calcProb(mother_pop.getRace().getChanceToBirthOtherRace()))
+    {
+    race_of_baby = father_pop.getRace();
+    }
+    mother_pop.setPregnantBabyRace(race_of_baby);
+    mother_pop.setPregnantDayOver(getAPI().getCalendar().getCurrentDate() + race_of_baby.getTotalPregnancyDays());
+    addDebugMessage(inScriptInstance, mother_pop.getDebugName() + " (mother) is now pregnant due to interaction with " + father_pop.getDebugName() + " (father); race of baby=" + race_of_baby.getDisplayName());
+
+    return toReturn;
+  </mLetPopsMakeBaby>
+  
+	<!-- letting a pregnant pop give birth has one input: IFPop inPop.  There is one output: IFPop outNewbornPop -->
+	<!-- this script is called once every time the IFPop function giveBirth is called (that function is a passthrough).  This script takes care of creating the new pop with the correct race/other parameters, and calculates stillbirth/wound from childbirth probabilities -->
+  <mPopGiveBirth>
+        //input count check:
+        if (inArguments.Length &lt; 1)
+        {
+            return null;
+        }
+			
+		IFPop inPop = (IFPop)inArguments[0];
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		
+		//this is common to local and delegation scripts, so it is in a custom script:
+	    var customScripts = getAPI().getCustomScripts();
+		if(customScripts.runCustomScriptCheckTypes("popGiveBirth", new List&lt;object&gt;() { inPop }, out List&lt;object&gt; outputs, false, 
+			typeof(IFPop))
+		  )
+		{
+			toReturn.Add((IFPop)outputs[0]);
+			return toReturn;
+		}
+		
+		addDebugMessage(inScriptInstance, "mPopGiveBirth failed to execute: subscript popGiveBirth failed to execute");
+		toReturn.Add(null);
+		return toReturn;
+  </mPopGiveBirth>
+	
+  </gamescripts>
+  
+</core_data>

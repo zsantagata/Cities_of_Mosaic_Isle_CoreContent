@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation list_of_options</a> <b>list</b> <c>kind_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase war adjectives before_replace_text</a> <b>string</b>        <c>glorious,conquering,bloodthirsty,belligerent</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase raiding adjectives before_replace_text</a> <b>string</b>    <c>plundering,pillaging,loot-seeking,avaricious</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase diplomacy adjectives before_replace_text</a> <b>string</b>  <c>gregarious,friendly,honorable,persuasive</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase trade adjectives before_replace_text</a> <b>string</b>      <c>calculating,unflappable,merchant,fair</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase emigration adjectives before_replace_text</a> <b>string</b> <c>desperate,haggard,weary,exiled</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase settlement adjectives before_replace_text</a> <b>string</b> <c>colonist,scouting,hopeful,eager</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a community and from it, returns a string that is an adjective phrase relating to the kind of the delegation -->
+  <!-- the adjectives will not just be a repeat of the kind because they might be used alongside the kind's name -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFDelegation inDelegation, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inDelegation == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase custom script received invalid arguments: inDelegation cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	
+	//determine kind:
+	IFDelegation.eDelegationType delType = inDelegation.getDelegationType();
+	string kindString = delType == IFDelegation.eDelegationType.cWar ? "war" : 
+						delType == IFDelegation.eDelegationType.cRaiding ? "raiding" : 
+						delType == IFDelegation.eDelegationType.cDiplomacy ? "diplomacy" : 
+						delType == IFDelegation.eDelegationType.cTrade ? "trade" : 
+						delType == IFDelegation.eDelegationType.cEmigration ? "emigration" : 
+						delType == IFDelegation.eDelegationType.cSettlement ? "settlement" : 
+						"none";
+	
+	string allAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase " + kindString + " adjectives before_replace_text", out success);
+	if(success)
+	{
+		List&lt;string&gt; possibleAdjectives = new List&lt;string&gt;(allAdj.Split(','));
+		if(possibleAdjectives.Count != 0)
+		{
+			outDescription = possibleAdjectives[(int)getAPI().calcRandIntUnder(possibleAdjectives.Count)];
+		}
+	}
+	
+	if(outDescription == "")
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_delegation_kind_adj_phrase default before_replace_text", out success);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

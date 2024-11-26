@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>determineAttackerMorale no_food penalty</a> <b>double</b> <c>0.175</c></i1> <!-- proportion of the whole range. a soldier marches on their stomach -->
+	  <i1><a>determineAttackerMorale no_hstasis penalty</a> <b>double</b> <c>0.075</c></i1> <!-- proportion of the whole range. freezing/overheating soldiers can't and won't fight -->
+	  
+	  <!-- food quality and hstasis quality bonuses to morale are quadratic: at minimum resource quality, they are each 0, while at max resource quality they are the below values: -->
+	  <!-- note that if the no_food or no_hstasis penalties are applied, these won't contribute anything -->
+	  <i1><a>determineAttackerMorale food_quality bonus max</a> <b>double</b> <c>0.1</c></i1> <!-- proportion of the whole range -->
+	  <i1><a>determineAttackerMorale hstasis_quality bonus max</a> <b>double</b> <c>0.025</c></i1> <!-- proportion of the whole range -->
+	  
+	  <i1><a>determineAttackerMorale new_dead penalty</a> <b>double</b> <c>0.02</c></i1> <!-- proportion of the whole range -->
+	  <i1><a>determineAttackerMorale old_dead penalty</a> <b>double</b> <c>0.0025</c></i1> <!-- proportion of the whole range -->
+	  <i1><a>determineAttackerMorale new_wounded penalty</a> <b>double</b> <c>0.0075</c></i1> <!-- proportion of the whole range -->
+	  <i1><a>determineAttackerMorale old_wounded penalty</a> <b>double</b> <c>0.005</c></i1> <!-- proportion of the whole range.  The old_wounded penalty is bigger than the old_dead penalty because wounded pops need care and have voices, unlike the dead -->
+	  <i1><a>determineAttackerMorale new_ill penalty</a> <b>double</b> <c>0.005</c></i1> <!-- proportion of the whole range -->
+	  <i1><a>determineAttackerMorale old_ill penalty</a> <b>double</b> <c>0.0025</c></i1> <!-- proportion of the whole range -->
+
+	  <i1><a>determineAttackerMorale defender_dead bonus</a> <b>double</b> <c>2.0</c></i1> <!-- proportion of the whole range.  This is divided by the total count of pops in the enemy community. -->
+	  <i1><a>determineAttackerMorale defender_wounded bonus</a> <b>double</b> <c>1.0</c></i1> <!-- proportion of the whole range.  This is divided by the total count of pops in the enemy community. -->
+	  
+	  <i1><a>determineAttackerMorale goal_accomplished base bonus</a> <b>double</b> <c>1.0</c></i1> <!-- proportion of the whole range.  This is multiplied by inWarTargetAccomplishCount and divided by the below factors.  This is also decreased as the days go on. -->
+	  <i1><a>determineAttackerMorale goal_accomplished pop factor</a> <b>double</b> <c>40</c></i1> <!-- if this many pops are hurt/abducted, the bonus above is achieved -->
+	  <i1><a>determineAttackerMorale goal_accomplished resources factor</a> <b>double</b> <c>300</c></i1> <!-- if this many resources are destroyed/stolen, the bonus above is achieved -->
+	  <i1><a>determineAttackerMorale goal_accomplished building factor</a> <b>double</b> <c>5</c></i1> <!-- if this many buildings are destroyed, the bonus above is achieved -->
+	  <i1><a>determineAttackerMorale goal_accomplished per_day geometric_mult</a> <b>double</b> <c>0.875</c></i1> <!-- the goal_accomplished bonus is multiplied by this raised to the power of how many days after the first day have passed in the siege -->
+	  
+	  <i1><a>determineAttackerMorale bonus dampening factor</a> <b>double</b> <c>0.01</c></i1> <!-- proportion of the whole range.  when morale is low, real morale gains are x / (x + this) where x is the raw gain.  Must be greater than 0.  A morale gain exactly equal to this will be halved; less will be lessened and more will be closer to a mult of 1.0 -->
+	  <i1><a>determineAttackerMorale bonus dampening threshold</a> <b>double</b> <c>0.25</c></i1> <!-- proportion of the whole range -->
+	  <i1><a>determineAttackerMorale penalty dampening factor</a> <b>double</b> <c>0.015</c></i1> <!-- proportion of the whole range.  when morale is high, real morale losses are x / (x + this) where x is the raw loss.  Must be greater than 0.  A morale loss exactly equal to this will be halved; less will be lessened and more will be closer to a mult of 1.0 -->
+	  <i1><a>determineAttackerMorale penalty dampening threshold</a> <b>double</b> <c>0.75</c></i1> <!-- proportion of the whole range -->
+	  
+	  <i1><a>determineAttackerMorale morale randomness add_subtract max</a> <b>double</b> <c>0.05</c></i1> <!-- proportion of the whole range -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script determineattackermorale</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which determines the morale of an attacking delegation -->
+  <!-- the morale of a player-sourced delegation determines how many attackers may choose to attack the enemy community tomorrow if the order is given.  When morale is 0, the delegation's morale is broken and it must retreat. -->
+  <!-- the morale of a foreign delegation determines if they abandon their siege early -->
+  <!-- Over time, a player-sourced delegation naturally consumes food and HStasis resources to keep its morale up (based on the quality of resources).  If these resources are not available, the delegation will lose morale.  (It is assumed that foreign delegations have the necessary amount of food and hstasis resources, or the delegation would not have been launched, but this script does not check; it merely uses the inputs provided.) -->
+  <!-- Other factors which impact delegation morale: -->
+  <!-- Pops which are dead, wounded, or ill cause some morale loss -->
+  <!-- Pops which are newly dead, wounded, or ill cause an initial burst of morale loss -->
+  <!-- Dead and wounded enemy defenders cause some morale gain -->
+  <!-- Accomplishing the war goal (destroy/steal pops/resources/capital) causes morale gain, but this decreases as the days go on.  (Foreign delegations could provide an appropriate war goal or an empty string). -->
+  <!-- If morale is high, small-to-moderate morale losses are dampened.  If morale is low, small-to-moderate morale gains are dampened. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation,
+	double inPreviousMorale,
+	bool inNoFoodLeft,
+	double inFoodAverageQuality,
+	bool inNoHStasisLeft,
+	double inHStasisAverageQuality,
+	Int64 inNewDead,
+	Int64 inNewWounded,
+	Int64 inNewIll,
+	Int64 inEnemyDefendersKilled,
+	Int64 inEnemyDefendersWounded,
+	string inWarTarget,
+	double inWarTargetAccomplishCount,
+	bool inRaiding //if false it means war
+	
+	The output is the new morale, double outMorale -->
+	<i1><a>determineAttackerMorale</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation), typeof(double), typeof(bool), typeof(double), typeof(bool), typeof(double),
+			typeof(Int64), typeof(Int64), typeof(Int64), typeof(Int64), typeof(Int64),
+			typeof(string), typeof(double), typeof(bool)
+		}
+	  }, out _))
+	{
+		throw new ArgumentException("determineAttackerMorale custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	double inPreviousMorale = (double)inArguments[1];
+	bool inNoFoodLeft = (bool)inArguments[2];
+	double inFoodAverageQuality = (double)inArguments[3];
+	bool inNoHStasisLeft = (bool)inArguments[4];
+	double inHStasisAverageQuality = (double)inArguments[5];
+	Int64 inNewDead = (Int64)inArguments[6];
+	Int64 inNewWounded = (Int64)inArguments[7];
+	Int64 inNewIll = (Int64)inArguments[8];
+	Int64 inEnemyDefendersKilled = (Int64)inArguments[9];
+	Int64 inEnemyDefendersWounded = (Int64)inArguments[10];
+	string inWarTarget = (string)inArguments[11];
+	double inWarTargetAccomplishCount = (double)inArguments[12];
+	bool inRaiding = (bool)inArguments[13];
+	
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	double resQualMin = consts.getResourceQualityMin();
+	double resQualMax = consts.getResourceQualityMax();
+	double morale_max = consts.getMoraleMax();
+	
+	//first, fetch all custom consts:
+	double noFoodPenalty = customConsts.getDoubleConst("determineAttackerMorale no_food penalty", out bool success);
+	if(!success) noFoodPenalty = 0.175d;
+	double noHStasisPenalty = customConsts.getDoubleConst("determineAttackerMorale no_hstasis penalty", out success);
+	if(!success) noHStasisPenalty = 0.075d;
+	
+	double foodQualityBonusMax = customConsts.getDoubleConst("determineAttackerMorale food_quality bonus max", out success);
+	if(!success) foodQualityBonusMax = 0.1d;
+	double hstasisQualityBonusMax = customConsts.getDoubleConst("determineAttackerMorale hstasis_quality bonus max", out success);
+	if(!success) hstasisQualityBonusMax = 0.025d;
+	
+	double newDeadPenalty = customConsts.getDoubleConst("determineAttackerMorale new_dead penalty", out success);
+	if(!success) newDeadPenalty = 0.02d;
+	double oldDeadPenalty = customConsts.getDoubleConst("determineAttackerMorale old_dead penalty", out success);
+	if(!success) oldDeadPenalty = 0.0025d;
+	double newWoundedPenalty = customConsts.getDoubleConst("determineAttackerMorale new_wounded penalty", out success);
+	if(!success) newWoundedPenalty = 0.0075d;
+	double oldWoundedPenalty = customConsts.getDoubleConst("determineAttackerMorale old_wounded penalty", out success);
+	if(!success) oldWoundedPenalty = 0.005d;
+	double newIllnessPenalty = customConsts.getDoubleConst("determineAttackerMorale new_ill penalty", out success);
+	if(!success) newIllnessPenalty = 0.005d;
+	double oldIllnessPenalty = customConsts.getDoubleConst("determineAttackerMorale old_ill penalty", out success);
+	if(!success) oldIllnessPenalty = 0.0025d;
+	
+	double defenderDeadBonus = customConsts.getDoubleConst("determineAttackerMorale defender_dead bonus", out success);
+	if(!success) defenderDeadBonus = 2.0d;
+	double defenderWoundedBonus = customConsts.getDoubleConst("determineAttackerMorale defender_wounded bonus", out success);
+	if(!success) defenderWoundedBonus = 1.0d;
+	
+	double goalAccomplishedBaseBonus = customConsts.getDoubleConst("determineAttackerMorale goal_accomplished base bonus", out success);
+	if(!success) goalAccomplishedBaseBonus = 1.0d;
+	double goalAccomplishedPopFactor = customConsts.getDoubleConst("determineAttackerMorale goal_accomplished pop factor", out success);
+	if(!success) goalAccomplishedPopFactor = 40d;
+	double goalAccomplishedResourcesFactor = customConsts.getDoubleConst("determineAttackerMorale goal_accomplished resources factor", out success);
+	if(!success) goalAccomplishedResourcesFactor = 300d;
+	double goalAccomplishedBuildingFactor = customConsts.getDoubleConst("determineAttackerMorale goal_accomplished building factor", out success);
+	if(!success) goalAccomplishedBuildingFactor = 5d;
+	double goalAccomplishedGeoMult = customConsts.getDoubleConst("determineAttackerMorale goal_accomplished per_day geometric_mult", out success);
+	if(!success) goalAccomplishedGeoMult = 0.875d;
+	
+	double bonusDampeningFactor = customConsts.getDoubleConst("determineAttackerMorale bonus dampening factor", out success);
+	if(!success) bonusDampeningFactor = 0.01d;
+	double bonusDampeningThreshold = customConsts.getDoubleConst("determineAttackerMorale bonus dampening threshold", out success);
+	if(!success) bonusDampeningThreshold = 0.25d;
+	double penaltyDampeningFactor = customConsts.getDoubleConst("determineAttackerMorale penalty dampening factor", out success);
+	if(!success) penaltyDampeningFactor = 0.015d;
+	double penaltyDampeningThreshold = customConsts.getDoubleConst("determineAttackerMorale penalty dampening threshold", out success);
+	if(!success) penaltyDampeningThreshold = 0.75d;
+	
+	//start adding up the bonuses and penalties -- at the end we will apply the dampening and sum them all up 
+	List&lt;double&gt; bonuses = new List&lt;double&gt;();
+	List&lt;double&gt; penalties = new List&lt;double&gt;();
+	string debugMessage = "";
+	
+	if(inNoFoodLeft)
+	{
+		penalties.Add(noFoodPenalty);
+		debugMessage += "No food causes penalty of " + noFoodPenalty + "; ";
+	}
+	else
+	{
+		double toAdd = foodQualityBonusMax * ((inFoodAverageQuality - resQualMin) * (inFoodAverageQuality - resQualMin) / ((resQualMax - resQualMin) * (resQualMax - resQualMin)));
+		bonuses.Add(toAdd);
+		debugMessage += "Food quality of " + inFoodAverageQuality + " causes bonus of " + toAdd + "; ";
+	}
+	if(inNoHStasisLeft)
+	{
+		penalties.Add(noHStasisPenalty);
+		debugMessage += "No hstasis causes penalty of " + noHStasisPenalty + "; ";
+	}
+	else
+	{
+		double toAdd = hstasisQualityBonusMax * ((inHStasisAverageQuality - resQualMin) * (inHStasisAverageQuality - resQualMin) / ((resQualMax - resQualMin) * (resQualMax - resQualMin)));
+		bonuses.Add(toAdd);
+		debugMessage += "HStasis quality of " + inFoodAverageQuality + " causes bonus of " + toAdd + "; ";
+	}
+	
+	penalties.Add(inNewDead * newDeadPenalty);
+	penalties.Add(inNewWounded * newWoundedPenalty);
+	penalties.Add(inNewIll * newIllnessPenalty);
+	debugMessage += "Newly dead count of " + inNewDead + " causes penalty of " + (inNewDead * newDeadPenalty) + "; ";
+	debugMessage += "Newly wounded count of " + inNewWounded + " causes penalty of " + (inNewWounded * newWoundedPenalty) + "; ";
+	debugMessage += "Newly ill count of " + inNewIll + " causes penalty of " + (inNewIll * newIllnessPenalty) + "; ";
+	
+	Int64 old_dead = -inNewDead;
+	Int64 old_wounded = -inNewWounded;
+	Int64 old_ill = -inNewIll;
+	foreach(IFPop pop in inDelegation.getPopsInDelegation())
+	{
+		if(pop.isDead())
+		{
+			old_dead++;
+		}
+		else
+		{
+			if(pop.isWounded())
+				old_wounded++;
+			if(pop.isIll())
+				old_ill++;
+		}
+	}
+	if(old_dead &gt; 0)
+	{
+		penalties.Add(old_dead * oldDeadPenalty);
+		debugMessage += "Old dead count of " + old_dead + " causes penalty of " + (old_dead * oldDeadPenalty) + "; ";
+	}
+	if(old_wounded &gt; 0)
+	{
+		penalties.Add(old_wounded * oldWoundedPenalty);
+		debugMessage += "Old wounded count of " + old_wounded + " causes penalty of " + (old_wounded * oldWoundedPenalty) + "; ";
+	}
+	if(old_ill &gt; 0)
+	{
+		penalties.Add(old_ill * oldIllnessPenalty);
+		debugMessage += "Old ill count of " + old_ill + " causes penalty of " + (old_ill * oldIllnessPenalty) + "; ";
+	}
+	
+	int totalPopsInCommunity = 0;
+	foreach(IFPop pop in inDelegation.getTargetCommunity().getPopsLoyalToCommunity(true, false))
+	{
+		if(!pop.hasDelegation() &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cInForeignCommunity))
+			totalPopsInCommunity++;
+	}
+	foreach(var kvpair in inDelegation.getTargetCommunity().getAdditionalUndeclaredPopCounts())
+	{
+		totalPopsInCommunity += (int)kvpair.Value;
+	}
+	if(totalPopsInCommunity == 0) totalPopsInCommunity = 1; //an attack on an empty community shouldn't get here, but just in case
+	
+	bonuses.Add(inEnemyDefendersKilled * defenderDeadBonus / totalPopsInCommunity);
+	bonuses.Add(inEnemyDefendersWounded * defenderWoundedBonus / totalPopsInCommunity);
+	debugMessage += "Defenders killed count of " + inEnemyDefendersKilled + " (total pops=" + totalPopsInCommunity + ") causes bonus of " + (inEnemyDefendersKilled * defenderDeadBonus / totalPopsInCommunity) + "; ";
+	debugMessage += "Defenders wounded count of " + inEnemyDefendersWounded + " (total pops=" + totalPopsInCommunity + ") causes bonus of " + (inEnemyDefendersWounded * defenderWoundedBonus / totalPopsInCommunity) + "; ";
+	
+	if(inDelegation.getSourceCommunity() == getAPI().getLocalCommunity())
+	{
+		Int64 first_day_date = (Int64)inDelegation.getExpectedArrivalDate();
+		Int64 current_day_date = getAPI().getCalendar().getCurrentDate();
+		double diminishingFactor = Math.Pow(goalAccomplishedGeoMult, (double)(current_day_date - first_day_date));
+		double goalAccomplishedBonus = goalAccomplishedBaseBonus * inWarTargetAccomplishCount * diminishingFactor;
+		if(inWarTarget.ToLower() == "people")
+		{
+			goalAccomplishedBonus /= goalAccomplishedPopFactor;
+		}
+		else if(inWarTarget.ToLower() == "resources")
+		{
+			goalAccomplishedBonus /= goalAccomplishedResourcesFactor;
+		}
+		else if(inWarTarget.ToLower() == "buildings")
+		{
+			goalAccomplishedBonus /= goalAccomplishedBuildingFactor;
+		}
+		bonuses.Add(goalAccomplishedBonus);
+		debugMessage += "Goal accomplished (target=" + inWarTarget + ") raw count of " + inWarTargetAccomplishCount + " with diminishing factor of " + diminishingFactor + " causes bonus of " + goalAccomplishedBonus + "; ";
+	}
+	else
+	{
+		double goalAccomplishedBonus = goalAccomplishedBaseBonus * inWarTargetAccomplishCount;
+		if(inWarTarget.ToLower() == "people")
+		{
+			goalAccomplishedBonus /= goalAccomplishedPopFactor;
+		}
+		else if(inWarTarget.ToLower() == "resources")
+		{
+			goalAccomplishedBonus /= goalAccomplishedResourcesFactor;
+		}
+		else if(inWarTarget.ToLower() == "buildings")
+		{
+			goalAccomplishedBonus /= goalAccomplishedBuildingFactor;
+		}
+		bonuses.Add(goalAccomplishedBonus);
+		debugMessage += "Goal accomplished (target=" + inWarTarget + ") raw count of " + inWarTargetAccomplishCount + " (no diminishing factor for foreign communities) causes bonus of " + goalAccomplishedBonus + "; ";
+	}
+	
+	//all the bonuses and penalties are in the lists now.  Based on current morale, moderate them:
+	if((inPreviousMorale / morale_max) &gt; penaltyDampeningThreshold)
+	{
+		//moderate all the penalties:
+		debugMessage += "All penalties will be modified by x / (x + " + penaltyDampeningFactor + ") because previous morale is greater than threshold; ";
+		for(int i = 0; i &lt; penalties.Count; i++)
+		{
+			penalties[i] *= penalties[i] / (penalties[i] + penaltyDampeningFactor);
+		}
+	}
+	else if((inPreviousMorale / morale_max) &lt; bonusDampeningThreshold)
+	{
+		//moderate all the bonuses:
+		debugMessage += "All bonuses will be modified by x / (x + " + bonusDampeningFactor + ") because previous morale is greater than threshold; ";
+		for(int i = 0; i &lt; bonuses.Count; i++)
+		{
+			bonuses[i] *= bonuses[i] / (bonuses[i] + bonusDampeningFactor);
+		}
+	}
+	
+	double rand_max = customConsts.getDoubleConst("determineAttackerMorale morale randomness add_subtract max", out success);
+	if(!success) rand_max = 0.05d;
+	double rand_morale_add = (getAPI().calcRand() * 2 * rand_max) - rand_max;
+	debugMessage += "Rand morale add=" + rand_morale_add + "; ";
+	
+	//now add all of it up:
+	double outMorale = inPreviousMorale / morale_max;
+	foreach(double bonus in bonuses)
+	{
+		outMorale += bonus;
+	}
+	foreach(double penalty in penalties)
+	{
+		outMorale -= penalty;
+	}
+	outMorale += rand_morale_add;
+	if(outMorale &lt; 0.0d) outMorale = 0.0d;
+	if(outMorale &gt; 1.0d) outMorale = 1.0d;
+	outMorale *= morale_max;
+	
+	addDebugMessage(inScriptInstance, debugMessage + "\nPrevious attacker morale = " + inPreviousMorale + ", new morale = " + outMorale);
+	
+	List&lt;object&gt; toReturn = new List&lt;object&gt;() { outMorale };
+	return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

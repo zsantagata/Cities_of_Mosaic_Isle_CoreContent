@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_industry_name_noun_list default before_replace_text</a> <b>string</b> <c>no industries</c></i1> <!-- this is only used if there are no industrys in the input list -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_industry list_of_options</a> <b>list</b> <c>name_noun_list</c></i1> <!-- add this entry -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_industry_name_noun_list</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a list of industrys and from it, returns a string that is a noun phrase listing the industries by name -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	List<IFIndustry> inIndustrys, //cannot be null but can be empty
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_mult_industry_name_noun_list</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(List&lt;IFIndustry&gt;)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_industry_name_noun_list custom script received invalid arguments");
+		return null;
+	}
+	  
+	List&lt;IFIndustry&gt; inIndustrys = (List&lt;IFIndustry&gt;)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	if(inIndustrys == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_industry_name_noun_list custom script received invalid arguments: inIndustrys cannot be null");
+		return null;
+	}
+	
+	if(inIndustrys.Count == 0)
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_industry_name_noun_list default before_replace_text", out success);
+		if(!success) outDescription = "no industries";
+		return new List&lt;object&gt;() { outDescription };
+	}
+	
+	string language = customConsts.getStringConst("replaceDescriptionMarkups language_of_grammar_enforcer_script", out success);
+	if(!success) language = "english";
+	
+	string lastSeparator = customConsts.getStringConst(language + " multiple_item_separator last before_replace_text", out success);
+	if(!success) lastSeparator = "and";
+	
+	string notLastSeparator = customConsts.getStringConst(language + " multiple_item_separator notlast before_replace_text", out success);
+	if(!success) notLastSeparator = ",";
+	
+	Int64 useSpaceBeforeLastInt = customConsts.getIntConst(language + " multiple_item_separator use_space_before_last", out success);
+	if(!success) useSpaceBeforeLastInt = 1;
+	
+	Int64 useSpaceBeforeNotLastInt = customConsts.getIntConst(language + " multiple_item_separator use_space_before_notlast", out success);
+	if(!success) useSpaceBeforeNotLastInt = 0;
+	
+	string between_notlast = (useSpaceBeforeNotLastInt != 0 ? " " : "") + notLastSeparator + " ";
+	string between_last = (useSpaceBeforeLastInt != 0 ? " " : "") + lastSeparator + " ";
+	
+	for(int i = 0; i &lt; inIndustrys.Count; i++)
+	{
+		bool last = (i == (inIndustrys.Count - 1));
+		bool first = (i == 0);
+		
+		if(first)
+		{
+			outDescription += inIndustrys[i].getDisplayName();
+		}
+		else if(last)
+		{
+			outDescription += between_last + inIndustrys[i].getDisplayName();
+		}
+		else
+		{
+			outDescription += between_notlast + inIndustrys[i].getDisplayName();
+		}
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

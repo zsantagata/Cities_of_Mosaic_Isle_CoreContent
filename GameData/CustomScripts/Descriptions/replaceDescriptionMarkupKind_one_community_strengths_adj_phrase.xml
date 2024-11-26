@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <!-- note that [0] will always be the economic adjective while [1] will always be the military adjective.  Both will exist but might not be used -->
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_community list_of_options</a> <b>list</b> <c>strengths_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <!-- each are split 3 even ways: weak/average/strong -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase economy selection_count</a> <b>int</b> <c>3</c></i1> <!-- economy is split this many ways -->
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase economy value_sel0 before_replace_text</a> <b>string</b> <c>poor,barren,meager,lacking,wanting,threadbare</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase economy value_sel1 before_replace_text</a> <b>string</b> <c>austere,middling,stable,productive</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase economy value_sel2 before_replace_text</a> <b>string</b> <c>wealthy,rich,goods-laden,fattened,thriving</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase military selection_count</a> <b>int</b> <c>3</c></i1> <!-- military is split this many ways -->
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase military value_sel0 before_replace_text</a> <b>string</b> <c>nonthreatening,harmless,powerless,forceless</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase military value_sel1 before_replace_text</a> <b>string</b> <c>capable,competent,defensible</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase military value_sel2 before_replace_text</a> <b>string</b> <c>well-trained,indominable,powerful,well-equipped</c></i1>
+	  
+	  <!-- the actual adjectives will be slotted into these phrases: -->
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_selection_count</a> <b>int</b> <c>14</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel0 before_replace_text</a> <b>string</b> <c>[0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel1 before_replace_text</a> <b>string</b> <c>[1]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel2 before_replace_text</a> <b>string</b> <c>[0], yet [1]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel3 before_replace_text</a> <b>string</b> <c>[1], yet [0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel4 before_replace_text</a> <b>string</b> <c>[0] and [1]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel5 before_replace_text</a> <b>string</b> <c>[1] and [0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel6 before_replace_text</a> <b>string</b> <c>[0], [1]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel7 before_replace_text</a> <b>string</b> <c>[1], [0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel8 before_replace_text</a> <b>string</b> <c>economically [0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel9 before_replace_text</a> <b>string</b> <c>militarily [1]</c></i1>
+	  
+	  <!-- these are just to increase the relative weights: -->
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel10 before_replace_text</a> <b>string</b> <c>[0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel11 before_replace_text</a> <b>string</b> <c>[1]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel12 before_replace_text</a> <b>string</b> <c>[0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel13 before_replace_text</a> <b>string</b> <c>[1]</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_community_strengths_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a community and from it, returns a string that is an adjective phrase indicating the economic and/or military strength of the community -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFCommunity inCommunity, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_community_strengths_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFCommunity)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_community_strengths_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inCommunity == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_community_strengths_adj_phrase custom script received invalid arguments: inCommunity cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	
+	//determine strengths:
+	double econMax = consts.getEconStrengthMax();
+	double milMax = consts.getMilStrengthMax();
+	
+	Int64 econSelCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_community_strengths_adj_phrase economy selection_count", out success);
+	if(!success) econSelCount = 3;
+	double econStrength = inCommunity.getEconStrength();
+	double econStrengthRatio = econStrength / econMax;
+	Int64 econSel = (Int64)(econSelCount * econStrengthRatio);
+	if(econSel == econSelCount) econSel--;
+	string econAdjWithCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_community_strengths_adj_phrase economy value_sel" + econSel + " before_replace_text", out success);
+	string econAdj = "";
+	List&lt;string&gt; possibleEconAdj = new List&lt;string&gt;(econAdjWithCommas.Split(','));
+	if(possibleEconAdj.Count != 0)
+	{
+		econAdj = possibleEconAdj[(int)getAPI().calcRandIntUnder(possibleEconAdj.Count)];
+	}
+	
+	Int64 milSelCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_community_strengths_adj_phrase military selection_count", out success);
+	if(!success) milSelCount = 3;
+	double milStrength = inCommunity.getMilStrength();
+	double milStrengthRatio = milStrength / milMax;
+	Int64 milSel = (Int64)(milSelCount * milStrengthRatio);
+	if(milSel == milSelCount) milSel--;
+	string milAdjWithCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_community_strengths_adj_phrase military value_sel" + milSel + " before_replace_text", out success);
+	string milAdj = "";
+	List&lt;string&gt; possibleMilAdj = new List&lt;string&gt;(milAdjWithCommas.Split(','));
+	if(possibleMilAdj.Count != 0)
+	{
+		milAdj = possibleMilAdj[(int)getAPI().calcRandIntUnder(possibleMilAdj.Count)];
+	}
+	
+	Int64 randSelCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_selection_count", out success);
+	if(!success) randSelCount = 14;
+	List&lt;string&gt; possiblePhrases = new List&lt;string&gt;();
+	for(int i = 0; i &lt; randSelCount; i++)
+	{
+		string phrase = customConsts.getStringConst("replaceDescriptionMarkupKind_one_community_strengths_adj_phrase rand_sel" + i + " before_replace_text", out success);
+		if(!success)
+			continue;
+		
+		if(phrase.Contains("[0]") &amp;&amp; (econAdj == ""))
+			continue;
+		if(phrase.Contains("[1]") &amp;&amp; (milAdj == ""))
+			continue;
+			
+		possiblePhrases.Add(phrase);
+	}
+	
+	if(possiblePhrases.Count != 0)
+	{
+		outDescription = possiblePhrases[(int)getAPI().calcRandIntUnder(possiblePhrases.Count)];
+		outDescription = outDescription.Replace("[0]", econAdj);
+		outDescription = outDescription.Replace("[1]", milAdj);
+	}
+	else
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_community_strengths_adj_phrase default before_replace_text", out success);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

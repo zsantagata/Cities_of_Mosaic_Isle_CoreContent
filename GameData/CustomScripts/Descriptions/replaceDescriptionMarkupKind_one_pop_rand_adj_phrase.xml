@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop list_of_options</a> <b>list</b> <c>rand_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_rand_adj_phrase other_adj_phrase_names list</a> <b>string</b> <c>race,sex,health,loyalty,soldier</c></i1>
+	  	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_pop_rand_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a pop and from it, returns a string that is an adjective phrase chosen randomly from all other adjective phrases -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFPop inPop, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_pop_rand_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_pop_rand_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inPop == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_pop_rand_adj_phrase custom script received invalid arguments: inPop cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	
+	string possiblePhrases = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_rand_adj_phrase other_adj_phrase_names list", out success);
+	List&lt;string&gt; possibles = new List&lt;string&gt;(possiblePhrases.Split(','));
+	if(possibles.Count != 0)
+	{
+		string phraseChosen = possibles[(int)getAPI().calcRandIntUnder(possibles.Count)];
+		
+		if(customScripts.doesCustomScriptExistWithName("replaceDescriptionMarkupKind_one_pop_" + phraseChosen + "_adj_phrase"))
+		{
+			if(customScripts.runCustomScriptCheckTypes("replaceDescriptionMarkupKind_one_pop_" + phraseChosen + "_adj_phrase", new List&lt;object&gt;() { inPop }, out List&lt;object&gt; replacedMarkup, false, typeof(string)))
+			{
+				outDescription = (string)replacedMarkup[0];
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "markup kind script replaceDescriptionMarkupKind_one_pop_" + phraseChosen + "_adj_phrase" + " did not execute correctly; something went wrong; terminating replacement");
+			}
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "markup kind script replaceDescriptionMarkupKind_one_pop_" + phraseChosen + "_adj_phrase" + " does not exist despite markup kind and option being valid; something went wrong; terminating replacement");
+		}
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

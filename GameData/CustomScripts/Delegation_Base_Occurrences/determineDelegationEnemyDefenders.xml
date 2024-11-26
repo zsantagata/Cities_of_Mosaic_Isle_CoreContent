@@ -1,0 +1,285 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>determineDelegationEnemyDefenders illness_cause_no_defend prob</a> <b>double</b> <c>0.25</c></i1> <!-- this is the chance that an ill pop will choose not to defend solely based on the fact they are ill -->
+	  <i1><a>determineDelegationEnemyDefenders wound_cause_no_defend prob</a> <b>double</b> <c>1.0</c></i1> <!-- this is the chance that an wounded pop will choose not to defend solely based on the fact they are wounded -->
+	  
+	  <!-- morale results in a non-linear chance for defenders to participate. -->
+	  <!-- the formula is: chance to participate = 1 - (1 - morale/morale_max) ^ [power] -->
+	  <!-- where morale is limited between 0.0d and morale_max.  If morale is 0, chance is 0%, and if morale is max, chance is 100%. -->
+	  <!-- power must be a positive number.  The greater that [power] is than 1.0d, the higher chance a pop will defend when morale is middling, and vice versa.  When [power] is 1.0d, morale % is also the chance %. -->
+	  <i1><a>determineDelegationEnemyDefenders defend power factor</a> <b>double</b> <c>1.25</c></i1>
+	  
+	  <!-- military, econ, and racial probabilities work like this: -->
+	  <!-- there is a (value_low, prob_low) and a (value_high, prob_high) where value_low is less than value_high, and prob_low and prob_high are probabilities. -->
+	  <!-- if the military/econ strength or racial care value is less than value_low then prob_low is used.  If higher than value_high then prob_high is used. -->
+	  <!-- if between, linear interpolation is used. -->
+	  <!-- the probability here is probability *not* to fight -->
+	  <i1><a>determineDelegationEnemyDefenders military_strength_cause_no_defend value_low</a> <b>double</b> <c>0.0</c></i1> <!-- proportion of the entire range -->
+	  <i1><a>determineDelegationEnemyDefenders military_strength_cause_no_defend value_high</a> <b>double</b> <c>1.0</c></i1> <!-- proportion of the entire range -->
+	  <i1><a>determineDelegationEnemyDefenders military_strength_cause_no_defend prob_low</a> <b>double</b> <c>0.9</c></i1>
+	  <i1><a>determineDelegationEnemyDefenders military_strength_cause_no_defend prob_high</a> <b>double</b> <c>0.00</c></i1>
+	  
+	  <i1><a>determineDelegationEnemyDefenders econ_strength_cause_no_defend value_low</a> <b>double</b> <c>0.0</c></i1> <!-- proportion of the entire range -->
+	  <i1><a>determineDelegationEnemyDefenders econ_strength_cause_no_defend value_high</a> <b>double</b> <c>0.2</c></i1> <!-- proportion of the entire range -->
+	  <i1><a>determineDelegationEnemyDefenders econ_strength_cause_no_defend prob_low</a> <b>double</b> <c>0.9</c></i1>
+	  <i1><a>determineDelegationEnemyDefenders econ_strength_cause_no_defend prob_high</a> <b>double</b> <c>0.00</c></i1>
+	  
+	  <i1><a>determineDelegationEnemyDefenders race_value_cause_no_defend value_low</a> <b>double</b> <c>0.0</c></i1> <!-- race care value -->
+	  <i1><a>determineDelegationEnemyDefenders race_value_cause_no_defend value_high</a> <b>double</b> <c>1.5</c></i1> <!-- race care value-->
+	  <i1><a>determineDelegationEnemyDefenders race_value_cause_no_defend prob_low</a> <b>double</b> <c>0.0</c></i1>
+	  <i1><a>determineDelegationEnemyDefenders race_value_cause_no_defend prob_high</a> <b>double</b> <c>0.75</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script determinedelegationenemydefenders</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which determines which pops of an enemy community defend the community against a war or raiding delegation -->
+  <!-- Any pops which attack are first intercepted by defenders with some probability, but any which are not intercepted cause damage. -->
+  <!-- The probability of defenders intercepting attackers is related to the ratio of defenders to attackers, and military and economic strength of the community.  The first two increase the probability, and the last one decreases it. -->
+  <!-- When all attackers are intercepted and there are defenders left over, the defenders can attack the camp of the delegation and fight non-attackers or destroy resources.  This happens in another script, and does not occur for foreign-sourced delegations. -->
+  <!-- Which pops are defenders are determined by: that pop's illness/lack of illness, that pop's wounds/lack of wounds, the morale of the enemy community, and the race care values of the enemy community. -->
+  <!-- Because this script returns explicit pops, it will attempt to reify pops if not enough exist to be defenders. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation,
+	double inEnemyMorale,
+	bool inRaiding //if false it means war
+	
+	The output is a List of IFPop selected.  These pops will always be from the enemy community, not be dead, be in the foreign community, and (if reified) have soldier skill/equipment relating to the enemy community's econ/mil strength -->
+	<i1><a>determineDelegationEnemyDefenders</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation), typeof(double), typeof(bool)}
+	  }, out _))
+	{
+		throw new ArgumentException("determineDelegationEnemyDefenders custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	double inEnemyMorale = (double)inArguments[1];
+	bool inRaiding = (bool)inArguments[2];
+	
+	IFCommunity enemyCommunity = inDelegation.getTargetCommunity();
+	
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	//before we do anything else: if morale is 0.0d (i.e. the enemy community is broken), no one will attempt to defend:
+	if(inEnemyMorale == 0.0d)
+	{
+		addDebugMessage(inScriptInstance, "delegation " + inDelegation.getDebugName() + " will meet no defenders because enemy community morale is broken");
+		return new List&lt;object&gt;() { new List&lt;IFPop&gt;() };
+	}
+	
+	double illnessChanceNoDefend = customConsts.getDoubleConst("determineDelegationEnemyDefenders illness_cause_no_defend prob", out bool success);
+	if(!success) illnessChanceNoDefend = 0.25d;
+	if(illnessChanceNoDefend &gt; 1.0d) illnessChanceNoDefend = 0.25d;
+	if(illnessChanceNoDefend &lt; 0.0d) illnessChanceNoDefend = 0.25d;
+	
+	double woundChanceNoDefend = customConsts.getDoubleConst("determineDelegationEnemyDefenders wound_cause_no_defend prob", out success);
+	if(!success) woundChanceNoDefend = 1.0d;
+	if(woundChanceNoDefend &gt; 1.0d) woundChanceNoDefend = 1.0d;
+	if(woundChanceNoDefend &lt; 0.0d) woundChanceNoDefend = 1.0d;
+	
+	double morale_max = consts.getMoraleMax();
+	if(inEnemyMorale &gt; morale_max) inEnemyMorale = morale_max;
+	if(inEnemyMorale &lt; 0.0d) inEnemyMorale = 0.0d;
+	
+	double power_factor = customConsts.getDoubleConst("determineDelegationEnemyDefenders defend power factor", out success);
+	if(!success) power_factor = 1.25d;
+	if(power_factor &lt;= 0.0d) power_factor = 1.25d;
+	
+	double moraleChanceNoDefend = 1.0d - Math.Pow(inEnemyMorale/morale_max, power_factor);
+	
+	//as military strength of the community goes up, more members of the community are likely to have the training and the confidence to fight.
+	//if econ strength of the community is very low, members of the community are unlikely to fight since they have nothing to fight for.
+	//pops from various races of the city may be pressured into/away from being defenders because of a difference of race care values of the community
+	
+	double milStrengthValueLow = customConsts.getDoubleConst("determineDelegationEnemyDefenders military_strength_cause_no_defend value_low", out success);
+	if(!success) milStrengthValueLow = 0.0d;
+	double milStrengthValueHigh = customConsts.getDoubleConst("determineDelegationEnemyDefenders military_strength_cause_no_defend value_high", out success);
+	if(!success) milStrengthValueHigh = 1.0d;
+	double milStrengthProbLow = customConsts.getDoubleConst("determineDelegationEnemyDefenders military_strength_cause_no_defend prob_low", out success);
+	if(!success) milStrengthProbLow = 0.9d;
+	if(milStrengthProbLow &lt; 0.0d) milStrengthProbLow = 0.9d;
+	if(milStrengthProbLow &gt; 1.0d) milStrengthProbLow = 0.9d;
+	double milStrengthProbHigh = customConsts.getDoubleConst("determineDelegationEnemyDefenders military_strength_cause_no_defend prob_high", out success);
+	if(!success) milStrengthProbHigh = 0.9d;
+	if(milStrengthProbHigh &lt; 0.0d) milStrengthProbHigh = 0.9d;
+	if(milStrengthProbHigh &gt; 1.0d) milStrengthProbHigh = 0.9d;
+	
+	double maxMilStrength = consts.getMilStrengthMax();
+	double milStrengthProportion = enemyCommunity.getMilStrength() / maxMilStrength;
+	double milStrengthNoDefendProb = 0.0d;
+	if(milStrengthProportion &lt; milStrengthValueLow) milStrengthNoDefendProb = milStrengthProbLow;
+	else if(milStrengthProportion &gt; milStrengthValueHigh) milStrengthNoDefendProb = milStrengthProbHigh;
+	else //linear interpolation
+	{
+		milStrengthNoDefendProb = milStrengthProbLow + (milStrengthProbHigh - milStrengthProbLow) * ((milStrengthProportion - milStrengthValueLow) / (milStrengthValueHigh - milStrengthValueLow));
+	}
+	
+	double econStrengthValueLow = customConsts.getDoubleConst("determineDelegationEnemyDefenders econ_strength_cause_no_defend value_low", out success);
+	if(!success) econStrengthValueLow = 0.0d;
+	double econStrengthValueHigh = customConsts.getDoubleConst("determineDelegationEnemyDefenders econ_strength_cause_no_defend value_high", out success);
+	if(!success) econStrengthValueHigh = 1.0d;
+	double econStrengthProbLow = customConsts.getDoubleConst("determineDelegationEnemyDefenders econ_strength_cause_no_defend prob_low", out success);
+	if(!success) econStrengthProbLow = 0.9d;
+	if(econStrengthProbLow &lt; 0.0d) econStrengthProbLow = 0.9d;
+	if(econStrengthProbLow &gt; 1.0d) econStrengthProbLow = 0.9d;
+	double econStrengthProbHigh = customConsts.getDoubleConst("determineDelegationEnemyDefenders econ_strength_cause_no_defend prob_high", out success);
+	if(!success) econStrengthProbHigh = 0.9d;
+	if(econStrengthProbHigh &lt; 0.0d) econStrengthProbHigh = 0.9d;
+	if(econStrengthProbHigh &gt; 1.0d) econStrengthProbHigh = 0.9d;
+	
+	double maxEconStrength = consts.getEconStrengthMax();
+	double econStrengthProportion = enemyCommunity.getEconStrength() / maxEconStrength;
+	double econStrengthNoDefendProb = 0.0d;
+	if(econStrengthProportion &lt; econStrengthValueLow) econStrengthNoDefendProb = econStrengthProbLow;
+	else if(econStrengthProportion &gt; econStrengthValueHigh) econStrengthNoDefendProb = econStrengthProbHigh;
+	else //linear interpolation
+	{
+		econStrengthNoDefendProb = econStrengthProbLow + (econStrengthProbHigh - econStrengthProbLow) * ((econStrengthProportion - econStrengthValueLow) / (econStrengthValueHigh - econStrengthValueLow));
+	}
+	
+	//racial probabilities are per race, so precalculate them all here:
+	double raceValueLow = customConsts.getDoubleConst("determineDelegationEnemyDefenders race_value_cause_no_defend value_low", out success);
+	if(!success) raceValueLow = 0.0d;
+	double raceValueHigh = customConsts.getDoubleConst("determineDelegationEnemyDefenders race_value_cause_no_defend value_high", out success);
+	if(!success) raceValueHigh = 1.5d;
+	double raceProbLow = customConsts.getDoubleConst("determineDelegationEnemyDefenders race_value_cause_no_defend prob_low", out success);
+	if(!success) raceProbLow = 0.0d;
+	double raceProbHigh = customConsts.getDoubleConst("determineDelegationEnemyDefenders race_value_cause_no_defend prob_high", out success);
+	if(!success) raceProbHigh = 0.75d;
+	List&lt;double&gt; raceCareValues = new List&lt;double&gt;();
+	if(customScripts.runCustomScriptCheckTypes("getRaceCareValues", new List&lt;object&gt;() { inDelegation.getTargetCommunity(), null },
+							out List&lt;object&gt; outRaceCareValues, true, typeof(List&lt;double&gt;)))
+	{
+		raceCareValues = (List&lt;double&gt;)outRaceCareValues[0];
+	}
+	Dictionary&lt;IFRace, double&gt; raceNoDefendProbabilities = new Dictionary&lt;IFRace, double&gt;();
+	string racialProbabilityString = "";
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("races"); moid++)
+	{
+		IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+		double race_care_value = 0.0d; //0.0 = apathy
+		if(race == null)
+			continue;
+		if(raceCareValues.Count &gt; moid)
+		{
+			race_care_value = raceCareValues[moid];
+		}
+		double raceNoDefendProb = 0.0d;
+		if(race_care_value &lt; raceValueLow) raceNoDefendProb = raceProbLow;
+		else if(race_care_value &gt; raceValueHigh) raceNoDefendProb = raceProbHigh;
+		else //linear interpolation
+		{
+			raceNoDefendProb = raceProbLow + (raceProbHigh - raceProbLow) * ((race_care_value - raceValueLow) / (raceValueHigh - raceValueLow));
+		}
+		raceNoDefendProbabilities.Add(race, raceNoDefendProb);
+		racialProbabilityString += race.getDebugName() + " race care value=" + race_care_value + " and no-defend prob=" + raceNoDefendProb + "; ";
+	}
+	
+	addDebugMessage(inScriptInstance, "Calculating defenders against delegation " + inDelegation.getDebugName() + ", illnessChanceNoDefend = " + illnessChanceNoDefend + " woundChanceNoDefend = " + woundChanceNoDefend +
+		" inEnemyMorale = " + inEnemyMorale + " power_factor = " + power_factor + " moraleChanceNoDefend = " + moraleChanceNoDefend + " inRaiding = " + inRaiding +
+		" milStrengthNoDefendProb = " + milStrengthNoDefendProb + " econStrengthNoDefendProb = " + econStrengthNoDefendProb + " " + racialProbabilityString);
+	
+	string descriptionOfDefenders = "";
+	string descriptionOfNotDefenders = "";
+	int popsNotDefendingCount = 0;
+	Dictionary&lt;IFRace, UInt64&gt; raceCounts = new Dictionary&lt;IFRace, UInt64&gt;();
+	foreach(var kvpair in enemyCommunity.getLoyalPopsByRace(true, false))
+	{
+		raceCounts.Add(kvpair.Key, (UInt64)kvpair.Value.Count);
+	}
+	foreach(var kvpair in enemyCommunity.getAdditionalUndeclaredPopCounts())
+	{
+		if(!raceCounts.ContainsKey(kvpair.Key))
+		{
+			raceCounts.Add(kvpair.Key, 0);
+		}
+		raceCounts[kvpair.Key] += kvpair.Value;
+	}
+	//not all the pops to defend might be real pops right now.  They will need to be reified.  First, get the total count of pops (per race) desired to defend, only using non-individual (raceProb/milStrength/econStrength/morale) factors:
+	Dictionary&lt;IFRace, int&gt; popsDefendingCountByRace = new Dictionary&lt;IFRace, int&gt;();
+	foreach(var kvpair in raceNoDefendProbabilities)
+	{
+		if(raceCounts.ContainsKey(kvpair.Key))
+		{
+			double non_individual_no_defense_prob = milStrengthNoDefendProb * econStrengthNoDefendProb * moraleChanceNoDefend * kvpair.Value;
+			popsDefendingCountByRace.Add(kvpair.Key, 0);
+			for(int i = 0; i &lt; (int)raceCounts[kvpair.Key]; i++)
+			{
+				if(!getAPI().calcProb(non_individual_no_defense_prob)) popsDefendingCountByRace[kvpair.Key]++;
+			}
+		}
+	}
+	
+	//then, gather the defenders from those pops that already exist (use only wound and illness probabilities, and don't include the dead):
+	List&lt;IFPop&gt; popsDefending = new List&lt;IFPop&gt;();
+	foreach(IFRace race in popsDefendingCountByRace.Keys)
+	{
+		if(enemyCommunity.getLoyalPopsByRace(true, false).ContainsKey(race))
+		{
+			foreach(IFPop underConsideration in enemyCommunity.getLoyalPopsByRace(true, false)[race])
+			{
+				if(popsDefendingCountByRace[race] == 0)
+					break;
+				else if(underConsideration.isWounded() &amp;&amp; (getAPI().calcProb(woundChanceNoDefend)))
+					continue;
+				else if(underConsideration.isIll() &amp;&amp; (getAPI().calcProb(illnessChanceNoDefend)))
+					continue;
+				popsDefending.Add(underConsideration);
+				popsDefendingCountByRace[race]--;
+			}
+		}
+	}
+	
+	//then, reify all the remaining count of defenders that do not exist:
+	//need to call reifyPopsFromForeignCommunity with:
+	//A) inRacesDesired of correct form
+	//B) inGiveEquipment = true
+	//C) inTotalPopsReified of correct count
+	//D) this community
+	//the other inputs can and should be null
+	List&lt;IFRace&gt; racesDesired = new List&lt;IFRace&gt;();
+	Int64 totalPopsDesiredToReify = 0;
+	foreach(IFRace race in popsDefendingCountByRace.Keys)
+	{
+		if(popsDefendingCountByRace[race] != 0)
+		{
+			racesDesired.AddRange(Enumerable.Repeat(race, (int)popsDefendingCountByRace[race]));
+			totalPopsDesiredToReify += (Int64)popsDefendingCountByRace[race];
+		}
+	}
+	
+	if(customScripts.runCustomScriptCheckTypes("reifyPopsFromForeignCommunity", new List&lt;object&gt;()
+		{ enemyCommunity, racesDesired, null, null, null, null, true, totalPopsDesiredToReify },
+		out List&lt;object&gt; scriptOutputs, false, typeof(List&lt;IFPop&gt;)))
+	{
+		popsDefending.AddRange((List&lt;IFPop&gt;)scriptOutputs[0]);
+	}
+	  
+	addDebugMessage(inScriptInstance, popsDefending.Count + " pops defending.");
+	  
+	List&lt;object&gt; toReturn = new List&lt;object&gt;() { popsDefending };
+	return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources:
+	TODO implement these custom consts: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igRace name="Felys">
+    <Encyclopedia_Entry>
+	  <full_path>Races/Felys</full_path>
+	  <body_text>Felys.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSingleNoun>Felys</mSingleNoun>
+	<mPluralNoun>Felys</mPluralNoun>
+	<mCollectiveNoun>Felys</mCollectiveNoun>
+	<mAdjective>Felysan</mAdjective>
+	<mSpecialAttributes>0x680</mSpecialAttributes><!-- 0x80 = can breathe overwater, 0x200 = can mother children, 0x400 = can father children -->
+	
+	<mIndustryProductivities><!-- this is a list of: reference to industry, production multiplier, special qualities.  When no entry is present, a multiplier of 1.0 is used for that industry, and no special qualities.  Note that here, and with all tuples, the order of entries matters only for wildcard: the wildcard should be last (and applies to all industries not listed) -->
+	  <i1>
+	    <a>Mining</a>
+		<b>0.75</b>
+		<c>0x4400</c> <!-- 0x400 = same race buff, 0x4000 = dislike industry -->
+	  </i1>
+	  <i1>
+	    <a>Diplomacy</a>
+		<b>1.2</b>
+		<c>0x8400</c> <!-- 0x400 = same race buff, 0x8000 = like industry -->
+	  </i1>
+	  <i1>
+	    <a>*</a>
+		<b>1.0</b>
+		<c>0x400</c> <!-- 0x400 = same race buff -->
+	  </i1>
+	</mIndustryProductivities>
+	
+	<mLifespanYearsAverage>40</mLifespanYearsAverage>
+	
+	<mSSIDs>
+		<i>Shifter neutral ss</i>
+		<i>Shifter local ss</i>
+		<i>Shifter thelady ss</i>
+		<i>Shifter rebels ss</i>
+		<i>Shifter genericenemies ss</i>
+		<i>Shifter wanderers ss</i>
+	</mSSIDs>
+    <mLandSpeed>1.0</mLandSpeed>
+    <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+    <mWaterSpeed>0.6</mWaterSpeed>
+    <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+
+    <mTagList>
+	  <i1>four limbs</i1>
+	  <i1>mammalian</i1>
+	  <i1>humanoid</i1>
+	  <i1>humanoid torso</i1>
+	  <i1>humanoid legs</i1>
+	  <i1>weak combatants</i1>
+	  
+		<!-- description tags: -->
+		<i1>general_adj:short-lived</i1>
+		<i1>general_adj:odd</i1>
+		<i1>general_adj:small</i1>
+		<i1>bodypart_vision:eyes</i1>
+		<i1>bodypart_hearing:ears</i1>
+		<i1>bodypart_smelling:nose</i1>
+		<i1>bodypart_taste:tongue</i1>
+		<i1>bodypart_outer:skin</i1>
+		<i1>bodypart_graspsingle:hand</i1>
+		<i1>bodypart_landtravel:feet</i1>
+		<i1>bodypart_watertravel:legs</i1>
+		<i1>bodypart_expression:face</i1>
+		<i1>bodypart_decorative:ears</i1>
+	</mTagList>
+  </igRace>
+  
+</core_data>

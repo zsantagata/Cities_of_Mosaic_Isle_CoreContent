@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igTerrainDoodad name="Coral 1x1">
+    <mBaseParcelQualities>6</mBaseParcelQualities>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Coral</mSSID>
+    <mSpriteID>0</mSpriteID>
+    <mBiomes>
+      <i1>Cold Water</i1>
+      <i1>Warm Water</i1>
+      <i1>Temperate Water</i1>
+    </mBiomes>
+  </igTerrainDoodad>
+
+  <igTerrainDoodad name="Coral 1x2">
+    <mBaseParcelQualities>6</mBaseParcelQualities>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Coral</mSSID>
+    <mSpriteID>1</mSpriteID>
+    <mBiomes>
+      <i1>Cold Water</i1>
+      <i1>Warm Water</i1>
+      <i1>Temperate Water</i1>
+    </mBiomes>
+  </igTerrainDoodad>
+
+  <igTerrainDoodad name="Coral 2x2">
+    <mBaseParcelQualities>6</mBaseParcelQualities>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Coral</mSSID>
+    <mSpriteID>2</mSpriteID>
+    <mBiomes>
+      <i1>Cold Water</i1>
+      <i1>Warm Water</i1>
+      <i1>Temperate Water</i1>
+    </mBiomes>
+  </igTerrainDoodad>
+
+  <igTerrainDoodad name="Pool 1x1">
+    <mBaseParcelQualities>10</mBaseParcelQualities>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Pool</mSSID>
+    <mSpriteID>0</mSpriteID>
+    <mBiomes>
+      <i1>*</i1>
+      <i1>Cold Water</i1>
+      <i1>Warm Water</i1>
+      <i1>Temperate Water</i1>
+    </mBiomes>
+  </igTerrainDoodad>
+
+  <igTerrainDoodad name="Pool 1x2">
+    <mBaseParcelQualities>10</mBaseParcelQualities>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Pool</mSSID>
+    <mSpriteID>1</mSpriteID>
+    <mBiomes>
+      <i1>*</i1>
+      <i1>Cold Water</i1>
+      <i1>Warm Water</i1>
+      <i1>Temperate Water</i1>
+    </mBiomes>
+  </igTerrainDoodad>
+
+  <igTerrainDoodad name="Pool 2x2">
+    <mBaseParcelQualities>10</mBaseParcelQualities>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Pool</mSSID>
+    <mSpriteID>2</mSpriteID>
+    <mBiomes>
+      <i1>*</i1>
+      <i1>Cold Water</i1>
+      <i1>Warm Water</i1>
+      <i1>Temperate Water</i1>
+    </mBiomes>
+  </igTerrainDoodad>
+
+  <igTerrainDoodad name="Stone Obstacle 1x1">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Stone Obstacle</mSSID>
+    <mSpriteID>0</mSpriteID>
+    <mBiomes>
+      <i1>*</i1>
+    </mBiomes>
+  </igTerrainDoodad>
+
+  <igTerrainDoodad name="Stone Obstacle 1x2">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Stone Obstacle</mSSID>
+    <mSpriteID>1</mSpriteID>
+    <mBiomes>
+      <i1>*</i1>
+    </mBiomes>
+  </igTerrainDoodad>
+
+  <igTerrainDoodad name="Stone Obstacle 2x2">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Stone Obstacle</mSSID>
+    <mSpriteID>2</mSpriteID>
+    <mBiomes>
+      <i1>*</i1>
+    </mBiomes>
+  </igTerrainDoodad>
+
+</core_data>

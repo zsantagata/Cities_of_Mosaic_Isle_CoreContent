@@ -1,0 +1,218 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <!-- note that [0] and [1] etc. will be the race adjectives of the most populous race(s) while [2] and [3] are the single nouns of those same races -->
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_community list_of_options</a> <b>list</b> <c>race_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase ignored_threshold ratio</a> <b>double</b> <c>0.1</c></i1>
+	  
+	  <!-- note that the following are part of getRaceCareValues and are reused here:
+			foreign_community race_care dominance_threatened low_threshold = 0.33333
+			foreign_community race_care dominance_threatened high_threshold = 0.75
+			
+			a race's population ratio has these stages:
+			0-10% : ignored
+			10-33% : minor race
+			33-75% : major race
+			75-100% : dominant race
+			
+			the following are the categories of adjective phrases:
+			A) dominance
+			B) 2 major or major+minor
+			C) major only
+			D) no major (diverse)
+		-->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase dominance rand_selection_count</a> <b>int</b> <c>5</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase dominance rand_sel0 before_replace_text</a> <b>string</b> <c>[0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase dominance rand_sel1 before_replace_text</a> <b>string</b> <c>[2]-ruled</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase dominance rand_sel2 before_replace_text</a> <b>string</b> <c>wholly [0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase dominance rand_sel3 before_replace_text</a> <b>string</b> <c>[2]-dominated</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase dominance rand_sel4 before_replace_text</a> <b>string</b> <c>greatly [0]</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase two_race rand_selection_count</a> <b>int</b> <c>3</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase two_race rand_sel0 before_replace_text</a> <b>string</b> <c>[0] and [1]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase two_race rand_sel1 before_replace_text</a> <b>string</b> <c>[0], [1]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase two_race rand_sel2 before_replace_text</a> <b>string</b> <c>dual [2]-[3]</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase major_only rand_selection_count</a> <b>int</b> <c>5</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase major_only rand_sel0 before_replace_text</a> <b>string</b> <c>[0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase major_only rand_sel1 before_replace_text</a> <b>string</b> <c>[2]-led</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase major_only rand_sel2 before_replace_text</a> <b>string</b> <c>mostly [0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase major_only rand_sel3 before_replace_text</a> <b>string</b> <c>[2]-centric</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase major_only rand_sel4 before_replace_text</a> <b>string</b> <c>majority [0]</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase diverse adjectives before_replace_text</a> <b>string</b> <c>diverse,mixed,mosaic,multiracial</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase no_one_alive adjectives before_replace_text</a> <b>string</b> <c>dead,empty,lost</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_community_race_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a community and from it, returns a string that is an adjective phrase indicating the racial makeup of the community -->
+  <!-- makeup is either one-dominant, split between two, one-major, diverse, or no one is alive in the community -->
+  <!-- only one of these will be chosen -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFCommunity inCommunity, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_community_race_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFCommunity)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_community_race_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inCommunity == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_community_race_adj_phrase custom script received invalid arguments: inCommunity cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	
+	//determine racial makeup:
+	Dictionary&lt;IFRace, double&gt; racesByRatio = new Dictionary&lt;IFRace, double&gt;();
+	Int64 totalCount = 0;
+	foreach(var kvpair in inCommunity.getLoyalPopsByRace(true, false))
+	{
+		racesByRatio.Add(kvpair.Key, (double)kvpair.Value.Count);
+		totalCount += (Int64)kvpair.Value.Count;
+	}
+	foreach(var kvpair in inCommunity.getAdditionalUndeclaredPopCounts())
+	{
+		if(!racesByRatio.ContainsKey(kvpair.Key))
+		{
+			racesByRatio.Add(kvpair.Key, 0.0d);
+		}
+		racesByRatio[kvpair.Key] += kvpair.Value;
+		totalCount += (Int64)kvpair.Value;
+	}
+	
+	//here, check totalCount = 0 and make the adjective the empty adjectives if so:
+	if(totalCount == 0)
+	{
+		string allNoneAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_community_race_adj_phrase no_one_alive adjectives before_replace_text", out success);
+		if(!success) allNoneAdj = "dead,empty,lost";
+		
+		List&lt;string&gt; possibleNoneAdjectives = new List&lt;string&gt;(allNoneAdj.Split(','));
+		if(possibleNoneAdjectives.Count != 0)
+		{
+			string adjNoneChosen = possibleNoneAdjectives[(int)getAPI().calcRandIntUnder(possibleNoneAdjectives.Count)];
+			outDescription = adjNoneChosen;
+		}
+	}
+	else
+	{
+		IFRace mostPopulous = null;
+		double mostPopulousRatio = 0.0d;
+		IFRace secondMostPopulous = null;
+		double secondMostPopulousRatio = 0.0d;
+		foreach(var kvpair in racesByRatio)
+		{
+			double ratio = kvpair.Value / totalCount;
+			if(ratio &gt; mostPopulousRatio)
+			{
+				secondMostPopulousRatio = mostPopulousRatio;
+				mostPopulousRatio = ratio;
+				secondMostPopulous = mostPopulous;
+				mostPopulous = kvpair.Key;
+			}
+		}
+	
+		double dominanceThresholdHigh = customConsts.getDoubleConst("foreign_community race_care dominance_threatened high_threshold", out success);
+		if(!success) dominanceThresholdHigh = 0.75d;
+		double dominanceThresholdLow = customConsts.getDoubleConst("foreign_community race_care dominance_threatened low_threshold", out success);
+		if(!success) dominanceThresholdLow = 0.33333d;
+		double ignoreThreshold = customConsts.getDoubleConst("replaceDescriptionMarkupKind_one_community_race_adj_phrase ignored_threshold ratio", out success);
+		if(!success) ignoreThreshold = 0.1d;
+	
+		bool dominance = mostPopulousRatio &gt;= dominanceThresholdHigh;
+		bool diverse = mostPopulousRatio &lt;= dominanceThresholdLow;
+		bool only_one_major = !dominance &amp;&amp; !diverse &amp;&amp; (secondMostPopulousRatio &lt;= ignoreThreshold);
+				
+		if(diverse)
+		{
+			string allDiverseAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_community_race_adj_phrase diverse adjectives before_replace_text", out success);
+			if(!success) allDiverseAdj = "diverse,mixed,mosaic,multiracial";
+			
+			List&lt;string&gt; possibleDiverseAdjectives = new List&lt;string&gt;(allDiverseAdj.Split(','));
+			if(possibleDiverseAdjectives.Count != 0)
+			{
+				string adjDiverseChosen = possibleDiverseAdjectives[(int)getAPI().calcRandIntUnder(possibleDiverseAdjectives.Count)];
+				outDescription = adjDiverseChosen;
+			}
+		}
+		else
+		{
+			string kindString = dominance ? "dominance" :
+								only_one_major ? "major_only" :
+								"two_race";
+	
+			List&lt;string&gt; possibleAdjectivePhrases = new List&lt;string&gt;();
+	
+			Int64 adjectivePhraseCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_community_race_adj_phrase " + kindString + " rand_selection_count", out success);
+			if(!success) adjectivePhraseCount = 0;
+			for(int i = 0; i &lt; adjectivePhraseCount; i++)
+			{
+				string adj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_community_race_adj_phrase " + kindString + " rand_sel" + i + " before_replace_text", out success);
+				if(success &amp;&amp; adj != "")
+				{
+					possibleAdjectivePhrases.Add(adj);
+				}
+			}
+			
+			if(possibleAdjectivePhrases.Count != 0)
+			{
+				outDescription = possibleAdjectivePhrases[(int)getAPI().calcRandIntUnder(possibleAdjectivePhrases.Count)];
+				
+				//replace [0] and [1]:
+				if(mostPopulous != null)
+				{
+					outDescription = outDescription.Replace("[0]", mostPopulous.getAdjective());
+					outDescription = outDescription.Replace("[2]", mostPopulous.getSingleNoun());
+				}
+				if(secondMostPopulous != null)
+				{
+					outDescription = outDescription.Replace("[1]", secondMostPopulous.getAdjective());
+					outDescription = outDescription.Replace("[3]", secondMostPopulous.getSingleNoun());
+				}
+			}
+		}
+	}
+	
+	if(outDescription == "")
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_community_race_adj_phrase default before_replace_text", out success);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop list_of_options</a> <b>list</b> <c>emotion_calm_sentence</c></i1> <!-- add this entry -->
+	  
+	  <!-- if a replacement is blank it is unusable -->
+	  <!-- [0] = random adj phrase for group -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence rand_selection_count</a> <b>int</b> <c>4</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence rand_sel0 before_replace_text</a> <b>string</b> <c>The [0] pops take a moment to look at the surroundings, unhurried.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence rand_sel1 before_replace_text</a> <b>string</b> <c>There is a calmness clear in the [0] pops' postures.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence rand_sel2 before_replace_text</a> <b>string</b> <c>Idle conversation quietly passes between the [0] pops.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence rand_sel3 before_replace_text</a> <b>string</b> <c>Each pop present in this [0] group is relaxed.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence dead before_replace_text</a> <b>string</b> <c>The pops' corpses display no emotion.</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a list of pops and from it, returns a string that is a sentence showing the pops' emotions are calm. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFPop inPop, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(List&lt;IFPop&gt;)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence custom script received invalid arguments");
+		return null;
+	}
+	  
+	List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	if(inPops == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence custom script received invalid arguments: inPops cannot be null");
+		return null;
+	}
+	
+	if(inPops.Count == 0)
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence default before_replace_text", out success);
+		if(!success) outDescription = "";
+		return new List&lt;object&gt;() { outDescription };
+	}
+	
+	int countOfReplacers = 1; //max replacer index + 1
+	List&lt;string&gt; replacers = new List&lt;string&gt;();
+	for(int i = 0; i &lt; countOfReplacers; i++)
+	{
+		replacers.Add("");
+	}
+	string uids = "";
+	bool anyPopAlive = false;
+	for(int i = 0; i &lt; inPops.Count; i++)
+	{
+		uids += inPops[i].getUID();
+		if(i != inPops.Count - 1)
+		{
+			uids += ",";
+		}
+		if(!inPops[i].isDead())
+		{
+			anyPopAlive = true;
+		}
+	}
+	
+	//[0] = rand adj phrase
+	replacers[0] = "[mult_pop|rand_adj_phrase:" + uids + "]";
+	
+	//if the pops are dead, that's the only important thing:
+	if(!anyPopAlive)
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence dead before_replace_text", out success);
+		if(!success) outDescription = "The pops' corpses display no emotion.";
+	}
+	else
+	{
+		Int64 randCountMax = customConsts.getIntConst("replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence rand_selection_count", out success);
+		if(!success) randCountMax = 4;
+	
+		Int64 rand_sel = getAPI().calcRandIntUnder(randCountMax);
+		
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence rand_sel" + rand_sel + " before_replace_text", out success);
+		if(!success) outDescription = "";
+	}
+	
+	for(int i = 0; i &lt; replacers.Count; i++)
+	{
+		outDescription = outDescription.Replace("[" + i + "]", replacers[i]);
+	}
+	
+	if(outDescription == "")
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_emotion_calm_sentence default before_replace_text", out success);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

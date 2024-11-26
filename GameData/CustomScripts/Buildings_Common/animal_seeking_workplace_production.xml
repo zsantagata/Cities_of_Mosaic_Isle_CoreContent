@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+		
+			<!-- balance reference for animal seeking: once the correct preparations are done, a hunter has a 0.65 chance of bagging a boar (production speed of 0.015) -->
+			<!-- (of course, those preparations are more than would be needed than for a chicken) -->
+			<!-- the formula I use for animal seeking is: -->
+			<!-- f(x) = (f(infinity) * CALCULATED VAL * x + f(0)) / (CALCULATED VAL * x + 1) -->
+			<!-- where f(infinity) = 0.1, f(0) = 0.85, vertex = 0.015 and f(vertex) = 0.65 -->
+			<!-- where CALCULATED VAL = (-1 / vertex) * (f(vertex) - f(0)) / (f(vertex) - f(infinity)) -->
+			<!-- where x is the prodction speed of the animal in question and f(x) is the "individual target luck factor" -->
+			<!-- I then take the ITLF and: -->
+			<!-- (today's luck value * input quantity / sqrt(production speed)) / ITLF = chances for seekers to encounter an animal -->
+			<!-- ITLF * (workplace factor) = probability each encounter results in a successful hunt/trapping/whatever -->
+			<!-- note that the average successes stays the same no matter the ITLF; the ITLF determines the "granularity" of the output.  Smaller creatures and smaller ITLF means a smoother, less discrete curve. -->
+			<!-- note that I divide the input quantity by sqrt(production speed) because input quantity already had production speed multiplied in by common workplace scripts but it should scale as sqrt for these workplaces -->
+			<i1><a>animal_seeking_workplace_production production_speed mult exponent</a> <b>double</b> <c>-0.5</c></i1>
+			<i1><a>animal_seeking_workplace_production ITLF asymptote value</a> <b>double</b> <c>0.1</c></i1>
+			<i1><a>animal_seeking_workplace_production ITLF vertex location</a> <b>double</b> <c>0.015</c></i1>
+			<i1><a>animal_seeking_workplace_production ITLF vertex value</a> <b>double</b> <c>0.65</c></i1>
+			<i1><a>animal_seeking_workplace_production ITLF zero value</a> <b>double</b> <c>0.85</c></i1>
+			
+			<i1><a>animal_seeking_workplace_production workplace_factor default value</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>animal_seeking_workplace_production workplace_factor Hunter's Lodge value</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>animal_seeking_workplace_production workplace_factor Trapper value</a> <b>double</b> <c>0.45</c></i1>
+			<!-- any workplace that does not have its name in a custom const of this form will use the default value -->
+			
+			<!-- day to day, an animal seeker's luck is variable.  Multiply input quantity by a random value between these before determining output: -->
+			<i1><a>animal_seeking_workplace_production luck range min</a> <b>double</b> <c>0.1</c></i1>
+			<i1><a>animal_seeking_workplace_production luck range max</a> <b>double</b> <c>1.9</c></i1>
+			
+			<i1><a>animal_seeking_workplace_production no_production before_replace_text</a> <b>string</b>
+			<c>This workplace will not encounter any animals.</c></i1>
+			
+			<i1><a>animal_seeking_workplace_production display before_replace_text</a> <b>string</b>
+			<c>This workplace will encounter, on average each day, [0].  It will produce, on average each day, [1].</c></i1>  <!-- [1] must be replaced by the igBuildingKind script calling this script, as it is unique to each workplace kind what they do with the animal encounter -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script animal_seeking_workplace_production</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines how many wild animals the workers of this building will encounter today -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has four inputs: IFBuilding inBuilding, double inQuantityOfAnimalEncounter, double inQualityOfAnimalEncounter, bool inJustPredicting.  It has two outputs: string outStringToDisplay, double outQuantityEncountered. -->
+	<!-- if we are not just predicting, this script will calculate (based on luck and probability) the actual animals encountered today and return it in outQuantityEncountered -->
+	<!-- if we are just predicting, this script will calculate the average animals encountered today and return it in outQuantityEncountered -->
+	<!-- this script is called by Hunter's Lodge and Trapper workplace production scripts -->
+	<!-- NOTE: this script's output outStringToDisplay will have a [1] that needs to be replaced by the caller, as a description of what is being produced -->
+	<i1><a>animal_seeking_workplace_production</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(double), typeof(double), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("animal_seeking_workplace_production custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  double inQuantityOfAnimalEncounter = (double)inArguments[1];
+	  double inQualityOfAnimalEncounter = (double)inArguments[2];
+	  bool inJustPredicting = (bool)inArguments[3];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("animal_seeking_workplace_production custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  
+	  string outStringToDisplay = "";
+	  double outQuantityEncountered = 0.0d;
+	  bool success = false;
+	  
+	  //sanity check: quantity animal encountered should be above zero:
+	  if(inQuantityOfAnimalEncounter &lt;= 0.0d)
+	  {
+		outStringToDisplay = customConsts.getStringConst("animal_seeking_workplace_production no_production before_replace_text", out success);
+		if(!success) outStringToDisplay = "This workplace will not encounter any animals.";
+		return new List&lt;object&gt;() { outStringToDisplay, outQuantityEncountered };
+	  }
+	  
+	  //first, figure out which animal we are trying to encounter:
+	  IFResource animalTarget = inBuilding.getWorkplaceComponent().getOutputResourceChosen();
+	  //sanity check: output should be an animal:
+	  if(!animalTarget.hasTag("animal"))
+	  {
+		outStringToDisplay = customConsts.getStringConst("animal_seeking_workplace_production no_production before_replace_text", out success);
+		if(!success) outStringToDisplay = "This workplace will not encounter any animals.";
+		return new List&lt;object&gt;() { outStringToDisplay, outQuantityEncountered };
+	  }
+	  
+	  double productionSpeed = animalTarget.getProductionSpeed();
+	  
+	  //then, gather custom consts:
+	  double todayLuckMin = customConsts.getDoubleConst("animal_seeking_workplace_production luck range min", out success);
+	  if(!success) todayLuckMin = 0.1d;
+	  double todayLuckMax = customConsts.getDoubleConst("animal_seeking_workplace_production luck range max", out success);
+	  if(!success) todayLuckMax = 1.9d;
+	  
+	  double defaultWorkplaceValue = customConsts.getDoubleConst("animal_seeking_workplace_production workplace_factor default value", out success);
+	  if(!success) defaultWorkplaceValue = 1.0d;
+	  double workplaceValue = customConsts.getDoubleConst("animal_seeking_workplace_production workplace_factor " + inBuilding.getBuildingKind().getInternalName() + " value", out success);
+	  if(!success) workplaceValue = defaultWorkplaceValue;
+	  
+	  double exponent = customConsts.getDoubleConst("animal_seeking_workplace_production production_speed mult exponent", out success);
+	  if(!success) exponent = -0.5d;
+	  
+	  double asymptoteITLFVal = customConsts.getDoubleConst("animal_seeking_workplace_production ITLF asymptote value", out success);
+	  if(!success) asymptoteITLFVal = 0.1d;
+	  double ITLFVertexLocation = customConsts.getDoubleConst("animal_seeking_workplace_production ITLF vertex location", out success);
+	  if(!success) ITLFVertexLocation = 0.015d;
+	  double ITLFVertexVal = customConsts.getDoubleConst("animal_seeking_workplace_production ITLF vertex value", out success);
+	  if(!success) ITLFVertexVal = 0.65d;
+	  double ITLFZeroVal = customConsts.getDoubleConst("animal_seeking_workplace_production ITLF zero value", out success);
+	  if(!success) ITLFZeroVal = 0.85d;
+	  
+	  //TODO: any shift of luck values from variables should go here
+	  
+	  //calculate:
+	  if(inJustPredicting)
+	  {
+		//calculate average encounters:
+		double luckValAvg = (todayLuckMax + todayLuckMin) / 2.0d;
+		outQuantityEncountered = inQuantityOfAnimalEncounter * luckValAvg * workplaceValue * Math.Pow(productionSpeed, exponent);
+	  }
+	  else
+	  {
+		//actually encounter the animals:
+		double luck = todayLuckMin + (todayLuckMax - todayLuckMin) * getAPI().calcRand();
+		double ITLF_calculatedVal = (-1.0d / ITLFVertexLocation) * (ITLFVertexVal - ITLFZeroVal) / (ITLFVertexVal - asymptoteITLFVal);
+		double ITLF = (asymptoteITLFVal * ITLF_calculatedVal * productionSpeed + ITLFZeroVal) / (ITLF_calculatedVal * productionSpeed + 1);
+		
+		double encountersDouble = inQuantityOfAnimalEncounter * luck * Math.Pow(productionSpeed, exponent) / ITLF;
+		Int64 encountersInt = (Int64)encountersDouble;
+		double encountersRemainder = encountersDouble - encountersInt;
+		if(getAPI().calcProb(encountersRemainder))
+			encountersInt++;
+		addDebugMessage(inScriptInstance, "from luck of " + luck + ", and ITLF of " + ITLF + ", building " + inBuilding.getDebugName() + " will encounter " + encountersInt + " " + animalTarget.getDebugName() + " today");
+		
+		Int64 successfulEncounters = 0;
+		double encounterEachProb = ITLF * workplaceValue;
+		while(encountersInt &gt; 0)
+		{
+			if(getAPI().calcProb(encounterEachProb))
+				successfulEncounters++;
+			encountersInt--;
+		}
+		
+		addDebugMessage(inScriptInstance, "with workplace value = " + workplaceValue + ", total successes today = " + successfulEncounters);
+		outQuantityEncountered = successfulEncounters;
+	  }
+	  
+	  //here, assemble the output string:
+	  outStringToDisplay = customConsts.getStringConst("animal_seeking_workplace_production display before_replace_text", out success);
+	  if(!success) outStringToDisplay = "This workplace will encounter, on average each day, [0].  It will produce, on average each day, [1].";
+	  
+	  outStringToDisplay = outStringToDisplay.Replace("[0]", consts.getQuantityFormattedString(outQuantityEncountered) + " " + animalTarget.getDisplayName());
+	  
+	return new List&lt;object&gt;() { outStringToDisplay, outQuantityEncountered };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

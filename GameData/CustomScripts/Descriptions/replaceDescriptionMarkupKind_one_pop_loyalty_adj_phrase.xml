@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop list_of_options</a> <b>list</b> <c>loyalty_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase loyal before_replace_text</a> <b>string</b> <c>loyal,local</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase rebel before_replace_text</a> <b>string</b> <c>rebel,traitor,treasonous,revolting</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase enemy before_replace_text</a> <b>string</b> <c>foe,enemy,hostile,threatening,dangerous</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase theLady before_replace_text</a> <b>string</b> <c>divine,holy,ancient,mysterious,unknowable</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase wanderer before_replace_text</a> <b>string</b> <c>wandering,nomadic,independent</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase regular_foreign before_replace_text</a> <b>string</b> <c>foreign,outsider</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase other_foreign before_replace_text</a> <b>string</b> <c>strange</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a pop and from it, returns a string that is an adjective phrase indicating the loyalty of the pop (but not explicitly including the community's name) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFPop inPop, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inPop == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase custom script received invalid arguments: inPop cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	List&lt;string&gt; possibleAdjs = new List&lt;string&gt;();
+	
+	//determine loyalty:
+	bool loyal = inPop.getCommunity() == getAPI().getLocalCommunity();
+	bool rebel = inPop.getCommunity().isRebels();
+	bool enemy = inPop.getCommunity().isGenericEnemy();
+	bool theLady = inPop.getCommunity().isTheLady();
+	bool wanderer = inPop.getCommunity().isWanderers();
+	bool regular_foreign = !(loyal || rebel || enemy || theLady || wanderer) &amp;&amp; inPop.getCommunity().isNormalCommunity();
+	bool other_foreign = !(loyal || rebel || enemy || theLady || wanderer || regular_foreign);
+	
+	if(loyal)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase loyal before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(rebel)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase rebel before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(enemy)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase enemy before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(theLady)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase theLady before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(wanderer)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase wanderer before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(regular_foreign)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase regular_foreign before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(other_foreign)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase other_foreign before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	
+	if(possibleAdjs.Count &gt; 0)
+	{
+		outDescription = possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)];
+	}
+	
+	if(outDescription == "")
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_loyalty_adj_phrase default before_replace_text", out success);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

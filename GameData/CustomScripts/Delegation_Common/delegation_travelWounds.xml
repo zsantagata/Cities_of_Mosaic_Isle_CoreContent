@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>delegation_travelWounds daily_wound_rate base</a> <b>double</b> <c>0.003</c></i1> <!-- this is the rate at which each pop will get a wound while traveling, before multiplication by the biome's travel difficulty -->
+	  <i1><a>delegation_travelWounds daily_wound_rate illness factor</a> <b>double</b> <c>2.0</c></i1> <!-- an ill pop who is travels will more likely suffer a wound -->
+	  <i1><a>delegation_travelWounds daily_wound_rate wounded factor</a> <b>double</b> <c>1.25</c></i1> <!-- an already-wounded pop who travels will more likely suffer a wound -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script delegation_travelwounds</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which checks if a pop in a delegation should die from an illness or wound or old age -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation
+	
+	There is no output -->
+	<i1><a>delegation_travelWounds</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation)   }
+	  }, out _))
+	{
+		throw new ArgumentException("delegation_travelWounds custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	//TODO any racial or non-standard considerations
+	
+	//When pops are traveling, there is a chance they get a wound (depending on the biome they are currently in).  Pops in a siege camp do not count, as they are staying in place.
+	//the kind of wound a pop will get from travel is an accident wound, similar to a wound from a workplace or hunting incident
+	
+	double dailyRateBase = customConsts.getDoubleConst("delegation_travelWounds daily_wound_rate base", out bool success);
+	if(!success) dailyRateBase = 0.003d;
+	double biomeTravelDifficulty = customConsts.getDoubleConst("biome " + inDelegation.getBiomeOfCurrentLocation().getInternalName() + " travel trouble factor", out success);
+	if(!success) biomeTravelDifficulty = 1.0d;
+	
+	double illnessFactor = customConsts.getDoubleConst("delegation_travelWounds daily_wound_rate illness factor", out success);
+	if(!success) illnessFactor = 2.0d;
+	double woundFactor = customConsts.getDoubleConst("delegation_travelWounds daily_wound_rate wounded factor", out success);
+	if(!success) woundFactor = 1.25d;
+	
+	double difficultyTravel = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("travel danger");
+	double difficultyWounds = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("wound danger");
+	
+	foreach(IFPop pop in inDelegation.getPopsInDelegation())
+	{
+		if(!pop.isDead())
+		{
+			double woundedRate = dailyRateBase * biomeTravelDifficulty * (pop.isWounded() ? woundFactor : 1.0d) * (pop.isIll() ? illnessFactor : 1.0d);
+			woundedRate *= difficultyTravel * difficultyWounds;
+			woundedRate = Math.Min(1.0d, woundedRate);
+			bool becomeWounded = getAPI().calcProb(woundedRate);
+			if(becomeWounded)
+			{
+				addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " becomes wounded during travel");
+				pop.addWound(false, false, true);
+			}
+		}
+	}
+	
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

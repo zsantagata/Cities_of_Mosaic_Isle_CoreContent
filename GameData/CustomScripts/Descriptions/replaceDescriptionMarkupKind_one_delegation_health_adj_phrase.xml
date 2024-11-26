@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation list_of_options</a> <b>list</b> <c>health_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase ignored_threshold ratio</a> <b>double</b> <c>0.1</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase minor_problem_threshold ratio</a> <b>double</b> <c>0.4</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase healthy value_selection_count</a> <b>int</b> <c>3</c></i1> <!-- unused? -->
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase healthy value_sel0 before_replace_text</a> <b>string</b> <c>needy,weak,bedraggled</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase healthy value_sel1 before_replace_text</a> <b>string</b> <c>struggling,weakened,unhealthy</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase healthy value_sel2 before_replace_text</a> <b>string</b> <c>healthy,hale,hearty,spirited</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase wounded value_selection_count</a> <b>int</b> <c>3</c></i1>  <!-- unused? -->
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase wounded value_sel0 before_replace_text</a> <b>string</b> <c></c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase wounded value_sel1 before_replace_text</a> <b>string</b> <c>hurt,injured,bandaged</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase wounded value_sel2 before_replace_text</a> <b>string</b> <c>bloodied,maimed,crippled</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase illness value_selection_count</a> <b>int</b> <c>3</c></i1>  <!-- unused? -->
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase illness value_sel0 before_replace_text</a> <b>string</b> <c></c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase illness value_sel1 before_replace_text</a> <b>string</b> <c>sickly,ill,unwell</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase illness value_sel2 before_replace_text</a> <b>string</b> <c>diseased,feverish,plagued</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_delegation_health_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a delegation and from it, returns a string that is an adjective phrase indicating the health of the delegation -->
+  <!-- health will choose from wounded/illness randomly if either is not empty string, then fall back on average overall health if both are empty string -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFDelegation inDelegation, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_delegation_health_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_delegation_health_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inDelegation == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_delegation_health_adj_phrase custom script received invalid arguments: inDelegation cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	
+	//determine health:
+	Int64 totalCountWounded = 0;
+	Int64 totalCountIll = 0;
+	double healthSum = 0.0d;
+	Int64 totalCount = 0;
+	foreach(IFPop pop in inDelegation.getPopsInDelegation())
+	{
+		if(!pop.isDead())
+		{
+			totalCount++;
+			if(pop.isWounded())
+				totalCountWounded++;
+			if(pop.isIll())
+				totalCountIll++;
+				
+			healthSum += pop.getOverallHealth();
+		}
+	}
+	
+	double healthMin = consts.getHealthMin();
+	double healthMax = consts.getHealthMax();
+	
+	if(totalCount &gt; 0)
+	{
+		healthSum /= totalCount;
+		healthSum -= healthMin;
+		healthSum /= (healthMax - healthMin);
+		
+		double ignoreThreshold = customConsts.getDoubleConst("replaceDescriptionMarkupKind_one_delegation_health_adj_phrase ignored_threshold ratio", out success);
+		if(!success) ignoreThreshold = 0.1d;
+		double minorProblemThreshold = customConsts.getDoubleConst("replaceDescriptionMarkupKind_one_delegation_health_adj_phrase minor_problem_threshold ratio", out success);
+		if(!success) minorProblemThreshold = 0.4d;
+		
+		double woundedRatio = totalCountWounded / ((double)totalCount);
+		double illRatio = totalCountWounded / ((double)totalCount);
+		string woundedAdj = "";
+		string illAdj = "";
+		
+		int woundedValue = (woundedRatio &gt;= minorProblemThreshold) ? 2 :
+						   (woundedRatio &gt;= ignoreThreshold) ? 1 :
+						   0;
+		int illValue = (illRatio &gt;= minorProblemThreshold) ? 2 :
+					   (illRatio &gt;= ignoreThreshold) ? 1 :
+					   0;
+					   
+		string allAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_delegation_health_adj_phrase wounded value_sel" + woundedValue + " before_replace_text", out success);
+		if(!success) allAdj = "";
+		List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(allAdj.Split(','));
+		if(possibleAdjs.Count != 0)
+		{
+			woundedAdj = possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)];
+		}
+	
+		allAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_delegation_health_adj_phrase illness value_sel" + illValue + " before_replace_text", out success);
+		if(!success) allAdj = "";
+		possibleAdjs = new List&lt;string&gt;(allAdj.Split(','));
+		if(possibleAdjs.Count != 0)
+		{
+			illAdj = possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)];
+		}
+		
+		if(woundedAdj != "" &amp;&amp; illAdj != "")
+		{
+			outDescription = (getAPI().calcRandIntUnder(2) == 0) ? woundedAdj : illAdj;
+		}
+		else if(woundedAdj != "")
+		{
+			outDescription = woundedAdj;
+		}
+		else if(illAdj != "")
+		{
+			outDescription = illAdj;
+		}
+		else
+		{
+			int healthOverallValue = ((1.0d - healthSum) &gt;= minorProblemThreshold) ? 2 :
+									 ((1.0d - healthSum) &gt;= ignoreThreshold) ? 1 :
+									 0;
+						
+			allAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_delegation_health_adj_phrase healthy value_sel" + healthOverallValue + " before_replace_text", out success);
+			if(!success) allAdj = "";
+			possibleAdjs = new List&lt;string&gt;(allAdj.Split(','));
+			if(possibleAdjs.Count != 0)
+			{
+				outDescription = possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)];
+			}
+		}
+	}
+	
+	if(outDescription == "")
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_delegation_health_adj_phrase default before_replace_text", out success);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

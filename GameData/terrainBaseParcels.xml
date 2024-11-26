@@ -1,0 +1,707 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igTerrainBaseParcel name="Cold Water 1x1">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Cold Water</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Cold Water</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Cold Water 1x2">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Cold Water</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Cold Water</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Cold Water 2x2">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Cold Water</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Cold Water</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Cold Water 1x3">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Cold Water</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Cold Water</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Cold Water 2x3">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Cold Water</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Cold Water</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Cold Water 3x3">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Cold Water</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Cold Water</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Desert 1x1">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Desert</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Desert</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Desert 1x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Desert</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Desert</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Desert 2x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Desert</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Desert</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Desert 1x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Desert</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Desert</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Desert 2x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Desert</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Desert</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Desert 3x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Desert</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Desert</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Forest 1x1">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Forest</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Forest</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Forest 1x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Forest</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Forest</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Forest 2x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Forest</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Forest</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Forest 1x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Forest</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Forest</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Forest 2x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Forest</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Forest</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Forest 3x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Forest</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Forest</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Grassland 1x1">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Grassland</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Grassland</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Grassland 1x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Grassland</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Grassland</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Grassland 2x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Grassland</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Grassland</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Grassland 1x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Grassland</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Grassland</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Grassland 2x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Grassland</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Grassland</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Grassland 3x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Grassland</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Grassland</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Hills 1x1">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Hills</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Hills</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Hills 1x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Hills</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hills</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Hills 2x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Hills</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hills</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Hills 1x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Hills</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Hills</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Hills 2x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Hills</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Hills</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Hills 3x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Hills</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Hills</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Jungle 1x1">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Jungle</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Jungle</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Jungle 1x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Jungle</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Jungle</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Jungle 2x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Jungle</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Jungle</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Jungle 1x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Jungle</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Jungle</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Jungle 2x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Jungle</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Jungle</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Jungle 3x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Jungle</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Jungle</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Mountain 1x1">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Mountain</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Mountain</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Mountain 1x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Mountain</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Mountain</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Mountain 2x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Mountain</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Mountain</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Mountain 1x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Mountain</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Mountain</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Mountain 2x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Mountain</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Mountain</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Mountain 3x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Mountain</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Mountain</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Steppe 1x1">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Steppe</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Steppe</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Steppe 1x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Steppe</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Steppe</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Steppe 2x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Steppe</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Steppe</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Steppe 1x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Steppe</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Steppe</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Steppe 2x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Steppe</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Steppe</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Steppe 3x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Steppe</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Steppe</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Swamp 1x1">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Swamp</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Swamp</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Swamp 1x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Swamp</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Swamp</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Swamp 2x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Swamp</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Swamp</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Swamp 1x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Swamp</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Swamp</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Swamp 2x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Swamp</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Swamp</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Swamp 3x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Swamp</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Swamp</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Taiga 1x1">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Taiga</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Taiga</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Taiga 1x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Taiga</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Taiga</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Taiga 2x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Taiga</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Taiga</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Taiga 1x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Taiga</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Taiga</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Taiga 2x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Taiga</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Taiga</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Taiga 3x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Taiga</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Taiga</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Temperate Water 1x1">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Temperate Water</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Temperate Water</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Temperate Water 1x2">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Temperate Water</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Temperate Water</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Temperate Water 2x2">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Temperate Water</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Temperate Water</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Temperate Water 1x3">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Temperate Water</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Temperate Water</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Temperate Water 2x3">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Temperate Water</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Temperate Water</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Temperate Water 3x3">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Temperate Water</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Temperate Water</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Tundra 1x1">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Tundra</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Tundra</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Tundra 1x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Tundra</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Tundra</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Tundra 2x2">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Tundra</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Tundra</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Tundra 1x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Tundra</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Tundra</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Tundra 2x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Tundra</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Tundra</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Tundra 3x3">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities>
+    <mBiome>Tundra</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Tundra</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Warm Water 1x1">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Warm Water</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Warm Water</mSSID>
+    <mSpriteID>0</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Warm Water 1x2">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Warm Water</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Warm Water</mSSID>
+    <mSpriteID>1</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Warm Water 2x2">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Warm Water</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Warm Water</mSSID>
+    <mSpriteID>2</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Warm Water 1x3">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Warm Water</mBiome>
+    <mWidth>1</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Warm Water</mSSID>
+    <mSpriteID>3</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Warm Water 2x3">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Warm Water</mBiome>
+    <mWidth>2</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Warm Water</mSSID>
+    <mSpriteID>4</mSpriteID>
+  </igTerrainBaseParcel>
+
+  <igTerrainBaseParcel name="Warm Water 3x3">
+    <mBaseParcelQualities>0x7</mBaseParcelQualities>
+    <mBiome>Warm Water</mBiome>
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+    <mSSID>Warm Water</mSSID>
+    <mSpriteID>5</mSpriteID>
+  </igTerrainBaseParcel>
+
+
+</core_data>

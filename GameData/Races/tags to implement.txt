@@ -1,0 +1,62 @@
+race tags to implement:
+(note that those which have an associated double or other value should be custom consts, not tags -- it is too hard to replace/remove tags that have an associated value)
+
+	recover goods from dead body //custom const with names and values
+	disable same race children
+	do not random gen //TODO this should be a less strict version of the "hidden from player sight" flag
+	combat total strength factor: //followed by a double
+	wound time factor: //followed by a double
+	illness time factor: //followed by a double
+	wound death probability factor: //followed by a double
+	illness death probability factor: //followed by a double
+	birth wound probability factor: //followed by a double
+	birth stillbirth probability factor: //followed by a double
+	birth death probability factor: //followed by a double
+	old age death immune
+	need mcal factor: //followed by a double
+	need protein factor: //followed by a double
+	need hstasis factor: //followed by a double
+	need water factor: //followed by a double
+	illness catch probability any: //followed by a double
+	illness catch probability environment: //followed by a double
+	illness catch probability from others: //followed by a double
+	housing crowding penalty to self: //followed by a double
+	housing crowding penalty to others: //followed by a double
+	housing enjoy other race: //this must be followed by the internal name of the race
+	housing hate other race: //this must be followed by the internal name of the race
+	housing other race enjoy me
+	housing other race hate me
+	housing same race no crowding
+	housing like my race normal
+	housing like my race less
+	happiness unemployment factor: //followed by a double
+	happiness kin factor: //followed by a double
+	happiness mates factor: //followed by a double
+	happiness jealousy factor: //followed by a double
+	happiness industry leaders factor: //followed by a double
+	happiness illness factor: //followed by a double
+	happiness illness other race factor: //followed by a double
+	happiness illness same race factor: //followed by a double
+	happiness death penalty: //followed by a double
+	leader city_leader happiness increase: //followed by a double
+	leader industry_leader happiness increase: //followed by a double
+	leader prediction additive: //followed by a double
+	leader training factor: //followed by a double
+	leader workplace count additive: //followed by a double
+	soldier skill increase factor: //followed by a double
+	soldier skill decay factor: //followed by a double
+	delegation speed factor: //followed by a double
+	delegation danger factor: //followed by a double
+	delegation event rate factor: //followed by a double
+	delegation peaceful good_outcome factor: //followed by a double
+	immigration factor: //followed by a double
+	emigration factor: //followed by a double
+	wanderer danger factor: //followed by a double
+	change desolation around house additive: //followed by a double
+	change desolation around house radius: //followed by a double
+	change desolation around workplace additive: //followed by a double
+	change desolation around workplace radius: //followed by a double
+	workers cause workplace radius change additive: //followed by a double
+	workers cause workplace radius change factor: //followed by a double
+	free combat resources: //followed by the internal name of the mil equip resource
+	work while ill unhappiness factor: //double

@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script dailystartffdelegation_deltypeblocker</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which handles (some of, not all) checks to see if a foreign community's foreign-foreign delegations of a provided type are blocked from being created -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunity
+	IFDelegation.eDelegationType inDelegationType
+	-->
+	
+	<!-- output:
+	bool outBlockersPreventCreation //if this is false, the caller will continue trying to create a foreign-foreign delegation
+	-->
+	<i1><a>dailyStartFFDelegation_delTypeBlocker</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity), typeof(IFDelegation.eDelegationType)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("dailyStartFFDelegation_delTypeBlocker custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		if(inCommunity == null)
+		{
+		  throw new ArgumentException("dailyStartFFDelegation_delTypeBlocker custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+		}
+		IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[1];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		//the variables are list variables, and blockers should add to these list variables
+		//if any reason/blocker exists, the block will be considered true
+		
+		string typeName = (inDelegationType == IFDelegation.eDelegationType.cWar) ? "war" :
+						  (inDelegationType == IFDelegation.eDelegationType.cRaiding) ? "raiding" :
+						  (inDelegationType == IFDelegation.eDelegationType.cTrade) ? "trade" :
+						  (inDelegationType == IFDelegation.eDelegationType.cDiplomacy) ? "trade" : //diplomacy foreign-foreign acts like trade delegation
+						  (inDelegationType == IFDelegation.eDelegationType.cEmigration) ? "emigration" :
+						  (inDelegationType == IFDelegation.eDelegationType.cSettlement) ? "settlement" :
+						  "none";
+						  
+		//the names of the variables are the same as in canForeignDelegationBeSent
+		List&lt;string&gt; blockersToCheck = new List&lt;string&gt;();
+		blockersToCheck.Add("disableForeignDelegationsVariable_all_all_all");
+		blockersToCheck.Add("disableForeignDelegationsVariable_uid" + inCommunity.getUID() + "_all_all");
+		blockersToCheck.Add("disableForeignDelegationsVariable_all_foreign_all");
+		blockersToCheck.Add("disableForeignDelegationsVariable_uid" + inCommunity.getUID() + "_foreign_all");
+		blockersToCheck.Add("disableForeignDelegationsVariable_all_all_" + typeName);
+		blockersToCheck.Add("disableForeignDelegationsVariable_uid" + inCommunity.getUID() + "_all_" + typeName);
+		blockersToCheck.Add("disableForeignDelegationsVariable_all_foreign_" + typeName);
+		blockersToCheck.Add("disableForeignDelegationsVariable_uid" + inCommunity.getUID() + "_foreign_" + typeName);
+		
+		bool success = false;
+		bool outBlockersPreventCreation = false;
+		foreach(string str in blockersToCheck)
+		{
+			Int64 blocker = variableHandler.getConnectedInt(str, out success);
+			if(!success) blocker = 0;
+			if(blocker != 0)
+			{
+				outBlockersPreventCreation = true;
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outBlockersPreventCreation };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

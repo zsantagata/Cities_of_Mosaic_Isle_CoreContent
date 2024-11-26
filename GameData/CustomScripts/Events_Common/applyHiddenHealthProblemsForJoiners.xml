@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script applyHiddenHealthProblemsForJoiners</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which applies health problems associated with potential joiners, that are not directly applied to the pops at the time the pops are generated/placed on the map -->
+  <!-- note that this script will only clear the stored health problems if told to do so -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus,
+	Int64 inEventReportUID,
+	List<IFPop> inPopsToApplyTo, //should not be null or empty
+	string inAdditionalLabel, //some events have multiple groups of pops they want to store/fetch
+	bool inClearStoredValues
+	-->
+	
+	<!-- output:
+	List<Int64> outDatesOfWoundEnding, //Can be empty but will not be null.  Will only ever be dates in the future.
+	List<Int64> outDatesOfIllnessEnding, //Can be empty but will not be null.  Will only ever be dates in the future.
+	List<double> outRatiosOfPregnancyLength //Can be empty but will not be null.  Will only ever be ratios between 0.0d and 1.0d inclusive.
+	-->
+	<i1><a>applyHiddenHealthProblemsForJoiners</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(List&lt;IFPop&gt;), typeof(string), typeof(bool)}
+	      }, out _))
+	    {
+			throw new ArgumentException("applyHiddenHealthProblemsForJoiners custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		List&lt;IFPop&gt; inPopsToApplyTo = (List&lt;IFPop&gt;)inArguments[2];
+		string inAdditionalLabel = (string)inArguments[3];
+		bool inClearStoredValues = (bool)inArguments[4];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("storeOrFetchHiddenHealthProblemsForJoiners custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReportUID &lt; 0)
+		{
+			throw new ArgumentException("storeOrFetchHiddenHealthProblemsForJoiners custom script received invalid arguments: inEventReportUID cannot be negative");
+			return null;
+		}
+		if((inPopsToApplyTo == null) || (inPopsToApplyTo.Count == 0))
+		{
+			throw new ArgumentException("storeOrFetchHiddenHealthProblemsForJoiners custom script received invalid arguments: inPopsToApplyTo cannot be null and cannot be empty");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		List&lt;Int64&gt; outDatesOfWoundEnding = new List&lt;Int64&gt;();
+		List&lt;Int64&gt; outDatesOfIllnessEnding = new List&lt;Int64&gt;();
+		List&lt;double&gt; outRatiosOfPregnancyLength = new List&lt;double&gt;();
+		
+		//fetch hidden health problems:
+		if (customScripts.runCustomScriptCheckTypes("storeOrFetchHiddenHealthProblemsForJoiners", new List &lt;object&gt;() { inEventStatus, inEventReportUID, false, inAdditionalLabel, 0L, null, null, null },
+				out List&lt;object&gt; fetchedHiddenHealthProblems, true, typeof(List&lt;Int64&gt;), typeof(List&lt;Int64&gt;), typeof(List&lt;double&gt;)))
+		{
+			List&lt;Int64&gt; fetchedWoundDateEnds = (List&lt;Int64&gt;)fetchedHiddenHealthProblems[0];
+			List&lt;Int64&gt; fetchedIllDateEnds = (List&lt;Int64&gt;)fetchedHiddenHealthProblems[1];
+			List&lt;double&gt; fetchedPregnancyRatios = (List&lt;double&gt;)fetchedHiddenHealthProblems[2];
+			
+			Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+			
+			//assemble lists of pops that don't have wounds/illnesses/pregnancies:
+			List&lt;IFPop&gt; popsNoWounds = new List&lt;IFPop&gt;();
+			List&lt;IFPop&gt; popsNoIllness = new List&lt;IFPop&gt;();
+			List&lt;IFPop&gt; popsNoPregnancies = new List&lt;IFPop&gt;();
+			foreach(IFPop pop in inPopsToApplyTo)
+			{
+				if(pop.isDead())
+					continue;
+				if(!pop.isWounded())
+					popsNoWounds.Add(pop);
+				if(!pop.isIll())
+					popsNoIllness.Add(pop);
+				if(((pop.getSex() == IFPop.ePopSex.cFemale) || (pop.getSex() == IFPop.ePopSex.cUnisexBoth)) &amp;&amp; (pop.getRace().isCanMotherChildren()) &amp;&amp; !pop.isPregnant()) //the only game impact of sex is pregnancy so use it when it should be used
+					popsNoPregnancies.Add(pop);
+			}
+			
+			//apply the wounds:
+			foreach(Int64 dateWoundEnd in fetchedWoundDateEnds)
+			{
+				if(popsNoWounds.Count == 0)
+					break;
+				if(dateWoundEnd &gt; currentDate)
+				{
+					int index = (int)getAPI().calcRandIntUnder(popsNoWounds.Count);
+					IFPop randPop = popsNoWounds[index];
+					popsNoWounds.RemoveAt(index);
+					
+					randPop.addWound(false, false, false, false, null, (UInt64)(dateWoundEnd - currentDate));
+					outDatesOfWoundEnding.Add(dateWoundEnd);
+				}
+			}
+			
+			//apply the illnesses:
+			foreach(Int64 dateIllnessEnd in fetchedIllDateEnds)
+			{
+				if(popsNoIllness.Count == 0)
+					break;
+				if(dateIllnessEnd &gt; currentDate)
+				{
+					int index = (int)getAPI().calcRandIntUnder(popsNoIllness.Count);
+					IFPop randPop = popsNoIllness[index];
+					popsNoIllness.RemoveAt(index);
+					
+					randPop.addIllness(false, null, (UInt64)(dateIllnessEnd - currentDate));
+					outDatesOfIllnessEnding.Add(dateIllnessEnd);
+				}
+			}
+			
+			//apply the pregnancies:
+			foreach(double pregRatio in fetchedIllDateEnds)
+			{
+				if(popsNoPregnancies.Count == 0)
+					break;
+				double boundedPregRatio = Math.Max(0.0d, Math.Min(1.0d, pregRatio));
+				
+				int index = (int)getAPI().calcRandIntUnder(popsNoPregnancies.Count);
+				IFPop randPop = popsNoPregnancies[index];
+				popsNoPregnancies.RemoveAt(index);
+				
+				Int64 totalPregDays = randPop.getRace().getTotalPregnancyDays();
+				Int64 dayOfPregEnd = (Int64)(1 + currentDate + (totalPregDays * (1.0d - boundedPregRatio))); //1+ to make sure the date is at least tomorrow
+				
+				randPop.setPregnantBabyRace(randPop.getRace());
+				randPop.setPregnantDayOver(dayOfPregEnd);
+				outRatiosOfPregnancyLength.Add(boundedPregRatio);
+			}
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "could not fetch hidden health problems so we must assume that there are none!  The variables will still be cleared if that input is true");
+		}
+		
+		if(inClearStoredValues)
+		{
+			customScripts.runCustomScript("clearHiddenHealthProblemsForJoiners", new List&lt;object&gt;() { inEventStatus, inEventReportUID, inAdditionalLabel }, out _);
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outDatesOfWoundEnding, outDatesOfIllnessEnding, outRatiosOfPregnancyLength };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

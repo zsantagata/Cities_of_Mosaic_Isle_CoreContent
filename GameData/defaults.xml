@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<!-- TODO explain each bit of the xml files and mod loading and how it works -->
+<!-- attributes: a moddableObject delcaration NEEDS name= attribute.  If and only if kind= attribute is "remove", the moddableObject is deleted.  This shifts the ordering of moddableObjects of that type (no in-game effect).  The default object cannot be removed.  When the kind=attribute is "remove", none of the declared elements matter. -->
+<!-- however note that spritesheets cannot be deleted, or have their list elements deleted/replaced/added to; they can only have their information overwritten by redeclaring the spritesheet -->
+<!-- lists: for list-type (including lists of tuples) moddable qualities, if the kind= attribute does not exist, or is "overwrite", previous items/default items in the list are discarded and new items added.  If the kind= attribute is "remove", then items are being removed from previous items/default items in the list (exact match for the first tuple-item).  If the kind= attribute is "add", then items are appended to the previously-declared/default-declared list.  If the kind= attribute is "replace", then the first item in the tuple list which has the same first inner-element (always a name or a reference to an MO) will have its other inner-elements replaced with the values provided.  When a non-tuple list is marked "replace", no action is taken (rethink what you're trying to do). -->
+<!-- default: if the name of an object is default, as are all objects in this file, then the object is not one that should exist during play.  Instead, the object is a fallback object.  Furthermore, when declaring a non-default object, if any element is not declared, the value contained by the default object is used. -->
+<!-- this means a modder could change the default values if they wanted to speed up the declaration of a group of similar objects.  However, remember: unless and until the default values in this file are restored, the changes will continue to other objects declared in the future if they do not declare all elements.  If this is not desired behavior, then it is the modder's responsibility to re-establish the values here in this file at the end of their files or mod. -->
+<core_data>
+  <igIndustry name="default">
+    <Encyclopedia_Entry>
+	  <full_path>error: this is the default object and you should not see this</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts.  Examples include "military", "water bearing" -->
+	<mIndustryQualities>0</mIndustryQualities> <!-- 0x1 = no skill improvement, 0x2 = distribution, 0x4 = construction -->
+  </igIndustry>
+  
+  <igResource name="default">
+    <Encyclopedia_Entry>
+	  <full_path>error: this is the default object and you should not see this</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x0</mResourceQualities><!--0x1 = food, 0x2 = HStasis, 0x4 = woundHeal, 0x8 = diseaseHeal, 0x10 = drug, 0x20 = military equipment, 0x40 = only one in resource pool, 0x80 = immediate breakdown, 0x100 = major trade resource, 0x200 = resource is only from pops, 0x400 = enable manual breakdown -->
+	<mProteinRatio>0</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.0</mDecaySpeed><!-- 0 = does not change in quality at all, positive is daily quality decay (e.g. from sitting somewhere out in the sun with no attention), negative means this resource improves over time if not disturbed (but hauling it around will still cause some degradation) -->
+	<mBreakdownResources><!-- list of string/double pair, string = name of another resource, double = how many other resources are gained per this resource that are broken down -->
+	</mBreakdownResources>
+	<mSSID>null</mSSID> <!-- ID for spritesheet, spritesheets are also split up by class -->
+	<mSpriteID>14</mSpriteID><!-- texture for icon.  14 is error sprite on the basic spritesheet-->
+	<mDesolationFactor>1.0</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mProductionSpeed>1.0</mProductionSpeed> <!-- this is a multiplier on how much of a resource will be created through production -->
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igResource>
+  
+  <igRace name="default">
+    <Encyclopedia_Entry>
+	  <full_path>error: this is the default object and you should not see this</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSingleNoun>Pop</mSingleNoun>
+	<mPluralNoun>Pops</mPluralNoun>
+	<mCollectiveNoun>Pops</mCollectiveNoun>
+	<mAdjective>Pop</mAdjective>
+	<mSpecialAttributes>0x680</mSpecialAttributes><!-- 0x1 = is unisex race, 0x2 = ignore local land speed, 0x4 = ignore local water speed, 0x8 = ignore world land speed, 0x10 = ignore world water speed, 0x40 = can breathe underwater, 0x80 = can breathe overwater, 0x100 = hidden from player sight, 0x200 = can mother children, 0x400 = can father children, 0x800 = can this race create children with other races -->
+	
+	<mIndustryProductivities><!-- this is a list of: reference to industry, production multiplier, special qualities.  When no entry is present, a multiplier of 1.0 is used for that industry, and no special qualities.  Note that here, and with all tuples, the order of entries matters only for wildcard: the wildcard should be last (and applies to all industries not listed) -->
+	  <i1>
+	    <a>*</a>
+		<b>1.0</b>
+		<c>0x0</c> <!-- 0x1 = cannot work in industry, 0x2 = overwater nerf, 0x4 = overwater buff, 0x8 = underwater buff, 0x10 = underwater nerf, 0x20 = quantity buff, 0x40 = quality buff, 0x80 = quantity nerf, 0x100 = quality nerf, 0x200 = more danger, 0x400 = same race buff, 0x800 = same race nerf, 0x1000 = different race buff, 0x2000 = different race nerf, 0x4000 = dislike industry, 0x8000 = like industry, 0x10000 = less danger, 0x20000 = no danger -->
+	  </i1>
+	</mIndustryProductivities>
+	
+	<mResourcesToGenerateWhileHoused><!-- list of resource name and quantity -->
+	</mResourcesToGenerateWhileHoused>
+	
+	<mConsumptionSpecificResourceModifiers><!-- this is a list of: reference to resource, special qualities -->
+	<!-- the below is purely an example:
+	  <i1>
+		<a>*</a>
+		<b>0x5</b>   //0x1 = more health from consuming, 0x2 = more happiness from consuming, 0x4 = no health from consuming, 0x8 = no happiness from consuming, 0x10 = does not consume (or gain any relevant benefits)
+	  </i1>
+	-->
+	</mConsumptionSpecificResourceModifiers>
+	
+	<mBuildingsToTreatAsHousing><!-- basic list of names -->
+	</mBuildingsToTreatAsHousing>
+	
+	<mHappinessBaseShift>0</mHappinessBaseShift>
+	
+	<!-- these will first be fed into translatedstrings to see if they exist there and the output used; only if it does not will these be directly output as text -->
+	<mHappinessBaseShiftText>racehappinessview_basehappiness_description_default</mHappinessBaseShiftText>
+	<mHappinessIndividualCombinationText>racehappinessview_individualcombination_description_default</mHappinessIndividualCombinationText>
+	<mHappinessEmploymentText>racehappinessview_employment_description_default</mHappinessEmploymentText>
+	<mHappinessKinText>racehappinessview_kin_description_default</mHappinessKinText>
+	<mHappinessMatesText>racehappinessview_mates_description_default</mHappinessMatesText>
+	<mHappinessJealousyText>racehappinessview_jealousy_description_default</mHappinessJealousyText>
+	<mHappinessIndustryLeaderCountText>racehappinessview_industryleadercount_description_default</mHappinessIndustryLeaderCountText>
+	<mHappinessIllnessInCommunityText>racehappinessview_illnessincommunity_description_default</mHappinessIllnessInCommunityText>
+	
+	<mLifespanYearsAverage>80</mLifespanYearsAverage>
+	
+	<mChanceToBirthOtherRace>0.03</mChanceToBirthOtherRace>
+	<mTotalPregnancyDays>270</mTotalPregnancyDays>
+	<mIncapablePregnancyDays>40</mIncapablePregnancyDays>
+	<mVisiblePregnancyDays>240</mVisiblePregnancyDays>
+	
+	<mSSIDs>
+		<i>null</i>
+	</mSSIDs>
+	<mSelectedSGID>develop_popClickOn</mSelectedSGID>
+	<mCommunityNameList> <!-- simple list of strings.  Since can be long, separate files will have this per igRace in core -->
+	  <i1>MISSING COMMUNITY NAME 1</i1>
+	  <i2>MISSING COMMUNITY NAME 2</i2>
+	  <i3>MISSING COMMUNITY NAME 3</i3>
+	  <i4>MISSING COMMUNITY NAME 4</i4>
+	  <i5>MISSING COMMUNITY NAME 5</i5>
+	</mCommunityNameList>
+	<mPopNameList> <!-- simple list of strings.  Since can be long, separate files will have this per igRace in core -->
+	  <i1>MISSING POP NAME 1</i1>
+	  <i2>MISSING POP NAME 2</i2>
+	  <i3>MISSING POP NAME 3</i3>
+	  <i4>MISSING POP NAME 4</i4>
+	  <i5>MISSING POP NAME 5</i5>
+	</mPopNameList>
+
+    <mLandSpeed>1.0</mLandSpeed> <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+    <mWaterSpeed>1.0</mWaterSpeed> <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+    
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igRace>
+  
+  <igTerrainSource name="default">
+    <Encyclopedia_Entry>
+	  <full_path>error: this is the default object and you should not see this</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mAllowedResourcesLand><!-- basic list of names -->
+	</mAllowedResourcesLand>
+	<mAllowedResourcesWater><!-- basic list of names -->
+	</mAllowedResourcesWater>
+	<mDistributionType>0</mDistributionType> <!-- 0 = normal blobby, 1 = normal stringy -->
+	<mDesolationRecoveryPerDay>0.27777777777</mDesolationRecoveryPerDay> <!-- max desolation = 100.0d, there are 360 days in a year, so 0.27777777777 is recovery in one year of not being exploited -->
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igTerrainSource>
+  
+  <igTerrainBiome name="default">
+    <Encyclopedia_Entry>
+	  <full_path>error: this is the default object and you should not see this</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	
+    <mBiomeQualityDecayStrength>0.0</mBiomeQualityDecayStrength><!-- multiplier on speed at which all resources decay -->
+    
+	<mLocalMoveSpeedFactor>1.0</mLocalMoveSpeedFactor><!-- multiplier on speed at which pops move on the local map on tiles of this biome -->
+	<mWorldMapMoveSpeedFactor>1.0</mWorldMapMoveSpeedFactor><!-- multiplier on speed at which pops move on the world map on pixels of this biome -->
+	
+	<mWaterAvailability>0.0</mWaterAvailability> <!-- water need of pops without a water source will tend to this proportion of the whole range, before modifiers.  Ranges from 0 to 1 -->
+    <mIsWater>0</mIsWater><!-- this is a bool, 0 = false, anything else = true -->
+	
+	<mTerrainSourceProbabilityAndRichness><!-- this is a list of: reference to land source, probability a resource will be present on a sandbox map, richness if the resource does exist (0 = none, 1->9 increases) -->
+	<!-- as a note, richness means the total count of tiles which have the resource on them -->
+	<!-- as a note, even if the probability of a resource existing evaluates as true, if its high
+         values are within the other biome (land/water), it will not exist on the map -->
+	<!-- by value, the (fairly accurate but imperfect due to the nature of randomization) internal labels of the richness values are:
+            cNone = 0x0,
+            cSoloTiles = 0x1,
+            cBitsAndDots = 0x2,
+            cThinDregs = 0x3,
+            cSmallPocket = 0x4,
+            cPocket = 0x5, //around here and less rich than this, the names are less like a guarantee of this for a map and more like an average
+            cHealthy = 0x6,
+            cMultipleOrBigPockets = 0x7,
+            cManyPockets = 0x8,
+            cShouldCoverTheMap = 0x9 //"cover" means roughly 50% of the map
+	-->
+	</mTerrainSourceProbabilityAndRichness>
+	
+	<mWorldMapRVal>0</mWorldMapRVal> <!-- the world map has a hidden color map to implement the biome map.  The RGB values attached to biomes must correspond to the colors used in the hidden_map texture -->
+	<mWorldMapGVal>0</mWorldMapGVal> <!-- the world map has a hidden color map to implement the biome map.  The RGB values attached to biomes must correspond to the colors used in the hidden_map texture -->
+	<mWorldMapBVal>0</mWorldMapBVal> <!-- the world map has a hidden color map to implement the biome map.  The RGB values attached to biomes must correspond to the colors used in the hidden_map texture -->
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igTerrainBiome>
+  
+  <igTerrainBaseParcel name="default">
+    <mBaseParcelQualities>0x3</mBaseParcelQualities><!-- 0x1 = buildable, 0x2 = passable, 0x4 = is water -->
+    <mBiome>default</mBiome><!-- name cannot be null -->
+    <mHeight>1</mHeight>
+    <mWidth>1</mWidth>
+    <mSSID>0</mSSID>
+    <mSpriteID>0</mSpriteID>
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igTerrainBaseParcel>
+  
+  <igTerrainDoodad name="default">
+    <mBaseParcelQualities>0xc</mBaseParcelQualities><!-- 0x1 = buildable, 0x2 = passable, 0x4 = underwater enable, 0x8 = overwater enable -->
+    <mBiomes><!-- basic list of names -->
+	  <i1>*</i1>
+	</mBiomes>
+    <mHeight>1</mHeight>
+    <mWidth>1</mWidth>
+    <mSSID>0</mSSID>
+    <mSpriteID>0</mSpriteID>
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igTerrainDoodad>
+  
+  <igTerrainResourceParcel name="default">
+    <mBaseParcelQualities>0xf</mBaseParcelQualities><!-- 0x1 = buildable, 0x2 = passable, 0x4 = underwater enable, 0x8 = overwater enable -->
+    <mBiomes><!-- basic list of names -->
+	  <i1>*</i1>
+	</mBiomes>
+    <mHeight>1</mHeight>
+    <mWidth>1</mWidth>
+    <mSSID>0</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+	<mTerrainSource>default</mTerrainSource> <!-- name cannot be null -->
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igTerrainResourceParcel>
+  
+  <igBuildingKind name="default">
+    <Encyclopedia_Entry>
+	  <full_path>error: this is the default object and you should not see this</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mBuildingKindQualities>0x2</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x4 = passable, 0x10 = is road (hardcoded stuff), 0x20 = is bridge (hardcoded stuff), 0x80 = only one per city, 0x100 = player may enter text, 0x200 = player may change name, 0x400 = displays no menu (should not be true for any housing or workplaces), 0x800 = if built underwater must be built next to a coast, 0x1000 = if built overwater must be built next to a coast, 0x2000 = workplace that uses land sources around it, 0x4000 = workplace chooses one output resource instead of making all at once, 0x8000 = this is a service workplace (outputs no goods), 0x10000 = workplace can use no inputs, 0x20000 = workplace forces best quality (only valid for service industry buildings) -->
+	<mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+	<mPopDaysToBuild>1</mPopDaysToBuild> <!-- values below 1 will be treated as 1.  This many pops must spend one many day of effort (or one pop must spend this many days, or whatever multiplication gets to this) to create a building of this buildingkind -->
+	<mBaseDurability>100</mBaseDurability>
+	
+	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive).  If nothing exists, this building does not require any resources to build.  If one entry has a quantity of 0, then this building can be built with resources or not. -->
+	</mResourcesToBuild>
+	
+	<mOutputMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, double value.  If nothing exists, the mult is 1.0d.  Names here that do not appear in mResourcesToBuild will have no effect -->
+	</mOutputMultBasedOnConstructionResources>
+	
+	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value.  If nothing exists, this building does not shift durability based on construction resources.  Names here that do not appear in mResourcesToBuild will have no effect -->
+	</mDurabilityMultBasedOnConstructionResources>
+	
+	<mBeautyValue>0</mBeautyValue>
+	<mBeautyRadius>0</mBeautyRadius>
+    <mBeautySynergyBuildings><!-- basic list of names -->
+	</mBeautySynergyBuildings>
+	
+	<mSSIDs>
+		<i>null</i>
+	</mSSIDs>
+	
+	<mHousingCapacity>0</mHousingCapacity>
+	<mHousingQualityFactor>1.0</mHousingQualityFactor>
+	
+	<mHousingQualityShiftPerRace> <!-- this is a list of: reference to race, int.  If nothing exists, the inhabitants of this building use the housing at equal quality -->
+	</mHousingQualityShiftPerRace>
+	
+	<mResourcesRestrictedByHousing> <!-- basic list of names -->
+	</mResourcesRestrictedByHousing>
+	
+	<mMaxWorkers>16</mMaxWorkers>
+	<mIndustry>null</mIndustry>
+	<mRadius>0</mRadius>
+	<mDesolationRateInRadius>0.0</mDesolationRateInRadius> <!-- this is used by in-game moddable scripts for workplaces.  At the time of workplace calculation, desolation is distributed among appropriate land sources (extract-from-land workplaces) or among all tiles in radius (others).  This can also obviously be used by daily scripts or custom workplace scripts. -->
+	
+	<mCustomBuildingButtons> <!-- this is a list of string-string-string, the first string is the internal button name (case ignored), the second string is script which determines visibility and displayed name of button, the third string is script which occurs when button is clicked -->
+	  <!-- the below is purely an example because this is confusing
+	  <i1>
+	    <a>seize goods</a>
+		<b>
+			return null; //actual script here
+		</b>
+		<c>
+			return null; //actual script here
+		</c>
+	  </i1>
+	  -->
+	</mCustomBuildingButtons>
+	
+	<mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor> <!-- this is a list of: reference to resource (common input resource), list of references to resources (outputs for which consumption of the common-input-resource is disabled), list of references to resources (other resources which must be consumed while the common-input-resource is being consumed), list of references to resources (other resources which cannot be consumed while the common-input-resource is being consumed), an input quantity weight, an input effectiveness multiplier -->
+	  <!-- the below is purely an example because this is confusing
+	  <i1>
+	    <a>Common Resource being consumed's name</a>
+		<b>
+		  <i1>first output resource which you can't make with common resource within tag a</i1>
+		  <i2>second output resource which you can't make with common resource within tag a</i2>
+		  <i3>third output resource which you can't make with common resource within tag a</i3>
+		</b>
+		<c>
+		  <i1>first resource which you must consume as a requirement of consuming common resource within tag a</i1>
+		  <i2>second resource which you must consume as a requirement of consuming common resource within tag a</i2>
+		</c>
+		<d>
+		  <i1>first resource which you cannot consume while consuming resource within tag a</i1>
+		</d>
+		<e>
+		  1.0 //when multiple common inputs are selected, the balance between them will be decided by their respective weights.  Must be non-negative
+		</e>
+		<f>
+		  1.0 //this is a multiplier on this input's contribution to the output.  Higher is more output when this input is used.  Must be non-negative
+		</f>
+	  </i1>
+	  -->
+	</mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor>
+	
+	<mRequiredResourceInputs><!-- basic list of names: if the workplace is on at all, these resources must be consumed -->
+	</mRequiredResourceInputs>
+	
+	<mOutputResources><!-- basic list of names: possibilities, chosen by player in the moment.  Not all created at once -->
+	</mOutputResources>
+	
+	<mOutputDirectToScriptName>
+	</mOutputDirectToScriptName> <!-- if this is not empty, then this building (if it is a workplace) can forward its output directly to the mScriptCalledBetweenOutputCalculationAndResolution script, and this is the name that appears on the output goods selection button -->
+	
+	<mMusteringType>0x0</mMusteringType><!-- 0 = disabled, 1 = during a real battle pops are mustered, 2 = pops immediately muster at this building if it is their muster point -->
+	<mScriptCalledDaily></mScriptCalledDaily> <!-- exactly what it says on the tin: if this building is fully constructed, this script is called daily.  First input is the building itself. -->
+	<mScriptCalledBetweenOutputCalculationAndResolution></mScriptCalledBetweenOutputCalculationAndResolution>  <!-- if this building is a workplace, this script is called when the building has produced a non-zero quantity/quality of output, but before it has resolved the output into service quality for surrounding buildings or a resource addition to the resource pool.  This script can also be called at other times by, for example, menus, to try to predict what a workplace's output is going to be, but such calls will always have the fourth input set to "true".  First input is the building, second is quantity (of actual resource, not internal calculation), third is quality (of actual resource/service, not internal calculation), fourth is a bool that indicates "are we calling this script solely for predictive purposes" which is false if input resources are being consumed and output is actually being produced, fifth is a Dictionary of IFResource,double which is used instead of the (double quantity) if and only if this building extracts goods from the land.  Return value is a List of objects of size 4 holding quantity/quality/prediction text/dictionary of IFResource,double (double/double/string/Dictionary&lt;IFResource,double&gt;) in that order, but the script can obviously keep the first two (and last dictionary) the same and do other things if necessary.  If prediction text is the empty string "", then default empty string logic takes over (goods/services autogenerated text), otherwise the prediction text is printed as is. -->
+	
+	<mOutputResourceQuanDailyFactor>0.545</mOutputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make output goods per day approximately equal to 1 for a single unskilled worker using one perfectly-average common good, for a workplace that does not work the land. -->
+	<mInputResourceQuanDailyFactor>1</mInputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make input goods per day per worker approximately equal to 1, spread over all inputs (not counting those which are required to be consumed TODO figure that out?). -->
+	
+	<mIsHousing>0</mIsHousing> <!-- bool, true if nonzero -->
+	<mIsWorkplace>0</mIsWorkplace> <!-- bool, true if nonzero -->
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igBuildingKind>
+  
+  <igEvent name="default"> <!-- display name is used in info view menus (event view (TODO) and history) so if this event creates an event report, make sure the display name is something presentable -->
+    <mTypeOfEvent>0</mTypeOfEvent> <!-- 0 = normal event (happens in community over time), 1 = player-sourced delegation arrives at foreign location event, 2 = player-sourced delegation while traveling event, 3 = simultaneous with other occurrence event -->
+    <mSimultaneousWithOccurrence>0x0</mSimultaneousWithOccurrence> <!-- does not matter unless mTypeOfEvent is 3 -->
+  
+    <mDefaultEnabled>0</mDefaultEnabled> <!-- bool, 0 means by default this event is disabled, any other int means by default this event is enabled.  Status-per-event will hold dynamic value of this and can change due to scenario effects or other scripts -->
+	<mDefaultMTTH>0x7FFFFFFFFFFFFFFF</mDefaultMTTH> <!-- int, "mean time to happen" converts to a chance to happen per tick, does not matter if type of event is 1 or 3.  Status-per-event will hold dynamic value of this and can change due to scenario effects or other scripts -->
+	<mDefaultWeight>0.01</mDefaultWeight> <!-- double, weight for this event to be the specific happening of any given occurrence, does not matter if type of event is 0 or 2.  Status-per-event will hold dynamic value of this and can change due to scenario effects or other scripts -->
+	<mDelegationType>0</mDelegationType> <!-- TODO describe this.  Also, as a note to event writers: if a delegation event's mScriptUponHappening leaves no loyal pops alive, the delegation will be lost before the event will be seen, so the player won't even know why.  Be careful with that. -->
+	
+	<mScriptWhichGatesHappening>
+		     List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			 toReturn.Add(true);
+		     return toReturn;
+	</mScriptWhichGatesHappening> <!-- this is a C# script, compiled and run within the game code.  Its return value should be a list with "false" if, despite being hitting MTTH, or hitting chance on an occurrence, other conditions (in this function) determine that this event should still not happen.  Its return value should be a list with "true" if the event should go ahead.  Due to the nature of MTTH and chance occurrence, this does not change future probabilities that this event will occur, though some events cannot occur again while a report about them is sitting in the player's Event View.  If this event was triggered manually by another event, and this script has determined the event should not proceed, the first event is not told explicitly (although you can always store variables and retrieve them based on any condition you wish).  By convention, this script should not change any actual game state (besides possibly storing a notifier that it failed), and this script should also not use probability to determine whether to return true or false (leave that to MTTH/chance). -->
+	<mScriptUponHappening>
+		     List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		     return toReturn;
+	</mScriptUponHappening> <!-- this is a C# script, compiled and run within the game code.  It does not have a return value.  This script will execute if mScriptWhichGatesHappening returns a list with true, and no other problems prevent the event from happening (although those are evaluated before the above script).  This script therefore is evaluated each time the event truly "occurs".  For informative events, the whole of the event is stored here.  For quest-like events, this script can force another event's occurrence time to a specific date, that other event being the quest resolution event.  -->
+	
+	<mDefaultMenuText></mDefaultMenuText> <!-- this is the menu text which appears to the player when the event occurs.  TODO put menu text syntax somewhere a potential modder can read it. -->
+	
+	<mInvisible>1</mInvisible> <!-- bool, non-zero value means by default this event will not display any text to the player and not require any response, 0 means some sort of menu will be displayed to the player.  If non-zero, the "mStopTimeAndForceEvaluate" bool is ignored -->
+	<mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate> <!-- bool, 0 means the player can let time continue while this event's report is sitting in the player's event box, while 1 means time will be forced to stop and the player cannot cause it to continue until the event is resolved (AKA a button chosen).  Note that all button scripts are appended with a script that dismisses the event's report from the player inbox, so you don't have to (and SHOULD ABSOLUTELY NOT) do it manually.  In case you mess up and the player is not allowed to select anything while this event stops time, a default button that dismisses the event is added to the event report. -->
+	<mCanHappenWhileReportPending>0</mCanHappenWhileReportPending> <!-- bool, 0 means this event cannot happen again while there is a report of this same event waiting for the player's response in the event view.  1 means the event can occur multiple times without the player responding to the first (or further) times it has occurred.  For the case of a delegation event, this indicates that the event could not happen to another delegation if the player clicked away from evaluating a previous delegation (where this event was occurring and had not yet been resolved). -->
+	
+	<mChoiceCombo> <!-- this is a list of <string, string, string, double, string, string> tuples.  Each tuple represents an option that can be chosen by the player in response to an event.  The values within the tuple are, in order: name = the text which appears on the button representing the response, appears_script = a C# script which returns a list with true if the button is available to the player and a list with false otherwise (and therefore hidden from view), selection_script = a C# script which is evaluated when the player clicks the button to choose a response to the event, predict_diff = the prediction difficulty of having the prechoice text appear (between 0.0d and 100.0d), prechoice = the text that appears in a popup when the player hovers over the button to choose this option, resolution = the text that appears in a post-choice 'resolution' menu to tell the player what happened -->
+	<!-- the below is an example of a single tuple-response
+		<i1>
+		  <name>We have too much Cheese already!</name>
+		  <appears_script>SOME SORT OF SCRIPT THAT CHECKS IF CHEESE GREATER THAN A VALUE</appears_script>
+		  <selection_script>SOME SORT OF SCRIPT THAT MAKES FOREIGN COMMUNITY OFFENDED BECAUSE YOU DID NOT TAKE THEIR CHEESE</selection_script>
+		  <predict_diff>50.0</predict_diff>
+		  <prechoice>We will reject their offer, offending them greatly.</prechoice>
+		  <resolution>The cheese-gifting foreigners spit on the ground and stomp off in a huff, promising their people will remember today's insult to their cheesy ways.  They take their cheese with them.</resolution>
+		</i1>
+	-->
+	</mChoiceCombo>
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igEvent>
+  
+  <!-- note that both econ strength and mil strength are "estimates" that are displayed to the player and that scripts/AI can use to judge the community.  When it comes down to it, each happenstance must be responded to in its own way, and communities can be better or worse at the task at hand. -->
+  <igEconStrengthCalculation name="default">
+	<!-- note that in addition to calculating econ strength, igEconStrengthCalculation is responsible for calculating resource velocities of a foreign community -->
+	<mSetupScript>return null;</mSetupScript> <!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the changing of locally producable resources.  Note that this is not called every day; this is only called if the econ calculation for a community has changed (even if the foreign AI has changed, it's only the econ calc that matters). -->
+	<mResourceAddScript>return null;</mResourceAddScript> <!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the adding (i.e. regular production) of resources for the foreign community. -->
+	<mResourceConsumeScript>return null;</mResourceConsumeScript> <!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the consuming (i.e. regular removal) of resources for the foreign community. -->
+	<mPopCountChangeScript>return null;</mPopCountChangeScript> <!-- this script has one input: IFCommunity inCommunity.  This script has no outputs, and should itself do the changing of pop counts for the foreign community.  Note that pop counts in igForeignCommunityComponent.getAdditionalUndeclaredPopCounts() can be changed directly with little other effect, but pops that are loyal to this community and alive should have at least one of those qualities change; hard code will clean up the rest. -->
+    <mEconStrengthScript>return new List&lt;object&gt;() { 0.0d };</mEconStrengthScript> <!-- this script has one input: IFCommunity inCommunity. This script has one output: the new value of econ strength.  The value will be constrained between 0.0d and the maximum econ strength value as held by moddable game consts. -->
+	<mCapitalKindNames> <!-- this is a list of destroyable targets for this community.  These targets can be destroyed by war delegations.  The internal name is used by scripts, while the display name is only used to display text. -->
+		<!-- <i1> <a>internal</a><b>display</b> </i1> -->
+	</mCapitalKindNames>
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+	<mPlayerEconStrengthQuals>0</mPlayerEconStrengthQuals> <!-- 0x1 = player only calculation; 0x2 = player only calculation that can be chosen randomly -->
+  </igEconStrengthCalculation>
+  <igMilStrengthCalculation name="default">
+    <mScript>return new List&lt;object&gt;() { 0.0d };</mScript> <!-- this script has one input: IFCommunity inCommunity. This script has one output: the new value of mil strength.  The value will be constrained between 0.0d and the maximum mil strength value as held by moddable game consts. -->
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+	<mPlayerMilStrengthQuals>0</mPlayerMilStrengthQuals> <!-- 0x1 = player only calculation; 0x2 = player only calculation that can be chosen randomly -->
+  </igMilStrengthCalculation>
+  
+  <igForeignAI name="default"> <!-- display name is used in info view menus -->
+	<mWeight>0.0</mWeight>
+	<mGeneralEnable>0</mGeneralEnable>
+	
+	<mGatingScript>return new List&lt;object&gt;() { true };</mGatingScript>
+	<mFirstTimeVariableScript>return null;</mFirstTimeVariableScript>
+	<mDailyNonVariableScript>return null;</mDailyNonVariableScript>
+	<mDailyVariableScript>return null;</mDailyVariableScript>
+	<mTransitionOutScript>return new List&lt;object&gt;() { null };</mTransitionOutScript>
+	
+	<mDailyStartDelegationToForeign>return null;</mDailyStartDelegationToForeign>
+	<mDailyStartDelegationToPlayer>return null;</mDailyStartDelegationToPlayer>
+	
+	<mDiplomacyGiftGivenScript>return null;</mDiplomacyGiftGivenScript>
+	<mDiplomacyGiftTextScript>return new List&lt;object&gt;() { "" };</mDiplomacyGiftTextScript>
+	<mTradeAttemptsScript>return new List&lt;object&gt;() { 1L };</mTradeAttemptsScript>
+	<mTradeProbAndDescriptionScript>return new List&lt;object&gt;() { 0.5d, "" };</mTradeProbAndDescriptionScript>
+	<mEmigrationAcceptanceScript>return new List&lt;object&gt;() { false };</mEmigrationAcceptanceScript>
+	
+	<mDefaultEconStrengthCalculation>default</mDefaultEconStrengthCalculation> <!-- note that this cannot be null, and really shouldn't be 'default'.  An IFCommunity can change away from these calculations, but when a new foreign AI is assigned its defaults will be assigned to the community as well. -->
+	<mDefaultMilStrengthCalculation>default</mDefaultMilStrengthCalculation> <!-- note that this cannot be null, and really shouldn't be 'default'.  An IFCommunity can change away from these calculations, but when a new foreign AI is assigned its defaults will be assigned to the community as well. -->
+	
+	<mTagList></mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igForeignAI>
+  
+</core_data>

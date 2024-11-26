@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- TODO make sure this is consistently used in pathfinding state scripts -->
+  <!-- this file holds the implementation of two custom scripts which store and retrieve a pop's existing pathfinding target for its current pathfinding state.  If the target does not exist, -1 is returned by the 'get'. -->
+  <!-- they are meant for use by pathfinding scripts, so that a pop does not thrash between two or more targets unless it actually changes states -->
+  <!-- for core data scripts, stored targets will be a pop or a building, depending on the state. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+		<!-- getUIDOfExistingPathfindingTarget has one input arguments: IFPop inPop -->
+		<!-- getUIDOfExistingPathfindingTarget has one output: Int64 outUID.  This output is -1 if the target does not exist, and non-negative otherwise. -->
+		<i1><a>getUIDOfExistingPathfindingTarget</a>
+		<b>
+			//input count and type check:
+			var customScripts = getAPI().getCustomScripts();
+			if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+				{typeof(IFPop)}
+			}, out _))
+			{
+				throw new ArgumentException("getUIDOfExistingPathfindingTarget custom script received invalid arguments");
+				return null;
+			}
+				
+			IFPop inFirstPop = (IFPop)inArguments[0];
+			if(inFirstPop == null)
+			{
+				throw new ArgumentException("getUIDOfExistingPathfindingTarget custom script received invalid argument inFirstPop: cannot be null");
+				return null;
+			}
+			
+			var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+	  
+			string nameOfStoredVariable = "pathfindingState" + inFirstPop.getPathfindingState() + "_targetUID_pop" + inFirstPop.getUID();
+			Int64 valToReturn = variableHandler.getInt(nameOfStoredVariable, out bool success);
+			if((!success) || (valToReturn &lt; 0)) valToReturn = -1;
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add(valToReturn);
+			return toReturn;
+		</b></i1>
+		
+		<!-- setUIDOfExistingPathfindingTarget has two input arguments: IFPop inPop, Int64 inUID -->
+		<!-- setUIDOfExistingPathfindingTarget has no outputs. -->
+		<i1><a>setUIDOfExistingPathfindingTarget</a>
+		<b>
+			//input count and type check:
+			var customScripts = getAPI().getCustomScripts();
+			if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+				{typeof(IFPop), typeof(Int64)}
+			}, out _))
+			{
+				throw new ArgumentException("setUIDOfExistingPathfindingTarget custom script received invalid arguments");
+				return null;
+			}
+				
+			IFPop inFirstPop = (IFPop)inArguments[0];
+			if(inFirstPop == null)
+			{
+				throw new ArgumentException("setUIDOfExistingPathfindingTarget custom script received invalid argument inFirstPop: cannot be null");
+				return null;
+			}
+			Int64 inUID = (Int64)inArguments[1];
+			
+			var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+	  
+			string nameOfStoredVariable = "pathfindingState" + inFirstPop.getPathfindingState() + "_targetUID_pop" + inFirstPop.getUID();
+			variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate() + 1, nameOfStoredVariable, inUID);
+			return null;
+		</b></i1>
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

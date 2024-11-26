@@ -1,0 +1,620 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>battleAIPerformViolentIntent alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+			<i1><a>battleAIPerformViolentIntent alert before_replace_text</a> <b>string</b>
+			<c>A suspicious [0] has been spotted committing a violent act!</c></i1>
+			
+			<i1><a>battleAIPerformViolentIntent detection radius</a> <b>double</b> <c>4.0</c></i1> <!-- a pop which completes ViolentIntent within this radius of a pop which does not have a ViolentIntent will cause all pops with ViolentIntent to become Rebels or GenericEnemy, depending -->
+			<i1><a>battleAIPerformViolentIntent detection in_building probability</a> <b>double</b> <c>0.1</c></i1> <!-- a pop in a building has this probability to be able to discover a violent intent nearby -->
+			
+			<i1><a>battleAIPerformViolentIntent pop_target illness_goal success chance</a> <b>double</b> <c>0.5</c></i1> <!-- if a ViolentIntent pop's target is a pop, and intent is to make the target sick, this is the chance of success -->
+			
+			<i1><a>battleAIPerformViolentIntent pop_target hurt_goal success chance</a> <b>double</b> <c>0.95</c></i1> <!-- if a ViolentIntent pop's target is a pop, and intent is to wound or kill the target, this is the chance of success -->
+			<i1><a>battleAIPerformViolentIntent pop_target hurt_goal success soldier_max_difference penalty</a> <b>double</b> <c>0.75</c></i1> <!-- if a ViolentIntent pop's target is a pop, and intent is to wound or kill the target, this is the reduction of success chance approached as the target's soldier status approaches max and the attacker's soldier status approaches min.  At the opposite, the effect is 0. -->
+			<i1><a>battleAIPerformViolentIntent pop_target hurt_goal wound weight</a> <b>double</b> <c>65</c></i1> <!-- if a ViolentIntent pop's target is a pop, and intent is to wound or kill the target, this is the weight for wounding the target -->
+			<i1><a>battleAIPerformViolentIntent pop_target hurt_goal death weight</a> <b>double</b> <c>35</c></i1> <!-- if a ViolentIntent pop's target is a pop, and intent is to wound or kill the target, this is the weight for killing the target -->
+			
+			<i1><a>battleAIPerformViolentIntent building_target steal_goal success chance</a> <b>double</b> <c>0.90</c></i1> <!-- if a ViolentIntent pop's target is a building, and intent is to steal, this is the chance of success -->
+			
+			<i1><a>battleAIPerformViolentIntent building_target damage_goal success chance</a> <b>double</b> <c>0.85</c></i1> <!-- if a ViolentIntent pop's target is a building, and intent is to damage or destroy it, this is the chance of success -->
+			<i1><a>battleAIPerformViolentIntent building_target damage_goal damage weight</a> <b>double</b> <c>95</c></i1> <!-- if a ViolentIntent pop's target is a building, and intent is to damage or destroy it, this is the weight for damaging the building -->
+			<i1><a>battleAIPerformViolentIntent building_target damage_goal destroy weight</a> <b>double</b> <c>5</c></i1> <!-- if a ViolentIntent pop's target is a building, and intent is to damage or destroy it, this is the weight for destroying the building immediately -->
+			
+			<i1><a>battleAIPerformViolentIntent cause_illness history action before_replace_text</a> <b>string</b>
+			<c>poisoned</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_illness history major_adjective before_replace_text</a> <b>string</b>
+			<c>assassination</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_illness history minor_adjectives before_replace_text</a> <b>list</b>
+			<c>betrayal,disease,hostile</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_illness history other_effects_strings before_replace_text</a> <b>list</b>
+			<c>hygiene</c></i1> <!-- TODO check this is the thing used elsewhere -->
+			<i1><a>battleAIPerformViolentIntent cause_illness history other_effects_values</a> <b>list</b>
+			<c>-5</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_illness history costBenefit value</a> <b>int</b>
+			<c>-75</c></i1>
+			
+			<i1><a>battleAIPerformViolentIntent cause_wound history action before_replace_text</a> <b>string</b>
+			<c>wounded</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_wound history major_adjective before_replace_text</a> <b>string</b>
+			<c>assassination</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_wound history minor_adjectives before_replace_text</a> <b>list</b>
+			<c>betrayal,violent,hostile</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_wound history other_effects_strings before_replace_text</a> <b>list</b>
+			<c>safety</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_wound history other_effects_values</a> <b>list</b>
+			<c>-15</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_wound history costBenefit value</a> <b>int</b>
+			<c>-75</c></i1>
+			
+			<i1><a>battleAIPerformViolentIntent cause_death history action before_replace_text</a> <b>string</b>
+			<c>murdered</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_death history major_adjective before_replace_text</a> <b>string</b>
+			<c>assassination</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_death history minor_adjectives before_replace_text</a> <b>list</b>
+			<c>betrayal,violent,hostile</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_death history other_effects_strings before_replace_text</a> <b>list</b>
+			<c>safety</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_death history other_effects_values</a> <b>list</b>
+			<c>-15</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_death history costBenefit value</a> <b>int</b>
+			<c>-100</c></i1>
+			
+			<i1><a>battleAIPerformViolentIntent steal history action before_replace_text</a> <b>string</b>
+			<c>stole resources from</c></i1>
+			<i1><a>battleAIPerformViolentIntent steal history major_adjective before_replace_text</a> <b>string</b>
+			<c>theft</c></i1>
+			<i1><a>battleAIPerformViolentIntent steal history minor_adjectives before_replace_text</a> <b>list</b>
+			<c>betrayal,hostile</c></i1>
+			<i1><a>battleAIPerformViolentIntent steal history other_effects_strings before_replace_text</a> <b>list</b>
+			<c>safety</c></i1>
+			<i1><a>battleAIPerformViolentIntent steal history other_effects_values</a> <b>list</b>
+			<c>-5</c></i1>
+			<i1><a>battleAIPerformViolentIntent steal history costBenefit value</a> <b>int</b>
+			<c>-5</c></i1>
+			
+			<i1><a>battleAIPerformViolentIntent cause_damage history action before_replace_text</a> <b>string</b>
+			<c>damaged building</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_damage history major_adjective before_replace_text</a> <b>string</b>
+			<c>sabotage</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_damage history minor_adjectives before_replace_text</a> <b>list</b>
+			<c>betrayal,violent,hostile</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_damage history other_effects_strings before_replace_text</a> <b>list</b>
+			<c>safety</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_damage history other_effects_values</a> <b>list</b>
+			<c>-5</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_damage history costBenefit value</a> <b>int</b>
+			<c>-10</c></i1>
+			
+			<i1><a>battleAIPerformViolentIntent cause_destroy history action before_replace_text</a> <b>string</b>
+			<c>destroyed building</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_destroy history major_adjective before_replace_text</a> <b>string</b>
+			<c>sabotage</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_destroy history minor_adjectives before_replace_text</a> <b>list</b>
+			<c>betrayal,violent,hostile</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_destroy history other_effects_strings before_replace_text</a> <b>list</b>
+			<c>safety</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_destroy history other_effects_values</a> <b>list</b>
+			<c>-25</c></i1>
+			<i1><a>battleAIPerformViolentIntent cause_destroy history costBenefit value</a> <b>int</b>
+			<c>-100</c></i1>
+			
+			<!-- if the pop managed to perform their task without being spotted, the task will be put in [0] below and this text used -->
+			<i1><a>battleAIPerformViolentIntent history action secrecy_modifier before_replace_text</a> <b>string</b>
+			<c>secretly [0]</c></i1>
+			<!-- also these adjectives will be added to the minor list of adjectives -->
+			<i1><a>battleAIPerformViolentIntent history minor_adjectives secrecy_modifier before_replace_text</a> <b>list</b>
+			<c>hidden,deception</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script battleaiperformviolentintent</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines results of a pop accomplishing a violent intent during peacetime -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	<!-- perform violent intent has two one arguments: IFPop inSourcePop, IFPop inPopTarget, IFBuilding inBuildingTarget.  There is no output.  If inPopTarget is null, inBuildingTarget is used.  It should not be the case that both are null. -->
+	<!-- this script is called during peacetime, when a pop accomplishes a violent intent. -->
+	<i1><a>battleAIPerformViolentIntent</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop), typeof(IFPop), typeof(IFBuilding)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIPerformViolentIntent custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFPop inSourcePop = (IFPop)inArguments[0];
+	  IFPop inPopTarget = (IFPop)inArguments[1];
+	  IFBuilding inBuildingTarget = (IFBuilding)inArguments[2];
+	  if(inSourcePop == null)
+	  {
+		  throw new ArgumentException("battleAIPerformViolentIntent custom script received invalid argument: inSourcePop should not be null");
+		  return null;
+	  }
+	  if((inPopTarget == null) &amp;&amp; (inBuildingTarget == null))
+	  {
+		  throw new ArgumentException("battleAIPerformViolentIntent custom script received invalid argument: inPopTarget and inBuildingTarget should not both be null");
+	  }
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  bool success = false;
+	  
+	  bool addHistoryEvent = false;
+	  string historyThing = "";
+	  IFHistoryTarget.eTargetKind historyTargetKind = IFHistoryTarget.eTargetKind.cPop;
+	  
+	  //first: resolve the violent intent
+	  if(inPopTarget != null)
+	  {
+		//a pop target will either be made sick, or wounded/killed, depending on intent:
+		Int64 illnessIntentInt = variableHandler.getInt("battleAI_violentIntentIllness_pop" + inSourcePop.getUID(), out success);
+		bool illnessIntent = (illnessIntentInt != 0L) &amp;&amp; success;
+		
+		Int64 hurtIntentInt = variableHandler.getInt("battleAI_violentIntentHurt_pop" + inSourcePop.getUID(), out success);
+		bool hurtIntent = (hurtIntentInt != 0L) &amp;&amp; success;
+		
+		//if all intents are false, choose one at random:
+		if(!illnessIntent &amp;&amp; !hurtIntent)
+		{
+			if(getAPI().calcRandIntUnder(2) == 1)
+			{
+				illnessIntent = true;
+			}
+			else
+			{
+				hurtIntent = true;
+			}
+		}
+		
+		if(illnessIntent)
+		{
+			double achievedIntentPercentage = customConsts.getDoubleConst("battleAIPerformViolentIntent pop_target illness_goal success chance", out success);
+			if(!success) achievedIntentPercentage = 0.5d;
+			bool achievedIntent = getAPI().calcRand() &lt; achievedIntentPercentage;
+			if(achievedIntent)
+			{
+				addDebugMessage(inScriptInstance, "pop " + inSourcePop.getDebugName() + " will successfully cause illness to target pop " + inPopTarget.getDebugName() + ", chance=" + achievedIntentPercentage);
+				inPopTarget.addIllness();
+				//set up the parameters for a historical event:
+				addHistoryEvent = true;
+				historyThing = "cause_illness";
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "pop " + inSourcePop.getDebugName() + " failed to cause illness to target pop " + inPopTarget.getDebugName() + ", chance=" + achievedIntentPercentage);
+			}
+		}
+		else if(hurtIntent)
+		{
+			double rawIntentPercentage = customConsts.getDoubleConst("battleAIPerformViolentIntent pop_target hurt_goal success chance", out success);
+			if(!success) rawIntentPercentage = 0.95d;
+			double max_penalty = customConsts.getDoubleConst("battleAIPerformViolentIntent pop_target hurt_goal success soldier_max_difference penalty", out success);
+			if(!success) max_penalty = 0.7d;
+			
+			double soldier_skill_min = consts.getSoldierSkillMin();
+			double soldier_skill_max = consts.getSoldierSkillMax();
+			double totalSoldierDiff = (inPopTarget.getSoldierSkill() - inSourcePop.getSoldierSkill()) / (soldier_skill_max - soldier_skill_min); //this will range from -1.0d to 1.0d
+			double achievedIntentPercentageMod = (max_penalty * totalSoldierDiff - max_penalty) / 2.0d;
+			double achievedIntentPercentage = rawIntentPercentage + achievedIntentPercentageMod;
+			
+			bool achievedIntent = getAPI().calcRand() &lt; achievedIntentPercentage;
+			if(achievedIntent)
+			{
+				double woundWeight = customConsts.getDoubleConst("battleAIPerformViolentIntent pop_target hurt_goal wound weight", out success);
+				if(!success) woundWeight = 65;
+				double killWeight = customConsts.getDoubleConst("battleAIPerformViolentIntent pop_target hurt_goal death weight", out success);
+				if(!success) killWeight = 35;
+				double result = getAPI().calcRand() * (woundWeight + killWeight);
+				
+				bool achievedWound = (result &lt; woundWeight);
+				bool achievedKill = !achievedWound;
+			
+				addDebugMessage(inScriptInstance, "pop " + inSourcePop.getDebugName() + " will successfully cause " + (achievedWound ? "wound" : "death") + " to target pop " + inPopTarget.getDebugName() +
+					", total success chance=" + achievedIntentPercentage + " from raw intent percentage of " + rawIntentPercentage + " and modifier of " + achievedIntentPercentageMod);
+				if(achievedWound)
+				{
+					inPopTarget.addWound(false, false, false, true, inSourcePop);
+				}
+				else if(achievedKill)
+				{
+					inPopTarget.setIsDead(true, IFPop.ePopDeathReason.cViolence, inSourcePop);
+				}
+				//set up the parameters for a historical event:
+				addHistoryEvent = true;
+				historyThing = achievedWound ? "cause_wound" : "cause_death";
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "pop " + inSourcePop.getDebugName() + " failed to cause illness to target pop " + inPopTarget.getDebugName() + ", chance=" + achievedIntentPercentage);
+			}
+		}
+	  }
+	  else if(inBuildingTarget != null)
+	  {
+		//a building target will either be stolen from, or damaged/destroyed, depending on intent:
+		Int64 stealIntentInt = variableHandler.getInt("battleAI_violentIntentSteal_pop" + inSourcePop.getUID(), out success);
+		bool stealIntent = (stealIntentInt != 0L) &amp;&amp; success;
+		
+		Int64 damageIntentInt = variableHandler.getInt("battleAI_violentIntentDamage_pop" + inSourcePop.getUID(), out success);
+		bool damageIntent = (damageIntentInt != 0L) &amp;&amp; success;
+		
+		//if all intents are false, choose one at random:
+		if(!stealIntent &amp;&amp; !damageIntent)
+		{
+			if(getAPI().calcRandIntUnder(2) == 1)
+			{
+				stealIntent = true;
+			}
+			else
+			{
+				damageIntent = true;
+			}
+		}
+		
+		if(stealIntent)
+		{
+			double achievedIntentPercentage = customConsts.getDoubleConst("battleAIPerformViolentIntent building_target steal_goal success chance", out success);
+			if(!success) achievedIntentPercentage = 0.90d;
+			bool achievedIntent = getAPI().calcRand() &lt; achievedIntentPercentage;
+			if(achievedIntent)
+			{
+				addDebugMessage(inScriptInstance, "pop " + inSourcePop.getDebugName() + " will successfully steal from target building " + inBuildingTarget.getDebugName() + ", chance=" + achievedIntentPercentage);
+				if(customScripts.runCustomScript("buildingSteal", new List&lt;object&gt;() {inSourcePop, inBuildingTarget}, out List&lt;object&gt; _))
+				{
+					//set up the parameters for a historical event:
+					addHistoryEvent = true;
+					historyThing = "steal";
+					historyTargetKind = IFHistoryTarget.eTargetKind.cBuilding;
+				}
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "pop " + inSourcePop.getDebugName() + " failed to steal from target building " + inBuildingTarget.getDebugName() + ", chance=" + achievedIntentPercentage);
+			}
+		}
+		else if(damageIntent)
+		{
+			double achievedIntentPercentage = customConsts.getDoubleConst("battleAIPerformViolentIntent building_target damage_goal success chance", out success);
+			if(!success) achievedIntentPercentage = 0.85d;
+			
+			bool achievedIntent = getAPI().calcRand() &lt; achievedIntentPercentage;
+			if(achievedIntent)
+			{
+				double damageWeight = customConsts.getDoubleConst("battleAIPerformViolentIntent building_target damage_goal damage weight", out success);
+				if(!success) damageWeight = 95;
+				double destroyWeight = customConsts.getDoubleConst("battleAIPerformViolentIntent building_target damage_goal destroy weight", out success);
+				if(!success) destroyWeight = 5;
+				double result = getAPI().calcRand() * (damageWeight + destroyWeight);
+				
+				bool achievedDamage = (result &lt; damageWeight);
+				bool achievedDestroy = !achievedDamage;
+			
+				addDebugMessage(inScriptInstance, "pop " + inSourcePop.getDebugName() + " will successfully cause " + (achievedDamage ? "damage to" : "destruction of") + " target building " + inBuildingTarget.getDebugName() +
+					", total success chance=" + achievedIntentPercentage);
+				if(achievedDamage)
+				{
+					if(customScripts.runCustomScript("buildingDamageFlagAndEjectPops", new List&lt;object&gt;() {inBuildingTarget, inSourcePop}, out List&lt;object&gt; _))
+					{
+						//set up the parameters for a historical event:
+						addHistoryEvent = true;
+						historyThing = "cause_damage";
+						historyTargetKind = IFHistoryTarget.eTargetKind.cBuilding;
+					}
+				}
+				else if(achievedDestroy)
+				{
+					if(customScripts.runCustomScript("buildingDamageFlagAndEjectPops", new List&lt;object&gt;() {inBuildingTarget, inSourcePop}, out List&lt;object&gt; _))
+					{
+						inBuildingTarget.setBuildingDestroyed(true, IFBuilding.eBuildingDestructionReason.cViolence, inSourcePop.getCommunity()); //TODO if inSourcePop is loyal, make this "rebels", otherwise keep this inSourcePop.getCommunity()
+						//set up the parameters for a historical event:
+						addHistoryEvent = true;
+						historyThing = "cause_destroy";
+						historyTargetKind = IFHistoryTarget.eTargetKind.cBuilding;
+					}
+				}
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "pop " + inSourcePop.getDebugName() + " failed to cause illness to target pop " + inPopTarget.getDebugName() + ", chance=" + achievedIntentPercentage);
+			}
+		}
+	  }
+	  
+	  //now: check if the violent action was discovered/open, or no:
+	  Int64 silentIntentInt = variableHandler.getInt("battleAI_violentIntentSilence_pop" + inSourcePop.getUID(), out success);
+	  bool silentIntent = (silentIntentInt != 0L) &amp;&amp; success;
+	  bool silenceAchieved = false;
+	  
+	  if(silentIntent)
+	  {
+		//a silent intent is only achieved if there is not a pop within distance to see the violent action.  Pops in homes/workplaces count with a low probability
+		double discoverDistance = customConsts.getDoubleConst("battleAIPerformViolentIntent detection radius", out success);
+		if(!success) discoverDistance = 4.0d;
+		double discoverInBuildingChance = customConsts.getDoubleConst("battleAIPerformViolentIntent detection in_building probability", out success);
+		if(!success) discoverInBuildingChance = 0.1d;
+		
+		IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+		silenceAchieved = true;
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			bool alsoViolentIntent = (pop.getPathfindingState() == "violentintent");
+			Int64 targetUID = variableHandler.getInt("battleAI_violentIntentPopTarget_pop" + pop.getUID(), out success);
+			alsoViolentIntent = alsoViolentIntent || (success &amp;&amp; (targetUID != 0L));
+			targetUID = variableHandler.getInt("battleAI_violentIntentBuildingTarget_pop" + pop.getUID(), out success);
+			alsoViolentIntent = alsoViolentIntent || (success &amp;&amp; (targetUID != 0L));
+			if(alsoViolentIntent)
+			{
+				continue;
+			}
+		
+			if(pop.getPopLocation() == IFPop.ePopLocation.cInHome)
+			{
+				if((getAPI().calcRand() &lt; discoverInBuildingChance) || (!pop.hasHomeBuilding()))
+				{
+					continue;
+				}
+				if(getAPI().calcDistanceBetweenPopAndBuildingOnMap(inSourcePop, pop.getHomeBuilding(), map) &lt; discoverDistance)
+				{
+					addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " in its home has detected the violent action of " + inSourcePop.getDebugName());
+					silenceAchieved = false;
+					break;
+				}
+			}
+			else if(pop.getPopLocation() == IFPop.ePopLocation.cInWorkplace)
+			{
+				if((getAPI().calcRand() &lt; discoverInBuildingChance) || (!pop.hasWorkplaceBuilding()))
+				{
+					continue;
+				}
+				if(getAPI().calcDistanceBetweenPopAndBuildingOnMap(inSourcePop, pop.getWorkplaceBuilding(), map) &lt; discoverDistance)
+				{
+					addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " in its workplace has detected the violent action of " + inSourcePop.getDebugName());
+					silenceAchieved = false;
+					break;
+				}
+			}
+			else if(pop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap)
+			{
+				if(getAPI().calcDistanceBetweenPoints(inSourcePop.getMapLocationTuple(), pop.getMapLocationTuple()) &lt; discoverDistance)
+				{
+					addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " on the map has detected the violent action of " + inSourcePop.getDebugName());
+					silenceAchieved = false;
+					break;
+				}
+			}
+		}
+	  }
+	  
+	  //add the appropriate historical event:
+	  if(addHistoryEvent)
+	  {
+	    string historyActionText = customConsts.getStringConst("battleAIPerformViolentIntent " + historyThing + " history action before_replace_text", out success);
+		if(!success) historyActionText = "";
+	    string historyMajorAdjective = customConsts.getStringConst("battleAIPerformViolentIntent " + historyThing + " history major_adjective before_replace_text", out success);
+		if(!success) historyMajorAdjective = "";
+	    ReadOnlyCollection&lt;string&gt; historyMinorAdjectives = customConsts.getListConst("battleAIPerformViolentIntent " + historyThing + " history minor_adjectives before_replace_text", out success);
+		if(!success) historyMinorAdjectives = (new List&lt;string&gt;() { }).AsReadOnly();
+	  
+		ReadOnlyCollection&lt;string&gt; otherEffectsNames = customConsts.getListConst("battleAIPerformViolentIntent " + historyThing + " history other_effects_strings before_replace_text", out success);
+		if(!success) otherEffectsNames = (new List&lt;string&gt;() { "" }).AsReadOnly();
+		ReadOnlyCollection&lt;string&gt; otherEffectsValues = customConsts.getListConst("battleAIPerformViolentIntent " + historyThing + " history other_effects_values", out success);
+		if(!success) otherEffectsValues = (new List&lt;string&gt;() { "" }).AsReadOnly();
+		
+		Dictionary&lt;string, int&gt; historyOtherEffects = new Dictionary&lt;string, int&gt;();
+		for(int i = 0; (i &lt; otherEffectsNames.Count) &amp;&amp; (i &lt; otherEffectsValues.Count); i++)
+		{
+			if(int.TryParse(otherEffectsValues[i], out int value))
+			{
+				historyOtherEffects.Add(otherEffectsNames[i], value);
+			}
+		}
+		
+		Int64 historyCBImpact = customConsts.getIntConst("battleAIPerformViolentIntent " + historyThing + " history costBenefit value", out success);
+		if(!success) historyCBImpact = 0;
+		
+		if(silenceAchieved)
+		{
+			string newHistoryActionText = customConsts.getStringConst("battleAIPerformViolentIntent history action secrecy_modifier before_replace_text", out success);
+			if(!success) newHistoryActionText = "secretly [0]";
+			historyActionText = newHistoryActionText.Replace("[0]", historyActionText);
+			
+			ReadOnlyCollection&lt;string&gt; newHistoryMinorAdjectives = customConsts.getListConst("battleAIPerformViolentIntent history minor_adjectives secrecy_modifier before_replace_text", out success);
+			if(!success) newHistoryMinorAdjectives = (new List&lt;string&gt;() { "hidden", "deception" }).AsReadOnly();
+		
+			List&lt;string&gt; finalHistoryMinorAdjectives = new List&lt;string&gt;(historyMinorAdjectives);
+			foreach(string str in newHistoryMinorAdjectives)
+			{
+				finalHistoryMinorAdjectives.Add(str);
+			}
+			historyMinorAdjectives = finalHistoryMinorAdjectives.AsReadOnly();
+		}
+		
+		UInt64 historyTargetUID = (historyTargetKind == IFHistoryTarget.eTargetKind.cPop ? inPopTarget.getUID() : inBuildingTarget.getUID());
+		
+		IFHistoricalOccurrence newHistoryOccurrence = getAPI().createNewHistoricalOccurrenceToday(
+			IFHistoryActor.eActorKind.cPop, inSourcePop.getUID(),
+			historyActionText, historyMajorAdjective, historyMinorAdjectives,
+			historyTargetKind, historyTargetUID,
+			historyCBImpact, historyOtherEffects);
+		getAPI().getLocalCommunity().getHistory().add(newHistoryOccurrence);
+	  }
+	  
+	  //if silence has not been achieved, transition all ViolentIntent pops appropriately:
+	  if(!silenceAchieved)
+	  {
+		//alert the player:
+	    Int64 enable_if_not_zero = customConsts.getIntConst("battleAIPerformViolentIntent alert enable_if_not_zero", out success);
+	    if(!success) enable_if_not_zero = 0;
+		if(enable_if_not_zero != 0)
+		{
+			string text = customConsts.getStringConst("battleAIPerformViolentIntent alert before_replace_text", out success);
+			if(!success) text = "A suspicious [0] has been spotted committing a violent act!";
+			text = text.Replace("[0]", inSourcePop.getRace().getSingleNoun());
+		
+			getAPI().createAlert(text, 255, 200, 200, true, inSourcePop); //the numbers are r/g/b, and true is for pausing
+		}
+	  
+		customScripts.runCustomScript("battleAITransitionViolentIntentPops", new List&lt;object&gt;(), out List&lt;object&gt; _);
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	<!-- transition violent intent pops has no inputs.  There is no output -->
+	<!-- this script is called during peacetime, when a pop accomplishes a violent intent but is seen, or does not attempt to hide it.  This function transitions all neutral pops with ViolentIntent to GenericEnemy, and all friendly pops with ViolentIntent to Rebels.  Pops which are transitioned will also be placed on the map, next to their homes -->
+	<i1><a>battleAITransitionViolentIntentPops</a>
+	<b>
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  var customScripts = getAPI().getCustomScripts();
+	  
+	  //for all pops on the map, if they have violent intent, put them on the map (if they are in their homes/workplaces) and change their community
+	  IFCommunity genericEnemyCommunity = getAPI().getGenericEnemyCommunity();
+	  IFCommunity rebelsCommunity = getAPI().getRebelsCommunity();
+	  
+	  List&lt;Int64&gt; newRebels = new List&lt;Int64&gt;();
+	  List&lt;Int64&gt; newEnemies = new List&lt;Int64&gt;();
+	  bool success = false;
+	  
+	  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+	  {
+		if(!pop.isDead())
+		{
+			//check for violent intent:
+			bool violentIntent = (pop.getPathfindingState() == "violentintent");
+			Int64 targetUID = variableHandler.getInt("battleAI_violentIntentPopTarget_pop" + pop.getUID(), out success);
+			violentIntent = violentIntent || (success &amp;&amp; (targetUID != 0L));
+			targetUID = variableHandler.getInt("battleAI_violentIntentBuildingTarget_pop" + pop.getUID(), out success);
+			violentIntent = violentIntent || (success &amp;&amp; (targetUID != 0L));
+			
+			if(violentIntent)
+			{
+				bool loyal = pop.getCommunity() == getAPI().getLocalCommunity();
+				bool neutral = (!loyal) &amp;&amp; !(getAPI().isHostileCommunity(pop.getCommunity()));
+				if(pop.getPopLocation() == IFPop.ePopLocation.cInHome)
+				{
+					if(loyal)
+					{
+						pop.setCommunity(rebelsCommunity);
+						newRebels.Add((Int64)pop.getUID());
+					}
+					else if(neutral)
+					{
+						pop.setCommunity(genericEnemyCommunity);
+						newEnemies.Add((Int64)pop.getUID());
+					}
+					//place the pop outside its home:
+					if(pop.hasHomeBuilding())
+					{
+						Tuple&lt;double, double&gt; loc = getAPI().getLocalCommunity().getDomesticComponent().getMap().getRandomEdgeOfBuilding(pop.getHomeBuilding());
+						pop.placePopOnMapLocation(loc.Item1, loc.Item2);
+					}
+					else
+					{
+						pop.placePopOnMapLocation(0.0d, 0.0d);
+					}
+				}
+				else if(pop.getPopLocation() == IFPop.ePopLocation.cInWorkplace)
+				{
+					if(loyal)
+					{
+						pop.setCommunity(rebelsCommunity);
+						newRebels.Add((Int64)pop.getUID());
+					}
+					else if(neutral)
+					{
+						pop.setCommunity(genericEnemyCommunity);
+						newEnemies.Add((Int64)pop.getUID());
+					}
+					//place the pop outside its workplace:
+					if(pop.hasWorkplaceBuilding())
+					{
+						Tuple&lt;double, double&gt; loc = getAPI().getLocalCommunity().getDomesticComponent().getMap().getRandomEdgeOfBuilding(pop.getWorkplaceBuilding());
+						pop.placePopOnMapLocation(loc.Item1, loc.Item2);
+					}
+					else
+					{
+						pop.placePopOnMapLocation(0.0d, 0.0d);
+					}
+				
+				}
+				else if(pop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap)
+				{
+					if(loyal)
+					{
+						pop.setCommunity(rebelsCommunity);
+						newRebels.Add((Int64)pop.getUID());
+					}
+					else if(neutral)
+					{
+						pop.setCommunity(genericEnemyCommunity);
+						newEnemies.Add((Int64)pop.getUID());
+					}
+				}
+				
+				if(loyal || neutral)
+				{
+					addDebugMessage(inScriptInstance, "setting pop " + pop.getDebugName() + " to community " + (neutral ? "genericEnemies" : "rebels"));
+				}
+			}
+		}
+	  }
+	  
+	  //if there is a stored value for what the wargoal should be for Rebels/GenericEnemy, make that the wargoal now:
+	  string wargoal_stored_rebels = variableHandler.getString("battleAI_violentIntentWargoal_Rebels", out success).ToLower();
+	  if(success &amp;&amp; (newRebels.Count != 0))
+	  {
+		double wargoal_abandonThreshold_rebels = variableHandler.getDouble("battleAI_violentIntentAbandonThreshold_Rebels", out success);
+		if(!success) wargoal_abandonThreshold_rebels = 0.5d;
+		double wargoal_successThreshold_rebels = variableHandler.getDouble("battleAI_violentIntentSuccessThreshold_Rebels", out success);
+		if(!success) wargoal_successThreshold_rebels = 0.5d;
+		List&lt;Int64&gt; uidsOrMoidsToTarget = new List&lt;Int64&gt;();
+		IFConnectedVariable uidsOrMoidsCV = variableHandler.getConnectedVariable("battleAI_violentIntentTargetUIDsOrMOIDs_Rebels");
+		if(uidsOrMoidsCV != null)
+		{
+			foreach(var target in uidsOrMoidsCV.getLowers())
+			{
+				uidsOrMoidsToTarget.Add(target.getVariableAsInt());
+			}
+		}
+		customScripts.runCustomScript("battleAIInitializeWargoal", new List&lt;object&gt;() {rebelsCommunity, wargoal_stored_rebels, wargoal_abandonThreshold_rebels, wargoal_successThreshold_rebels, uidsOrMoidsToTarget}, out List&lt;object&gt; _);
+	  }
+	  string wargoal_stored_enemies = variableHandler.getString("battleAI_violentIntentWargoal_GenericEnemies", out success).ToLower();
+	  if(success &amp;&amp; (newEnemies.Count != 0))
+	  {
+		double wargoal_abandonThreshold_enemies = variableHandler.getDouble("battleAI_violentIntentAbandonThreshold_GenericEnemies", out success);
+		if(!success) wargoal_abandonThreshold_enemies = 0.5d;
+		double wargoal_successThreshold_enemies = variableHandler.getDouble("battleAI_violentIntentSuccessThreshold_GenericEnemies", out success);
+		if(!success) wargoal_successThreshold_enemies = 0.5d;
+		List&lt;Int64&gt; uidsOrMoidsToTarget = new List&lt;Int64&gt;();
+		IFConnectedVariable uidsOrMoidsCV = variableHandler.getConnectedVariable("battleAI_violentIntentTargetUIDsOrMOIDs_GenericEnemies");
+		if(uidsOrMoidsCV != null)
+		{
+			foreach(var target in uidsOrMoidsCV.getLowers())
+			{
+				uidsOrMoidsToTarget.Add(target.getVariableAsInt());
+			}
+		}
+		customScripts.runCustomScript("battleAIInitializeWargoal", new List&lt;object&gt;() {genericEnemyCommunity, wargoal_stored_enemies, wargoal_abandonThreshold_enemies, wargoal_successThreshold_enemies, uidsOrMoidsToTarget}, out List&lt;object&gt; _);
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

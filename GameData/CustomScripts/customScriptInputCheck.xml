@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of a custom script which checks if the inputs are of the expected type and count, in order -->
+  <!-- it is meant for use by other custom scripts.  It should not call itself! -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+		<!-- customScriptInputCheck has two input arguments: object[] inProvidedArguments, List<Type> inExpectedTypes -->
+		<!-- customScriptInputCheck has one implicit output: it throws or does not throw to indicate success.  If the inArguments are of the same type, order, and count as provided by inExpectedTypes, the script will not throw; otherwise it will. -->
+		<!-- customScriptInputCheck has no explicit outputs. -->
+		<!-- note that IsAssignableFrom, the C# function used here to determine if desired type and actual type are equivalent, does not allow conversions from (e.g.) Int64 to int or back.  Basic numeric types (int, Int64, double) must be exact. -->
+		<i1><a>customScriptInputCheck</a>
+		<b>
+		//input count check:
+		if(inArguments.Length &lt; 2)
+		{
+			throw new ArgumentException("customScriptInputCheck custom script expected its own inArguments to be of count 2 but actual count=" + inArguments.Length);
+			return null;
+		}
+		if(inArguments[0] is not object[])
+		{
+			throw new ArgumentException("customScriptInputCheck custom script expected its own inArguments[0] to be of type object[] but actual type=" + (inArguments[0] == null ? "null" : inArguments[0].GetType().ToString()));
+			return null;
+		}
+		if(inArguments[1] is not List&lt;Type&gt;)
+		{
+			throw new ArgumentException("customScriptInputCheck custom script expected its own inArguments[1] to be of type List&lt;Type&gt; but actual type=" + (inArguments[1] == null ? "null" : inArguments[1].GetType().ToString()));
+			return null;
+		}
+		
+		object[] inProvidedArguments = (object[])inArguments[0];
+		List&lt;Type&gt; inExpectedTypes = (List&lt;Type&gt;)inArguments[1];
+		
+		bool providedNullOrEmpty = ((inProvidedArguments == null) || (inProvidedArguments.Length == 0));
+		bool expectedNullOrEmpty = ((inExpectedTypes == null) || (inExpectedTypes.Count == 0));
+		
+		if(providedNullOrEmpty != expectedNullOrEmpty)
+		{
+			//one empty/null and not the other is obviously not fine
+			throw new ArgumentException("customScriptInputCheck custom script detected mismatch between provided and expected arguments: provided arguments null/empty=" + providedNullOrEmpty + " expected arguments null/empty=" + expectedNullOrEmpty);
+			return null;
+		}
+		if(providedNullOrEmpty &amp;&amp; expectedNullOrEmpty)
+		{
+			//both empty/null is fine
+			return null;
+		}
+		
+		//if we're here, neither are null or empty.  Check counts;
+		if(inProvidedArguments.Length != inExpectedTypes.Count)
+		{
+			throw new ArgumentException("customScriptInputCheck custom script detected mismatch between provided and expected argument count: provided arguments count=" + inProvidedArguments.Length + " expected arguments count=" + inExpectedTypes.Count);
+			return null;
+		}
+		
+		//if we're here, both are the same non-zero size.  Check item by item:
+		for(int i = 0; i &lt; inProvidedArguments.Length; i++)
+		{
+			if(inProvidedArguments[i] == null)
+			{
+				if(inExpectedTypes[i].IsValueType)
+				{
+					throw new ArgumentException("customScriptInputCheck custom script detected mismatch between provided and expected argument #" + i + ": value is null but type is not nullable; type=" + inExpectedTypes[i].ToString());
+					return null;
+				}
+			}
+			else if(!inExpectedTypes[i].IsAssignableFrom(inProvidedArguments[i].GetType()))
+			{
+				throw new ArgumentException("customScriptInputCheck custom script detected mismatch between provided and expected argument #" + i + ": expected type " + inExpectedTypes[i].ToString() + " is not assignable from provided type " + inProvidedArguments[i].GetType().ToString());
+				return null;
+			}
+		}
+		
+		//if we're here, nothing is wrong with the arguments provided
+		return null;
+		</b></i1>
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

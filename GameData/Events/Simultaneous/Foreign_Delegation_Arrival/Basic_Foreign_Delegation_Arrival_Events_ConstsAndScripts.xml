@@ -1,0 +1,1871 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts used in Basic_Foreign_Delegation_Arrival_Events are declared here -->
+			<!-- consts related to this file's scripts can have any name, but should look like the other consts and should not override other consts -->
+			
+			<i1><a>Basic Foreign War Delegation Arrival Event success_threshold min</a> <b>double</b> <c>0.2</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event success_threshold max</a> <b>double</b> <c>0.45</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event abandon_threshold min</a> <b>double</b> <c>0.25</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event abandon_threshold max</a> <b>double</b> <c>0.5</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event wargoals</a> <b>list</b> <c>hurt_loyal_all,hurt_loyal_leaders,destroy_buildings_all,destroy_buildings_housing_all</c></i1>
+			
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event success_threshold min</a> <b>double</b> <c>0.2</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event success_threshold max</a> <b>double</b> <c>0.45</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event abandon_threshold min</a> <b>double</b> <c>0.25</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event abandon_threshold max</a> <b>double</b> <c>0.5</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event wargoals</a> <b>list</b> <c>steal_resources_all</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event race_care threshold</a> <b>double</b> <c>0.75</c></i1>
+			
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event chance_to_cheat_player</a> <b>double</b> <c>0.3</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event detect_cheating threshold</a> <b>double</b> <c>60.0</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event cheating_suspicious_text prob</a> <b>double</b> <c>0.6</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event not_cheating_text prob</a> <b>double</b> <c>0.3</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event days_to_stay min</a> <b>int</b> <c>4</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event days_to_stay max</a> <b>int</b> <c>9</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event desire_to_stay</a> <b>double</b> <c>3.5</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event smallGift offense chance</a> <b>double</b> <c>0.15</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event mediumGift offense chance</a> <b>double</b> <c>0.2</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event largeGift offense chance</a> <b>double</b> <c>0.25</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event different_majority_race offense addition</a> <b>double</b> <c>0.15</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event smallGift offense strength</a> <b>int</b> <c>-8</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event mediumGift offense strength</a> <b>int</b> <c>-13</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event largeGift offense strength</a> <b>int</b> <c>-20</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event smallGift positive strength</a> <b>int</b> <c>15</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event mediumGift positive strength</a> <b>int</b> <c>25</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event largeGift positive strength</a> <b>int</b> <c>40</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event largeGift eventWeight addition</a> <b>double</b> <c>2.0</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event largeGift diploRate mult min</a> <b>double</b> <c>1.03</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event largeGift diploRate mult max</a> <b>double</b> <c>1.09</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event largeGift diploRate days min</a> <b>int</b> <c>27</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event largeGift diploRate days max</a> <b>int</b> <c>81</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event small_gift carry_proportion min</a> <b>double</b> <c>0.2</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event small_gift carry_proportion max</a> <b>double</b> <c>0.35</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event medium_gift carry_proportion min</a> <b>double</b> <c>0.4</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event medium_gift carry_proportion max</a> <b>double</b> <c>0.55</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event large_gift carry_proportion min</a> <b>double</b> <c>0.65</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event large_gift carry_proportion max</a> <b>double</b> <c>0.85</c></i1>
+			<!-- these are only used if the resources requested would be more than the player community has -->
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event gift resource_types min</a> <b>int</b> <c>3</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event gift resource_types max</a> <b>int</b> <c>5</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event rejection offense chance</a> <b>double</b> <c>0.35</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event rejection offense strength</a> <b>int</b> <c>-5</c></i1>
+			
+			<i1><a>Basic Foreign Trade Delegation Arrival Event days_to_stay min</a> <b>int</b> <c>2</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event days_to_stay max</a> <b>int</b> <c>5</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event desire_to_stay</a> <b>double</b> <c>2.0</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event appreciation strength</a> <b>int</b> <c>1</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event player_resources proportion min</a> <b>double</b> <c>0.0</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event player_resources proportion max</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event delegation_resources proportion min</a> <b>double</b> <c>0.25</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event delegation_resources proportion max</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event delegation margin value</a> <b>double</b> <c>1.125</c></i1>
+			
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event chance_to_lie_resources</a> <b>double</b> <c>0.35</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event chance_to_lie_health_conditions</a> <b>double</b> <c>0.55</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event chance_to_lie_pop_counts</a> <b>double</b> <c>0.2</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event days_to_stay min</a> <b>int</b> <c>5</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event days_to_stay max</a> <b>int</b> <c>12</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event desire_to_stay</a> <b>double</b> <c>3.0</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event detect_lie_strong resource pred_strength</a> <b>double</b> <c>80.0</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event detect_lie_weak resource pred_strength</a> <b>double</b> <c>40.0</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event detect_lie_strong health pred_strength</a> <b>double</b> <c>80.0</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event detect_lie_weak health pred_strength</a> <b>double</b> <c>40.0</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event detect_lie_strong popcount pred_strength</a> <b>double</b> <c>60.0</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event detect_lie_weak popcount pred_strength</a> <b>double</b> <c>30.0</c></i1>
+			
+			
+			<i1><a>Basic Foreign War Delegation Arrival Event report_text before_replace_text</a> <b>string</b>
+			<c>[mult_pop|rand_adj_phrase:[0]] warriors from [one_community|name_noun_phrase:[1]] have come to attack our community!  They have no interest in negotiation and voice only a loud war cry: [2]</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event hurt_loyal_all_warcry before_replace_text</a> <b>string</b>
+			<c>death to them all!</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event hurt_loyal_leaders_warcry before_replace_text</a> <b>string</b>
+			<c>death to their rulers!</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event destroy_buildings_all_warcry before_replace_text</a> <b>string</b>
+			<c>turn all to rubble!</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event destroy_buildings_housing_all_warcry before_replace_text</a> <b>string</b>
+			<c>turn their homes to rubble!</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event backup_warcry before_replace_text</a> <b>string</b>
+			<c>death and destruction!</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event resolution_text before_replace_text</a> <b>string</b>
+			<c>[0]</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event hurt_loyal_all_resolution before_replace_text</a> <b>string</b>
+			<c>We must defend our people!</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event hurt_loyal_leaders_resolution before_replace_text</a> <b>string</b>
+			<c>We must defend our leaders!</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event destroy_buildings_all_resolution before_replace_text</a> <b>string</b>
+			<c>We must defend our buildings!</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event destroy_buildings_housing_all_resolution before_replace_text</a> <b>string</b>
+			<c>We must defend our homes!</c></i1>
+			<i1><a>Basic Foreign War Delegation Arrival Event backup_resolution before_replace_text</a> <b>string</b>
+			<c>We must defend our community!</c></i1>
+			
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event report_text before_replace_text</a> <b>string</b>
+			<c>[mult_pop|rand_adj_phrase:[0]] raiders from [one_community|name_noun_phrase:[1]] have come to pillage our community!  They have no interest in negotation and on their voices is a singular desire: [2]</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event steal_resources_all_warcry before_replace_text</a> <b>string</b>
+			<c>plunder!</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event abduct_pops_races_warcry before_replace_text</a> <b>string</b>
+			<c>slaves!</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event backup_warcry before_replace_text</a> <b>string</b>
+			<c>plunder!</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event resolution_text before_replace_text</a> <b>string</b>
+			<c>[0]</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event abduct_pops_races_resolution before_replace_text</a> <b>string</b>
+			<c>We must defend our people!</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event steal_resources_all_resolution before_replace_text</a> <b>string</b>
+			<c>We must defend our supplies!</c></i1>
+			<i1><a>Basic Foreign Raiding Delegation Arrival Event backup_resolution before_replace_text</a> <b>string</b>
+			<c>We must defend our community!</c></i1>
+			
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event report_text before_replace_text</a> <b>string</b>
+			<c>[mult_pop|rand_adj_phrase:[0]] pops from [one_community|name_noun_phrase:[1]] have arrived on the edge of our [one_community|strengths_adj_phrase:[2]] community.  They call themselves diplomats, and [one_pop|name_noun_phrase:[3]] represents them as leader.  [one_pop|name_noun_phrase:[3]] claims if we grant the requested resources from our stockpiles, [one_pop|personal_3ppronoun_phrase:[3]] will spread these resources among the people of [one_community|name_noun_phrase:[1]] to improve the community's opinion of us.  [4]\n\n[5]These resources from our stockpile would make a small gift:\n[7]\nThese resources from our stockpile would make a medium gift:\n[8]\nThese resources from our stockpile would make a large gift:\n[9]\n</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event cheating_text before_replace_text</a> <b>string</b>
+			<c>City Leader, the greed in this cheat's [one_race|bodypartexpression_noun_phrase:[6]] is clear to spot: these self-serving visitors have no intent to share anything we give them!\n\n</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event suspicious before_replace_text</a> <b>string</b>
+			<c>[one_pop|emotion_tricky_sentence:[3]]</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event pleading before_replace_text</a> <b>string</b>
+			<c>[one_pop|emotion_pleading_sentence:[3]]</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text reject_offer before_replace_text</a> <b>string</b>
+			<c>The visiting delegation insults our community and pops as they leave with no gift of resources.  Their journey here and home has been a great waste of time.\n\n[0]</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text reject_offer offended before_replace_text</a> <b>string</b>
+			<c>Oaths and promises of retribution are all that the visitors left behind.  It is likely they will degrade opinion of our community in [one_community|name_noun_phrase:[1]].</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text reject_offer not_offended before_replace_text</a> <b>string</b>
+			<c>Hollow oaths from the visitors don't scare us, City Leader.  These visitors have no sway over the opinions of [one_community|name_noun_phrase:[1]], and you were right to send them away.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text small_gift before_replace_text</a> <b>string</b>
+			<c>The visiting delegation offers words of thankfulness for our small gift.  It is unlikely their journey here has been worth the effort, but we did not insult them by offering them nothing.\n\n[0]</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text small_gift offended before_replace_text</a> <b>string</b>
+			<c>It seems the visiting delegation represented the opposition to the leaders of [one_community|name_noun_phrase:[1]].  The leaders will take offense to our gift.  It is good we did not offer more.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text small_gift cheated before_replace_text</a> <b>string</b>
+			<c>These self-claimed diplomats left quickly after it was clear we would offer no more.  It is doubtful they will make any effort to change opinion of us in [one_community|name_noun_phrase:[1]], City Leader.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text small_gift not_offended before_replace_text</a> <b>string</b>
+			<c>Despite the smallness of our gift, the diplomats seem truthful.  City Leader, I believe opinion of us in [one_community|name_noun_phrase:[1]] will improve.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text medium_gift before_replace_text</a> <b>string</b>
+			<c>The visiting delegation offers words of thankfulness for our medium gift.  Our community has sent them away with resources, but no assurance of their promises has been left behind.\n\n[0]</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text medium_gift offended before_replace_text</a> <b>string</b>
+			<c>It seems the visiting delegation represented the opposition to the leaders of [one_community|name_noun_phrase:[1]].  The leaders will take offense to our gift.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text medium_gift cheated before_replace_text</a> <b>string</b>
+			<c>Perhaps it would have been better to send a diplomatic delegation ourselves with such resources.  We now know these self-claimed diplomats made different promises to our pops in separate conversations.  It is unlikely they will make any effort to change [one_community|name_noun_phrase:[1]]'s opinion of us at all.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text medium_gift not_offended before_replace_text</a> <b>string</b>
+			<c>Keener minds in our community spotted reasons to trust these visitors.  City Leader, I believe opinion of us in [one_community|name_noun_phrase:[1]] will improve.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text large_gift before_replace_text</a> <b>string</b>
+			<c>The visiting delegation is greatly surprised by our decision to grant them a large gift.  Perhaps they only proposed such a thing to make their other requests seem more reasonable.  In any case, our generosity, and desire for better relations between our communities, has been made clear.\n\n[0]</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text large_gift offended before_replace_text</a> <b>string</b>
+			<c>It seems the visiting delegation represented the opposition to the leaders of [one_community|name_noun_phrase:[1]].  The leaders will take offense to our gift.  Our gift is large enough to greatly threaten their position.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text large_gift cheated before_replace_text</a> <b>string</b>
+			<c>Doubtful voices in our community are much louder now that the decision has been made to grant such a large gift.  Why these voices did not arise sooner is clear: some pops wanted you to look like a fool by trusting these deceitful so-called diplomats, City Leader.  Pops in [one_community|name_noun_phrase:[2]] have lost some faith in your leadership, and the opinion of [one_community|name_noun_phrase:[1]] will likely not change.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text large_gift not_offended before_replace_text</a> <b>string</b>
+			<c>Their sincerity has been obvious since the diplomats arrived, if you'd listen to some of our pops.  City Leader, we can look forward to better relations between [one_community|name_noun_phrase:[1]] and our community.  Let us hope the cost was worth it.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text expire before_replace_text</a> <b>string</b>
+			<c>The visiting delegation is no longer in our community.  Their journey has been a great waste, to which we further contributed by not making a decision until they grew impatient.\n\n[0]</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text expire offended before_replace_text</a> <b>string</b>
+			<c>Oaths and promises of retribution are all that the visitors left behind.  It is likely they will degrade opinion of our community in [one_community|name_noun_phrase:[1]].</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event resolution_text expire not_offended before_replace_text</a> <b>string</b>
+			<c>Hollow oaths from the visitors don't scare us, City Leader.  These visitors have no sway over the opinions of [one_community|name_noun_phrase:[1]], and you were right to ignore them.</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event offendedDifferentRaces history_action_text before_replace_text</a> <b>string</b>
+			<c>granted resources to troublemakers who oppose the leaders of</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event offendedDifferentRaces history_adjective before_replace_text</a> <b>string</b>
+			<c>diplomatic</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event positiveGiftReaction history_action_text before_replace_text</a> <b>string</b>
+			<c>granted resources to visiting diplomats in exchange for praise among the pops of</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event positiveGiftReaction history_adjective before_replace_text</a> <b>string</b>
+			<c>diplomatic</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event rejection history_action_text before_replace_text</a> <b>string</b>
+			<c>spurned a request for a gift to Diplomacy delegation from</c></i1>
+			<i1><a>Basic Foreign Diplomacy Delegation Arrival Event rejection history_adjective before_replace_text</a> <b>string</b>
+			<c>diplomatic</c></i1>
+			
+			<i1><a>Basic Foreign Trade Delegation Arrival Event report_text before_replace_text</a> <b>string</b>
+			<c>[mult_pop|rand_adj_phrase:[0]] pops from [one_community|name_noun_phrase:[1]] have arrived on the edge of our [one_community|strengths_adj_phrase:[2]] community.  They carry resources with them and have prepared a trade offer for us.  These pops claim they will wait [3] days to hear our response, but may leave without warning after that time has passed.\n\nIf we have housing for these [mult_pop|rand_adj_phrase:[0]] visitors to occupy, they may stay for longer, and we may be able to ask them to make a different trade proposal.\n\nResources requested from our storage:\n[4]\n\nResources offered by the traders:\n[5]</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event history_action_text before_replace_text</a> <b>string</b>
+			<c>traded goods with a delegation from</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event history_adjective before_replace_text</a> <b>string</b>
+			<c>trade</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event resolution_text accept_offer before_replace_text</a> <b>string</b>
+			<c>We have accepted the proposed offer.  The visiting pops may leave immediately, or stay for a time to prepare for the journey home, if they consider us gracious hosts.\n\nResources lost from our storage:\n[0]\n\nResources gained:\n[1]</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event resolution_text reject_offer before_replace_text</a> <b>string</b>
+			<c>We have rejected the proposed offer. The visiting pops may leave immediately, or stay for a time to prepare for the journey home, if they consider us gracious hosts.</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event resolution_text expire before_replace_text</a> <b>string</b>
+			<c>The visiting delegation is no longer in our community.  Their trade offer merited no response, City Leader.</c></i1>
+			<i1><a>Basic Foreign Trade Delegation Arrival Event resolution_text expire delfail_offer</a> <b>string</b>
+			<c>The visiting pops offer their apologies and nothing more. The visiting pops may leave immediately, or stay for a time to prepare for the journey home, if they consider us gracious hosts.</c></i1>
+			
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event report_text before_replace_text</a> <b>string</b>
+			<c>\n\n[2] [3] have approached us, City Leader.  [mult_pop|emotion_pleading_sentence:[7]]  They are unable to return to their old, [one_community|rand_adj_phrase:[1]] community, and are now [one_delegation|name_noun_phrase:[4]].  Perhaps they were cast out of their homes and exiled, chose to leave before far worse happened to them, or simply believed life would be better elsewhere; we have no way to know and they have no reason to tell the truth.  Whatever the case, the [3]'s unattended [one_race|bodypartdecorative_noun_phrase:[5]] and weary [one_race|bodypartlandtravel_noun_phrase:[5]] show the difficulty of their longer-than-expected journey.  They have chosen to come here to our [one_community|name_noun_phrase:[6]] in the hopes we will allow them to join us.\n\nThese pops claim they will wait [8] days to hear our response, but may leave without warning after that time has passed.\n\nThese pops claim they carry the following resources:\n[9][10]\n\nThe pops before us are made up of:\n[11][12][13]\n\nIf we do not allow all these pops to join our community, they will choose to become Wanderers together.  [one_community|name_noun_phrase:[1]] will not care about our decision, but the pops of our community likely will.  What is your decision, City Leader?</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event strong_lying_resources_text before_replace_text</a> <b>string</b>
+			<c>They are lying.  Our scouts' tally of the resources is as follows:\n[0]</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event weak_lying_resources_text before_replace_text</a> <b>string</b>
+			<c>Our perceptive pops have spotted that the resources the refugees carry are of fewer number and worse quality than they claim.</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event strong_lying_conditions_text before_replace_text</a> <b>string</b>
+			<c>Our scouts have tallied that the refugees seem to be hiding [0] wounds, [1] illnesses, and [2] pregnancies among them, in addition to the health problems we can see openly.</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event weak_lying_conditions_text before_replace_text</a> <b>string</b>
+			<c>Our perceptive pops have noticed that the refugees seem to be hiding wounds, illnesses, or pregnancies among them.</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event strong_lying_popcount_text before_replace_text</a> <b>string</b>
+			<c>The pops which spoke to us are not the only pops that would join us.  More are unsuccessfully hiding outside our community, though it is clear all of them traveled here together.  If we accept these exiled pops, a further count of [0] will join us, likely hoping to go unnoticed.</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event weak_lying_popcount_text before_replace_text</a> <b>string</b>
+			<c>The pops which spoke to us are not the only pops that would join us.  More are unsuccessfully hiding outside our community, though it is clear all of them traveled here together.  If we accept these exiled pops, a further count of [0] will join us, likely hoping to go unnoticed.</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer before_replace_text</a> <b>string</b>
+			<c>Our new community members send you their gratitude, City Leader.  This gratitude may fade in time, but these pops are less likely to cause trouble for now.[0][1][2][3][4]</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer race_happy before_replace_text</a> <b>string</b>
+			<c>[0] support for your leadership has grown based on this decision.</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer race_offended before_replace_text</a> <b>string</b>
+			<c>The [0], in contrast, are disappointed by your decision to allow the refugees to stay.</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer lying_resources before_replace_text</a> <b>string</b>
+			<c>The lying refugees had fewer resources with them than they claimed!  Only these resources have been added to our stockpiles:\n[0]</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer lying_conditions before_replace_text</a> <b>string</b>
+			<c>The deceitful refugees hid some health conditions from us!  Now dependent on our community and its resources, the new joiners burden us with caring for:\n[0] wounds, [1] illnesses, and [2] pregnancies.</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer lying_popcount before_replace_text</a> <b>string</b>
+			<c>The sneaky refugees did not reveal their total number!  After your promise to take them in, more pops have silently appeared in our community:\n[0].</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event resolution_text reject_offer before_replace_text</a> <b>string</b>
+			<c>The visiting emigrants have been informed of your decision, City Leader.  They will leave and become Wanderers.[0][1]</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event resolution_text reject_offer race_offended before_replace_text</a> <b>string</b>
+			<c>The [0] are disappointed by your decision, and the refugees leave with their sympathies.</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event resolution_text reject_offer race_happy before_replace_text</a> <b>string</b>
+			<c>[0] support for your leadership has grown based on this decision.</c></i1>
+			<i1><a>Basic Foreign Emigration Delegation Arrival Event resolution_text expire before_replace_text</a> <b>string</b>
+			<c>The visiting emigrants are no longer in our community.  Whatever problems they had left with them, as did whatever they could have offered us.</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script Basic Foreign Emigration Delegation Arrival Event cleanup</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Emigration Delegation Arrival Event acceptance_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Emigration Delegation Arrival Event rejection_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Emigration Delegation Arrival Event lie_pop_counts</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Emigration Delegation Arrival Event lie_health_conditions_generate</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Emigration Delegation Arrival Event lie_resources_generate</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Trade Delegation Arrival Event cleanup</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Trade Delegation Arrival Event rejection_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Trade Delegation Arrival Event player_has_resources_for_trade</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Trade Delegation Arrival Event delegation_has_resources_for_trade</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Trade Delegation Arrival Event trade_generate</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Diplomacy Delegation Arrival Event cleanup</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Diplomacy Delegation Arrival Event calculate_result_of_gift</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Diplomacy Delegation Arrival Event transfer_resources_for_gift</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Diplomacy Delegation Arrival Event player_has_resources_for_gift</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Diplomacy Delegation Arrival Event rejection_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Basic Foreign Diplomacy Delegation Arrival Event gift_request_generate</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	
+	<!-- this script is a common script for cleanup of variables associated with Basic Foreign Emigration Delegation Arrival Event (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Basic Foreign Emigration Delegation Arrival Event cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//lie_resources_generate stores these:
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "lyingResources" }, out _);
+		//lie_health_conditions_generate stores these:
+		//applyHiddenHealthProblemsForJoiners is called with the "clear variables" option in rejection_common and accept_common
+		//lie_pop_counts stores these:
+		customScripts.runCustomScript("clearPopsStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "hidingPops" }, out _);
+		customScripts.runCustomScript("clearPopsStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "" }, out _);
+		
+		//upon happening stores these:
+		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null }, out _);
+		
+        variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_delegationUID", 0);
+		variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_lyingResources", 0);
+		variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_lyingHealthConditions", 0);
+		variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_lyingPopCounts", 0);
+		variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_lyingResourcesDetectedStrong", 0);
+		variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_lyingHealthConditionsDetectedStrong", 0);
+		variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_lyingPopCountsDetectedStrong", 0);
+		variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_lyingResourcesDetectedWeak", 0);
+		variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_lyingHealthConditionsDetectedWeak", 0);
+		variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_lyingPopCountsDetectedWeak", 0);
+		
+		//storeOrFetchResourcesForEvent stores these:
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "actualResources" }, out _);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for handling acceptance of an emigration delegation -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		Int64 inEventReportUID,
+		IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+		IFRace outRaceMostDisappointed, //might be null
+		IFRace outRaceMostHappy, //might be null
+		Int64 outCountOfHiddenWounds,
+		Int64 outCountOfHiddenIllnesses,
+		Int64 outCountOfHiddenPregnancies,
+		Dictionary<IFRace, int> outCountOfHidingPops
+	-->
+	<i1><a>Basic Foreign Emigration Delegation Arrival Event acceptance_common</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(IFDelegation)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event acceptance_common custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		IFDelegation inDelegation = (IFDelegation)inArguments[2];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event acceptance_common custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inDelegation == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event acceptance_common custom script received invalid arguments: inDelegation cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		IFRace outRaceMostDisappointed = null;
+		IFRace outRaceMostHappy = null;
+		Int64 outCountOfHiddenWounds = 0;
+		Int64 outCountOfHiddenIllnesses = 0;
+		Int64 outCountOfHiddenPregnancies = 0;
+		Dictionary&lt;IFRace, int&gt; outCountOfHidingPops = new Dictionary&lt;IFRace, int&gt;();
+		
+		//lie and lie detection does not matter because all lies are revealed, and the community will judge the City Leader based on the real circumstances of the joiners
+		
+		//make pops loyal to local community:
+		List&lt;IFPop&gt; popsConsideredByRaceHappiness = new List&lt;IFPop&gt;();
+		foreach(IFPop pop in inDelegation.getPopsInDelegation())
+		{
+			if(pop.isDead())
+				continue;
+			if(!getAPI().getPopsWithinLocalCommunityMap().Contains(pop))
+			{
+				if(!outCountOfHidingPops.ContainsKey(pop.getRace()))
+					outCountOfHidingPops.Add(pop.getRace(), 0);
+				outCountOfHidingPops[pop.getRace()]++;
+			}
+			pop.setCommunity(inDelegation.getTargetCommunity()); //the player community
+		}
+		//put all the pops on the map:
+		getAPI().putPopsFromListOnMap(inDelegation.getPopsInDelegation());
+		
+		//apply hidden health conditions before happiness calculation:
+		if(customScripts.runCustomScriptCheckTypes("applyHiddenHealthProblemsForJoiners", new List&lt;object&gt;() { inEventStatus, inEventReportUID, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), "", true },
+			out List&lt;object&gt; healthProblems, false, typeof(List&lt;Int64&gt;), typeof(List&lt;Int64&gt;), typeof(List&lt;double&gt;)))
+		{
+			outCountOfHiddenWounds = ((List&lt;Int64&gt;)healthProblems[0]).Count;
+			outCountOfHiddenIllnesses = ((List&lt;Int64&gt;)healthProblems[1]).Count;
+			outCountOfHiddenPregnancies = ((List&lt;double&gt;)healthProblems[2]).Count;
+		}
+		
+		//for each race in the player community, apply happiness or unhappiness for this decision:
+		//also this script must determine which race is the happiest/least happy
+		double mostDisappointedValue = double.MaxValue;
+		double mostHappyValue = double.MinValue;
+		foreach(IFRace race in inDelegation.getTargetCommunity().getLoyalPopsByRace(true, false).Keys)
+		{
+			if (customScripts.runCustomScriptCheckTypes("addRaceHappinessForAcceptingNewPops", new List&lt;object&gt;() { new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), race, inDelegation.getResourcePool(), null, true },
+										out List&lt;object&gt; raceHappiness, true, typeof(double)))
+			{
+				double happinessValue = (double)raceHappiness[0];
+				
+				if((happinessValue &lt; 0.0d) &amp;&amp; (happinessValue &lt; mostDisappointedValue))
+				{
+					mostDisappointedValue = happinessValue;
+					outRaceMostDisappointed = race;
+				}
+				if((happinessValue &gt; 0.0d) &amp;&amp; (happinessValue &gt; mostHappyValue))
+				{
+					mostHappyValue = happinessValue;
+					outRaceMostHappy = race;
+				}
+			}
+		}
+		
+		//add resources from delegation to the local community:
+		inDelegation.getTargetCommunity().getResourcePool().drainOtherResourcePoolIntoThisOne(inDelegation.getResourcePool());
+		
+		//very lastly, actually remove the pops from the delegation:
+		foreach(IFPop pop in new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()))
+		{
+			pop.setDelegation(null);
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outRaceMostDisappointed, outRaceMostHappy, outCountOfHiddenWounds, outCountOfHiddenIllnesses, outCountOfHiddenPregnancies, outCountOfHidingPops };
+		return toReturn;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for handling rejection of an emigration delegation -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		Int64 inEventReportUID,
+		IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+		IFRace outRaceMostDisappointed, //might be null
+		IFRace outRaceMostHappy //might be null
+	-->
+	<i1><a>Basic Foreign Emigration Delegation Arrival Event rejection_common</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(IFDelegation)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event rejection_common custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		IFDelegation inDelegation = (IFDelegation)inArguments[2];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event rejection_common custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inDelegation == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event rejection_common custom script received invalid arguments: inDelegation cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		IFRace outRaceMostDisappointed = null;
+		IFRace outRaceMostHappy = null;
+		
+		//first, fetch lies and lie detection:
+		Int64 nonZeroIfLyingResources = variableHandler.getInt("evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReportUID + "_lyingResources", out success);
+		if(!success) nonZeroIfLyingResources = 0;
+		Int64 nonZeroIfLyingConditions = variableHandler.getInt("evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReportUID + "_lyingHealthConditions", out success);
+		if(!success) nonZeroIfLyingConditions = 0;
+		Int64 nonZeroIfLyingPopCount = variableHandler.getInt("evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReportUID + "_lyingPopCounts", out success);
+		if(!success) nonZeroIfLyingPopCount = 0;
+		Int64 nonZeroIfLyingResourcesDetectedStrong = variableHandler.getInt("evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReportUID + "_lyingResourcesDetectedStrong", out success);
+		if(!success) nonZeroIfLyingResourcesDetectedStrong = 0;
+		Int64 nonZeroIfLyingConditionsDetectedStrong = variableHandler.getInt("evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReportUID + "_lyingHealthConditionsDetectedStrong", out success);
+		if(!success) nonZeroIfLyingConditionsDetectedStrong = 0;
+		Int64 nonZeroIfLyingPopCountDetectedStrong = variableHandler.getInt("evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReportUID + "_lyingPopCountsDetectedStrong", out success);
+		if(!success) nonZeroIfLyingPopCountDetectedStrong = 0;
+		Int64 nonZeroIfLyingResourcesDetectedWeak = variableHandler.getInt("evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReportUID + "_lyingResourcesDetectedWeak", out success);
+		if(!success) nonZeroIfLyingResourcesDetectedWeak = 0;
+		Int64 nonZeroIfLyingConditionsDetectedWeak = variableHandler.getInt("evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReportUID + "_lyingHealthConditionsDetectedWeak", out success);
+		if(!success) nonZeroIfLyingConditionsDetectedWeak = 0;
+		Int64 nonZeroIfLyingPopCountDetectedWeak = variableHandler.getInt("evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReportUID + "_lyingPopCountsDetectedWeak", out success);
+		if(!success) nonZeroIfLyingPopCountDetectedWeak = 0;
+		
+		//make pops Wanderers, and make any that are off-map have the location "cUnspecifiedNowhere"
+		List&lt;IFPop&gt; popsConsideredByRaceHappiness = new List&lt;IFPop&gt;();
+		foreach(IFPop pop in inDelegation.getPopsInDelegation())
+		{
+			if(pop.isDead())
+				continue;
+			if(!getAPI().getPopsWithinLocalCommunityMap().Contains(pop))
+				pop.removePopFromMap(IFPop.ePopLocation.cUnspecifiedNowhere);
+			else
+				popsConsideredByRaceHappiness.Add(pop);
+			pop.setCommunity(null); //this will make them a Wanderer
+		}
+		//as of here, popsConsideredByRaceHappiness will only be the pops that are not hidden
+		
+		if((nonZeroIfLyingPopCount != 0) &amp;&amp; ((nonZeroIfLyingPopCountDetectedStrong != 0) || (nonZeroIfLyingPopCountDetectedWeak != 0))) //if lying about pop count and it was detected, make the pops being considered all of them
+		{
+			popsConsideredByRaceHappiness = new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation());
+		}
+		//apply hidden health conditions before or after happiness calculation based on lie detection
+		bool hiddenConditionsAppliedAlready = false;
+		if((nonZeroIfLyingConditions != 0) &amp;&amp; ((nonZeroIfLyingConditionsDetectedStrong != 0) || (nonZeroIfLyingConditionsDetectedWeak != 0))) //if lying about conditions and it was detected, apply them now (before race happiness is calculated)
+		{
+			hiddenConditionsAppliedAlready = true;
+			customScripts.runCustomScript("applyHiddenHealthProblemsForJoiners", new List&lt;object&gt;() { inEventStatus, inEventReportUID, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), "", true }, out _);
+		}
+		
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsideredByRaceHappiness = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		if((nonZeroIfLyingResources == 0) || (nonZeroIfLyingResourcesDetectedStrong != 0) || (nonZeroIfLyingResourcesDetectedWeak != 0)) //if not lying about resources, or resource lie detected, use real resources
+		{
+			if (customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { inEventStatus, inEventReportUID, false, null, "actualResources", Int64.MaxValue, true },
+										out List&lt;object&gt; storedResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+			{
+				resourcesConsideredByRaceHappiness = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)storedResources[0];
+			}
+		}
+		else //the lie was successful so that's what race happiness considers
+		{
+			if (customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { inEventStatus, inEventReportUID, false, null, "lyingResources", Int64.MaxValue, true },
+										out List&lt;object&gt; storedResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+			{
+				resourcesConsideredByRaceHappiness = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)storedResources[0];
+			}
+		}
+		
+		//for each race in the player community, apply happiness or unhappiness for this decision (lies have been applied):
+		//also this script must determine which race is the happiest/least happy
+		double mostDisappointedValue = double.MaxValue;
+		double mostHappyValue = double.MinValue;
+		foreach(IFRace race in inDelegation.getTargetCommunity().getLoyalPopsByRace(true, false).Keys)
+		{
+			if (customScripts.runCustomScriptCheckTypes("addRaceHappinessForRejectingNewPops", new List&lt;object&gt;() { popsConsideredByRaceHappiness, race, resourcesConsideredByRaceHappiness, true },
+										out List&lt;object&gt; raceHappiness, true, typeof(double)))
+			{
+				double happinessValue = (double)raceHappiness[0];
+				
+				if((happinessValue &lt; 0.0d) &amp;&amp; (happinessValue &lt; mostDisappointedValue))
+				{
+					mostDisappointedValue = happinessValue;
+					outRaceMostDisappointed = race;
+				}
+				if((happinessValue &gt; 0.0d) &amp;&amp; (happinessValue &gt; mostHappyValue))
+				{
+					mostHappyValue = happinessValue;
+					outRaceMostHappy = race;
+				}
+			}
+		}
+		
+		//if lying about conditions and it wasn't detected, apply conditions now:
+		if(!hiddenConditionsAppliedAlready &amp;&amp; (nonZeroIfLyingConditions != 0))
+		{
+			customScripts.runCustomScript("applyHiddenHealthProblemsForJoiners", new List&lt;object&gt;() { inEventStatus, inEventReportUID, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), "", true }, out _);
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outRaceMostDisappointed, outRaceMostHappy };
+		return toReturn;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for generation and storage of lying-about-pop-count for an emigration delegation -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport,
+		IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+		Int64 outCountOfHidingPops,
+		string outPopCountByRaceDescription
+	-->
+	<i1><a>Basic Foreign Emigration Delegation Arrival Event lie_pop_counts</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport), typeof(IFDelegation)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_pop_counts custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+		IFDelegation inDelegation = (IFDelegation)inArguments[2];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_pop_counts custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_pop_counts custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		if(inDelegation == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_pop_counts custom script received invalid arguments: inDelegation cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		Int64 outCountOfHidingPops = 0;
+		string outPopCountByRaceDescription = "";
+		
+		//this script also stores the related information and clears the health problems
+		//NOTE TO SELF: all pops should be stored for the event through storeOrFetchPopsForEvent before this is called; this script will remove them from the map properly
+		if(customScripts.runCustomScriptCheckTypes("hideSomePotentialJoinersFromMap", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "", Int64.MaxValue, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), -1.0d /*this means random lying wildness*/ },
+			out List&lt;object&gt; lyingHiddenPops, true, typeof(List&lt;IFPop&gt;), typeof(List&lt;IFPop&gt;)))
+		{
+			List&lt;IFPop&gt; popsOnMap = (List&lt;IFPop&gt;)lyingHiddenPops[0];
+			List&lt;IFPop&gt; popsOffMap = (List&lt;IFPop&gt;)lyingHiddenPops[1];
+			
+			outCountOfHidingPops = popsOffMap.Count;
+			
+			Dictionary&lt;IFRace, Int64&gt; popCounts = new Dictionary&lt;IFRace, Int64&gt;();
+			foreach(IFPop pop in popsOffMap)
+			{
+				if(!popCounts.ContainsKey(pop.getRace()))
+					popCounts.Add(pop.getRace(), 0L);
+				popCounts[pop.getRace()]++;
+			}
+			
+			foreach(var kvpair in popCounts)
+			{
+				outPopCountByRaceDescription += kvpair.Value + " " + (kvpair.Value == 1 ? kvpair.Key.getSingleNoun() : kvpair.Key.getPluralNoun()) + ", ";
+			}
+			if(outPopCountByRaceDescription != "")
+			{
+				outPopCountByRaceDescription = outPopCountByRaceDescription.Remove(outPopCountByRaceDescription.Length - 2,2);
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outCountOfHidingPops, outPopCountByRaceDescription };
+		return toReturn;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for generation and storage of lying-about-health-problems for an emigration delegation -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport,
+		IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+		Int64 outCountOfHiddenWounds,
+		Int64 outCountOfHiddenIllnesses,
+		Int64 outCountOfHiddenPregnancies
+	-->
+	<i1><a>Basic Foreign Emigration Delegation Arrival Event lie_health_conditions_generate</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport), typeof(IFDelegation)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_health_conditions_generate custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+		IFDelegation inDelegation = (IFDelegation)inArguments[2];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_health_conditions_generate custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_health_conditions_generate custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		if(inDelegation == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_health_conditions_generate custom script received invalid arguments: inDelegation cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		Int64 outCountOfHiddenWounds = 0;
+		Int64 outCountOfHiddenIllnesses = 0;
+		Int64 outCountOfHiddenPregnancies = 0;
+		
+		//this script also stores the related information and clears the health problems
+		if(customScripts.runCustomScriptCheckTypes("assembleLyingHealthProblemsForPotentialJoiners", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "", Int64.MaxValue, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), -1.0d /*this means random lying wildness*/ },
+			out List&lt;object&gt; lyingHealthConditions, true, typeof(List&lt;Int64&gt;), typeof(List&lt;Int64&gt;), typeof(List&lt;double&gt;)))
+		{
+			List&lt;Int64&gt; woundsHidden = (List&lt;Int64&gt;)lyingHealthConditions[0];
+			List&lt;Int64&gt; illnessesHidden = (List&lt;Int64&gt;)lyingHealthConditions[1];
+			List&lt;double&gt; pregnanciesHidden = (List&lt;double&gt;)lyingHealthConditions[2];
+			
+			outCountOfHiddenWounds = woundsHidden.Count;
+			outCountOfHiddenIllnesses = illnessesHidden.Count;
+			outCountOfHiddenPregnancies = pregnanciesHidden.Count;
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outCountOfHiddenWounds, outCountOfHiddenIllnesses, outCountOfHiddenPregnancies };
+		return toReturn;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for generation and storage of lying-about-resources for an emigration delegation -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport,
+		IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+		string outResourcesClaimedText
+	-->
+	<i1><a>Basic Foreign Emigration Delegation Arrival Event lie_resources_generate</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport), typeof(IFDelegation)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_resources_generate custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+		IFDelegation inDelegation = (IFDelegation)inArguments[2];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_resources_generate custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_resources_generate custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		if(inDelegation == null)
+		{
+			throw new ArgumentException("Basic Foreign Emigration Delegation Arrival Event lie_resources_generate custom script received invalid arguments: inDelegation cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		string outResourcesClaimedText = "";
+		if(customScripts.runCustomScriptCheckTypes("assembleLyingResourcesForPotentialJoiners", new List&lt;object&gt;() { inDelegation.getResourcePool(), null, -1.0d /*this means random lying wildness*/ },
+			out List&lt;object&gt; lyingResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+		{
+			Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesClaimed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)lyingResources[0];
+			
+			//store the lying resources and get the text:
+			if (customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List &lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, resourcesClaimed, "lyingResources", Int64.MaxValue, true },
+					out List&lt;object&gt; storedResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+			{
+				outResourcesClaimedText = (string)storedResources[1];
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outResourcesClaimedText };
+		return toReturn;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Basic Foreign Trade Delegation Arrival Event (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Basic Foreign Trade Delegation Arrival Event cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//trade_generate stores these:
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "playerSide" }, out _);
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "delegationSide" }, out _);
+		
+		//upon happening stores these:
+		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null }, out _);
+		
+        variableHandler.storeIntVariable(0, "evt_Basic Foreign Trade Delegation Arrival Event" + inEventReport.getUID() + "_delegationUID", 0);
+		
+		//storeOrFetchPopsForEvent stores these:
+		customScripts.runCustomScript("clearPopsStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "" }, out _);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for handling the player rejecting a trade from Basic Foreign Trade Delegation Arrival Event.  This script occurs whether the trade times out or the player rejects it.  -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID,
+		IFCommunity inSourceCommunity
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Basic Foreign Trade Delegation Arrival Event rejection_common</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64), typeof(IFCommunity)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event rejection_common custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		IFCommunity inSourceCommunity = (IFCommunity)inArguments[1];
+	
+		if(inSourceCommunity == null)
+		{
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event rejection_common custom script received invalid arguments: inSourceCommunity cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//no impact.
+		
+		return null;
+	</b>
+	</i1>
+	
+	
+	<!-- this script is a common script for checking if the player has the resources to execute a trade for Basic Foreign Trade Delegation Arrival Event.  This script fetches the resources needed and compares them against the player's current resource pool quantities.  -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output:
+		bool outPlayerHasEnough
+	-->
+	<i1><a>Basic Foreign Trade Delegation Arrival Event player_has_resources_for_trade</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event player_has_resources_for_trade custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event player_has_resources_for_trade custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event player_has_resources_for_trade custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		bool outPlayerHasEnough = false;
+	
+		//get player resources:
+		if (customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List &lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, "playerSide", 0L, false },
+				out List&lt;object&gt; playerStoredResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+		{
+			Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; playerRequiredResources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)playerStoredResources[0];
+			
+			outPlayerHasEnough = true;
+			IFResourcePool playerPool = getAPI().getLocalCommunity().getResourcePool();
+			foreach(var kvpair in playerRequiredResources)
+			{
+				if(kvpair.Value.Item1 &gt; playerPool.getResourceQuantity(kvpair.Key))
+				{
+					outPlayerHasEnough = false;
+					break;
+				}
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outPlayerHasEnough };
+		return toReturn;
+	</b>
+	</i1>
+	
+	
+	<!-- this script is a common script for checking if the delegation has the resources to execute a trade for Basic Foreign Trade Delegation Arrival Event.  This script fetches the resources needed and compares them against the delegation's current resource pool quantities.  -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output:
+		bool outDelegationHasEnough
+	-->
+	<i1><a>Basic Foreign Trade Delegation Arrival Event delegation_has_resources_for_trade</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event delegation_has_resources_for_trade custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event delegation_has_resources_for_trade custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event delegation_has_resources_for_trade custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		bool outDelegationHasEnough = false;
+	
+		//get delegation resources:
+		if (customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List &lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, "delegationSide", 0L, false },
+				out List&lt;object&gt; delegationStoredResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+		{
+			Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; delegationRequiredResources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)delegationStoredResources[0];
+			
+			Int64 delUID = variableHandler.getInt("evt_Basic Foreign Trade Delegation Arrival Event" + inEventReport.getUID() + "_delegationUID", out success);
+			if(success)
+			{
+				IFDelegation del = (IFDelegation)getAPI().getSO("delegations", delUID);
+				if(del != null)
+				{
+					IFResourcePool delPool = del.getResourcePool();
+					outDelegationHasEnough = true;
+					foreach(var kvpair in delegationRequiredResources)
+					{
+						if(kvpair.Value.Item1 &gt; delPool.getResourceQuantity(kvpair.Key))
+						{
+							outDelegationHasEnough = false;
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outDelegationHasEnough };
+		return toReturn;
+	</b>
+	</i1>
+	
+	
+	<!-- this script is a common script for setting up a trade associated with Basic Foreign Trade Delegation Arrival Event.  This script calculates the resources associated, stores them, and returns a description of them.  -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport,
+		IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+		string outPlayerResourcesProposed,
+		string outDelegationResourcesProposed
+	-->
+	<i1><a>Basic Foreign Trade Delegation Arrival Event trade_generate</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport), typeof(IFDelegation)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event trade_generate custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+		IFDelegation inDelegation = (IFDelegation)inArguments[2];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event trade_generate custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event trade_generate custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		if(inDelegation == null)
+		{
+			throw new ArgumentException("Basic Foreign Trade Delegation Arrival Event trade_generate custom script received invalid arguments: inDelegation cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		string outPlayerResourcesProposed = "";
+		string outDelegationResourcesProposed = "";
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; playerResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; delegationResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		
+		//first, we need to get the resource desire values for the delegation's source community:
+		if(customScripts.runCustomScriptCheckTypes("getResourceDesireValues", new List&lt;object&gt;() { inDelegation.getSourceCommunity() },
+								out List&lt;object&gt; resDesireValues, false, typeof(List&lt;double&gt;)))
+		{
+			List&lt;double&gt; resDesireValuesByMOID = (List&lt;double&gt;)resDesireValues[0];
+			
+			//fetch five values: desired margin, min/max proportion of each resource pool
+			double minPropOfPlayerResources = customConsts.getDoubleConst("Basic Foreign Trade Delegation Arrival Event player_resources proportion min", out success);
+			if(!success) minPropOfPlayerResources = 0.0d;
+			double maxPropOfPlayerResources = customConsts.getDoubleConst("Basic Foreign Trade Delegation Arrival Event player_resources proportion max", out success);
+			if(!success) maxPropOfPlayerResources = 1.0d;
+			double minPropOfDelegationResources = customConsts.getDoubleConst("Basic Foreign Trade Delegation Arrival Event delegation_resources proportion min", out success);
+			if(!success) minPropOfDelegationResources = 0.25d;
+			double maxPropOfDelegationResources = customConsts.getDoubleConst("Basic Foreign Trade Delegation Arrival Event delegation_resources proportion max", out success);
+			if(!success) maxPropOfDelegationResources = 1.0d;
+			
+			double marginDesired = customConsts.getDoubleConst("Basic Foreign Trade Delegation Arrival Event delegation margin value", out success);
+			if(!success) marginDesired = 1.125d;
+			if(marginDesired &lt;= 0.0d) marginDesired = 1.125d;
+			
+			IFResourcePool playerPool = inDelegation.getTargetCommunity().getResourcePool();
+			IFResourcePool delegationPool = inDelegation.getResourcePool();
+			
+			//calculate the proposed trade:
+			if(customScripts.runCustomScriptCheckTypes("proposeTradeBetweenTwoResourcePools", new List&lt;object&gt;() { playerPool, delegationPool,
+					resDesireValuesByMOID, 1.0d / marginDesired, minPropOfPlayerResources, maxPropOfPlayerResources, minPropOfDelegationResources, maxPropOfDelegationResources },
+					out List&lt;object&gt; proposedTradeValues, false, typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(bool)))
+			{
+				if((bool)proposedTradeValues[2])
+				{
+					Dictionary&lt;IFResource, double&gt; playerRes = (Dictionary&lt;IFResource, double&gt;)proposedTradeValues[0];
+					Dictionary&lt;IFResource, double&gt; delegationRes = (Dictionary&lt;IFResource, double&gt;)proposedTradeValues[1];
+					
+					foreach(var kvpair in playerRes)
+					{
+						playerResources.Add(kvpair.Key, Tuple.Create(kvpair.Value, playerPool.getResourceQuality(kvpair.Key)));
+					}
+					foreach(var kvpair in delegationRes)
+					{
+						delegationResources.Add(kvpair.Key, Tuple.Create(kvpair.Value, delegationPool.getResourceQuality(kvpair.Key)));
+					}
+					
+					//store player and delegation resources:
+					if (customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List &lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, playerResources, "playerSide", Int64.MaxValue, false },
+							out List&lt;object&gt; playerStoredResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+					{
+						outPlayerResourcesProposed = (string)playerStoredResources[1];
+					}
+					if (customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List &lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, delegationResources, "delegationSide", Int64.MaxValue, true },
+							out List&lt;object&gt; delegationStoredResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+					{
+						outDelegationResourcesProposed = (string)delegationStoredResources[1];
+					}
+				}
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outPlayerResourcesProposed, outDelegationResourcesProposed};
+		return toReturn;
+	</b>
+	</i1>
+	
+	
+	<!-- this script is a common script for cleanup of variables associated with Basic Foreign Diplomacy Delegation Arrival Event (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Basic Foreign Diplomacy Delegation Arrival Event cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//gift_request_generate stores these:
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "smallGift" }, out _);
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "mediumGift" }, out _);
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "largeGift" }, out _);
+		
+		//upon happening stores these:
+        variableHandler.storeIntVariable(0, "evt_Basic Foreign Diplomacy Delegation Arrival Event" + inEventReport.getUID() + "_cheating", 0);
+		
+		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null }, out _);
+		
+        variableHandler.storeIntVariable(0, "evt_Basic Foreign Diplomacy Delegation Arrival Event" + inEventReport.getUID() + "_delegationUID", 0);
+		
+		//storeOrFetchPopsForEvent stores these:
+		customScripts.runCustomScript("clearPopsStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "" }, out _);
+		
+		//rejection_common stores these:
+		variableHandler.storeIntVariable(0, "evt_Basic Foreign Diplomacy Delegation Arrival Event" + inEventReport.getUID() + "_offense", 0);
+		
+	    return null;
+	</b>
+	</i1>
+	
+	
+	<!-- this script is a common script for when the player, during Basic Foreign Diplomacy Delegation Arrival Event, grants a gift to the delegation.  This script calculates and implements offense/improved reaction/nothing due to granting a gift.  -->
+		<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport,
+		string inSizeOfGift
+	-->
+	
+	<!-- output:
+		bool outWasOffendedByGift,
+		bool outPlayerWasCheated //technically the caller could look this up but it's convenient to return it here
+	-->
+	<i1><a>Basic Foreign Diplomacy Delegation Arrival Event calculate_result_of_gift</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport), typeof(string)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event calculate_result_of_gift custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+		string inSizeOfGift = (string)inArguments[2];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event calculate_result_of_gift custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event calculate_result_of_gift custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		if(inSizeOfGift != "small" &amp;&amp; inSizeOfGift != "medium" &amp;&amp; inSizeOfGift != "large")
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event calculate_result_of_gift custom script received invalid arguments: string inSizeOfGift must be small, medium or large");
+			return null;
+		}
+		inSizeOfGift += "Gift";
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//custom consts:
+		bool success = false;
+		double chanceOfOffenseSmall = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event smallGift offense chance", out success);
+		if(!success) chanceOfOffenseSmall = 0.15d;
+		double chanceOfOffenseMedium = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event mediumGift offense chance", out success);
+		if(!success) chanceOfOffenseMedium = 0.2d;
+		double chanceOfOffenseLarge = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event largeGift offense chance", out success);
+		if(!success) chanceOfOffenseLarge = 0.25d;
+		
+		double chanceOfOffenseAdditiveForDifferentMajorityRace = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event different_majority_race offense addition", out success);
+		if(!success) chanceOfOffenseAdditiveForDifferentMajorityRace = 0.15d;
+		
+		Int64 impactOfOffenseSmall = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event smallGift offense strength", out success);
+		if(!success) impactOfOffenseSmall = -8;
+		Int64 impactOfOffenseMedium = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event mediumGift offense strength", out success);
+		if(!success) impactOfOffenseMedium = -13;
+		Int64 impactOfOffenseLarge = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event largeGift offense strength", out success);
+		if(!success) impactOfOffenseLarge = -20;
+		
+		Int64 impactOfPositiveGiftSmall = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event smallGift positive strength", out success);
+		if(!success) impactOfPositiveGiftSmall = 15;
+		Int64 impactOfPositiveGiftMedium = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event mediumGift positive strength", out success);
+		if(!success) impactOfPositiveGiftMedium = 25;
+		Int64 impactOfPositiveGiftLarge = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event largeGift positive strength", out success);
+		if(!success) impactOfPositiveGiftLarge = 40;
+		
+		//first, we need the delegation:
+		Int64 delUID = variableHandler.getInt("evt_Basic Foreign Diplomacy Delegation Arrival Event" + inEventReport.getUID() + "_delegationUID", out success);
+		if(!success)
+		{
+			addDebugMessage(inScriptInstance, "could not find associated delegation for event report UID " + inEventReport.getUID());
+			return null;
+		}
+		IFDelegation inDelegation = (IFDelegation)getAPI().getSO("delegations", delUID);
+		if(inDelegation == null)
+		{
+			addDebugMessage(inScriptInstance, "could not find associated delegation for event report UID " + inEventReport.getUID());
+			return null;
+		}
+		
+		//calculating offense happens *before* considering if the pops intend to cheat the player
+		IFRace mostPopulousHomeRace = inDelegation.getSourceCommunity().getMostPopulousRace();
+		Dictionary&lt;IFRace, int&gt; raceCountsOfDelegation = new Dictionary&lt;IFRace, int&gt;();
+		foreach(IFPop pop in inDelegation.getPopsInDelegation())
+		{
+			if(pop.isDead())
+				continue;
+			if(!raceCountsOfDelegation.ContainsKey(pop.getRace()))
+			{
+				raceCountsOfDelegation.Add(pop.getRace(), 0);
+			}
+			raceCountsOfDelegation[pop.getRace()]++;
+		}
+		IFRace mostPopulousDelegationRace = null;
+		Int64 countOfMostPopulousDelegationRace = 0;
+		foreach(var kvpair in raceCountsOfDelegation)
+		{
+			if(kvpair.Value &gt; countOfMostPopulousDelegationRace)
+			{
+				mostPopulousDelegationRace = kvpair.Key;
+				countOfMostPopulousDelegationRace = kvpair.Value;
+			}
+		}
+		
+		double chanceOfOffense = 0.0d;
+		Int64 impactOfOffense = 0;
+		Int64 impactOfPositive = 0;
+		if(inSizeOfGift == "smallGift")
+		{
+			chanceOfOffense = chanceOfOffenseSmall;
+			impactOfOffense = impactOfOffenseSmall;
+			impactOfPositive = impactOfPositiveGiftSmall;
+		}
+		else if(inSizeOfGift == "mediumGift")
+		{
+			chanceOfOffense = chanceOfOffenseMedium;
+			impactOfOffense = impactOfOffenseMedium;
+			impactOfPositive = impactOfPositiveGiftMedium;
+		}
+		else if(inSizeOfGift == "largeGift")
+		{
+			chanceOfOffense = chanceOfOffenseLarge;
+			impactOfOffense = impactOfOffenseLarge;
+			impactOfPositive = impactOfPositiveGiftLarge;
+			
+			//increase the rate at which this event happens:
+			double addToEventWeightForLargeGift = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event largeGift eventWeight addition", out success);
+			if(!success) addToEventWeightForLargeGift = 2.0d;
+			addDebugMessage(inScriptInstance, "no matter the intent of the visiting delegation, a large gift increases the weight of this event by " + addToEventWeightForLargeGift + " to " + (inEventStatus.getWeight() + addToEventWeightForLargeGift));
+			inEventStatus.setWeight(inEventStatus.getWeight() + addToEventWeightForLargeGift);
+			
+			//increase the rate at which diplomatic delegations visit the player:
+			double minDiploRateIncrease = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event largeGift diploRate mult min", out success);
+			if(!success) minDiploRateIncrease = 1.03d;
+			double maxDiploRateIncrease = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event largeGift diploRate mult max", out success);
+			if(!success) maxDiploRateIncrease = 1.09d;
+			
+			Int64 minDiploRateIncreaseDays = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event largeGift diploRate days min", out success);
+			if(!success) minDiploRateIncreaseDays = 27;
+			Int64 maxDiploRateIncreaseDays = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event largeGift diploRate days max", out success);
+			if(!success) maxDiploRateIncreaseDays = 81;
+			
+			double rateIncrease = minDiploRateIncrease + (maxDiploRateIncrease - minDiploRateIncrease) * getAPI().calcRand();
+			Int64 increaseDays = minDiploRateIncreaseDays + getAPI().calcRandIntUnder(maxDiploRateIncreaseDays + 1 - minDiploRateIncreaseDays);
+			Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+			
+			string diploRateVariableName = "multForeignDelegationsProb_all_player_diplomacy";
+			IFConnectedVariable topVariable = variableHandler.getConnectedVariable(diploRateVariableName);
+			if(topVariable == null)
+			{
+				variableHandler.addConnectedDouble(diploRateVariableName, 0.0d, out topVariable, currentDate + increaseDays, IFConnectedVariable.eCombinationType.cMult);
+			}
+			variableHandler.addConnectedDouble("evt_Basic Foreign Diplomacy Delegation Arrival Event" + inEventReport.getUID() + "_multForeignDelegationsProb_all_player_diplomacy", rateIncrease, out IFConnectedVariable lowerVariable, currentDate + increaseDays);
+			variableHandler.connectVariables(lowerVariable, topVariable);
+		}
+		if(mostPopulousDelegationRace != mostPopulousHomeRace)
+		{
+			chanceOfOffense += chanceOfOffenseAdditiveForDifferentMajorityRace;
+		}
+		
+		bool outWasOffendedByGift = getAPI().calcProb(chanceOfOffense);
+		addDebugMessage(inScriptInstance, "from chance " + chanceOfOffense + " the source community " + (outWasOffendedByGift ? "takes offense" : "does not take offense") + " to the gift, most populous home race=" + mostPopulousHomeRace.getDebugName() + " most populous delegation race=" + mostPopulousDelegationRace.getDebugName());
+		
+		//check if the player was cheated:
+		Int64 cheatedIfNonZero = variableHandler.getInt("evt_Basic Foreign Diplomacy Delegation Arrival Event" + inEventReport.getUID() + "_cheating", out success);
+		if(!success) cheatedIfNonZero = 0;
+		bool outPlayerWasCheated = (cheatedIfNonZero != 0);
+		
+		if(outWasOffendedByGift)
+		{
+			string actionText = customConsts.getStringConst("Basic Foreign Diplomacy Delegation Arrival Event offendedDifferentRaces history_action_text before_replace_text", out success);
+			if(!success) actionText = "granted resources to troublemakers who oppose the leaders of";
+			string adjective = customConsts.getStringConst("Basic Foreign Diplomacy Delegation Arrival Event offendedDifferentRaces history_adjective before_replace_text", out success);
+			if(!success) adjective = "diplomatic";
+			
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("non-hostile delegation danger");
+			
+			IFHistoricalOccurrence histToAdd = getAPI().createNewHistoricalOccurrenceToday(
+				IFHistoryActor.eActorKind.cCommunity, getAPI().getLocalCommunity().getUID(),
+				actionText, adjective, (List&lt;string&gt;)null,
+				IFHistoryTarget.eTargetKind.cCommunity, inDelegation.getSourceCommunity().getUID(),
+				(Int64)(impactOfOffense * difficulty), null
+				);
+				
+			inDelegation.getSourceCommunity().getHistory().add(histToAdd);
+		}
+		else if(outPlayerWasCheated)
+		{
+			//nothing to do: the player was cheated and lost their goods for nothing
+		}
+		else
+		{
+			string actionText = customConsts.getStringConst("Basic Foreign Diplomacy Delegation Arrival Event positiveGiftReaction history_action_text before_replace_text", out success);
+			if(!success) actionText = "granted resources to visiting diplomats in exchange for praise among the pops of";
+			string adjective = customConsts.getStringConst("Basic Foreign Diplomacy Delegation Arrival Event positiveGiftReaction history_adjective before_replace_text", out success);
+			if(!success) adjective = "diplomatic";
+			
+			IFHistoricalOccurrence histToAdd = getAPI().createNewHistoricalOccurrenceToday(
+				IFHistoryActor.eActorKind.cCommunity, getAPI().getLocalCommunity().getUID(),
+				actionText, adjective, (List&lt;string&gt;)null,
+				IFHistoryTarget.eTargetKind.cCommunity, inDelegation.getSourceCommunity().getUID(),
+				impactOfPositive, null
+				);
+				
+			inDelegation.getSourceCommunity().getHistory().add(histToAdd);
+		}
+		
+	    return new List&lt;object&gt;() { outWasOffendedByGift, outPlayerWasCheated };
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for when the player, during Basic Foreign Diplomacy Delegation Arrival Event, grants a gift to the delegation.  This script transfers resources. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport,
+		string inSizeOfGift
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Basic Foreign Diplomacy Delegation Arrival Event transfer_resources_for_gift</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport), typeof(string)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event transfer_resources_for_gift custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+		string inSizeOfGift = (string)inArguments[2];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event transfer_resources_for_gift custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event transfer_resources_for_gift custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		if(inSizeOfGift != "small" &amp;&amp; inSizeOfGift != "medium" &amp;&amp; inSizeOfGift != "large")
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event transfer_resources_for_gift custom script received invalid arguments: string inSizeOfGift must be small, medium or large");
+			return null;
+		}
+		inSizeOfGift += "Gift";
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//first, we need the delegation:
+		Int64 delUID = variableHandler.getInt("evt_Basic Foreign Diplomacy Delegation Arrival Event" + inEventReport.getUID() + "_delegationUID", out bool success);
+		if(!success)
+		{
+			addDebugMessage(inScriptInstance, "could not find associated delegation for event report UID " + inEventReport.getUID());
+			return null;
+		}
+		IFDelegation inDelegation = (IFDelegation)getAPI().getSO("delegations", delUID);
+		if(inDelegation == null)
+		{
+			addDebugMessage(inScriptInstance, "could not find associated delegation for event report UID " + inEventReport.getUID());
+			return null;
+		}
+		
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		if(customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, inSizeOfGift, 0L, false },
+								out List&lt;object&gt; fetchedResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+		{
+			resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchedResources[0];
+			IFResourcePool playerResPool = getAPI().getLocalCommunity().getResourcePool();
+			IFResourcePool delegationResPool = inDelegation.getResourcePool();
+			foreach(var kvpair in resourcesRequested)
+			{
+				double qual = playerResPool.getResourceQuality(kvpair.Key);
+				playerResPool.subtractResource(kvpair.Key, kvpair.Value.Item1);
+				delegationResPool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, qual);
+			}
+		}
+		
+	    return null;
+	</b>
+	</i1>
+	
+	<!-- this script is the common script for when Basic Foreign Diplomacy Delegation Arrival Event wants to check if the player has enough resources for a given gift -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport,
+		string inSizeOfGift
+	-->
+	
+	<!-- output: bool outPlayerHasEnough
+	-->
+	<i1><a>Basic Foreign Diplomacy Delegation Arrival Event player_has_resources_for_gift</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport), typeof(string)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event player_has_resources_for_gift custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+		string inSizeOfGift = (string)inArguments[2];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event player_has_resources_for_gift custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event player_has_resources_for_gift custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		if(inSizeOfGift != "small" &amp;&amp; inSizeOfGift != "medium" &amp;&amp; inSizeOfGift != "large")
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event player_has_resources_for_gift custom script received invalid arguments: string inSizeOfGift must be small, medium or large");
+			return null;
+		}
+		inSizeOfGift += "Gift";
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		bool outPlayerHasEnough = true;
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		if(customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, inSizeOfGift, 0L, false },
+								out List&lt;object&gt; fetchedResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+		{
+			resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchedResources[0];
+			IFResourcePool playerResPool = getAPI().getLocalCommunity().getResourcePool();
+			foreach(var kvpair in resourcesRequested)
+			{
+				if(playerResPool.getResourceQuantity(kvpair.Key) &lt; kvpair.Value.Item1)
+				{
+					outPlayerHasEnough = false;
+					break;
+				}
+			}
+		}
+		
+	    return new List&lt;object&gt;() { outPlayerHasEnough };
+	</b>
+	</i1>
+	
+  
+	<!-- this script is the common script for when Basic Foreign Diplomacy Delegation Arrival Event results in a rejection or the leaving of the members of the delegation -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID,
+		IFCommunity inSourceCommunity
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Basic Foreign Diplomacy Delegation Arrival Event rejection_common</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64), typeof(IFCommunity)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event rejection_common custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		IFCommunity inSourceCommunity = (IFCommunity)inArguments[1];
+		
+		if(inSourceCommunity == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event rejection_common custom script received invalid arguments: inSourceCommunity cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//one thing needs to be calculated and stored: "is the foreign community offended"
+		double offenseChance = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event rejection offense chance", out bool success);
+		if(!success) offenseChance = 0.35d;
+		
+		bool offended = getAPI().calcProb(offenseChance);
+		
+		//if offended, add the appropriate historical event:
+		if(offended)
+		{
+			string actionText = customConsts.getStringConst("Basic Foreign Diplomacy Delegation Arrival Event rejection history_action_text before_replace_text", out success);
+			if(!success) actionText = "spurned a request for a gift to diplomatic delegation from";
+			string adjective = customConsts.getStringConst("Basic Foreign Diplomacy Delegation Arrival Event rejection history_adjective before_replace_text", out success);
+			if(!success) adjective = "diplomatic";
+			
+			Int64 strength = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event rejection offense strength", out success);
+			if(!success) strength = -5;
+			
+			IFHistoricalOccurrence histToAdd = getAPI().createNewHistoricalOccurrenceToday(
+				IFHistoryActor.eActorKind.cCommunity, getAPI().getLocalCommunity().getUID(),
+				actionText, adjective, (List&lt;string&gt;)null,
+				IFHistoryTarget.eTargetKind.cCommunity, inSourceCommunity.getUID(),
+				strength, null
+			);
+			
+			inSourceCommunity.getHistory().add(histToAdd);
+		}
+		
+		//store offended for resolution text:
+		variableHandler.storeIntVariable(Int64.MaxValue, "evt_Basic Foreign Diplomacy Delegation Arrival Event" + inEventReportUID + "_offense", offended ? 1 : 0);
+		
+	    return null;
+	</b>
+	</i1>
+	
+	<!-- this script is the common script for when Basic Foreign Diplomacy Delegation Arrival Event needs to calculate what to call resources constitute a small, medium, and large gift -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport,
+		IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+		string outSmallGiftText,
+		string outMediumGiftText,
+		string outLargeGiftText,
+	-->
+	<i1><a>Basic Foreign Diplomacy Delegation Arrival Event gift_request_generate</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport), typeof(IFDelegation)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event gift_request_generate custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+		IFDelegation inDelegation = (IFDelegation)inArguments[2];
+		
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event gift_request_generate custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		if(inDelegation == null)
+		{
+			throw new ArgumentException("Basic Foreign Diplomacy Delegation Arrival Event gift_request_generate custom script received invalid arguments: inDelegation cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//three things need to be calculated: small, medium, and large gift resource counts
+		//if a gift size is less than the number of resources currently held, the resources requested will always be resources the player community has
+		//otherwise it will be split equally between a number of resources
+		Int64 minTypeCountResources = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event gift resource_types min", out bool success);
+		if(!success) minTypeCountResources = 3;
+		Int64 maxTypeCountResources = customConsts.getIntConst("Basic Foreign Diplomacy Delegation Arrival Event gift resource_types max", out success);
+		if(!success) maxTypeCountResources = 5;
+		
+		double carryWeightPropSmallMin = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event small_gift carry_proportion min", out success);
+		if(!success) carryWeightPropSmallMin = 0.2d;
+		double carryWeightPropSmallMax = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event small_gift carry_proportion max", out success);
+		if(!success) carryWeightPropSmallMax = 0.35d;
+		double carryWeightPropMediumMin = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event medium_gift carry_proportion min", out success);
+		if(!success) carryWeightPropMediumMin = 0.4d;
+		double carryWeightPropMediumMax = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event medium_gift carry_proportion max", out success);
+		if(!success) carryWeightPropMediumMax = 0.55d;
+		double carryWeightPropLargeMin = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event large_gift carry_proportion min", out success);
+		if(!success) carryWeightPropLargeMin = 0.65d;
+		double carryWeightPropLargeMax = customConsts.getDoubleConst("Basic Foreign Diplomacy Delegation Arrival Event large_gift carry_proportion max", out success);
+		if(!success) carryWeightPropLargeMax = 0.85d;
+		
+		double smallProp = carryWeightPropSmallMin + (carryWeightPropSmallMax - carryWeightPropSmallMin) * getAPI().calcRand();
+		double mediumProp = carryWeightPropMediumMin + (carryWeightPropMediumMax - carryWeightPropMediumMin) * getAPI().calcRand();
+		double largeProp = carryWeightPropLargeMin + (carryWeightPropLargeMax - carryWeightPropLargeMin) * getAPI().calcRand();
+		
+		double totalCarryWeight = 0.0d;
+		List&lt;IFPop&gt; allPopsInDelegation = new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation());
+		
+		if(customScripts.runCustomScriptCheckTypes("calculateCarryWeightOfPops", new List&lt;object&gt;() { allPopsInDelegation },
+								out List&lt;object&gt; carryWeight, true, typeof(double)))
+		{
+			totalCarryWeight = (double)carryWeight[0];
+		}
+		else
+		{
+			totalCarryWeight = 500.0d; //just a fallback value
+		}
+		
+		double smallGiftAmount = totalCarryWeight * smallProp;
+		double mediumGiftAmount = totalCarryWeight * mediumProp;
+		double largeGiftAmount = totalCarryWeight * largeProp;
+		
+		IFResourcePool playerResPool = getAPI().getLocalCommunity().getResourcePool();
+		
+		bool assembleSmallGiftManually = true;
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; smallGiftResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;() { playerResPool, false, false, null,
+								smallGiftAmount, false, false, false, false, false, false, true },
+			out List&lt;object&gt; playerResourcesSmall, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+		{
+			double resourceCountReturned = (double)playerResourcesSmall[0];
+			smallGiftResources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)playerResourcesSmall[2];
+			if(((smallGiftAmount - 0.5d) &lt; resourceCountReturned) &amp;&amp; ((smallGiftAmount + 0.5d) &gt; resourceCountReturned))
+			{
+				assembleSmallGiftManually = false;
+			}
+		}
+		if(assembleSmallGiftManually)
+		{
+			smallGiftResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+			Int64 countOfResourceTypes = minTypeCountResources + getAPI().calcRandIntUnder((maxTypeCountResources - minTypeCountResources) + 1);
+			Int64 countLeft = countOfResourceTypes;
+			while(countLeft &gt; 0)
+			{
+				Int64 moid = 1 + getAPI().calcRandIntUnder(getAPI().getTotalCountOfMO("resources") - 1); //the 1 is for skipping the default resource
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res == null)
+					continue;
+				if(res.isNotInResourcePool())
+					continue;
+					
+				if(!smallGiftResources.ContainsKey(res))
+					smallGiftResources.Add(res, Tuple.Create(0.0d, playerResPool.getResourceQuality(res)));
+				smallGiftResources[res] = Tuple.Create(smallGiftResources[res].Item1 + (smallGiftAmount / countOfResourceTypes), smallGiftResources[res].Item2);
+				
+				countLeft--;
+			}
+		}
+		
+		bool assembleMediumGiftManually = true;
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; MediumGiftResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;() { playerResPool, false, false, null,
+								mediumGiftAmount, false, false, false, false, false, false, true },
+			out List&lt;object&gt; playerResourcesMedium, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+		{
+			double resourceCountReturned = (double)playerResourcesMedium[0];
+			MediumGiftResources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)playerResourcesMedium[2];
+			if(((mediumGiftAmount - 0.5d) &lt; resourceCountReturned) &amp;&amp; ((mediumGiftAmount + 0.5d) &gt; resourceCountReturned))
+			{
+				assembleMediumGiftManually = false;
+			}
+		}
+		if(assembleMediumGiftManually)
+		{
+			MediumGiftResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+			Int64 countOfResourceTypes = minTypeCountResources + getAPI().calcRandIntUnder((maxTypeCountResources - minTypeCountResources) + 1);
+			Int64 countLeft = countOfResourceTypes;
+			while(countLeft &gt; 0)
+			{
+				Int64 moid = 1 + getAPI().calcRandIntUnder(getAPI().getTotalCountOfMO("resources") - 1); //the 1 is for skipping the default resource
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res == null)
+					continue;
+				if(res.isNotInResourcePool())
+					continue;
+					
+				if(!MediumGiftResources.ContainsKey(res))
+					MediumGiftResources.Add(res, Tuple.Create(0.0d, playerResPool.getResourceQuality(res)));
+				MediumGiftResources[res] = Tuple.Create(MediumGiftResources[res].Item1 + (mediumGiftAmount / countOfResourceTypes), MediumGiftResources[res].Item2);
+				
+				countLeft--;
+			}
+		}
+		
+		bool assembleLargeGiftManually = true;
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; LargeGiftResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;() { playerResPool, false, false, null,
+								largeGiftAmount, false, false, false, false, false, false, true },
+			out List&lt;object&gt; playerResourcesLarge, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+		{
+			double resourceCountReturned = (double)playerResourcesLarge[0];
+			LargeGiftResources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)playerResourcesLarge[2];
+			if(((largeGiftAmount - 0.5d) &lt; resourceCountReturned) &amp;&amp; ((largeGiftAmount + 0.5d) &gt; resourceCountReturned))
+			{
+				assembleLargeGiftManually = false;
+			}
+		}
+		if(assembleLargeGiftManually)
+		{
+			LargeGiftResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+			Int64 countOfResourceTypes = minTypeCountResources + getAPI().calcRandIntUnder((maxTypeCountResources - minTypeCountResources) + 1);
+			Int64 countLeft = countOfResourceTypes;
+			while(countLeft &gt; 0)
+			{
+				Int64 moid = 1 + getAPI().calcRandIntUnder(getAPI().getTotalCountOfMO("resources") - 1); //the 1 is for skipping the default resource
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res == null)
+					continue;
+				if(res.isNotInResourcePool())
+					continue;
+					
+				if(!LargeGiftResources.ContainsKey(res))
+					LargeGiftResources.Add(res, Tuple.Create(0.0d, playerResPool.getResourceQuality(res)));
+				LargeGiftResources[res] = Tuple.Create(LargeGiftResources[res].Item1 + (largeGiftAmount / countOfResourceTypes), LargeGiftResources[res].Item2);
+				
+				countLeft--;
+			}
+		}
+		
+		//store the three gifts, and return the strings that describe them:
+		string outSmallGiftText = "";
+		if(customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, smallGiftResources, "smallGift", getAPI().getCalendar().getCurrentDate() + 120, false },
+			out List&lt;object&gt; outSmallGiftTextReturn, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+		{
+			outSmallGiftText = (string)outSmallGiftTextReturn[1];
+		}
+		string outMediumGiftText = "";
+		if(customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, MediumGiftResources, "mediumGift", getAPI().getCalendar().getCurrentDate() + 120, false },
+			out List&lt;object&gt; outMediumGiftTextReturn, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+		{
+			outMediumGiftText = (string)outMediumGiftTextReturn[1];
+		}
+		string outLargeGiftText = "";
+		if(customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, LargeGiftResources, "largeGift", getAPI().getCalendar().getCurrentDate() + 120, false },
+			out List&lt;object&gt; outLargeGiftTextReturn, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+		{
+			outLargeGiftText = (string)outLargeGiftTextReturn[1];
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outSmallGiftText, outMediumGiftText, outLargeGiftText };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

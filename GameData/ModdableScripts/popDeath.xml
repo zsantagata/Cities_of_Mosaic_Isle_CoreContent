@@ -1,0 +1,309 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of a few scripts related to pops (possibly) dying -->
+  
+  <!-- custom consts related to pop death: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	  <!-- pops will die of irrelevance at after 1.0 + this of the getLifespanYearsAverage value if other conditions are true -->
+	  <i1><a>popdeathfromirrelevance ratio_of_average_to_end</a> <b>double</b> <c>0.1</c></i1>
+	  
+	  <!-- if more foreign pops are declared than this, and some of those pops are irrelevant, they will be declared dead and a pop of the same race added to "undeclared pops" in their place -->
+	  <i1><a>popdeathfromirrelevance max_foreign_pops_desired count</a> <b>int</b> <c>250</c></i1>
+	  
+	  <!-- this is the minimum quality of a good can be recovered from a dead body, in proportion of the whole range -->
+	  <i1><a>RecoverGoodsFromDeadBody quality_random min</a> <b>double</b> <c>0.2</c></i1>
+	  <!-- this is the maximum quality of a good can be recovered from a dead body, in proportion of the whole range -->
+	  <i1><a>RecoverGoodsFromDeadBody quality_random max</a> <b>double</b> <c>0.7</c></i1>
+	  <!-- this is the chance an attacking delegation will recover the goods of its dead comrades: -->
+	  <i1><a>RecoverGoodsFromDeadBody recover_comrade_gear prob</a> <b>double</b> <c>0.5</c></i1>
+
+	</mCustomVariableList>
+  </customconsts>
+  
+  <gamescripts name="default">
+	<!-- pops can die of illnesses, wounds, and old age.  These scripts are called on all non-dead, not-in-delegation pops of the player community. -->
+  
+	<!-- the scripts are called in the following order: mPopDeathFromIllness, mPopDeathFromWound, mPopDeathFromOldAge -->
+	<!-- (that is the order in which they appear in this file) -->
+	<!-- all scripts are called for one pop, then the next pop is considered.  These scripts are called at midnight.  However, if a pop dies due to an earlier script, the subsequent scripts are not called. -->
+  
+    <!-- mPopDeathFromIrrelevance is called during midnight processing on all pops that are neither loyal to the local community nor on the local map.  It is meant to assist cleanup of pops -->
+  
+    <!-- pop death from illness script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopDeathFromIllness>
+	    //input count check:
+	    if(inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+		
+	    IFPop inPop = (IFPop)inArguments[0];
+
+		//this is a common script used in both local community and delegations, so it is in a custom script:
+	    var customScripts = getAPI().getCustomScripts();
+		customScripts.runCustomScript("popDeathFromIllness", new List&lt;object&gt;() { inPop }, out _);
+		
+		return null;
+	</mPopDeathFromIllness>
+    <!-- pop death from wounds script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopDeathFromWound>
+	    //input count check:
+	    if(inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+		
+	    IFPop inPop = (IFPop)inArguments[0];
+
+		//this is a common script used in both local community and delegations, so it is in a custom script:
+	    var customScripts = getAPI().getCustomScripts();
+		customScripts.runCustomScript("popDeathFromWounds", new List&lt;object&gt;() { inPop }, out _);
+		
+		return null;
+	</mPopDeathFromWound>
+    <!-- pop death from old age script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopDeathFromOldAge>
+	    //input count check:
+	    if(inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+		
+	    IFPop inPop = (IFPop)inArguments[0];
+
+		//this is a common script used in both local community and delegations, so it is in a custom script:
+	    var customScripts = getAPI().getCustomScripts();
+		customScripts.runCustomScript("popDeathFromOldAge", new List&lt;object&gt;() { inPop }, out _);
+		
+		return null;
+	</mPopDeathFromOldAge>
+	
+    <!-- pop death from irrelevance script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopDeathFromIrrelevance>
+	    //input count check:
+	    if(inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+		
+	    IFPop inPop = (IFPop)inArguments[0];
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		bool success = false;
+
+		bool popNowDead = false;
+
+		//if a pop is older than its maximum lifespan, kill it off:
+		double ageRatioOfAverageToEnd = customConsts.getDoubleConst("popdeathfromirrelevance ratio_of_average_to_end", out success);
+		if(!success) ageRatioOfAverageToEnd = 0.1d;
+		
+		Int64 popAgeInDays = getAPI().getCalendar().getCurrentDate() - inPop.getDayOfBirth();
+		Int64 maxPopAgeForRaceInDays = inPop.getRace().getLifespanYearsAverage() * consts.getCalendarDaysPerYear();
+		if(maxPopAgeForRaceInDays &lt; popAgeInDays)
+		{
+			inPop.setIsDead(true, IFPop.ePopDeathReason.cOldAge);
+			popNowDead = true;
+		}
+		
+		if(!popNowDead)
+		{
+			//now we can kill off pops for performance reasons: if there are too many pops alive in a foreign community, possibly convert this pop to an "un-reified" pop:
+			Int64 maxPops = customConsts.getIntConst("popdeathfromirrelevance max_foreign_pops_desired count", out success);
+			if(!success) maxPops = 250;
+			
+			Int64 alivePopCount = inPop.getCommunity().getPopsLoyalToCommunity(true, false).Count;
+			if(alivePopCount &gt; maxPops) //count alive pops only; dead pops are on their way to being cleaned up
+			{
+				//use chance so that it's not just the first-declared pops that always die off:
+				if(getAPI().calcProb(((double)(alivePopCount - maxPops)) / alivePopCount))
+				{
+					//do not kill off leaders:
+					if(inPop.getCommunity().getLeaderCollection().getLeaderFlagsForPop(inPop) == 0)
+					{
+						//do not kill off pops in delegations:
+						if(!inPop.hasDelegation())
+						{
+							//do not kill off pops which have been marked "do not delete"
+							string doNotDeleteName = APIconsts.cDoNotDeleteSOVariableNames[(int)APIconsts.eSOsMarkableAsDoNotDelete.cPop] + inPop.getUID();
+							IFConnectedVariable topCV = getAPI().getVariableHandler().getConnectedVariable(doNotDeleteName);
+							if(topCV == null)
+							{
+								//kill the pop in a relevant way if we can:
+								if(inPop.isWounded())
+									inPop.setIsDead(true, IFPop.ePopDeathReason.cWounds);
+								else if(inPop.isIll())
+									inPop.setIsDead(true, IFPop.ePopDeathReason.cIllness);
+								else
+									inPop.setIsDead(true, IFPop.ePopDeathReason.cUnspecified);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		//pops dead from irrelevance should be replaced with un-reified pops, keeping pop count the same, for foreign communities:
+		if(popNowDead &amp;&amp; inPop.getCommunity().isNormalCommunity())
+		{
+			var undeclaredPopsDict = inPop.getCommunity().getAdditionalUndeclaredPopCounts();
+			if(!undeclaredPopsDict.ContainsKey(inPop.getRace()))
+				undeclaredPopsDict.Add(inPop.getRace(), 0);
+			undeclaredPopsDict[inPop.getRace()]++;
+		}
+
+		return null;
+	</mPopDeathFromIrrelevance>
+	
+	<!-- recover goods from dead body script has three input arguments: IFPop which is now dead, IFDelegation (which will be null unless the pop is off-map and traveling in a delegation), and IFCommunity (which will be null unless the pop is off-map in a delegation AND that delegation is visiting a foreign (i.e. not the player) community when the pop dies)  -->
+	<!-- there is no output -->
+	<mRecoverGoodsFromDeadBody>
+	    //input count check:
+	    if(inArguments.Length &lt; 3)
+		{
+			return null;
+		}
+		
+	    IFPop inPop = (IFPop)inArguments[0];
+	    IFDelegation inDelegation = (IFDelegation)inArguments[1];
+	    IFCommunity inCommunity = (IFCommunity)inArguments[2];
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		bool success = false;
+		
+		//three situations: the pop died and was cleaned up on the local map, the pop died while its delegation was traveling, or the pop died while its delegation was visiting a foreign community
+		//first, gather the goods:
+		ReadOnlyCollection&lt;string&gt; goodsNames = customConsts.getListConst("race" + inPop.getRace().getInternalName() + "_recoverGoodsFromDeadBody_resourceNameList", out success);
+		if(!success) goodsNames = new ReadOnlyCollection&lt;string&gt;(new List&lt;string&gt;());
+		ReadOnlyCollection&lt;string&gt; goodsCounts = customConsts.getListConst("race" + inPop.getRace().getInternalName() + "_recoverGoodsFromDeadBody_resourceCountList", out success);
+		if(!success) goodsCounts = new ReadOnlyCollection&lt;string&gt;(new List&lt;string&gt;());
+		//the way that modders should override previous values in the goodsNames list is by adding a new value to goodsCounts and the name of the resource once again to goodsNames; this code will take the last value
+		
+		double qualityMin = customConsts.getDoubleConst("RecoverGoodsFromDeadBody quality_random min", out success);
+		if(!success) qualityMin = 0.2d;
+		double qualityMax = customConsts.getDoubleConst("RecoverGoodsFromDeadBody quality_random max", out success);
+		if(!success) qualityMax = 0.7d;
+		double minQual = consts.getResourceQualityMin();
+		double maxQual = consts.getResourceQualityMax();
+		
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; goodsRecovered = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		for(int i = 0; (i &lt; goodsNames.Count) &amp;&amp; (i &lt; goodsCounts.Count); i++)
+		{
+			IFResource res = (IFResource)getAPI().getMOFromInternalName("resources", goodsNames[i]);
+			if(res != null)
+			{
+				double count = 0.0d;
+				if(double.TryParse(goodsCounts[i], out count))
+				{
+					if(count &gt; 0.0d)
+					{
+						if(!goodsRecovered.ContainsKey(res))
+							goodsRecovered.Add(res, Tuple.Create(0.0d, 0.0d));
+						goodsRecovered[res] = Tuple.Create(count, (getAPI().calcRand() * (qualityMax - qualityMin) + qualityMin) * (maxQual - minQual) + minQual);
+					}
+				}
+			}
+		}
+		//also gather the military equipment the pop was holding:
+		foreach(IFResource res in getAPI().getResourcesWithAnyOfResQualityFlags((Int64)(IFResource.eResourceQualities.cMilEquip)))
+		{
+			if(inPop.hasEquipment(res))
+			{
+				if(!goodsRecovered.ContainsKey(res))
+					goodsRecovered.Add(res, Tuple.Create(1.0d, inPop.getEquipmentQuality(res)));
+				else
+				{
+					double newQuan = goodsRecovered[res].Item1 + 1.0d;
+					double newQual = (goodsRecovered[res].Item1 * goodsRecovered[res].Item2 + 1.0d * inPop.getEquipmentQuality(res)) / newQuan;
+					goodsRecovered[res] = Tuple.Create(newQuan, newQual);
+				}
+			}
+		}
+		
+		IFResourcePool resPoolToSendGoodsTo = null;
+		if(goodsRecovered.Count != 0)
+		{
+			//visiting foreign community:
+			if((inDelegation != null) &amp;&amp; (inCommunity != null))
+			{
+				bool hostileDelegation = (inDelegation.getDelegationType() == IFDelegation.eDelegationType.cWar) || (inDelegation.getDelegationType() == IFDelegation.eDelegationType.cRaiding);
+				if(!hostileDelegation)
+				{
+					//the pop's goods will be recovered by their delegation
+					resPoolToSendGoodsTo = inDelegation.getResourcePool();
+				}
+				else
+				{
+					double chanceToRecover = customConsts.getDoubleConst("RecoverGoodsFromDeadBody recover_comrade_gear prob", out success);
+					if(!success) chanceToRecover = 0.5d;
+					if(getAPI().calcProb(chanceToRecover))
+					{
+						resPoolToSendGoodsTo = inDelegation.getResourcePool();
+					}
+					else
+					{
+						resPoolToSendGoodsTo = inCommunity.getResourcePool();
+					}
+				}
+			}
+			//traveling:
+			else if(inDelegation != null)
+			{
+				resPoolToSendGoodsTo = inDelegation.getResourcePool();
+			}
+			//on local map:
+			else
+			{
+				//if the pop has pops of its fellow community on the map, and that community is not an enemy (and not Wanderers), they recover the goods:
+				bool friendsRecoverGoods = false;
+				if( (inPop.getCommunity() != getAPI().getLocalCommunity())
+					&amp;&amp; !getAPI().isHostileCommunity(inPop.getCommunity())
+					&amp;&amp; !inPop.getCommunity().isWanderers()
+				  )
+				{
+					//check all other pops on map:
+					foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+					{
+						if(!pop.isDead() &amp;&amp; (pop.getCommunity() == inPop.getCommunity()) &amp;&amp; pop.hasDelegation())
+						{
+							friendsRecoverGoods = true;
+							resPoolToSendGoodsTo = pop.getDelegation().getResourcePool();
+							break;
+						}
+					}
+				}
+				
+				if(!friendsRecoverGoods)
+				{
+					resPoolToSendGoodsTo = getAPI().getLocalCommunity().getResourcePool();
+				}
+			}
+			
+			if(resPoolToSendGoodsTo != null)
+			{
+				addDebugMessage(inScriptInstance, inPop.getDebugName() + " dropped resources on death that are being recovered");
+				foreach(var kvpair in goodsRecovered)
+				{
+					resPoolToSendGoodsTo.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+				}
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, inPop.getDebugName() + " dropped resources on death that are not being recovered");
+			}
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, inPop.getDebugName() + " was not carrying any military equipment and race does not provide goods on death");
+		}
+		
+		return null;
+	</mRecoverGoodsFromDeadBody>
+	
+  </gamescripts>
+  
+</core_data>

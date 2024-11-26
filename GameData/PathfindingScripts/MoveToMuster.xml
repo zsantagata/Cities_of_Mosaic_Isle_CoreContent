@@ -1,0 +1,249 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the MoveToMuster state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: A pop is moving to muster if it has a valid mustering point and it should be mustering because a battle is ongoing, or because the player told it to.  MoveToMuster is one of the hardcoded states, so it is commented out here. -->
+		<!-- <i1><a>MoveToMuster</a> 
+		<b>0.1</b><c>10.5</c></i1> -->
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to MoveToMuster: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_MoveToMuster -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+		
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_movetomuster_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_movetomuster_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_movetomuster</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to MoveToMuster: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_MoveToMuster -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_MoveToMuster_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_MoveToMuster_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_MoveToMuster_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//considerations:
+				//a pop must be loyal, unmustered, and not hurt/dead in order to move to muster
+				//the pop must have a reachable mustering point
+				//battle must be ongoing and there must be enemies on the map (or this pop must have already been in this state)
+				bool first_consideration = !(inPop.isDead() || inPop.isWounded() || inPop.isMustered()) &amp;&amp; (inPop.getCommunity() == getAPI().getLocalCommunity());
+				bool second_consideration = (inPop.hasMusteringPoint()) &amp;&amp; getAPI().isBuildingAccessibleByPop(inPop, inPop.getMusteringPoint());
+				bool third_consideration = (inPop.getPathfindingState() == "movetomuster");
+				if(first_consideration &amp;&amp; second_consideration &amp;&amp; !third_consideration &amp;&amp; inBattleOngoing)
+				{
+					foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+					{
+						if(getAPI().isHostileCommunity(pop.getCommunity()) &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap) &amp;&amp; !pop.isDead())
+						{
+							third_consideration = true;
+							break;
+						}
+					}
+				}
+				toReturn.Add(first_consideration &amp;&amp; second_consideration &amp;&amp; third_consideration);
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_MoveToMuster_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_MoveToMuster_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_MoveToMuster_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//this is simple: just tell the pop to go to its mustering point
+				toReturn.Add(inPop.getMusteringPoint());
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_MoveToMuster" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+
+				addDebugMessage(inScriptInstance, "default state_MoveToMuster script is finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				bool validMusteringPoint = inPop.hasMusteringPoint() &amp;&amp; getAPI().isBuildingAccessibleByPop(inPop, inPop.getMusteringPoint());
+				if(!validMusteringPoint)
+				{
+					if(inBattleOngoing) //if the mustering point is invalid and we are in battle, transition to UnmusteredInBattle:
+					{
+						if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"UnmusteredInBattle", inPop, inLocalMap, inBattleOngoing},
+							out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+						{	
+							if((bool)validTgt[0])
+							{
+								addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the UnmusteredInBattle state due to: " + " in battle and pop's mustering point is now invalid");
+								toReturn.Add("UnmusteredInBattle");
+								toReturn.Add((IFBuilding)validTgt[1]);
+								toReturn.Add((IFPop)validTgt[2]);
+								toReturn.Add((bool)validTgt[3]);
+								toReturn.Add((double)validTgt[4]);
+								toReturn.Add((double)validTgt[5]);
+								return toReturn;
+							}
+						}
+					}
+					else //if the mustering point is invalid and we are not in battle, transition to Idle:
+					{
+						//yeah it's just the Idle state but call the appropriate custom scripts anyway:
+						if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Idle", inPop, inLocalMap, inBattleOngoing},
+							out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+						{	
+							//this should always be true because we should always be able to transition to the Idle state
+							if((bool)validTgt[0])
+							{
+								addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the Idle state due to: " + " not in battle and pop's mustering point is now invalid");
+								toReturn.Add("Idle");
+								toReturn.Add((IFBuilding)validTgt[1]);
+								toReturn.Add((IFPop)validTgt[2]);
+								toReturn.Add((bool)validTgt[3]);
+								toReturn.Add((double)validTgt[4]);
+								toReturn.Add((double)validTgt[5]);
+								return toReturn;
+							}
+						}
+					}
+				}
+				else
+				{
+					//if we are close enough to muster, do so:
+					if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Mustering", inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+					{
+						if((bool)validTgt[0])
+						{
+							addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the Mustering state due to: " + " pop has reached its mustering point");
+							toReturn.Add("Mustering");
+							toReturn.Add((IFBuilding)validTgt[1]);
+							toReturn.Add((IFPop)validTgt[2]);
+							toReturn.Add((bool)validTgt[3]);
+							toReturn.Add((double)validTgt[4]);
+							toReturn.Add((double)validTgt[5]);
+							return toReturn;
+						}
+					}
+					else
+					{
+						//we failed to call a script correctly somehow.  Transition to Idle instead:
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the Mustering state so pop is transitioning directly to Idle state");
+						toReturn.Add("Idle");
+						toReturn.Add(null);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+					
+					//else, continue moving to muster:
+					if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"MoveToMuster", inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt2, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+					{	
+						if((bool)validTgt2[0])
+						{
+							addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the MoveToMuster state due to: " + " in battle and pop's mustering point is still too far away to muster");
+							toReturn.Add("MoveToMuster");
+							toReturn.Add((IFBuilding)validTgt2[1]);
+							toReturn.Add((IFPop)validTgt2[2]);
+							toReturn.Add((bool)validTgt2[3]);
+							toReturn.Add((double)validTgt2[4]);
+							toReturn.Add((double)validTgt2[5]);
+							return toReturn;
+						}
+					}
+				}
+				
+				addDebugMessage(inScriptInstance, "custom scripts indicated pop could not stay in MoveToMuster state so pop is transitioning directly to Idle state");
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_MoveToMuster</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

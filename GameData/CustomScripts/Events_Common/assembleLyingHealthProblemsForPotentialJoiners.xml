@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- for hiding health problems, lying wildness is equal to the chance each health problem will be hidden -->
+			<i1><a>assembleLyingHealthProblemsForPotentialJoiners lying_wildness min</a> <b>double</b> <c>0.25</c></i1> <!-- if the joiners are going to lie they may as well try to make their lie have positive consequences -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script assembleLyingHealthProblemsForPotentialJoiners</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which stores health problems (wounds, illnesses, pregnancies) for potential joining pops but clears them to be reapplied later.  If the pops are allowed to join, a later script will call applyHiddenHealthProblemsForJoiners -->
+  <!-- this script does not add any health problems that do not already exist -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus,
+	Int64 inEventReportUID,
+	string inAdditionalLabel,
+	Int64 inExpiryDateAssociation,
+	List<IFPop> inPopsPotentiallyJoining, //cannot be null and will have no effect if empty
+	double inLyingWildness //from min to 1.0d.  If it is outside, a random value will be used.
+	-->
+	
+	<!-- output:
+	List<Int64> outWoundHiddenDates, //can be empty but will not be null
+	List<Int64> outIllnessHiddenDates, //can be empty but will not be null
+	List<double> outPregnancyHiddenRatios, //can be empty but will not be null
+	-->
+	<i1><a>assembleLyingHealthProblemsForPotentialJoiners</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(string), typeof(Int64), typeof(List&lt;IFPop&gt;), typeof(double)}
+	      }, out _))
+	    {
+			throw new ArgumentException("assembleLyingHealthProblemsForPotentialJoiners custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		string inAdditionalLabel = (string)inArguments[2];
+		Int64 inExpiryDateAssociation = (Int64)inArguments[3];
+		List&lt;IFPop&gt; inPopsPotentiallyJoining = (List&lt;IFPop&gt;)inArguments[4];
+		double inLyingWildness = (double)inArguments[5];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		if(inPopsPotentiallyJoining == null)
+		{
+			throw new ArgumentException("assembleLyingHealthProblemsForPotentialJoiners custom script received invalid arguments: inPopsPotentiallyJoining cannot be null");
+			return null;
+		}
+		double lyingWildnessMin = customConsts.getDoubleConst("assembleLyingHealthProblemsForPotentialJoiners lying_wildness min", out bool success);
+		if(!success) lyingWildnessMin = 0.25d;
+		if(inLyingWildness &lt; lyingWildnessMin || inLyingWildness &gt; 1.0d)
+		{
+			double newVal = lyingWildnessMin + (1.0d - lyingWildnessMin) * getAPI().calcRand();
+			addDebugMessage(inScriptInstance, "changing inLyingWildness from " + inLyingWildness + " to " + newVal);
+			inLyingWildness = newVal;
+		}
+		
+		List&lt;Int64&gt; outWoundHiddenDates = new List&lt;Int64&gt;();
+		List&lt;Int64&gt; outIllnessHiddenDates = new List&lt;Int64&gt;();
+		List&lt;double&gt; outPregnancyHiddenRatios = new List&lt;double&gt;();
+		
+		//first, sort out which pops have wounds/illnesses/pregnancies:
+		List&lt;IFPop&gt; popsWounds = new List&lt;IFPop&gt;();
+		List&lt;IFPop&gt; popsIllnesses = new List&lt;IFPop&gt;();
+		List&lt;IFPop&gt; popsPregnancies = new List&lt;IFPop&gt;();
+		foreach(IFPop pop in inPopsPotentiallyJoining)
+		{
+			if(pop.isDead())
+				continue;
+			if(pop.isWounded())
+				popsWounds.Add(pop);
+			if(pop.isIll())
+				popsIllnesses.Add(pop);
+			if(pop.isPregnant())
+				popsPregnancies.Add(pop);
+		}
+		
+		//hide wounds first:
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		foreach(IFPop pop in popsWounds)
+		{
+			if(getAPI().calcProb(inLyingWildness))
+			{
+				addDebugMessage(inScriptInstance, "removing wound from pop " + pop.getDebugName() + " so the final day of " + pop.getWoundedDayOver() + " (current date=" + currentDate + ") can be applied to another pop later");
+				outWoundHiddenDates.Add(pop.getWoundedDayOver());
+				pop.setNoLongerWounded();
+			}
+		}
+		//hide illnesses second:
+		foreach(IFPop pop in popsIllnesses)
+		{
+			if(getAPI().calcProb(inLyingWildness))
+			{
+				addDebugMessage(inScriptInstance, "removing illness from pop " + pop.getDebugName() + " so the final day of " + pop.getIllDayOver() + " (current date=" + currentDate + ") can be applied to another pop later");
+				outIllnessHiddenDates.Add(pop.getIllDayOver());
+				pop.setNoLongerIll();
+			}
+		}
+		//hide pregnancies last:
+		foreach(IFPop pop in popsPregnancies)
+		{
+			if(getAPI().calcProb(inLyingWildness))
+			{
+				double pregRatio = ((double)(pop.getPregnantDayOver() - currentDate)) / (pop.getRace().getTotalPregnancyDays());
+				addDebugMessage(inScriptInstance, "removing pregnancy from pop " + pop.getDebugName() + " so the pregnancy ratio of " + pregRatio + " can be applied to another pop later");
+				outPregnancyHiddenRatios.Add(pregRatio);
+				pop.setNoLongerPregnant();
+			}
+		}
+		
+		if((outWoundHiddenDates.Count != 0) || (outIllnessHiddenDates.Count != 0) || (outPregnancyHiddenRatios.Count != 0))
+		{
+			customScripts.runCustomScript("storeOrFetchHiddenHealthProblemsForJoiners", new List&lt;object&gt;() { inEventStatus, inEventReportUID, true, inAdditionalLabel, inExpiryDateAssociation, outWoundHiddenDates, outIllnessHiddenDates, outPregnancyHiddenRatios }, out _);
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "no pop health conditions hidden for " + inPopsPotentiallyJoining.Count + " pops");
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outWoundHiddenDates, outIllnessHiddenDates, outPregnancyHiddenRatios };
+		return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script clearResourcesLocallySourceable</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which clears the stored list of resources that the provided community can create from its land and/or buildings -->
+  <!-- this script should be called when a community is being cleaned up, or its foreign AI is changing -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunity
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>clearResourcesLocallySourceable</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("clearResourcesLocallySourceable custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		if(inCommunity == null)
+		{
+		  throw new ArgumentException("clearResourcesLocallySourceable custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+	
+		//check the variableHandler for the right connected variable:
+		string topListCVName = "listOfResourcesLocallySourceable_community" + inCommunity.getUID();
+		IFConnectedVariable topListCV = variableHandler.getConnectedVariable(topListCVName);
+		if(topListCV != null)
+		{
+			foreach(IFConnectedVariable lowerCV in (new List&lt;IFConnectedVariable&gt;(topListCV.getLowers())))
+			{
+				variableHandler.clearConnectedVariable(lowerCV);
+			}
+			variableHandler.clearConnectedVariable(topListCV);
+		}
+	
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script seize_goods_valid</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which checks if goods can be seized from the pops within -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has one input: IFBuilding inBuilding.  It has one output: bool outCanGoodsBeSeized. -->
+	<!-- this script is called by Delegation Hall and Inn custom button validAndName scripts -->
+	<i1><a>seize_goods_valid</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("seize_goods_valid custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("seize_goods_valid custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  
+	  bool outCanGoodsBeSeized = false;
+	  
+	  //conditions:
+	  //conditions are different for neutral pops in delegations and Wanderers, so have those checked in separate scripts:
+	  bool seize_goods_valid_neutral = false;
+	  if(customScripts.runCustomScriptCheckTypes("seize_goods_valid_neutral", new List&lt;object&gt;() { inBuilding }, out List&lt;object&gt; returnVals, false, typeof(bool)))
+	  {
+		seize_goods_valid_neutral = (bool)returnVals[0];
+	  }
+	  bool seize_goods_valid_wanderers = false;
+	  if(customScripts.runCustomScriptCheckTypes("seize_goods_valid_wanderers", new List&lt;object&gt;() { inBuilding }, out List&lt;object&gt; returnVals1, false, typeof(bool)))
+	  {
+		seize_goods_valid_wanderers = (bool)returnVals1[0];
+	  }
+	  bool battleNotOngoing = !getAPI().isBattleOngoing();
+	  
+	  outCanGoodsBeSeized = (seize_goods_valid_neutral || seize_goods_valid_wanderers) &amp;&amp; battleNotOngoing;
+	  
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;() { outCanGoodsBeSeized };
+	  return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

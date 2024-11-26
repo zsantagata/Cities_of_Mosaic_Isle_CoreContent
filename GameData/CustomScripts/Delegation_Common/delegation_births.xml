@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script delegation_births</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which checks if pops in a delegation are past their pregnancy due date and causes them to give birth if so -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation
+	
+	output:
+	List<IFPop> allNewborns //this includes stillborn children
+	-->
+	<i1><a>delegation_births</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation)   }
+	  }, out _))
+	{
+		throw new ArgumentException("delegation_births custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	
+	Int64 dateToProcess = inDelegation.getNextDateToCalcEventsFor();
+	List&lt;IFPop&gt; popsInDelegationToStart = new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()); //this copy is necessary because we will be modifying the pops in the delegation through birth/death
+	List&lt;IFPop&gt; newborns = new List&lt;IFPop&gt;();
+	foreach(IFPop pop in popsInDelegationToStart)
+	{
+		if(pop.isPregnant() &amp;&amp; (pop.getPregnantDayOver() &lt; dateToProcess))
+		{
+			IFPop newborn = pop.giveBirth();
+			if(newborn != null) //stillborns will not be null; null is returned if there is a problem
+			{
+				newborns.Add(pop.giveBirth());
+			}
+		}
+	}
+	
+    return new List&lt;object&gt;() { newborns };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

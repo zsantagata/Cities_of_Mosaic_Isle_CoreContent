@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<i1><a>assembleLyingResourcesForPotentialJoiners lying_wildness min</a> <b>double</b> <c>0.1</c></i1> <!-- if the joiners are going to lie they may as well try to make their lie have positive consequences -->
+			
+			<i1><a>assembleLyingResourcesForPotentialJoiners lying_wildness_min resources_quantity_added_ratio min</a> <b>double</b> <c>0.05</c></i1> <!-- at lying_wildness min, this is the minimum boost of resource quantity of the lie -->
+			<i1><a>assembleLyingResourcesForPotentialJoiners lying_wildness_min resources_quantity_added_ratio max</a> <b>double</b> <c>0.25</c></i1> <!-- at lying_wildness min, this is the maximum boost of resource quantity of the lie -->
+			<i1><a>assembleLyingResourcesForPotentialJoiners lying_wildness_max resources_quantity_added_ratio min</a> <b>double</b> <c>1.0</c></i1> <!-- at lying_wildness max, this is the minimum boost of resource quantity of the lie -->
+			<i1><a>assembleLyingResourcesForPotentialJoiners lying_wildness_max resources_quantity_added_ratio max</a> <b>double</b> <c>4.0</c></i1> <!-- at lying_wildness max, this is the maximum boost of resource quantity of the lie -->
+			
+			<i1><a>assembleLyingResourcesForPotentialJoiners lying_wildness_min resources_quality_added_prop min</a> <b>double</b> <c>0.05</c></i1> <!-- at lying_wildness min, this is the minimum boost of resource quality of the lie -->
+			<i1><a>assembleLyingResourcesForPotentialJoiners lying_wildness_min resources_quality_added_prop max</a> <b>double</b> <c>0.15</c></i1> <!-- at lying_wildness min, this is the maximum boost of resource quality of the lie -->
+			<i1><a>assembleLyingResourcesForPotentialJoiners lying_wildness_max resources_quality_added_prop min</a> <b>double</b> <c>0.35</c></i1> <!-- at lying_wildness max, this is the minimum boost of resource quality of the lie -->
+			<i1><a>assembleLyingResourcesForPotentialJoiners lying_wildness_max resources_quality_added_prop max</a> <b>double</b> <c>0.8</c></i1> <!-- at lying_wildness max, this is the maximum boost of resource quality of the lie -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script assembleLyingResourcesForPotentialJoiners</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which assembles a list of resources that potential joiners CLAIM to have, even though they don't.  These resources will always include the actual resources the potential joiners have. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFResourcePool inActualResourcePool, //can be null
+	Dictionary<IFResource, Tuple<double, double>> inAdditionalActualResources, //can be null or empty
+	double inLyingWildness //from min to 1.0d.  If it is outside, a random value will be used.
+	-->
+	
+	<!-- output:
+	Dictionary<IFResource, Tuple<double, double>> outResourcesLyingToHave
+	-->
+	<i1><a>assembleLyingResourcesForPotentialJoiners</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFResourcePool), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(double)}
+	      }, out _))
+	    {
+			throw new ArgumentException("assembleLyingResourcesForPotentialJoiners custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFResourcePool inActualResourcePool = (IFResourcePool)inArguments[0];
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inAdditionalActualResources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)inArguments[1]; //we modify this so we will make a copy
+		double inLyingWildness = (double)inArguments[2];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		if(inAdditionalActualResources == null)
+		{
+			inAdditionalActualResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		}
+		else
+		{
+			inAdditionalActualResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;(inAdditionalActualResources);
+		}
+		double lyingWildnessMin = customConsts.getDoubleConst("assembleLyingResourcesForPotentialJoiners lying_wildness min", out bool success);
+		if(!success) lyingWildnessMin = 0.1d;
+		if(inLyingWildness &lt; lyingWildnessMin || inLyingWildness &gt; 1.0d)
+		{
+			double newVal = lyingWildnessMin + (1.0d - lyingWildnessMin) * getAPI().calcRand();
+			addDebugMessage(inScriptInstance, "changing inLyingWildness from " + inLyingWildness + " to " + newVal);
+			inLyingWildness = newVal;
+		}
+		
+		//first, fold resources from resource pool into inAdditionalActualResources, and tally up the total count of resources while we're at it:
+		double totalCountOfResources = 0.0d;
+		if(inActualResourcePool != null)
+		{
+			for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res == null)
+					continue;
+					
+				if(inAdditionalActualResources.ContainsKey(res))
+					totalCountOfResources += inAdditionalActualResources[res].Item1;
+				
+				double quan = inActualResourcePool.getResourceQuantity(res);
+				if(quan == 0.0d)
+					continue;
+				totalCountOfResources += quan;
+				double qual = inActualResourcePool.getResourceQuality(res);
+				
+				if(!inAdditionalActualResources.ContainsKey(res))
+					inAdditionalActualResources.Add(res, Tuple.Create(0.0d, 0.0d));
+					
+				inAdditionalActualResources[res] = Tuple.Create(inAdditionalActualResources[res].Item1 + quan, (inAdditionalActualResources[res].Item1 * inAdditionalActualResources[res].Item2 + quan * qual) / (inAdditionalActualResources[res].Item1 + quan));
+			}
+		}
+		
+		//calculate the endpoints given this lying wildness:
+		double quanMinAtMin = customConsts.getDoubleConst("assembleLyingResourcesForPotentialJoiners lying_wildness_min resources_quantity_added_ratio min", out success);
+		if(!success) quanMinAtMin = 0.05d;
+		double quanMaxAtMin = customConsts.getDoubleConst("assembleLyingResourcesForPotentialJoiners lying_wildness_min resources_quantity_added_ratio max", out success);
+		if(!success) quanMaxAtMin = 0.25d;
+		double quanMinAtMax = customConsts.getDoubleConst("assembleLyingResourcesForPotentialJoiners lying_wildness_max resources_quantity_added_ratio min", out success);
+		if(!success) quanMinAtMax = 1.0d;
+		double quanMaxAtMax = customConsts.getDoubleConst("assembleLyingResourcesForPotentialJoiners lying_wildness_max resources_quantity_added_ratio max", out success);
+		if(!success) quanMaxAtMax = 4.0d;
+		
+		double qualMinAtMin = customConsts.getDoubleConst("assembleLyingResourcesForPotentialJoiners lying_wildness_min resources_quality_added_prop min", out success);
+		if(!success) qualMinAtMin = 0.05d;
+		double qualMaxAtMin = customConsts.getDoubleConst("assembleLyingResourcesForPotentialJoiners lying_wildness_min resources_quality_added_prop max", out success);
+		if(!success) qualMaxAtMin = 0.15d;
+		double qualMinAtMax = customConsts.getDoubleConst("assembleLyingResourcesForPotentialJoiners lying_wildness_max resources_quality_added_prop min", out success);
+		if(!success) qualMinAtMax = 0.35d;
+		double qualMaxAtMax = customConsts.getDoubleConst("assembleLyingResourcesForPotentialJoiners lying_wildness_max resources_quality_added_prop max", out success);
+		if(!success) qualMaxAtMax = 0.8d;
+		
+		double quanMinAddedRatio = quanMinAtMin + (quanMinAtMax - quanMinAtMin) * inLyingWildness;
+		double quanMaxAddedRatio = quanMaxAtMin + (quanMaxAtMax - quanMaxAtMin) * inLyingWildness;
+		
+		double qualMinAddedProp = qualMinAtMin + (qualMinAtMax - qualMinAtMin) * inLyingWildness;
+		double qualMaxAddedProp = qualMaxAtMin + (qualMaxAtMax - qualMaxAtMin) * inLyingWildness;
+		
+		double qualMin = consts.getResourceQualityMin();
+		double qualMax = consts.getResourceQualityMax();
+		
+		double qualMinAddedValue = qualMinAddedProp * (qualMax - qualMin);
+		double qualMaxAddedValue = qualMaxAddedProp * (qualMax - qualMin);
+		
+		//now, assemble the lie:
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; outResourcesLyingToHave = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		foreach(var kvpair in inAdditionalActualResources)
+		{
+			outResourcesLyingToHave.Add(kvpair.Key,
+				Tuple.Create(kvpair.Value.Item1 * (1.0d + quanMinAddedRatio + (quanMaxAddedRatio - quanMinAddedRatio) * getAPI().calcRand()),
+							 Math.Min(qualMax, kvpair.Value.Item2 + qualMinAddedValue + (qualMaxAddedValue - qualMinAddedValue) * getAPI().calcRand())
+							));
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outResourcesLyingToHave };
+		return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

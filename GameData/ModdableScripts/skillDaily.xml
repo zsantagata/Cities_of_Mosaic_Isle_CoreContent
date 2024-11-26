@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>industry_skill decrease base rate</a> <b>double</b> <c>0.0002</c></i1> <!-- daily, the community's skill in an industry decreases by this amount, independent of other effects -->
+			
+			<i1><a>soldier_skill decrease base rate</a> <b>double</b> <c>0.002</c></i1> <!-- daily, a pop's soldier skill decreases by this amount, independent of other effects -->
+			<i1><a>soldier_skill decrease protein_lack multiplier</a> <b>double</b> <c>0.02</c></i1> <!-- a pop's soldier skill decreases up to this amount daily as it approaches minimum protein health -->
+			<i1><a>soldier_skill decrease health_status multiplier</a> <b>double</b> <c>0.01</c></i1> <!-- a pop's soldier skill decreases by this amount daily if it has a health status: wound, illness, or pregnant immobile -->
+			
+			<!-- Technically these are used by the Training Grounds workplace script instead of scripts in this file, but since they're closely related to consts in this file, I've decided to place them here: -->
+			<i1><a>soldier_skill increase min_qual rate</a> <b>double</b> <c>0.002</c></i1> <!-- at minimum quality of Training Grounds, a pop whose work is to train increases their soldier skill by this amount -->
+			<i1><a>soldier_skill increase max_qual rate</a> <b>double</b> <c>0.015</c></i1> <!-- at maximum quality of Training Grounds, a pop whose work is to train increases their soldier skill by this amount -->
+			<i1><a>soldier_skill increase protein_below_threshold multiplier</a> <b>double</b> <c>0.2</c></i1> <!-- a pop's soldier skill increase is multiplied by this amount if they are below threshold protein health -->
+			<i1><a>soldier_skill increase health_status multiplier</a> <b>double</b> <c>0.5</c></i1> <!-- a pop's soldier skill increase is multiplied by this amount if they are sick or pregnant (even if not pregnant immobile) -->
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of scripts relating to industry and soldier skill -->
+  <gamescripts name="default">
+  
+	<!-- industry skill increase daily has two input arguments: IFIndustry in question, List<IFPop> of pops working in that industry.  There are no outputs. -->
+	<!-- this script is called once daily at midnight on each industry -->
+    <mIndustrySkillIncreaseDaily>
+	  //input count check:
+	  if(inArguments.Length &lt; 2)
+      {
+        return null;
+      }
+	  
+	  IFCommunity localCommunity = getAPI().getLocalCommunity();
+	  IFIndustry industry = (IFIndustry)inArguments[0];
+	  List&lt;IFPop&gt; popsWorking = (List&lt;IFPop&gt;)inArguments[1];
+	  
+	  //the custom script must be called directly for construction due to unemployed pops, so it is in a custom script:
+	  var customScripts = getAPI().getCustomScripts();
+	  customScripts.runCustomScript("increaseSkillOfIndustryDaily", new List&lt;object&gt;() { localCommunity, industry, (Int64)popsWorking.Count }, out _);
+	
+	  return null;
+    </mIndustrySkillIncreaseDaily>
+	
+	<!-- industry skill decrease daily has two input arguments: IFIndustry in question, List<IFPop> of pops who were born yesterday.  There are no outputs. -->
+	<!-- this script is called once daily at midnight -->
+    <mIndustrySkillDecreaseDaily>
+	  //input count check:
+	  if(inArguments.Length &lt; 2)
+      {
+        return null;
+      }
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  IFIndustry industry = (IFIndustry)inArguments[0];
+	  List&lt;IFPop&gt; popsNewlyBorn = (List&lt;IFPop&gt;)inArguments[1];
+	  
+	  IFCommunity localCommunity = getAPI().getLocalCommunity();
+	  IFIndustrySkills skills = localCommunity.getDomesticComponent().getIndustrySkills();
+	  double skillMin = consts.getWorkerSkillMin();
+	  double skillMax = consts.getWorkerSkillMax();
+	  
+	  //TODO: any racial considerations
+	  //There are two decrease effects:
+	  //First, over time a very slight decrease as pops' skills decay:
+	  double baseDegrade = customConsts.getDoubleConst("industry_skill decrease base rate", out bool success);
+	  if(!success) baseDegrade = 0.0002d;
+	  double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("industry skill decay");
+	  baseDegrade *= difficulty;
+	  skills.setAverageSkill(skills.getAverageSkill(industry) - ((skillMax - skillMin) * baseDegrade), industry);
+	  
+	  //Secondly, pops that are newly born have no skills, and therefore decrease the average skill level in proportion to how many of them there are:
+	  //(Wanderers are presumed to have the skills to pick up the community's way of doing things)
+	  //(also this has no difficulty adjustment because it's just a division of total skill among new people)
+	  int nowPopCount = (int)localCommunity.getPopsLoyalToCommunity(true, false).Count;
+	  //just in case:
+	  if(nowPopCount == 0) return null;
+	  double currentSkill = skills.getAverageSkill(industry) - skillMin;
+	  currentSkill *= (nowPopCount - popsNewlyBorn.Count) / nowPopCount;
+	  currentSkill += skillMin;
+	  skills.setAverageSkill(currentSkill, industry);
+	
+	  return null;
+    </mIndustrySkillDecreaseDaily>
+	
+	<!-- soldier skill decrease daily has no input arguments.  There are no outputs. -->
+	<!-- this script is called once daily at midnight -->
+    <mSoldierSkillDecreaseDaily>
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  IFCommunity localCommunity = getAPI().getLocalCommunity();
+	  IFIndustrySkills skills = localCommunity.getDomesticComponent().getIndustrySkills();
+	  double skillMin = consts.getSoldierSkillMin();
+	  double skillMax = consts.getSoldierSkillMax();
+	  
+	  //TODO: any racial considerations
+	  double healthHighThreshold = consts.getHealthHighThreshold();
+	  double healthMin = consts.getHealthMin();
+	  double proteinMult = customConsts.getDoubleConst("soldier_skill decrease protein_lack multiplier", out bool success);
+	  if(!success) proteinMult = 0.02d;
+	  
+	  double healthStatusDecrease = customConsts.getDoubleConst("soldier_skill decrease health_status multiplier", out success);
+	  if(!success) healthStatusDecrease = 0.01d;
+	  
+	  //For muscle memory and skill, these decrease over time if not kept up -- that is implemented as a constant decrease:
+	  double baseRateDecrease = customConsts.getDoubleConst("soldier_skill decrease base rate", out success);
+	  if(!success) baseRateDecrease = 0.002d;
+	  
+	  double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("soldier skill decay");
+	  
+	  foreach(IFPop pop in localCommunity.getPopsLoyalToCommunity(true, false))
+	  {
+		//Soldier skill includes muscle mass, muscle memory and skill.
+		//For muscle mass, if a pop's protein health is low, or they are wounded/ill/pregnant, their muscle mass decreases:
+		double proteinHealth = pop.getProteinHealth();
+		double thisPopProteinMult = proteinMult * (proteinHealth &gt; healthHighThreshold ? 0.0d : (healthHighThreshold - proteinHealth) / (healthHighThreshold - healthMin));
+		double thisHealthStatusDecrease = pop.isPopNoHealthStatus() ? 0.0d : healthStatusDecrease;
+	  
+		double totalDecrease = (baseRateDecrease + ((thisPopProteinMult + thisHealthStatusDecrease) * (skillMax - skillMin)));
+	  
+		pop.setSoldierSkill(pop.getSoldierSkill() - (totalDecrease * difficulty));
+	  }
+	  
+	  return null;
+    </mSoldierSkillDecreaseDaily>
+  
+  </gamescripts>
+  
+</core_data>

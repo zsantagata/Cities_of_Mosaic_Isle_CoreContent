@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the EnemyIdleEval state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: An enemy pop is idle if it is considering what to do.  This state is where the pop actually evaluates what to do; it is short in time because Idle should point to this (to avoid doubling up on stand-around time).  This state is responsible for checking if the goal should be abandoned or has been reached, so enemy pops should regularly cycle through it. -->
+		<i1><a>EnemyIdleEval</a> 
+		<b>0.01</b><c>0.02</c></i1>
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to EnemyIdleEval: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_EnemyIdleEval -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+		
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_enemyidleeval_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_enemyidleeval_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemyidleeval</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to EnemyIdleEval: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_EnemyIdleEval -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_EnemyIdleEval_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_EnemyIdleEval_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_EnemyIdleEval_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//the only consideration is that the pop is an enemy (since if the pop is an enemy, battle is ongoing)
+				
+				toReturn.Add(getAPI().isHostileCommunity(inPop.getCommunity()));
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_EnemyIdleEval_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_EnemyIdleEval_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_EnemyIdleEval_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//this is simple: just tell the pop to idle
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_EnemyIdleEval" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+
+				addDebugMessage(inScriptInstance, "default state_EnemyIdleEval script is finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//check if the battle goal should be abandoned, or has been achieved:
+				customScripts.runCustomScript("battleAIAbandonOrAchieveGoal", new List&lt;object&gt;() { inPop.getCommunity() }, out _);
+				
+				//if the battle goal has been lost, now start to leave the map with a broken mindset (broken pops don't look to fight)
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"EnemyFleeingMapBroken", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the EnemyFleeingMapBroken state due to: " + " wargoal is now abandoned");
+						toReturn.Add("EnemyFleeingMapBroken");
+						toReturn.Add((IFBuilding)validTgt[1]);
+						toReturn.Add((IFPop)validTgt[2]);
+						toReturn.Add((bool)validTgt[3]);
+						toReturn.Add((double)validTgt[4]);
+						toReturn.Add((double)validTgt[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the EnemyFleeingMapBroken state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if the battle goal has been achieved, leave the map:
+				{
+					//first, abduction and stealing successes have specific sprites and considerations (such as dropping pop/goods when fleeing), so check those first:
+					if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"EnemyFleeingMapAbduction", inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt20, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+					{
+						if((bool)validTgt20[0])
+						{
+							addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the EnemyFleeingMapAbduction state due to: " + " abduction wargoal has been accomplished");
+							toReturn.Add("EnemyFleeingMapAbduction");
+							toReturn.Add((IFBuilding)validTgt20[1]);
+							toReturn.Add((IFPop)validTgt20[2]);
+							toReturn.Add((bool)validTgt20[3]);
+							toReturn.Add((double)validTgt20[4]);
+							toReturn.Add((double)validTgt20[5]);
+							return toReturn;
+						}
+					}
+					else
+					{
+						//we failed to call a script correctly somehow.  Transition to Idle instead:
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the EnemyFleeingMapAbduction state so pop is transitioning directly to Idle state");
+						toReturn.Add("Idle");
+						toReturn.Add(null);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+					
+					if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"EnemyFleeingMapStealing", inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt21, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+					{
+						if((bool)validTgt21[0])
+						{
+							addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the EnemyFleeingMapStealing state due to: " + " stealing wargoal has been accomplished");
+							toReturn.Add("EnemyFleeingMapStealing");
+							toReturn.Add((IFBuilding)validTgt21[1]);
+							toReturn.Add((IFPop)validTgt21[2]);
+							toReturn.Add((bool)validTgt21[3]);
+							toReturn.Add((double)validTgt21[4]);
+							toReturn.Add((double)validTgt21[5]);
+							return toReturn;
+						}
+					}
+					else
+					{
+						//we failed to call a script correctly somehow.  Transition to Idle instead:
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the EnemyFleeingMapStealing state so pop is transitioning directly to Idle state");
+						toReturn.Add("Idle");
+						toReturn.Add(null);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+				
+					if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"EnemyFleeingMapSuccess", inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt2, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+					{
+						if((bool)validTgt2[0])
+						{
+							addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the EnemyFleeingMapSuccess state due to: " + " wargoal has been accomplished");
+							toReturn.Add("EnemyFleeingMapSuccess");
+							toReturn.Add((IFBuilding)validTgt2[1]);
+							toReturn.Add((IFPop)validTgt2[2]);
+							toReturn.Add((bool)validTgt2[3]);
+							toReturn.Add((double)validTgt2[4]);
+							toReturn.Add((double)validTgt2[5]);
+							return toReturn;
+						}
+					}
+					else
+					{
+						//we failed to call a script correctly somehow.  Transition to Idle instead:
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the EnemyFleeingMapSuccess state so pop is transitioning directly to Idle state");
+						toReturn.Add("Idle");
+						toReturn.Add(null);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+				}
+				
+				//if a target pop is close enough that this pop should start a chase, do so:
+				//(in the chasing state, this pop is more blind to general ongoings, and updates their pathfinding more often)
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"EnemyChasingFriendly", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt3, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt3[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the EnemyChasingFriendly state due to: " + " a target is close nearby");
+						toReturn.Add("EnemyChasingFriendly");
+						toReturn.Add((IFBuilding)validTgt3[1]);
+						toReturn.Add((IFPop)validTgt3[2]);
+						toReturn.Add((bool)validTgt3[3]);
+						toReturn.Add((double)validTgt3[4]);
+						toReturn.Add((double)validTgt3[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the EnemyChasingFriendly state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//target a pop on the map if one exists to hunt:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"EnemyLongRangeHuntingPop", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt7, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt7[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the EnemyLongRangeHuntingPop state due to: " + " no building to target but there is a pop to target");
+						toReturn.Add("EnemyLongRangeHuntingPop");
+						toReturn.Add((IFBuilding)validTgt7[1]);
+						toReturn.Add((IFPop)validTgt7[2]);
+						toReturn.Add((bool)validTgt7[3]);
+						toReturn.Add((double)validTgt7[4]);
+						toReturn.Add((double)validTgt7[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the EnemyLongRangeHuntingPop state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//target a building on the map if one exists to hunt:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"EnemyLongRangeHuntingBuilding", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt6, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt6[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the EnemyLongRangeHuntingBuilding state due to: " + " no building to target but there is a pop to target");
+						toReturn.Add("EnemyLongRangeHuntingBuilding");
+						toReturn.Add((IFBuilding)validTgt6[1]);
+						toReturn.Add((IFPop)validTgt6[2]);
+						toReturn.Add((bool)validTgt6[3]);
+						toReturn.Add((double)validTgt6[4]);
+						toReturn.Add((double)validTgt6[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the EnemyLongRangeHuntingBuilding state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//otherwise, transition to the EnemyCauseChaos state if we can:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"EnemyCauseChaos", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt9, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt9[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the EnemyCauseChaos state due to: " + " nothing to do based on wargoal");
+						toReturn.Add("EnemyCauseChaos");
+						toReturn.Add((IFBuilding)validTgt9[1]);
+						toReturn.Add((IFPop)validTgt9[2]);
+						toReturn.Add((bool)validTgt9[3]);
+						toReturn.Add((double)validTgt9[4]);
+						toReturn.Add((double)validTgt9[5]);
+						return toReturn;
+					}
+				}
+				//we failed to call a script correctly somehow.  Transition to Idle instead:
+				addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the EnemyCauseChaos state so pop is transitioning directly to Idle state");
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_EnemyIdleEval</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

@@ -1,0 +1,956 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>mapGen river_width max</a> <b>int</b> <c>14</c></i1> <!-- TODO this should probably be a double. The max width of a river in map generation -->
+			<i1><a>mapGen river_width min</a> <b>int</b> <c>4</c></i1> <!-- TODO this should probably be a double. The min width of a river in map generation -->
+			
+			<i1><a>mapGen noise pool jitter</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>mapgen noise pool frequency</a> <b>double</b> <c>0.05</c></i1>
+			<i1><a>mapgen noise pool octaves</a> <b>int</b> <c>5</c></i1>
+			<i1><a>mapgen pond threshold factor</a> <b>double</b> <c>0.9</c></i1>
+			<i1><a>mapGen unbuildable range</a> <b>double</b> <c>0.25</c></i1>
+			<i1><a>mapGen unpassable range</a> <b>double</b> <c>0.175</c></i1>
+			<i1><a>mapGen check land_area min</a> <b>int</b> <c>200</c></i1>
+			<i1><a>mapgen check water_area min</a> <b>int</b> <c>200</c></i1>
+			<i1><a>mapGen check land_passable_area percentage min</a> <b>int</b> <c>50</c></i1>
+			<i1><a>mapgen check water_passable_area percentage min</a> <b>int</b> <c>50</c></i1>
+			<i1><a>mapGen check land_buildable_area percentage min</a> <b>int</b> <c>30</c></i1>
+			<i1><a>mapGen check water_buildable_area percentage min</a> <b>int</b> <c>30</c></i1>
+			<!-- TODO categorize the above -->
+			
+			<!-- mMapGenAssignWater consts: -->
+			<i1><a>mapGen river prob</a> <b>double</b> <c>0.30</c></i1>
+			<i1><a>mapGen pools prob</a> <b>double</b> <c>0.20</c></i1>
+			<i1><a>mapGen cube coefficient</a> <b>double</b> <c>0.5</c></i1>
+			<i1><a>mapGen square coefficient</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>mapGen linear coefficient</a> <b>double</b> <c>2.0</c></i1>
+			<i1><a>mapGen sine mult coefficient</a> <b>double</b> <c>0.05</c></i1>
+			<i1><a>mapGen sine freq coefficient</a> <b>double</b> <c>0.05</c></i1>
+		
+			<!-- mMapGenAssignPassBuild consts: -->
+			<i1><a>mapGen buildable freq</a> <b>double</b> <c>0.015</c></i1>
+			<i1><a>mapGen buildable octaves</a> <b>int</b> <c>5</c></i1>
+			<i1><a>mapGen passable freq</a> <b>double</b> <c>0.015</c></i1>
+			<i1><a>mapGen passable octaves</a> <b>int</b> <c>5</c></i1>
+			<i1><a>mapGen passable fractal gain</a> <b>double</b> <c>0.40</c></i1>
+			<i1><a>mapGen passable fractal lacunarity</a> <b>double</b> <c>5.0</c></i1>
+		
+			<!-- mMapGenDistributeResources consts: -->
+			<i1><a>mapGen terrainsource land stringy freq</a> <b>double</b> <c>0.005</c></i1>
+			<i1><a>mapGen terrainsource land stringy octaves</a> <b>int</b> <c>9</c></i1>
+			<i1><a>mapGen terrainsource land stringy jitter</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>mapGen terrainsource land stringy fractal gain</a> <b>double</b> <c>0.40</c></i1>
+			<i1><a>mapGen terrainsource land stringy fractal lacunarity</a> <b>double</b> <c>5.0</c></i1>
+			<i1><a>mapGen terrainsource land blobby freq</a> <b>double</b> <c>0.01</c></i1>
+			<i1><a>mapGen terrainsource land blobby octaves</a> <b>int</b> <c>5</c></i1>
+			<i1><a>mapGen terrainsource land blobby jitter</a> <b>double</b> <c>1.0</c></i1>
+		
+			<i1><a>mapGen terrainsource land richness_ratio0</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>mapGen terrainsource land richness_ratio1</a> <b>double</b> <c>0.98</c></i1>
+			<i1><a>mapGen terrainsource land richness_ratio2</a> <b>double</b> <c>0.96</c></i1>
+			<i1><a>mapGen terrainsource land richness_ratio3</a> <b>double</b> <c>0.935</c></i1>
+			<i1><a>mapGen terrainsource land richness_ratio4</a> <b>double</b> <c>0.90</c></i1>
+			<i1><a>mapGen terrainsource land richness_ratio5</a> <b>double</b> <c>0.885</c></i1>
+			<i1><a>mapGen terrainsource land richness_ratio6</a> <b>double</b> <c>0.85</c></i1>
+			<i1><a>mapGen terrainsource land richness_ratio7</a> <b>double</b> <c>0.80</c></i1>
+			<i1><a>mapGen terrainsource land richness_ratio8</a> <b>double</b> <c>0.75</c></i1>
+			<i1><a>mapGen terrainsource land richness_ratio9</a> <b>double</b> <c>0.45</c></i1>
+			<!-- repeat of all above but for water: -->
+			<i1><a>mapGen terrainsource water stringy freq</a> <b>double</b> <c>0.005</c></i1>
+			<i1><a>mapGen terrainsource water stringy octaves</a> <b>int</b> <c>9</c></i1>
+			<i1><a>mapGen terrainsource water stringy jitter</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>mapGen terrainsource water stringy fractal gain</a> <b>double</b> <c>0.40</c></i1>
+			<i1><a>mapGen terrainsource water stringy fractal lacunarity</a> <b>double</b> <c>5.0</c></i1>
+			<i1><a>mapGen terrainsource water blobby freq</a> <b>double</b> <c>0.01</c></i1>
+			<i1><a>mapGen terrainsource water blobby octaves</a> <b>int</b> <c>5</c></i1>
+			<i1><a>mapGen terrainsource water blobby jitter</a> <b>double</b> <c>1.0</c></i1>
+		
+			<i1><a>mapGen terrainsource water richness_ratio0</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>mapGen terrainsource water richness_ratio1</a> <b>double</b> <c>0.98</c></i1>
+			<i1><a>mapGen terrainsource water richness_ratio2</a> <b>double</b> <c>0.96</c></i1>
+			<i1><a>mapGen terrainsource water richness_ratio3</a> <b>double</b> <c>0.935</c></i1>
+			<i1><a>mapGen terrainsource water richness_ratio4</a> <b>double</b> <c>0.90</c></i1>
+			<i1><a>mapGen terrainsource water richness_ratio5</a> <b>double</b> <c>0.885</c></i1>
+			<i1><a>mapGen terrainsource water richness_ratio6</a> <b>double</b> <c>0.85</c></i1>
+			<i1><a>mapGen terrainsource water richness_ratio7</a> <b>double</b> <c>0.80</c></i1>
+			<i1><a>mapGen terrainsource water richness_ratio8</a> <b>double</b> <c>0.75</c></i1>
+			<i1><a>mapGen terrainsource water richness_ratio9</a> <b>double</b> <c>0.45</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a few miscellaneous scripts -->
+  <gamescripts name="default">
+	<!-- at least one map is generated when the player clicks the 'generate map' button in the sandbox stage.  Maps are generated until mMapGenCheckMap returns true, or until certain thresholds of rejections are reached. -->
+  
+	<!-- map generation works like this: -->
+	<!-- "only water", "is seaside", and land/water biomes are determined by world map location chosen.  These are provided to map generation automatically. -->
+	<!-- a width is chosen between minimum and maximum width, then rounded down to nearest multiple of 8 -->
+	<!-- a height is chosen based on map target area, then rounded down to nearest multiple of 8 -->
+	<!-- then, if "only water" is not true, mMapGenAssignWater is called (otherwise it is skipped; all output values must be "true") -->
+	<!-- then, mMapGenAssignPassBuild is called.  All map edge tiles are forced by C# code to be passable after this stage, and buildability will also be disabled when the map is constructed -->
+	<!-- then, mMapGenDistributeResources is called.  All map edge tiles are forced by C# code to have no resources at this stage. -->
+	<!-- then, mMapGenCheckMap is called.  Note that no actual parcels have been assigned just yet, just the true/false indicators of what the map will look like -->
+	<!-- if mMapGenCheckMap returns false, then map generation starts again from the beginning.  Otherwise, it continues as below: -->
+	<!-- mMapGenGetParcel is called as many times as necessary to assign tiles that cover the map with base terrain, resources, and doodads as appropriate -->
+	<!-- lastly, mMapGenCullDoodads is called to remove doodads from areas as desired.  This can be treated as a last "before we accept the map" script, TODO maybe change its name? -->
+	<!-- After mMapGenCullDoodads is called successfully, the map is presented to the player -->
+	
+	<!-- map generation assignment of water has three inputs: Int64 inWidth, Int64 inHeight, bool inHasCoastline.  There are two outputs: double outWaterRatio (between 0.0 and 1.0 inclusive), List<List<bool>> outWater (the outer list must be of size inWidth, and the inner lists must be of size inHeight). -->
+	<!-- this script is (possibly) called once during an attempt to generate a map, and is meant to determine which tiles are land and which tiles are water.  This script is not called if all tiles must be water because the location is offshore. -->
+	<mMapGenAssignWater>
+            //input count check:
+            if (inArguments.Length &lt; 3)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			Int64 map_width = (Int64)inArguments[0];
+			Int64 map_height = (Int64)inArguments[1];
+			bool inHasCoastline = (bool)inArguments[2];
+			
+			//prepare outWater:
+			double water_ratio_to_return = 0.0d; //this will start at 0.0d and increase 1.0d per tile of water.  Right before the end we will divide it by total number of tiles.
+			List&lt;List&lt;bool&gt;&gt; outWater = new List&lt;List&lt;bool&gt;&gt;();
+			for(int i = 0; i &lt; map_width; i++)
+			{
+			  outWater.Add(new List&lt;bool&gt;());
+			  for(int j = 0; j &lt; map_height; j++)
+			  {
+			    outWater[i].Add(false);
+			  }
+			}
+			
+			//TODO later on during development, have these custom consts be per biome?
+			//determine if we want a river and/or pools:
+			double riverProb = customConsts.getDoubleConst("mapGen river prob", out bool success);
+			if(!success) riverProb = 0.30d;
+			double poolsProb = customConsts.getDoubleConst("mapGen pools prob", out success);
+			if(!success) poolsProb = 0.20d;
+			bool wantRiver = getAPI().calcProb(riverProb);
+			bool wantPools = getAPI().calcProb(poolsProb);
+			
+			bool x_equals_equation = getAPI().calcProb(0.5d); //no reason to skew it any one way or the other
+			double cubeCoef = customConsts.getDoubleConst("mapGen cube coefficient", out success);
+			if(!success) cubeCoef = 0.5d;
+			double squareCoef = customConsts.getDoubleConst("mapGen square coefficient", out success);
+			if(!success) squareCoef = 1.0d;
+			double linearCoef = customConsts.getDoubleConst("mapGen linear coefficient", out success);
+			if(!success) linearCoef = 2.0d;
+			double sineMultCoef = customConsts.getDoubleConst("mapGen sine mult coefficient", out success);
+			if(!success) sineMultCoef = 0.05d;
+			double sineFreqCoef = customConsts.getDoubleConst("mapGen sine freq coefficient", out success);
+			if(!success) sineFreqCoef = 0.05d;
+			
+            if (inHasCoastline)
+            {
+                double a = x_equals_equation ? getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_width / (double)(map_height * map_height * map_height))
+                                             : getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_height / (double)(map_width * map_width * map_width));
+				a *= cubeCoef;
+                double b = x_equals_equation ? getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_width / (double)(map_height * map_height))
+                                             : getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_height / (double)(map_width * map_width));
+				b *= squareCoef;
+                double c = x_equals_equation ? getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_width / (double)map_height)
+                                             : getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_height / (double)map_width);
+				c *= linearCoef;
+                double d = x_equals_equation ? getAPI().calcRandIntUnder(map_width)
+                                             : getAPI().calcRandIntUnder(map_height);
+                double e = x_equals_equation ? getAPI().calcRand() * (map_width)
+                                             : getAPI().calcRand() * (map_height);
+				e *= sineMultCoef;
+                double f = x_equals_equation ? getAPI().calcRand() * (3.14159d * 2)
+                                             : getAPI().calcRand() * (3.14159d * 2);
+				f *= sineFreqCoef;
+
+                //calculate origin as somewhere on the map:
+                UInt32 x_origin = (UInt32)getAPI().calcRandIntUnder(map_width);
+                UInt32 y_origin = (UInt32)getAPI().calcRandIntUnder(map_height);
+
+                bool lower_than_equation_is_water = getAPI().calcProb(0.5d);
+
+                string indep = (x_equals_equation ? "y" : "x");
+                string dep = (x_equals_equation ? "x" : "y");
+                addDebugMessage(inScriptInstance, "assigning tiles as water for coastline, equation used: water assigned to tiles with " + (lower_than_equation_is_water ? "lower" : "higher") + " " + dep + " than " + dep + "=" + a + indep + "^3 + " + b + indep + "^2 + " + c + indep + " + " + d + " + sin(" + f + indep + ") + sin(" + f + "*" + f + indep + ") - " + (x_equals_equation ? x_origin : y_origin));
+                if (x_equals_equation)
+                {
+                    for (int current_y = 0; current_y &lt; map_height; current_y++)
+                    {
+                        //calculate x for this y, and then set all tiles with this y and more/less x than x_for as water
+                        long calc_y = current_y - y_origin;
+                        double x_for_this_y = ((a * calc_y + b) * calc_y + c) * calc_y + d + e * (Math.Sin(f * calc_y) + Math.Sin(f * f * calc_y)) - x_origin;
+                        for (int current_x = 0; current_x &lt; map_width; current_x++)
+                        {
+                            bool make_water = (lower_than_equation_is_water ? (current_x &lt; x_for_this_y) : (current_x &gt; x_for_this_y));
+                            outWater[current_x][current_y] = make_water;
+                            if (make_water)
+                                water_ratio_to_return += 1.0d;
+                        }
+                    }
+                }
+                else
+                {
+                    for (int current_x = 0; current_x &lt; map_width; current_x++)
+                    {
+                        //calculate y for this x, and then set all tiles with this x and more/less y than y_for as water
+                        long calc_x = current_x - x_origin;
+                        double y_for_this_x = ((a * calc_x + b) * calc_x + c) * calc_x + d + e * (Math.Sin(f * calc_x) + Math.Sin(f * f * calc_x)) - y_origin;
+                        for (int current_y = 0; current_y &lt; map_height; current_y++)
+                        {
+                            bool make_water = (lower_than_equation_is_water ? (current_y &lt; y_for_this_x) : (current_y &gt; y_for_this_x));
+                            outWater[current_x][current_y] = make_water;
+                            if (make_water)
+                                water_ratio_to_return += 1.0d;
+                        }
+                    }
+                }
+            }
+			
+			if(wantRiver)
+			{
+				//calculation of these coefficients is a repeat of the code above, but we do want to re-randomize them.  So it should stay like this.
+                double a = x_equals_equation ? getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_width / (double)(map_height * map_height * map_height))
+                                             : getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_height / (double)(map_width * map_width * map_width));
+				a *= cubeCoef;
+                double b = x_equals_equation ? getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_width / (double)(map_height * map_height))
+                                             : getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_height / (double)(map_width * map_width));
+				b *= squareCoef;
+                double c = x_equals_equation ? getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_width / (double)map_height)
+                                             : getAPI().calcRand() * (getAPI().calcProb(0.5d) ? -1 : 1) * (map_height / (double)map_width);
+				c *= linearCoef;
+                double d = x_equals_equation ? getAPI().calcRandIntUnder(map_width)
+                                             : getAPI().calcRandIntUnder(map_height);
+                double e = x_equals_equation ? getAPI().calcRand() * (map_width)
+                                             : getAPI().calcRand() * (map_height);
+				e *= sineMultCoef;
+                double f = x_equals_equation ? getAPI().calcRand() * (3.14159d * 2)
+                                             : getAPI().calcRand() * (3.14159d * 2);
+				f *= sineFreqCoef;
+				
+                //calculate origin as somewhere on the map:
+                UInt32 x_origin = (UInt32)getAPI().calcRandIntUnder(map_width);
+				
+				Int64 max_river_width = customConsts.getIntConst("mapGen river_width max", out success);
+				if(!success) max_river_width = 14;
+				Int64 min_river_width = customConsts.getIntConst("mapGen river_width min", out success);
+				if(!success) min_river_width = 4;
+				UInt16 river_width = (UInt16)(getAPI().calcRandIntUnder(1 + max_river_width - min_river_width) + min_river_width);
+				addDebugMessage(inScriptInstance, "assigning tiles as water for river, equation used: water assigned to tiles within distance of " + river_width + " of y=" + a + "x" + "^3 + " + b + "x" + "^2 + " + c + "x" + " + " + d + " + sin(" + f + "x" + ") + sin(" + f + "*" + f + "x" + ") - " + x_origin);
+                
+                //go from x = 0 to x = map_width - 1 and calculate river points in the map
+                List&lt;Tuple&lt;double, double&gt;&gt; river_points = new List&lt;Tuple&lt;double, double&gt;&gt;();
+                for (int x = 0 - river_width; x &lt; map_width + river_width; x++)
+                {
+                    long calc_x = x - x_origin;
+                    double y_for_this_x = ((a * calc_x + b) * calc_x + c) * calc_x + d + e * (Math.Sin(f * calc_x) + Math.Sin(f * f * calc_x));
+                    int quant_y = (int)y_for_this_x;
+                    if ((quant_y &lt; map_height + river_width) &amp;&amp; (quant_y &gt;= 0 - river_width))
+                    {
+                        river_points.Add(Tuple.Create&lt;double,double&gt;(x, quant_y));
+                    }
+                }
+                foreach (var pt in river_points)
+                {
+                    for (int x = (int)(pt.Item1 - river_width); x &lt; (int)(pt.Item1 + river_width); x++)
+                    {
+                        if (x &lt; 0 || x &gt;= map_width)
+                            continue;
+                        for (int y = (int)(pt.Item2 - river_width); y &lt; (int)(pt.Item2 + river_width); y++)
+                        {
+                            if (y &lt; 0 || y &gt;= map_height)
+                                continue;
+                            if (getAPI().calcDistanceBetweenPoints(pt, Tuple.Create&lt;double,double&gt;(x, y)) &lt; river_width)
+                            {
+                                if (!outWater[x][y]) //can't double up on points now
+                                {
+                                    water_ratio_to_return += 1.0d;
+                                    outWater[x][y] = true;
+                                }
+                            }
+                        }
+                    }
+                }
+			}
+			
+			if(wantPools)
+			{
+                //generate a noise map and make high values water
+                List&lt;List&lt;double&gt;&gt; val_noise = new List&lt;List&lt;double&gt;&gt;();
+				double noisePoolFreq = customConsts.getDoubleConst("mapGen noise pool frequency", out success);
+				if(!success) noisePoolFreq = 0.05d;
+				Int64 noisePoolOctaves = customConsts.getIntConst("mapGen noise pool octaves", out success);
+				if(!success) noisePoolOctaves = 5L;
+				double noisePoolJitter = customConsts.getDoubleConst("mapGen noise pool jitter", out success);
+				if(!success) noisePoolJitter = 1.0d;
+				
+                Tuple&lt;double, double&gt; minMax = getAPI().calcNoiseBasedOnParameters(map_width, map_height,
+				noisePoolFreq,
+				6 /*Cellular*/,
+				noisePoolOctaves,
+				(float)noisePoolJitter,
+				out val_noise);
+				double pondThreshFactor = customConsts.getDoubleConst("mapGen pond threshold factor", out success);
+				if(!success) pondThreshFactor = 0.9d;
+                double threshold = minMax.Item2 * pondThreshFactor;
+
+                addDebugMessage(inScriptInstance, "assigning tiles as water for ponds, threshold of " + threshold);
+
+                for (int x = 0; x &lt; outWater.Count; x++)
+                {
+                    for (int y = 0; y &lt; outWater[0].Count; y++)
+                    {
+                        if (!outWater[x][y])
+                        {
+                            outWater[x][y] = val_noise[x][y] &gt; threshold;
+                            if (outWater[x][y])
+                                water_ratio_to_return += 1.0d;
+                        }
+                    }
+                }
+			}
+	
+			water_ratio_to_return /= (outWater.Count * outWater[0].Count);
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add(water_ratio_to_return);
+			toReturn.Add(outWater);
+			return toReturn;
+	</mMapGenAssignWater>
+	
+	<!-- map generation assignment of passability and buildability has two inputs: Int64 inWidth, Int64 inHeight.  There are two outputs: List<List<bool>> outPassable, List<List<bool>> outBuildable (the outer lists must be of size inWidth, and the inner lists must be of size inHeight). -->
+	<!-- this script is called once during an attempt to generate a map, and is meant to determine which tiles are passable/not and which tiles are buildable/not -->
+	<!-- note that the game treats non-passable as non-buildable as well, so those tiles will be non-buildable no matter their value in outBuildable -->
+	<mMapGenAssignPassBuild>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			Int64 map_width = (Int64)inArguments[0];
+			Int64 map_height = (Int64)inArguments[1];
+			
+			//prep lists to output: (default everything is passable and buildable)
+			List&lt;List&lt;bool&gt;&gt; outBuildable = new List&lt;List&lt;bool&gt;&gt;();
+			List&lt;List&lt;bool&gt;&gt; outPassable = new List&lt;List&lt;bool&gt;&gt;();
+			for(int i = 0; i &lt; map_width; i++)
+			{
+			  outBuildable.Add(new List&lt;bool&gt;());
+			  outPassable.Add(new List&lt;bool&gt;());
+			  for(int j = 0; j &lt; map_height; j++)
+			  {
+			    outBuildable[i].Add(true);
+			    outPassable[i].Add(true);
+			  }
+			}
+			
+            //how these are assigned:
+            //use noise generator
+            //unbuildable:
+            //value "blob" distribution.  Choose a value between 0 and 1.  Between this value and a value slightly greater than it, unbuildable terrain
+            //unpassable:
+            //more interesting if we have "stringy" map distribution rather than a value distribution
+			
+            List&lt;List&lt;double&gt;&gt; noise = new List&lt;List&lt;double&gt;&gt;();
+			double buildableFreq = customConsts.getDoubleConst("mapGen buildable freq", out bool success);
+			if(!success) buildableFreq = 0.015d;
+			Int64 buildableOctaves = customConsts.getIntConst("mapGen buildable octaves", out success);
+			if(!success) buildableOctaves = 5L;
+			double noisePoolJitter = customConsts.getDoubleConst("mapGen noise pool jitter", out success);
+			if(!success) noisePoolJitter = 1.0d;
+            Tuple&lt;double, double&gt; minMax = getAPI().calcNoiseBasedOnParameters(map_width, map_height, buildableFreq, 1 /*ValueFractal*/, buildableOctaves, (float)noisePoolJitter, out noise);
+                
+            //determine buildable:
+			double unbuildableRange = customConsts.getDoubleConst("mapGen unbuildable range", out success);
+			if(!success) unbuildableRange = 0.25d;
+            double val_neg_unbuild = minMax.Item1 + getAPI().calcRand() * unbuildableRange;
+            for (int x = 0; x &lt; noise.Count; x++)
+            {
+                for (int y = 0; y &lt; noise[x].Count; y++)
+                {
+                    double val = noise[x][y];
+                    if (val &lt; val_neg_unbuild)
+                    {
+                        outBuildable[x][y] = false;
+                    }
+                }
+            }
+			
+			double passableFreq = customConsts.getDoubleConst("mapGen passable freq", out success);
+			if(!success) passableFreq = 0.015d;
+			Int64 passableOctaves = customConsts.getIntConst("mapGen passable octaves", out success);
+			if(!success) passableOctaves = 5L;
+			double passableGain = customConsts.getDoubleConst("mapGen passable fractal gain", out success);
+			if(!success) passableGain = 0.40d;
+			double passableLacunarity = customConsts.getDoubleConst("mapGen passable fractal lacunarity", out success);
+			if(!success) passableLacunarity = 5.0d;
+			minMax = getAPI().calcNoiseFractalParameters(map_width, map_height, passableFreq, passableOctaves, (float)noisePoolJitter, passableGain, passableLacunarity, out noise);
+			
+            //determine passable:
+			double unpassableRange = customConsts.getDoubleConst("mapGen unpassable range", out success);
+			if(!success) unpassableRange = 0.175d;
+            double val_pos_unpass = minMax.Item2 - getAPI().calcRand() * unpassableRange;
+            for (int x = 0; x &lt; noise.Count; x++)
+            {
+                for (int y = 0; y &lt; noise[x].Count; y++)
+                {
+                    double val = noise[x][y];
+                    if (val &gt; val_pos_unpass)
+                    {
+                        outPassable[x][y] = false;
+                    }
+                }
+            }
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add(outPassable);
+			toReturn.Add(outBuildable);
+			return toReturn;
+	</mMapGenAssignPassBuild>
+	
+	<!-- map generation assignment of resources has four inputs: double inWaterRatio, List<List<bool>> inWater, IFTerrainBiome inLandBiome, IFTerrainBiome inWaterBiome.  There is one output: List<List<IFTerrainSource>> outTerrainSources (this must be of the same dimensions as inWater) -->
+	<!-- this script is called once during an attempt to generate a map, and is meant to determine which tiles have which resources (tiles can, of course, not have resources) -->
+	<mMapGenDistributeResources> <!-- TODO maybe rename this to mMapGenDetermineTerrainSources? -->
+            //input count check:
+            if (inArguments.Length &lt; 4)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			double inWaterRatio = (double)inArguments[0]; //this will be between 0.0d and 1.0d inclusive and represents how much of the map is water, with 1.0d being 'all'
+			List&lt;List&lt;bool&gt;&gt; inWater = (List&lt;List&lt;bool&gt;&gt;)inArguments[1];
+			IFTerrainBiome inLandBiome = (IFTerrainBiome)inArguments[2]; //this can be null if there are no land tiles on the map
+			IFTerrainBiome inWaterBiome = (IFTerrainBiome)inArguments[3]; //this can be null if there are no water tiles on the map
+			bool success = false;
+			
+            //TODO this works but maybe redo it later
+            //the way we assign land sources is:
+            //per water/land, per land source that we want to distribute, we make a noise map and have a threshold
+            //  assign all 2D points above the threshold the land source desired
+            //  later sources override earlier ones, and 'rarer' land sources are determined after more common land sources (for the biome).  Therefore, more rare land sources for this biome are not overwritten by more common ones, but the opposite is true.
+			//using a parameter/iterator/flag to determine when we're assigning land vs. water and doing it in a loop is possible.  But it reduces code clarity, so I'm not doing it
+			
+            //making of the noise map:
+            int map_width = inWater.Count;
+            int map_height = inWater[0].Count;
+			
+			List&lt;List&lt;IFTerrainSource&gt;&gt; outTerrainSources = new List&lt;List&lt;IFTerrainSource&gt;&gt;();
+            for (int x = 0; x &lt; map_width; x++)
+            {
+                outTerrainSources.Add(new List&lt;IFTerrainSource&gt;());
+                for (int y = 0; y &lt; map_height; y++)
+                {
+                    outTerrainSources[x].Add(null);
+                }
+            }
+			
+			//use these lists to order assignment of land sources from common to rare
+			List&lt;IFTerrainSource&gt; land_terrainsource_order = new List&lt;IFTerrainSource&gt;();
+			List&lt;IFTerrainSource&gt; water_terrainsource_order = new List&lt;IFTerrainSource&gt;();
+			
+			//I'm sure there are more efficient ways to construct the two lists but this works
+			for(int richnessVal = IFTerrainBiome.cTerrainSourceRichnessCount; richnessVal &gt; 0; richnessVal--) //don't bother with a richness of '0' because that means 'does not appear'
+			{
+				for(int i = 1; i &lt; getAPI().getTotalCountOfMO("terrainsources"); i++) //start at 1 because a MOID of 0 refers to the default object
+    {
+    IFTerrainSource considerThisTerrainSource = (IFTerrainSource)getAPI().getMOFromMOID("terrainsources", i);
+    if(inLandBiome != null)
+    {
+    if((int)inLandBiome.getTerrainSourceRichness(considerThisTerrainSource) == richnessVal)
+    {
+    //there is only a probability we add land sources to a single generated map; it is not a certainty.  Consider that here:
+    if(getAPI().calcProb(inLandBiome.getTerrainSourceProbability(considerThisTerrainSource)))
+    {
+    land_terrainsource_order.Add(considerThisTerrainSource);
+    addDebugMessage(inScriptInstance, "adding land terrainSource to end of order: " + considerThisTerrainSource.getDebugName());
+    }
+    }
+    }
+    if(inWaterBiome != null)
+    {
+    if((int)inWaterBiome.getTerrainSourceRichness(considerThisTerrainSource) == richnessVal)
+    {
+    //there is only a probability we add land sources to a single generated map; it is not a certainty.  Consider that here:
+    if(getAPI().calcProb(inWaterBiome.getTerrainSourceProbability(considerThisTerrainSource)))
+    {
+    water_terrainsource_order.Add(considerThisTerrainSource);
+    addDebugMessage(inScriptInstance, "adding water terrainSource to end of order: " + considerThisTerrainSource.getDebugName());
+    }
+    }
+    }
+    }
+    }
+
+    //assign land sources on the land part of the terrain:
+    double inLandRatio = 1.0d - inWaterRatio;
+    if((inLandBiome != null) &amp;&amp; (inLandRatio != 0.0d))
+			{
+				for(int land_source_index = 0; land_source_index &lt; land_terrainsource_order.Count; land_source_index++)
+				{
+					List&lt;List&lt;double&gt;&gt; noise = null; //assign this just to prevent compiler from complaining
+					Tuple&lt;double, double&gt; minMax = null; //assign this just to prevent compiler from complaining
+					if(land_terrainsource_order[land_source_index].getDistributionType() == IFTerrainSource.eDistributionType.cSimplexFractalStringy)
+					{
+						double stringyFreq = customConsts.getDoubleConst("mapGen terrainsource land stringy freq", out success);
+						if(!success) stringyFreq = 0.005d;
+						Int64 stringyOctaves = customConsts.getIntConst("mapGen terrainsource land stringy octaves", out success);
+						if(!success) stringyOctaves = 9L;
+						double stringyJitter = customConsts.getDoubleConst("mapGen terrainsource land stringy jitter", out success);
+						if(!success) stringyJitter = 1.0d;
+						double fractalGain = customConsts.getDoubleConst("mapGen terrainsource land stringy fractal gain", out success);
+						if(!success) fractalGain = 0.40d;
+						double fractalLacunarity = customConsts.getDoubleConst("mapGen terrainsource land stringy fractal lacunarity", out success);
+						if(!success) fractalLacunarity = 5.0d;
+					
+						minMax = getAPI().calcNoiseFractalParameters(map_width, map_height, stringyFreq, stringyOctaves, (float)stringyJitter, fractalGain, fractalLacunarity, out noise);
+					}
+					else
+					{
+						double blobbyFreq = customConsts.getDoubleConst("mapGen terrainsource land blobby freq", out success);
+						if(!success) blobbyFreq = 0.01d;
+						Int64 blobbyOctaves = customConsts.getIntConst("mapGen terrainsource land blobby octaves", out success);
+						if(!success) blobbyOctaves = 5L;
+						double blobbyJitter = customConsts.getDoubleConst("mapGen terrainsource land blobby jitter", out success);
+						if(!success) blobbyJitter = 1.0d;
+					
+						minMax = getAPI().calcNoiseBasedOnParameters(map_width, map_height, blobbyFreq, 1 /*ValueFractal*/, blobbyOctaves, (float)blobbyJitter, out noise,
+						true //this last parameter is an optional parameter that biases the randomness slightly towards the center
+						);
+					}
+					
+					//here we can start assigning the land source
+					int richness = (int)(inLandBiome.getTerrainSourceRichness(land_terrainsource_order[land_source_index]));
+					//if this biome covers less than a third of the map, make it comparatively richer:
+					if((inLandRatio &lt; 0.33d) &amp;&amp; (richness != (int)IFTerrainBiome.eTerrainSourceRichness.cShouldCoverTheMap) &amp;&amp; !getAPI().calcProb(inLandRatio))
+    {
+    richness++;
+    }
+    //the top X, where X is (1.0d - richnessRatio) * 100%, of the range of noise values becomes 'true' for this land source.
+    //note that this does not mean exactly X of the map tiles will be 'true' for this land source, because the noise values are not guaranteed to be distributed uniformly across the whole range of possibilities.
+    double richnessRatio = customConsts.getDoubleConst("mapGen terrainsource land richness_ratio"+richness, out success);
+    if(!success) richnessRatio = 0.99d;
+    double threshold = richnessRatio * (minMax.Item2 - minMax.Item1) + minMax.Item1;
+
+    addDebugMessage(inScriptInstance, "assigning land terrainSource " + land_terrainsource_order[land_source_index] + " with richness ratio=" + richnessRatio + " from richness=" + richness + " and threshold=" + threshold);
+
+    for(int x = 0; x &lt; map_width; x++)
+					{
+						for(int y = 0; y &lt; map_height; y++)
+						{
+							if((!inWater[x][y]) &amp;&amp; (noise[x][y] &gt; threshold))
+							{
+								//no need to check for 'if' we should overwrite earlier values -- the ordering of this for loop means the answer is yes
+								outTerrainSources[x][y] = land_terrainsource_order[land_source_index];
+							}
+						}
+					}
+				}
+			}
+			
+			//repeat the same thing as above but with water:
+			if((inWaterBiome != null) &amp;&amp; (inWaterRatio != 0.0d))
+			{
+				for(int land_source_index = 0; land_source_index &lt; water_terrainsource_order.Count; land_source_index++)
+				{
+					List&lt;List&lt;double&gt;&gt; noise = null; //assign this just to prevent compiler from complaining
+					Tuple&lt;double, double&gt; minMax = null; //assign this just to prevent compiler from complaining
+					if(water_terrainsource_order[land_source_index].getDistributionType() == IFTerrainSource.eDistributionType.cSimplexFractalStringy)
+					{
+						double stringyFreq = customConsts.getDoubleConst("mapGen terrainsource water stringy freq", out success);
+						if(!success) stringyFreq = 0.005d;
+						Int64 stringyOctaves = customConsts.getIntConst("mapGen terrainsource water stringy octaves", out success);
+						if(!success) stringyOctaves = 9L;
+						double stringyJitter = customConsts.getDoubleConst("mapGen terrainsource water stringy jitter", out success);
+						if(!success) stringyJitter = 1.0d;
+						double fractalGain = customConsts.getDoubleConst("mapGen terrainsource water stringy fractal gain", out success);
+						if(!success) fractalGain = 0.40d;
+						double fractalLacunarity = customConsts.getDoubleConst("mapGen terrainsource water stringy fractal lacunarity", out success);
+						if(!success) fractalLacunarity = 5.0d;
+						
+						minMax = getAPI().calcNoiseFractalParameters(map_width, map_height, stringyFreq, stringyOctaves, (float)stringyJitter, fractalGain, fractalLacunarity, out noise);
+					}
+					else
+					{
+						double blobbyFreq = customConsts.getDoubleConst("mapGen terrainsource water blobby freq", out success);
+						if(!success) blobbyFreq = 0.01d;
+						Int64 blobbyOctaves = customConsts.getIntConst("mapGen terrainsource water blobby octaves", out success);
+						if(!success) blobbyOctaves = 5L;
+						double blobbyJitter = customConsts.getDoubleConst("mapGen terrainsource water blobby jitter", out success);
+						if(!success) blobbyJitter = 1.0d;
+					
+						minMax = getAPI().calcNoiseBasedOnParameters(map_width, map_height, blobbyFreq, 1 /*ValueFractal*/, blobbyOctaves, (float)blobbyJitter, out noise,
+						true //this last parameter is an optional parameter that biases the randomness slightly towards the center
+						);
+					}
+					
+					//here we can start assigning the water source
+					int richness = (int)(inWaterBiome.getTerrainSourceRichness(water_terrainsource_order[land_source_index]));
+					//if this biome covers less than a third of the map, make it comparatively richer:
+					if((inWaterRatio &lt; 0.33d) &amp;&amp; (richness != (int)IFTerrainBiome.eTerrainSourceRichness.cShouldCoverTheMap) &amp;&amp; !getAPI().calcProb(inWaterRatio))
+    {
+    richness++;
+    }
+    //the top X, where X is (1.0d - richnessRatio) * 100%, of the range of noise values becomes 'true' for this land source.
+    //note that this does not mean exactly X of the map tiles will be 'true' for this land source, because the noise values are not guaranteed to be distributed uniformly across the whole range of possibilities.
+    double richnessRatio = customConsts.getDoubleConst("mapGen terrainsource water richness_ratio"+richness, out success);
+    if(!success) richnessRatio = 0.99d;
+    double threshold = richnessRatio * (minMax.Item2 - minMax.Item1) + minMax.Item1;
+
+    addDebugMessage(inScriptInstance, "assigning water terrainSource " + water_terrainsource_order[land_source_index] + " with richness ratio=" + richnessRatio + " from richness=" + richness + " and threshold=" + threshold);
+
+    for(int x = 0; x &lt; map_width; x++)
+					{
+						for(int y = 0; y &lt; map_height; y++)
+						{
+							if((inWater[x][y]) &amp;&amp; (noise[x][y] &gt; threshold))
+							{
+								//no need to check for 'if' we should overwrite earlier values -- the ordering of this for loop means the answer is yes
+								outTerrainSources[x][y] = water_terrainsource_order[land_source_index];
+							}
+						}
+					}
+				}
+			}
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add(outTerrainSources);
+			return toReturn;
+	</mMapGenDistributeResources>
+	
+	<!-- map generation assignment of parcels has seven inputs: IFTerrainBiome inBiome, int inWidth, int inHeight, Type inType, bool inUnpassable, bool inUnbuildable, IFTerrainSource inTerrainSource.  There is one output: IFMapTileObject outParcelChosen (this must be the type indicated by inType, and will be null if there has been an error/no matching parcel exists) -->
+	<!-- this script is called many times during an attempt to generate a map, and is meant to determine which base/resource/doodad parcels are used to create the desired terrain -->
+	<mMapGenGetParcel>
+            //input count check:
+            if (inArguments.Length &lt; 6)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			IFTerrainBiome inBiome = (IFTerrainBiome)inArguments[0];
+			Int64 inWidth = (Int64)inArguments[1];
+			Int64 inHeight = (Int64)inArguments[2];
+			Type inType = (Type)inArguments[3];
+			bool inUnpassable = (bool)inArguments[4];
+			bool inUnbuildable = (bool)inArguments[5];
+			IFTerrainSource inTerrainSource = (IFTerrainSource)inArguments[6]; //this could be null if unused
+	
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add(null);
+	
+			if(inType == typeof(IFTerrainBaseParcel))
+			{
+				int totalCount = getAPI().getTotalCountOfMO("baseparcels");
+				List&lt;IFMapTileObject&gt; possibles = new List&lt;IFMapTileObject&gt;();
+				for(int i = 1; i &lt; totalCount; i++)
+				{
+					IFTerrainBaseParcel possible = (IFTerrainBaseParcel)getAPI().getMOFromMOID("baseparcels", i);
+					if((possible.getWidth() == inWidth &amp;&amp; possible.getHeight() == inHeight) || (possible.getWidth() == inHeight &amp;&amp; possible.getHeight() == inWidth)) //check both rotations
+					{
+						if((possible.getBiome() == inBiome) &amp;&amp; !possible.hasTag(APIconsts.cSpriteSheetExcludeTag))
+						{
+							possibles.Add(possible);
+						}
+					}
+				}
+				addDebugMessage(inScriptInstance, "choosing IFTerrainBaseParcel of size=" + inWidth + "," + inHeight + " unpassable=" + inUnpassable + " unbuildable=" + inUnbuildable + " out of " + possibles.Count + " options");
+				if(possibles.Count != 0)
+				{
+					toReturn[0] = possibles[(int)getAPI().calcRandIntUnder(possibles.Count)];
+				}
+			}
+			else if(inType == typeof(IFTerrainDoodad))
+			{
+				int totalCount = getAPI().getTotalCountOfMO("doodads");
+				List&lt;IFMapTileObject&gt; possibles = new List&lt;IFMapTileObject&gt;();
+				for(int i = 1; i &lt; totalCount; i++)
+				{
+					IFTerrainDoodad possible = (IFTerrainDoodad)getAPI().getMOFromMOID("doodads", i);
+					if((possible.getWidth() == inWidth &amp;&amp; possible.getHeight() == inHeight) || (possible.getWidth() == inHeight &amp;&amp; possible.getHeight() == inWidth)) //check both rotations
+					{
+						if(possible.isBiomeEnabledForDoodad(inBiome) &amp;&amp; (possible.isPassable() == !inUnpassable) &amp;&amp; (possible.isBuildable() == !inUnbuildable) &amp;&amp; !possible.hasTag(APIconsts.cSpriteSheetExcludeTag))
+						{
+							possibles.Add(possible);
+						}
+					}
+				}
+				addDebugMessage(inScriptInstance, "choosing IFTerrainDoodad of size=" + inWidth + "," + inHeight + " unpassable=" + inUnpassable + " unbuildable=" + inUnbuildable + " out of " + possibles.Count + " options");
+				if(possibles.Count != 0)
+				{
+					toReturn[0] = possibles[(int)getAPI().calcRandIntUnder(possibles.Count)];
+				}
+			}
+			else if((inType == typeof(IFTerrainResourceParcel)) &amp;&amp; (inTerrainSource != null))
+			{
+				int totalCount = getAPI().getTotalCountOfMO("resourceparcels");
+				List&lt;IFMapTileObject&gt; possibles = new List&lt;IFMapTileObject&gt;();
+				for(int i = 1; i &lt; totalCount; i++)
+				{
+					IFTerrainResourceParcel possible = (IFTerrainResourceParcel)getAPI().getMOFromMOID("resourceparcels", i);
+					if((possible.getWidth() == inWidth &amp;&amp; possible.getHeight() == inHeight) || (possible.getWidth() == inHeight &amp;&amp; possible.getHeight() == inWidth)) //check both rotations
+					{
+						if((possible.getTerrainSource() == inTerrainSource) &amp;&amp; !possible.hasTag(APIconsts.cSpriteSheetExcludeTag))
+						{
+							possibles.Add(possible);
+						}
+					}
+				}
+				addDebugMessage(inScriptInstance, "choosing IFTerrainResourceParcel of size=" + inWidth + "," + inHeight + " unpassable=" + inUnpassable + " unbuildable=" + inUnbuildable + " of land source=" + inTerrainSource.getDebugName() + " out of " + possibles.Count + " options");
+				if(possibles.Count != 0)
+				{
+					toReturn[0] = possibles[(int)getAPI().calcRandIntUnder(possibles.Count)];
+				}
+			}
+
+    return toReturn;
+  </mMapGenGetParcel>
+	
+	<!-- map generation assignment of parcels has five inputs: List<List<Tuple<IFMapTileObject, bool, IFMapTileObject.eMapItemOrientation>>> inDoodads, List<List<bool>> inIsWater, IFTerrainBiome inLandBiome, IFTerrainBiome inWaterBiome, List<List<Tuple<IFMapTileObject, bool, IFMapTileObject.eMapItemOrientation>>> inResources.  There is one output: List<List<Tuple<IFMapTileObject, bool, IFMapTileObject.eMapItemOrientation>>> outDoodads (probably a modified version of the input doodads) -->
+	<!-- this script is called once during an attempt to generate a map, and is meant to remove doodads that are invalid for certain reasons -->
+	<!-- this function therefore reduces the total unpassable and unbuildable terrain of the map -->
+	<mMapGenCullDoodads>
+            //input count check:
+            if (inArguments.Length &lt; 5)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var inDoodads = (List&lt;List&lt;Tuple&lt;IFMapTileObject, bool, IFMapTileObject.eMapItemOrientation&gt;&gt;&gt;)inArguments[0];
+			var inIsWater = (List&lt;List&lt;bool&gt;&gt;)inArguments[1];
+			IFTerrainBiome inLandBiome = (IFTerrainBiome)inArguments[2];
+			IFTerrainBiome inWaterBiome = (IFTerrainBiome)inArguments[3];
+			var inResources = (List&lt;List&lt;Tuple&lt;IFMapTileObject, bool, IFMapTileObject.eMapItemOrientation&gt;&gt;&gt;)inArguments[4];
+			
+            //first: remove doodads that overlap resources
+            //second: remove doodads if they are invalid for the biome or invalid for the biome of any square next to them
+			
+            //iterate over x and y to find roots:
+            Int64 distance_past_doodad_borders_a_resource_root_can_be = consts.getMapDoodadMaxWidth() - 1; //resource max parcel width uses doodad max parcel width, otherwise it'd be resource parcel width here
+			
+            for (int x = 0; x &lt; inDoodads.Count; x++)
+            {
+                for (int y = 0; y &lt; inDoodads[x].Count; y++)
+    {
+    //the middle (bool) of the Tuple is true if this tile is a root for the doodad parcel:
+    if(inDoodads[x][y].Item2)
+    {
+    //check along all squares of the doodad and 1 square away: is the background A) the same biome and B) a correct biome C) not being overlapped by any resources?
+    bool need_to_remove = false;
+    IFTerrainDoodad doodad = (IFTerrainDoodad)inDoodads[x][y].Item1;
+    IFTerrainBiome terBioOnRootPtr = inIsWater[x][y] ? inWaterBiome : inLandBiome;
+    Int64 doodad_width = (inDoodads[x][y].Item3 == IFMapTileObject.eMapItemOrientation.cFlipHoriz || inDoodads[x][y].Item3 == IFMapTileObject.eMapItemOrientation.cFlipVert) ? inDoodads[x][y].Item1.getHeight() : inDoodads[x][y].Item1.getWidth();
+    Int64 doodad_height = (inDoodads[x][y].Item3 == IFMapTileObject.eMapItemOrientation.cFlipHoriz || inDoodads[x][y].Item3 == IFMapTileObject.eMapItemOrientation.cFlipVert) ? inDoodads[x][y].Item1.getWidth() : inDoodads[x][y].Item1.getHeight();
+    string log = "removing doodad " + doodad.getDebugName() + " at x=" + x + " y=" + y + " because";
+    for (int x_mod = -2; (x_mod &lt; (doodad_width + 2)) &amp;&amp; !need_to_remove; x_mod++)
+                        {
+                            for (int y_mod = -2; (y_mod &lt; (doodad_height + 2)) &amp;&amp; !need_to_remove; y_mod++)
+                            {
+                                if (x + x_mod &lt; 0 || x + x_mod &gt;= inIsWater.Count || y + y_mod &lt; 0 || y + y_mod &gt;= inIsWater[0].Count)
+    continue;
+    bool this_is_water = inIsWater[x + x_mod][y + y_mod];
+    if ((this_is_water ? inWaterBiome : inLandBiome) != terBioOnRootPtr)
+    {
+    log += " [1] doodad not valid for " + (this_is_water ? "water" : "land");
+    need_to_remove = true;
+    continue;
+    }
+    if (!doodad.isBiomeEnabledForDoodad(terBioOnRootPtr))
+    {
+    log += " [2] doodad not valid for this specific biome (" + terBioOnRootPtr.getDebugName() + ")";
+    need_to_remove = true;
+    continue;
+    }
+    if (!doodad.isOverwaterEnable() &amp;&amp; !inIsWater[x + x_mod][y + y_mod])
+                                {
+                                    log += " [3] doodad only valid for underwater and next to coast";
+                                    need_to_remove = true;
+                                    continue;
+                                }
+                                if (!doodad.isUnderwaterEnable() &amp;&amp; inIsWater[x + x_mod][y + y_mod])
+                                {
+                                    log += " [4] doodad only valid for overwater and next to coast";
+                                    need_to_remove = true;
+                                    continue;
+                                }
+
+                                //check for resource overlap:
+                                if (inResources[x + x_mod][y + y_mod].Item2)
+                                {
+                                    bool new_need_to_remove = (x_mod &gt;= -1 * distance_past_doodad_borders_a_resource_root_can_be)
+                                                  &amp;&amp; (x_mod &lt;= distance_past_doodad_borders_a_resource_root_can_be + doodad_width)
+                                                  &amp;&amp; (y_mod &gt;= -1 * distance_past_doodad_borders_a_resource_root_can_be)
+                                                  &amp;&amp; (y_mod &lt;= distance_past_doodad_borders_a_resource_root_can_be + doodad_height);
+                                    if (new_need_to_remove)
+                                    {
+                                        log += " [5] doodad too close to or overlapping resources";
+                                    }
+                                    need_to_remove = need_to_remove || new_need_to_remove;
+                                    continue;
+                                }
+                            }
+                        }
+
+                        if (need_to_remove)
+                        {
+                            addDebugMessage(inScriptInstance, log);
+                            inDoodads[x][y] = Tuple.Create((IFMapTileObject)null, false, IFMapTileObject.eMapItemOrientation.cOriginal);
+                        }
+					}
+                }
+            }
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add(inDoodads);
+			return toReturn;
+	</mMapGenCullDoodads>
+	
+	<!-- map generation checking has six inputs: List<List<bool>> inIsWater, List<List<bool>> inIsPassable, List<List<bool>> inIsBuildable, List<List<IFTerrainSource>> inMapResources, bool inWantWater, bool inIsOnlyWater.  There is one output: bool isMapOkay (true if the map should be presented to the player and map generation ends (until the player requests a new map), false if the map should be thrown out and a new one generated) -->
+	<!-- this script is called once during an attempt to generate a map, and is meant to prevent "bad" maps (whatever this script determines "bad" is) from being presented to the player -->
+	<mMapGenCheckMap>
+            //input count check:
+            if (inArguments.Length &lt; 6)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var inIsWater = (List&lt;List&lt;bool&gt;&gt;)inArguments[0];
+			var inIsPassable = (List&lt;List&lt;bool&gt;&gt;)inArguments[1];
+			var inIsBuildable = (List&lt;List&lt;bool&gt;&gt;)inArguments[2];
+			var inMapResources = (List&lt;List&lt;IFTerrainSource&gt;&gt;)inArguments[3];
+			bool inWantWater = (bool)inArguments[4];
+			bool inIsOnlyWater = (bool)inArguments[5];
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add(true); //by default, the map is good until we determine that it's not
+			
+            bool hasFood = false;
+            int passableWaterNum = 0;
+            int passableWaterDenom = 0;
+            int buildableWaterNum = 0;
+            int buildableWaterDenom = 0;
+            int passableLandNum = 0;
+            int passableLandDenom = 0;
+            int buildableLandNum = 0;
+            int buildableLandDenom = 0;
+            UInt32 sheer_water_count = 0;
+            for (int i = 0; i &lt; inIsWater.Count; i++)
+            {
+                for (int j = 0; j &lt; inIsWater[i].Count; j++)
+                {
+                    if (inIsWater[i][j])
+                    {
+                        sheer_water_count++;
+
+                        passableWaterDenom++;
+                        if (inIsPassable[i][j])
+                            passableWaterNum++;
+                        buildableWaterDenom++;
+                        if (inIsBuildable[i][j])
+                            buildableWaterNum++;
+                    }
+                    else
+                    {
+                        passableLandDenom++;
+                        if (inIsPassable[i][j])
+                            passableLandNum++;
+                        buildableLandDenom++;
+                        if (inIsBuildable[i][j])
+                            buildableLandNum++;
+                    }
+
+                    if (!hasFood)
+                    {
+                        if (inMapResources[i][j] != null)
+                        {
+                            foreach(var res in (inIsWater[i][j] ? inMapResources[i][j].getAllowedResourcesWater() : inMapResources[i][j].getAllowedResourcesLand()))
+                            {
+                                if(res.isFood())
+                                {
+                                    hasFood = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+				}
+			}
+			
+			//TODO: when building a building, the map must check there is a path from the building to the edge of the map (not counting other buildings as obstacles but yes counting terrain features)
+			
+            if (!inIsOnlyWater)
+            {
+				Int64 landAreaMin = customConsts.getIntConst("mapGen check land_area min", out bool success);
+				if(!success) landAreaMin = 200L;
+                bool this_one = ((inIsWater.Count * inIsWater[0].Count) - sheer_water_count) > landAreaMin;
+                if (!this_one)
+                    addDebugMessage(inScriptInstance, "mapGen failing this map because land square count is below mMapMinLandArea");
+                toReturn[0] = ((bool)toReturn[0]) &amp;&amp; this_one;
+            }
+            if (inWantWater)
+            {
+				Int64 waterAreaMin = customConsts.getIntConst("mapGen check water_area min", out bool success);
+				if(!success) waterAreaMin = 200L;
+                bool this_one = (sheer_water_count > waterAreaMin);
+                if (!this_one)
+                    addDebugMessage(inScriptInstance, "mapGen failing this map because water square count is below mMapMinWaterArea");
+                toReturn[0] = ((bool)toReturn[0]) &amp;&amp; this_one;
+            }
+            if (passableLandDenom != 0)
+            {
+				Int64 passablePercentageMin = customConsts.getIntConst("mapGen check land_passable_area percentage min", out bool success);
+				if(!success) passablePercentageMin = 50L;
+                bool this_one = (100 * (passableLandNum / (double)passableLandDenom) > passablePercentageMin);
+                if (!this_one)
+                    addDebugMessage(inScriptInstance, "mapGen failing this map because too much land is unpassable");
+                toReturn[0] = ((bool)toReturn[0]) &amp;&amp; this_one;
+            }
+            if (passableWaterDenom != 0)
+            {
+				Int64 passablePercentageMin = customConsts.getIntConst("mapGen check water_passable_area percentage min", out bool success);
+				if(!success) passablePercentageMin = 50L;
+                bool this_one = (100 * (passableWaterNum / (double)passableWaterDenom) > passablePercentageMin);
+                if (!this_one)
+                    addDebugMessage(inScriptInstance, "mapGen failing this map because too much water is unpassable");
+                toReturn[0] = ((bool)toReturn[0]) &amp;&amp; this_one;
+            }
+            if (buildableLandDenom != 0)
+            {
+				Int64 buildablePercentageMin = customConsts.getIntConst("mapGen check land_buildable_area percentage min", out bool success);
+				if(!success) buildablePercentageMin = 30L;
+                bool this_one = (100 * (buildableLandNum / (double)buildableLandDenom) > buildablePercentageMin);
+                if (!this_one)
+                    addDebugMessage(inScriptInstance, "mapGen failing this map because too much land is unbuildable");
+                toReturn[0] = ((bool)toReturn[0]) &amp;&amp; this_one;
+            }
+            if (buildableWaterDenom != 0)
+            {
+				Int64 buildablePercentageMin = customConsts.getIntConst("mapGen check water_buildable_area percentage min", out bool success);
+				if(!success) buildablePercentageMin = 30L;
+                bool this_one = (100 * (buildableWaterNum / (double)buildableWaterDenom) > buildablePercentageMin);
+                if (!this_one)
+                    addDebugMessage(inScriptInstance, "mapGen failing this map because too much water is unbuildable");
+                toReturn[0] = ((bool)toReturn[0]) &amp;&amp; this_one;
+            }
+            if(!hasFood)
+            {
+                bool this_one = true;
+                addDebugMessage(inScriptInstance, "mapGen failing this map because no food resources are on the map");
+                toReturn[0] = ((bool)toReturn[0]) &amp;&amp; this_one;
+            }
+			
+			return toReturn;
+	</mMapGenCheckMap>
+  
+  </gamescripts>
+  
+</core_data>

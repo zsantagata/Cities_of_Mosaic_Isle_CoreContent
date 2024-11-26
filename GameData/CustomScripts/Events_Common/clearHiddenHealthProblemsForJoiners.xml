@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script clearHiddenHealthProblemsForJoiners</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which clears the variables for health problems associated with potential joiners -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus,
+	Int64 inEventReportUID,
+	string inAdditionalLabel //some events have multiple groups of pops they want to store/fetch
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>clearHiddenHealthProblemsForJoiners</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(string)}
+	      }, out _))
+	    {
+			throw new ArgumentException("clearHiddenHealthProblemsForJoiners custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		string inAdditionalLabel = (string)inArguments[2];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("clearHiddenHealthProblemsForJoiners custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReportUID &lt; 0)
+		{
+			throw new ArgumentException("clearHiddenHealthProblemsForJoiners custom script received invalid arguments: inEventReportUID cannot be negative");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		Int64 countOfWoundsStored = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedWoundCount_report" + inEventReportUID, out bool success);
+		if(!success) countOfWoundsStored = 0;
+		Int64 countOfIllnessesStored = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedIllnessesCount_report" + inEventReportUID, out success);
+		if(!success) countOfIllnessesStored = 0;
+		Int64 countOfPregnanciesStored = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPregnanciesCount_report" + inEventReportUID, out success);
+		if(!success) countOfPregnanciesStored = 0;
+		variableHandler.storeIntVariable(0L, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedWoundCount_report" + inEventReportUID, 0L);
+		variableHandler.storeIntVariable(0L, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedIllnessesCount_report" + inEventReportUID, 0L);
+		variableHandler.storeIntVariable(0L, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedPregnanciesCount_report" + inEventReportUID, 0L);
+	
+		for(int index = 0; index &lt; countOfWoundsStored; index++)
+		{
+			variableHandler.storeIntVariable(0L, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_woundDate" + index + "_report" + inEventReportUID, 0L);
+		}
+		for(int index = 0; index &lt; countOfIllnessesStored; index++)
+		{
+			variableHandler.storeIntVariable(0L, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_illnessDate" + index + "_report" + inEventReportUID, 0L);
+		}
+		for(int index = 0; index &lt; countOfPregnanciesStored; index++)
+		{
+			variableHandler.storeDoubleVariable(0L, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_pregnancyRatio" + index + "_report" + inEventReportUID, 0.0d);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

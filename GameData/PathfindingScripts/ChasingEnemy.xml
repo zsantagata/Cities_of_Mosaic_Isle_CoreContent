@@ -1,0 +1,353 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the ChasingEnemy state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: A pop is chasing an enemy if it is a loyal pop, it is mustered, and there is an enemy nearby to chase and fight -->
+		<i1><a>ChasingEnemy</a> 
+		<b>0.1</b><c>0.75</c></i1>
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to ChasingEnemy: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_ChasingEnemy -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>pathfinding_state_ChasingEnemy chase radius</a> <b>double</b> <c>4.0</c></i1> <!-- friendlies will only chase enemy pops closer than this -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_chasingenemy_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_chasingenemy_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_chasingenemy</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to ChasingEnemy: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_ChasingEnemy -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_ChasingEnemy_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_ChasingEnemy_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_ChasingEnemy_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//two considerations:
+				//the first consideration is if the pop is a loyal, mustered pop during battle:
+				bool first_consideration = (inPop.getCommunity() == getAPI().getLocalCommunity()) &amp;&amp; inPop.isMustered() &amp;&amp; inBattleOngoing;
+				
+				//the second consideration is if there is an enemy pop nearby that this pop wants to, and can, chase:
+				double chase_radius = customConsts.getDoubleConst("pathfinding_state_ChasingEnemy chase radius", out bool success);
+				if(!success) chase_radius = 4.0d;
+				bool second_consideration = false;
+				IFConnectedVariable listOfAllFights = variableHandler.getConnectedVariable("battleAI_listOfAllFights");
+				//conditions to chase: enemy, on community map, not dead, not wounded, accessible, not in a fight with two friendlies already
+				foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+				{
+					double dist = getAPI().calcDistanceBetweenPoints(pop.getMapLocationTuple(), inPop.getMapLocationTuple());
+					if(dist &lt; chase_radius)
+					{
+						bool allConditionsTrue = getAPI().isHostileCommunity(pop.getCommunity());
+						allConditionsTrue = allConditionsTrue &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap);
+						allConditionsTrue = allConditionsTrue &amp;&amp; (!pop.isDead());
+						allConditionsTrue = allConditionsTrue &amp;&amp; (!pop.isWounded());
+						allConditionsTrue = allConditionsTrue &amp;&amp; (getAPI().isPopAccessibleByPop(inPop, pop));
+						if(allConditionsTrue &amp;&amp; (pop.getPathfindingState() == "fighting") &amp;&amp; (listOfAllFights != null))
+						{
+							//need to check that the pop is not fighting two friendlies already:
+							//iterate over all fights and find pop:
+							foreach(IFConnectedVariable possibleFightCV in listOfAllFights.getLowers())
+							{
+								if(possibleFightCV.getCombinationType() != IFConnectedVariable.eCombinationType.cLIST)
+								{
+									continue; //something is wrong
+								}
+								if(possibleFightCV.getVariableAsInt() == 5) //three fighters
+								{
+									IFConnectedVariable fighter1 = possibleFightCV.getLowers()[2];
+									IFConnectedVariable fighter2 = possibleFightCV.getLowers()[3];
+									IFConnectedVariable fighter3 = possibleFightCV.getLowers()[4];
+									if((fighter1.getVariableAsInt() == (Int64)pop.getUID()) || (fighter2.getVariableAsInt() == (Int64)pop.getUID()) || (fighter3.getVariableAsInt() == (Int64)pop.getUID()))
+									{
+										IFPop fightingPop1 = (IFPop)getAPI().getSO("pops", fighter1.getVariableAsInt());
+										IFPop fightingPop2 = (IFPop)getAPI().getSO("pops", fighter2.getVariableAsInt());
+										IFPop fightingPop3 = (IFPop)getAPI().getSO("pops", fighter3.getVariableAsInt());
+										if((fightingPop1 != null) &amp;&amp; (fightingPop2 != null) &amp;&amp; (fightingPop3 != null))
+										{
+											Int64 hostileFighters = 0;
+											hostileFighters += (getAPI().isHostileCommunity(fightingPop1.getCommunity()) ? 1 : 0);
+											hostileFighters += (getAPI().isHostileCommunity(fightingPop2.getCommunity()) ? 1 : 0);
+											hostileFighters += (getAPI().isHostileCommunity(fightingPop3.getCommunity()) ? 1 : 0);
+											if(hostileFighters == 1)
+											{
+												allConditionsTrue = false;
+											}
+										}
+										break;
+									}
+								}
+							}
+						}
+						if(allConditionsTrue)
+						{
+							second_consideration = true;
+							break;
+						}
+					}
+				}
+				
+				toReturn.Add(first_consideration &amp;&amp; second_consideration);
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_ChasingEnemy_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_ChasingEnemy_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_ChasingEnemy_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				double chase_radius = customConsts.getDoubleConst("pathfinding_state_ChasingEnemy chase radius", out bool success);
+				if(!success) chase_radius = 4.0d;
+				double closestDist = double.MaxValue;
+				IFPop closestPop = null;
+				IFConnectedVariable listOfAllFights = variableHandler.getConnectedVariable("battleAI_listOfAllFights");
+				//conditions to chase: enemy, on community map, not dead, not wounded, accessible, not in a fight with two friendlies already
+				foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+				{
+					double dist = getAPI().calcDistanceBetweenPoints(pop.getMapLocationTuple(), inPop.getMapLocationTuple());
+					if((dist &lt; chase_radius) &amp;&amp; (dist &lt; closestDist))
+					{
+						bool allConditionsTrue = getAPI().isHostileCommunity(pop.getCommunity());
+						allConditionsTrue = allConditionsTrue &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap);
+						allConditionsTrue = allConditionsTrue &amp;&amp; (!pop.isDead());
+						allConditionsTrue = allConditionsTrue &amp;&amp; (!pop.isWounded());
+						allConditionsTrue = allConditionsTrue &amp;&amp; (getAPI().isPopAccessibleByPop(inPop, pop));
+						if(allConditionsTrue &amp;&amp; (pop.getPathfindingState() == "fighting") &amp;&amp; (listOfAllFights != null))
+						{
+							//need to check that the pop is not fighting two friendlies already:
+							//iterate over all fights and find pop:
+							foreach(IFConnectedVariable possibleFightCV in listOfAllFights.getLowers())
+							{
+								if(possibleFightCV.getCombinationType() != IFConnectedVariable.eCombinationType.cLIST)
+								{
+									continue; //something is wrong
+								}
+								if(possibleFightCV.getVariableAsInt() == 5) //three fighters
+								{
+									IFConnectedVariable fighter1 = possibleFightCV.getLowers()[2];
+									IFConnectedVariable fighter2 = possibleFightCV.getLowers()[3];
+									IFConnectedVariable fighter3 = possibleFightCV.getLowers()[4];
+									if((fighter1.getVariableAsInt() == (Int64)pop.getUID()) || (fighter2.getVariableAsInt() == (Int64)pop.getUID()) || (fighter3.getVariableAsInt() == (Int64)pop.getUID()))
+									{
+										IFPop fightingPop1 = (IFPop)getAPI().getSO("pops", fighter1.getVariableAsInt());
+										IFPop fightingPop2 = (IFPop)getAPI().getSO("pops", fighter2.getVariableAsInt());
+										IFPop fightingPop3 = (IFPop)getAPI().getSO("pops", fighter3.getVariableAsInt());
+										if((fightingPop1 != null) &amp;&amp; (fightingPop2 != null) &amp;&amp; (fightingPop3 != null))
+										{
+											Int64 hostileFighters = 0;
+											hostileFighters += (getAPI().isHostileCommunity(fightingPop1.getCommunity()) ? 1 : 0);
+											hostileFighters += (getAPI().isHostileCommunity(fightingPop2.getCommunity()) ? 1 : 0);
+											hostileFighters += (getAPI().isHostileCommunity(fightingPop3.getCommunity()) ? 1 : 0);
+											if(hostileFighters == 1)
+											{
+												allConditionsTrue = false;
+											}
+										}
+										break;
+									}
+								}
+							}
+						}
+						if(allConditionsTrue)
+						{
+							closestDist = dist;
+							closestPop = pop;
+						}
+					}
+				}
+				if(closestPop == null)
+				{
+					addDebugMessage(inScriptInstance, "somehow we did not find an appropriate pop to target");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				addDebugMessage(inScriptInstance, inPop.getDebugName() + " will chase after pop " + closestPop.getDebugName() + " which is distance " + closestDist + " away");
+				
+				//this is simple: just tell the pop to chase the indicated pop
+				toReturn.Add(null);
+				toReturn.Add(closestPop);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_ChasingEnemy" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+        {
+        return null;
+        }
+
+        IFPop inPop = (IFPop)inArguments[0];
+        IFMap inLocalMap = (IFMap)inArguments[1];
+        bool inBattleOngoing = (bool)inArguments[2];
+
+        var consts = getAPI().getConsts();
+        var customConsts = getAPI().getCustomConsts();
+        var variableHandler = getAPI().getVariableHandler();
+        var customScripts = getAPI().getCustomScripts();
+
+        addDebugMessage(inScriptInstance, "default state_ChasingEnemy script is finding target for " + inPop.getDebugName());
+        List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//this pop is looking for a fight, so start one if it can
+				if(customScripts.runCustomScriptCheckTypes("startNearbyFightIfAble", new List&lt;object&gt;() {inPop},
+					out List&lt;object&gt; validFight, true, typeof(bool)))
+				{
+					//if this pop has started a fight, it should enter the Fighting state:
+					if((bool)validFight[0])
+					{
+						addDebugMessage(inScriptInstance, "pop has started a fight; entering Fighting state");
+						toReturn.Add("Fighting");
+						toReturn.Add(null);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the Fighting state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if there is a fight ongoing nearby that can be joined, join that fight:
+				if(customScripts.runCustomScriptCheckTypes("joinNearbyFightIfAble", new List&lt;object&gt;() {inPop},
+					out List&lt;object&gt; validFight2, true, typeof(bool)))
+				{
+					//if this pop has joined a fight, it should enter the Fighting state:
+					if((bool)validFight2[0])
+					{
+						addDebugMessage(inScriptInstance, "pop has joined a fight; entering Fighting state");
+						toReturn.Add("Fighting");
+						toReturn.Add(null);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the Fighting state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//otherwise, try to keep chasing a pop if one exists to chase:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"ChasingEnemy", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should stay in the ChasingEnemy state due to: " + " still want to chase an enemy pop");
+						toReturn.Add("ChasingEnemy");
+						toReturn.Add((IFBuilding)validTgt[1]);
+						toReturn.Add((IFPop)validTgt[2]);
+						toReturn.Add((bool)validTgt[3]);
+						toReturn.Add((double)validTgt[4]);
+						toReturn.Add((double)validTgt[5]);
+						return toReturn;
+					}
+				}
+				//we failed to call a script correctly somehow.  Transition to Idle instead:
+				addDebugMessage(inScriptInstance, "custom scripts indicated pop could not stay in the ChasingEnemy state so pop is transitioning directly to Idle state");
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_ChasingEnemy</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

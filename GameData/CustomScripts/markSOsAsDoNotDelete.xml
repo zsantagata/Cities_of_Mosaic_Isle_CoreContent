@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script marksosasdonotdelete</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which marks a group of pops, communities, and/or buildings as "do not delete". -->
+  <!-- the marked pops/communities/buildings will not be cleaned up by midnight processing C# code until the specified calendar date -->
+  <!-- (midnight processing C# code may see fit to keep them around longer despite the mark expiring; scripts cannot force deletion of an SO) -->
+  <!-- (this mark can be cleared, and is cleared by the script clearSOsDoNotDeleteMark when it is provided with the same inUniqueLabel and (whichever the caller wants of) the same pops/communities/buildings as were provided to this script) -->
+  <!-- note that the actual value held by the marking variable does not matter; only the existence of the variable matters -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	Int64 inCalendarDate,
+	List<IFPop> inPopsToMark, //can be null
+	List<IFCommunity> inCommunitiesToMark, //can be null
+	List<IFBuilding> inBuildingsToMark, //can be null
+	string inUniqueLabel //calls to this function with identical inUniqueLabel will override each others' calendar dates.  With different inUniqueLabel, the biggest inCalendarDate will be effective
+	//inUniqueLabel should probably have an event report UID appended to it if it is associated with an event, so multiple instances of the event don't overwrite each other
+	
+	there is no output.
+	-->
+	<i1><a>markSOsAsDoNotDelete</a>
+	<b>
+		//input count and type check:
+		var customScripts = getAPI().getCustomScripts();
+		if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+			{typeof(Int64), typeof(List&lt;IFPop&gt;), typeof(List&lt;IFCommunity&gt;), typeof(List&lt;IFBuilding&gt;), typeof(string)}
+		  }, out _))
+		{
+			throw new ArgumentException("markSOsAsDoNotDelete custom script received invalid arguments");
+			return null;
+		}
+	  
+	    Int64 inCalendarDate = (Int64)inArguments[0];
+	    List&lt;IFPop&gt; inPopsToMark = (List&lt;IFPop&gt;)inArguments[1];
+	    List&lt;IFCommunity&gt; inCommunitiesToMark = (List&lt;IFCommunity&gt;)inArguments[2];
+	    List&lt;IFBuilding&gt; inBuildingsToMark = (List&lt;IFBuilding&gt;)inArguments[3];
+	    string inUniqueLabel = (string)inArguments[4];
+	  
+	    if(inPopsToMark == null)
+			inPopsToMark = new List&lt;IFPop&gt;();
+	    if(inCommunitiesToMark == null)
+			inCommunitiesToMark = new List&lt;IFCommunity&gt;();
+	    if(inBuildingsToMark == null)
+			inBuildingsToMark = new List&lt;IFBuilding&gt;();
+	  
+		var variableHandler = getAPI().getVariableHandler();
+		
+		foreach(IFPop pop in inPopsToMark)
+		{
+			//look for top variable:
+			string topVariableName = APIconsts.cDoNotDeleteSOVariableNames[(int)APIconsts.eSOsMarkableAsDoNotDelete.cPop] + pop.getUID();
+			IFConnectedVariable topCV = variableHandler.getConnectedVariable(topVariableName);
+			if(topCV == null)
+			{
+				variableHandler.addConnectedInt(topVariableName, 0L, out topCV, inCalendarDate);
+			}
+			//no need to mess with expiration date: connected variables with lowers will not expire unless all their lowers are also expiring
+			
+			//look for lower variable:
+			string lowerVariableName = topVariableName + "_" + inUniqueLabel;
+			IFConnectedVariable lowerCV = variableHandler.getConnectedVariable(lowerVariableName);
+			if(lowerCV == null)
+			{
+				variableHandler.addConnectedInt(lowerVariableName, 0L, out lowerCV, inCalendarDate);
+			}
+			else
+			{
+				lowerCV.setExpirationDate(inCalendarDate);
+			}
+			
+			//we can call this no matter what:
+			variableHandler.connectVariables(lowerCV, topCV);
+		}
+		foreach(IFCommunity community in inCommunitiesToMark)
+		{
+			//look for top variable:
+			string topVariableName = APIconsts.cDoNotDeleteSOVariableNames[(int)APIconsts.eSOsMarkableAsDoNotDelete.cCommunity] + community.getUID();
+			IFConnectedVariable topCV = variableHandler.getConnectedVariable(topVariableName);
+			if(topCV == null)
+			{
+				variableHandler.addConnectedInt(topVariableName, 0L, out topCV, inCalendarDate);
+			}
+			//no need to mess with expiration date: connected variables with lowers will not expire unless all their lowers are also expiring
+			
+			//look for lower variable:
+			string lowerVariableName = topVariableName + "_" + inUniqueLabel;
+			IFConnectedVariable lowerCV = variableHandler.getConnectedVariable(lowerVariableName);
+			if(lowerCV == null)
+			{
+				variableHandler.addConnectedInt(lowerVariableName, 0L, out lowerCV, inCalendarDate);
+			}
+			else
+			{
+				lowerCV.setExpirationDate(inCalendarDate);
+			}
+			
+			//we can call this no matter what:
+			variableHandler.connectVariables(lowerCV, topCV);
+		}
+		foreach(IFBuilding building in inBuildingsToMark)
+		{
+			//look for top variable:
+			string topVariableName = APIconsts.cDoNotDeleteSOVariableNames[(int)APIconsts.eSOsMarkableAsDoNotDelete.cBuilding] + building.getUID();
+			IFConnectedVariable topCV = variableHandler.getConnectedVariable(topVariableName);
+			if(topCV == null)
+			{
+				variableHandler.addConnectedInt(topVariableName, 0L, out topCV, inCalendarDate);
+			}
+			//no need to mess with expiration date: connected variables with lowers will not expire unless all their lowers are also expiring
+			
+			//look for lower variable:
+			string lowerVariableName = topVariableName + "_" + inUniqueLabel;
+			IFConnectedVariable lowerCV = variableHandler.getConnectedVariable(lowerVariableName);
+			if(lowerCV == null)
+			{
+				variableHandler.addConnectedInt(lowerVariableName, 0L, out lowerCV, inCalendarDate);
+			}
+			else
+			{
+				lowerCV.setExpirationDate(inCalendarDate);
+			}
+			
+			//we can call this no matter what:
+			variableHandler.connectVariables(lowerCV, topCV);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

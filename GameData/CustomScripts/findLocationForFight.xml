@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>findLocationForFight radius max</a> <b>int</b> <c>15</c></i1>
+			
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script findlocationforfight</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines wounds and deaths in combat -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- find location for fight has two input arguments: IFPop inFirstPop, IFPop inSecondPop.  It has two output arguments: Int64 outFightLocationX, Int64 outFightLocationY.  It will throw if there is no valid location. -->
+	<!-- this script is called by other scripts which want to start a fight and need to know where is valid (fights cannot be on the same location) -->
+	<i1><a>findLocationForFight</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop), typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("findLocationForFight custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFPop inFirstPop = (IFPop)inArguments[0];
+	  IFPop inSecondPop = (IFPop)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: neither pop should be null
+	  if(inFirstPop == null || inSecondPop == null)
+	  {
+		  throw new ArgumentException("findLocationForFight custom script received invalid arguments: one of the input pops was null");
+		  return null;
+	  }
+	  
+	  //determine the average location of the pops:
+	  Int64 start_x = (Int64)((inFirstPop.getMapLocationX() + inSecondPop.getMapLocationX()) / 2.0d); //round down
+	  Int64 start_y = (Int64)((inFirstPop.getMapLocationY() + inSecondPop.getMapLocationY()) / 2.0d); //round down
+	  
+	  //get the map, since the location needs to be passable:
+	  IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+	  
+	  //check if the exact location is available:
+	  //the name of a fight variable is battleAI_ongoingfight_loc[x]_[y]
+	  //it should also have the appropriate amount of lowers (if it doesn't then it's been cleared), so check that it either doesn't exist or has no lowers:
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	  bool thisLocationNoFight = !variableHandler.connectedVariableExists("battleAI_ongoingfight_loc" + start_x + "_" + start_y) || (variableHandler.getConnectedVariable("battleAI_ongoingfight_loc" + start_x + "_" + start_y).getLowers().Count == 0);
+	  if(thisLocationNoFight)
+	  {
+		//a fight should not start on the map edge because we visually reposition pops that are off the map:
+		if((start_x != 0) &amp;&amp; (start_y != 0) &amp;&amp; (start_x != map.getMapDimensions().Item1) &amp;&amp; (start_y != map.getMapDimensions().Item2))
+		{
+			//check that any of the four map tiles around are passable:
+			bool anyPassable = false;
+			if(map.getMapTiles()[(int)start_x][(int)start_y].isPassable())
+			{
+				anyPassable = true;
+			}
+			else if((start_x != 0) &amp;&amp; (map.getMapTiles()[(int)start_x - 1][(int)start_y].isPassable()))
+			{
+				anyPassable = true;
+			}
+			else if((start_y != 0) &amp;&amp; (map.getMapTiles()[(int)start_x][(int)start_y - 1].isPassable()))
+			{
+				anyPassable = true;
+			}
+			else if((start_x != 0) &amp;&amp; (start_y != 0) &amp;&amp; (map.getMapTiles()[(int)start_x - 1][(int)start_y - 1].isPassable()))
+			{
+				anyPassable = true;
+			}
+			if(anyPassable)
+			{
+				//we can start a fight at the desired location:
+				addDebugMessage(inScriptInstance, "able to start a fight exactly between pops " + inFirstPop.getDebugName() + " and " + inSecondPop.getDebugName() + " at location x=" + start_x + " and y=" + start_y);
+				toReturn.Add(start_x);
+				toReturn.Add(start_y);
+				return toReturn;
+			}
+		}
+	  }
+	  addDebugMessage(inScriptInstance, "the exact position between pops " + inFirstPop.getDebugName() + " and " + inSecondPop.getDebugName() + " is x=" + start_x + "," + start_y + " and cannot have a fight start on it");
+	  
+	  //the location is taken, so find a nearby location by rotating around and expanding radius:
+	  Int64 radius_max = customConsts.getIntConst("findLocationForFight radius max", out bool success);
+	  if(!success) radius_max = 15;
+      for(int radius = 1; radius &lt;= radius_max; radius++)
+	  {
+		addDebugMessage(inScriptInstance, "checking radius of " + radius + " around pop average point");
+	    //+x, +y -> +x, -y -> -x, -y -> -x, +y -> +x, +y
+		int highX = (int)(start_x + radius);
+		int highY = (int)(start_y + radius);
+		int lowY = (int)(start_y - radius);
+		int lowX = (int)(start_x - radius);
+		if(highX &gt;= map.getMapDimensions().Item1)
+			highX = (int)(map.getMapDimensions().Item1 - 1);
+		if(highY &gt;= map.getMapDimensions().Item2)
+			highY = (int)(map.getMapDimensions().Item2 - 1);
+		if(lowY &lt; 1)
+			lowY = 1;
+		if(lowX &lt; 1)
+			lowX = 1;
+		
+		for (int y = highY; y &gt; lowY; y--)
+		{
+			thisLocationNoFight = !variableHandler.connectedVariableExists("battleAI_ongoingfight_loc" + highX + "_" + y) || (variableHandler.getConnectedVariable("battleAI_ongoingfight_loc" + highX + "_" + y).getLowers().Count == 0);
+			if(thisLocationNoFight)
+			{
+				//check that any of the four map tiles around are passable:
+				bool anyPassable = false;
+				if(map.getMapTiles()[highX][y].isPassable())
+				{
+					anyPassable = true;
+				}
+				else if((highX != 0) &amp;&amp; (map.getMapTiles()[highX - 1][y].isPassable()))
+				{
+					anyPassable = true;
+				}
+				else if((y != 0) &amp;&amp; (map.getMapTiles()[highX][y - 1].isPassable()))
+				{
+					anyPassable = true;
+				}
+				else if((highX != 0) &amp;&amp; (y != 0) &amp;&amp; (map.getMapTiles()[highX - 1][y - 1].isPassable()))
+				{
+					anyPassable = true;
+				}
+				if(anyPassable)
+				{
+					//we can start a fight at the desired location:
+					addDebugMessage(inScriptInstance, "able to start a fight at distance of " + radius + " from pops " + inFirstPop.getDebugName() + " and " + inSecondPop.getDebugName()
+						+ " at location x=" + highX + " and y=" + y);
+					toReturn.Add((Int64)highX);
+					toReturn.Add((Int64)y);
+					return toReturn;
+				}
+			}
+		}
+        for (int x = highX; x &gt; lowX; x--)
+		{
+			thisLocationNoFight = !variableHandler.connectedVariableExists("battleAI_ongoingfight_loc" + x + "_" + lowY) || (variableHandler.getConnectedVariable("battleAI_ongoingfight_loc" + x + "_" + lowY).getLowers().Count == 0);
+			if(thisLocationNoFight)
+			{
+				//check that any of the four map tiles around are passable:
+				bool anyPassable = false;
+				if(map.getMapTiles()[x][lowY].isPassable())
+				{
+					anyPassable = true;
+				}
+				else if((x != 0) &amp;&amp; (map.getMapTiles()[x - 1][lowY].isPassable()))
+				{
+					anyPassable = true;
+				}
+				else if((lowY != 0) &amp;&amp; (map.getMapTiles()[x][lowY - 1].isPassable()))
+				{
+					anyPassable = true;
+				}
+				else if((x != 0) &amp;&amp; (lowY != 0) &amp;&amp; (map.getMapTiles()[x - 1][lowY - 1].isPassable()))
+				{
+					anyPassable = true;
+				}
+				if(anyPassable)
+				{
+					//we can start a fight at the desired location:
+					addDebugMessage(inScriptInstance, "able to start a fight at distance of " + radius + " from pops " + inFirstPop.getDebugName() + " and " + inSecondPop.getDebugName()
+						+ " at location x=" + x + " and y=" + lowY);
+					toReturn.Add((Int64)x);
+					toReturn.Add((Int64)lowY);
+					return toReturn;
+				}
+			}
+		}
+		for (int y = lowY; y &lt; highY; y++)
+		{
+			thisLocationNoFight = !variableHandler.connectedVariableExists("battleAI_ongoingfight_loc" + lowX + "_" + y) || (variableHandler.getConnectedVariable("battleAI_ongoingfight_loc" + lowX + "_" + y).getLowers().Count == 0);
+			if(thisLocationNoFight)
+			{
+				//check that any of the four map tiles around are passable:
+				bool anyPassable = false;
+				if(map.getMapTiles()[lowX][y].isPassable())
+				{
+					anyPassable = true;
+				}
+				else if((lowX != 0) &amp;&amp; (map.getMapTiles()[lowX - 1][y].isPassable()))
+				{
+					anyPassable = true;
+				}
+				else if((y != 0) &amp;&amp; (map.getMapTiles()[lowX][y - 1].isPassable()))
+				{
+					anyPassable = true;
+				}
+				else if((lowX != 0) &amp;&amp; (y != 0) &amp;&amp; (map.getMapTiles()[lowX - 1][y - 1].isPassable()))
+				{
+					anyPassable = true;
+				}
+				if(anyPassable)
+				{
+					//we can start a fight at the desired location:
+					addDebugMessage(inScriptInstance, "able to start a fight at distance of " + radius + " from pops " + inFirstPop.getDebugName() + " and " + inSecondPop.getDebugName()
+						+ " at location x=" + lowX + " and y=" + y);
+					toReturn.Add((Int64)lowX);
+					toReturn.Add((Int64)y);
+					return toReturn;
+				}
+			}
+		}
+		for (int x = lowX; x &lt; highX; x++)
+		{
+			thisLocationNoFight = !variableHandler.connectedVariableExists("battleAI_ongoingfight_loc" + x + "_" + highY) || (variableHandler.getConnectedVariable("battleAI_ongoingfight_loc" + x + "_" + highY).getLowers().Count == 0);
+			if(thisLocationNoFight)
+			{
+				//check that any of the four map tiles around are passable:
+				bool anyPassable = false;
+				if(map.getMapTiles()[x][highY].isPassable())
+				{
+					anyPassable = true;
+				}
+				else if((x != 0) &amp;&amp; (map.getMapTiles()[x - 1][highY].isPassable()))
+				{
+					anyPassable = true;
+				}
+				else if((highY != 0) &amp;&amp; (map.getMapTiles()[x][highY - 1].isPassable()))
+				{
+					anyPassable = true;
+				}
+				else if((x != 0) &amp;&amp; (highY != 0) &amp;&amp; (map.getMapTiles()[x - 1][highY - 1].isPassable()))
+				{
+					anyPassable = true;
+				}
+				if(anyPassable)
+				{
+					//we can start a fight at the desired location:
+					addDebugMessage(inScriptInstance, "able to start a fight at distance of " + radius + " from pops " + inFirstPop.getDebugName() + " and " + inSecondPop.getDebugName()
+						+ " at location x=" + x + " and y=" + highY);
+					toReturn.Add((Int64)x);
+					toReturn.Add((Int64)highY);
+					return toReturn;
+				}
+			}
+		}
+	  }	  
+	  
+	  addDebugMessage(inScriptInstance, "unable to start a fight within distance of " + radius_max + " of pops " + inFirstPop.getDebugName() + " and " + inSecondPop.getDebugName());
+	  throw new Exception("findLocationForFight custom script was unable to find a valid location for a fight");
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

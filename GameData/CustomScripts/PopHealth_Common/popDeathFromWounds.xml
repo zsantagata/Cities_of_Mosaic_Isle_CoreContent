@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+		<i1><a>popDeathFromWounds death_from_wound rate</a> <b>double</b> <c>0.10</c></i1> <!-- the base chance for a pop to die, daily, if it has a wound -->
+		<i1><a>popDeathFromWounds death_from_mortal_wound rate</a> <b>double</b> <c>0.50</c></i1> <!-- the base chance for a pop to die, daily, if it has a mortal wound -->
+		<i1><a>popDeathFromWounds death_from_wound threshold</a> <b>int</b> <c>0x6666</c></i1> <!-- pops with wounds will not die from that wound unless their overall health is below this value -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script popdeathfromwounds</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which checks if a pop should die of its wounds, and sets the pop dead if so -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop
+	
+	There is no output -->
+	<i1><a>popDeathFromWounds</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popDeathFromWounds custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	if(inPop.isDead() || !inPop.isWounded())
+		return null;
+		
+	//TODO any race or other non-standard considerations
+	
+	double threshold_health = customConsts.getIntConst("popDeathFromWounds death_from_wound threshold", out bool success);
+	if(!success) threshold_health = (double)0x6666;
+	double min_health = consts.getHealthMin();
+	double current_health = inPop.getOverallHealth();
+	
+	if(current_health &gt; threshold_health)
+	{
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " will not die of wound because health is greater than threshold");
+		return null;
+    }
+
+    double max_item_qual = consts.getResourceQualityMax();
+    double min_item_qual = consts.getResourceQualityMin();
+    double cached_item_qual = variableHandler.getDouble("pop_consumed_woundHeal" + inPop.getUID(), out success);
+    if(!success)
+    {
+		cached_item_qual = min_item_qual;
+    }
+
+    //people don't die directly of wounds unless it's immediate (combat), or the wound gets infected (illness), or they don't have the food/water/environs to recover, or they have suffered a mortal wound.  Those first two are taken care of elsewhere.  Also, having consumed a bandage will moderate the possibility of the last two occurring.
+    double prob_of_death = 0.0d;
+    Int64 mortalWoundDaysLeft = variableHandler.getInt("wound_mortalWound_pop" + inPop.getUID(), out success);
+    if(success &amp;&amp; (mortalWoundDaysLeft &gt;= 1))
+    {
+		//reduce mortal days:
+		mortalWoundDaysLeft--;
+		variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate() + 2, "wound_mortalWound_pop" + inPop.getUID(), mortalWoundDaysLeft);
+
+		prob_of_death = customConsts.getDoubleConst("popDeathFromWounds death_from_mortal_wound rate", out success);
+		if(!success) prob_of_death = 0.50d; //50% chance each day to die from a mortal wound is a big chance
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " starts with " + prob_of_death + " chance to die of wound because of mortal wounds");
+    }
+    else
+    {
+		double rate = customConsts.getDoubleConst("popDeathFromWounds death_from_wound rate", out success);
+		if(!success) rate = 0.10d;
+		prob_of_death = (threshold_health - current_health) / (threshold_health - min_health);
+		prob_of_death = prob_of_death * rate;
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " starts with " + prob_of_death + " chance to die of wound because of current health");
+    }
+
+    if(cached_item_qual &gt; min_item_qual)
+	{
+	    prob_of_death = (prob_of_death) * ((max_item_qual - cached_item_qual) / (max_item_qual - min_item_qual));
+	    addDebugMessage(inScriptInstance, "chance to die reduced to " + prob_of_death + " because of use of wound healing item of internal quality " + cached_item_qual);
+	}
+	  
+	if(inPop.hasHomeBuilding())
+	{
+	    double prob_death_reduction = variableHandler.getConnectedDouble("deathProbReduce_building" + inPop.getHomeBuilding().getUID(), out success);
+		if(success)
+		{
+			double max_death_reduction = customConsts.getDoubleConst("popHealth death_chance_reduction max", out success);
+			if(!success) max_death_reduction = 0.85d;
+			if(prob_death_reduction &gt; max_death_reduction)
+			{
+				prob_death_reduction = max_death_reduction;
+			}
+			else if(prob_death_reduction &lt; 0.0d)
+			{
+				prob_death_reduction = 0.0d;
+			}
+			prob_of_death *= (1.0d - prob_death_reduction);
+			addDebugMessage(inScriptInstance, "chance to die reduced to " + prob_of_death + " because of available buff on home building (deathProbReduce_building) of " + prob_death_reduction
+				+ " (after enforcing buff limits of 0.0 and " + max_death_reduction + ")");
+		}
+	}
+	
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("wound danger");
+	bool now_dead = getAPI().calcProb(prob_of_death * difficulty);
+	addDebugMessage(inScriptInstance, "pop is " + (now_dead ? "" : "not ") + "dead as a result of wound");
+	if(now_dead) inPop.setIsDead(true, IFPop.ePopDeathReason.cWounds);
+	  
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

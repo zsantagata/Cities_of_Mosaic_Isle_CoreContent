@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igEvent name="Placeholder Trade Arrival Event">
+    <mTypeOfEvent>1</mTypeOfEvent>
+    <mDefaultEnabled>1</mDefaultEnabled>
+    <mDefaultWeight>0.01</mDefaultWeight>
+	<mDelegationType>4</mDelegationType>
+    <mScriptWhichGatesHappening>
+List&lt;object&gt; toReturn = new List&lt;object&gt;();
+                         toReturn.Add(true);
+                     return toReturn;
+    </mScriptWhichGatesHappening>
+    <mScriptUponHappening>
+List&lt;object&gt; toReturn = new List&lt;object&gt;();
+                         //TODO in an actual event, generate a new pop of a random race that the baby is
+                     return toReturn;
+    </mScriptUponHappening>
+    <mDefaultMenuText>
+TRADE: While traveling, the delegation hears a strange cry of an unknown animal.  Investigation reveals a newborn babe, abandoned, and not yet taken and raised in the Lady's Garden.  It may attract beasts with its cries.
+    </mDefaultMenuText>
+    <mInvisible>0</mInvisible>
+    <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>0</mCanHappenWhileReportPending>
+    <mChoiceCombo>
+      <i>
+        <name>We should take the babe.</name>
+        <appears_script>
+List&lt;object&gt; toReturn = new List&lt;object&gt;();
+                         toReturn.Add(true);
+                     return toReturn;
+        </appears_script>
+        <selection_script>
+
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+The Lady will take the babe at midnight, but we may attract attention.
+        </prechoice>
+        <resolution>
+Thankfully no harm came to us, and a new pop will join our delegation tomorrow.
+        </resolution>
+      </i>
+	  
+      <i>
+        <name>We should leave the babe.</name>
+        <appears_script>
+List&lt;object&gt; toReturn = new List&lt;object&gt;();
+                         toReturn.Add(true);
+                     return toReturn;
+        </appears_script>
+        <selection_script>
+
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+The Lady may take the babe at midnight, but we will avoid attention.
+        </prechoice>
+        <resolution>
+The babe's cries continue behind us as we travel on.
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  </igEvent>
+  
+</core_data>

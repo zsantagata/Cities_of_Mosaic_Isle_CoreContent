@@ -1,0 +1,330 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script battleaienemywantstargetbuilding</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines whether an enemy pop wants to target a friendly building as part of its war goal -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- enemy wants target building has two input arguments: IFPop inEnemyPop, IFBuilding inFriendlyBuilding.  It has one output argument: bool outWantsToTarget. -->
+	<!-- this script is called by other scripts which want to determine if an enemy wants to damage a certain friendly building (probably just pathfinding) -->
+	<i1><a>battleAIEnemyWantsTargetBuilding</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop), typeof(IFBuilding)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIEnemyWantsTargetBuilding custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFPop inEnemyPop = (IFPop)inArguments[0];
+	  IFBuilding inBuilding = (IFBuilding)inArguments[1];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: neither pop nor building should be null
+	  if(inEnemyPop == null || inBuilding == null)
+	  {
+		  throw new ArgumentException("battleAIEnemyWantsTargetBuilding custom script received invalid arguments: one of the inputs was null");
+		  return null;
+	  }
+	  
+	  List &lt;object&gt; toReturn = new List &lt;object&gt;();
+	  
+	  //sanity check: the building should not already be destroyed
+	  if(inBuilding.isBuildingDestroyed())
+	  {
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  //first: if the wargoal has been abandoned, return false
+	  Int64 abandoned_wargoal = variableHandler.getInt("battleAI_abandonedBattleGoal_community" + inEnemyPop.getCommunity().getUID(), out bool success);
+	  if(!success) abandoned_wargoal = 0;
+	  if(abandoned_wargoal != 0)
+	  {
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  //second: check the wargoal.  If none exists, return false
+	  string wargoal = variableHandler.getString("battleAI_battleGoal_community" + inEnemyPop.getCommunity().getUID(), out success);
+	  if(!success)
+	  {
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  //if the wargoal contains "hurt_" or "abduct_", check that a pop hiding in the building is one that this pop wants to target:
+	  if(wargoal.Contains("hurt_") || wargoal.Contains("abduct_"))
+	  {
+		List&lt;IFPop&gt; possiblyHidingPopsList = new List&lt;IFPop&gt;();
+		if(inBuilding.isHousing())
+		{
+			possiblyHidingPopsList.AddRange(inBuilding.getHousingComponent().getHousedPops());
+		}
+		if(inBuilding.isWorkplace())
+		{
+			possiblyHidingPopsList.AddRange(inBuilding.getWorkplaceComponent().getWorkerPops());
+		}
+		HashSet&lt;IFPop&gt; possiblyHidingPopsSet = new HashSet&lt;IFPop&gt;(possiblyHidingPopsList); //use a set to collapse duplicates
+		bool want_to_target = false;
+		foreach(IFPop possibleTarget in possiblyHidingPopsSet)
+		{
+			if(((possibleTarget.getPopLocation() == IFPop.ePopLocation.cInHome) &amp;&amp; (possibleTarget.getHomeBuilding() == inBuilding)) || ((possibleTarget.getPopLocation() == IFPop.ePopLocation.cInWorkplace) &amp;&amp; (possibleTarget.getWorkplaceBuilding() == inBuilding)))
+			{
+				if(customScripts.runCustomScriptCheckTypes("battleAIEnemyWantsTargetPop", new List&lt;object&gt;() {inEnemyPop, possibleTarget},
+					out List&lt;object&gt; validTgt, true, typeof(bool), typeof(bool)))
+				{
+					if(((bool)validTgt[0]) &amp;&amp; ((bool)validTgt[1]))
+					{
+						addDebugMessage(inScriptInstance, "pop " + inEnemyPop.getDebugName() + " does want to damage building " + inBuilding.getDebugName() + " because friendly pop " + possibleTarget.getDebugName() + " is hiding inside");
+						want_to_target = true;
+						break;
+					}
+				}
+			}
+		}
+		if(!want_to_target)
+		{
+			//if the wargoal is to hurt or abduct pops, and the target building contains no pops that this pop wants to hurt or abduct, this pop has no reason to damage the building
+			toReturn.Add(false);
+			return toReturn;
+		}
+	  }
+	  //for steal resources wargoals, check that the target building is a distribution building which is allowed to hold resources desired to steal (and is not already plundered):
+	  else if(wargoal.Contains("steal_resources_"))
+	  {
+		if(inBuilding.getBuildingKind().getIndustry() == null)
+		{
+			toReturn.Add(false);
+			return toReturn;
+		}
+		if(!inBuilding.getBuildingKind().getIndustry().isDistribution())
+		{
+			toReturn.Add(false);
+			return toReturn;
+		}
+		Int64 alreadyPlunderedInt = variableHandler.getInt("battleAI_plunderedByCommunity" + inEnemyPop.getCommunity().getUID() + "_building" + inBuilding.getUID(), out success);
+		if(success &amp;&amp; (alreadyPlunderedInt != 0))
+		{
+			toReturn.Add(false);
+			return toReturn;
+		}
+		var resourcesDistributedByBKind = getAPI().getResourcesEnabledListForDistributionBuildingKind(inBuilding.getBuildingKind()); //list of bools, index = MOID
+		//note that while wargoal calculation will consider the *amount available* of the resources to be stolen, enemy pops don't know that so we don't consider that here :)
+		if(resourcesDistributedByBKind.Count == 0)
+		{
+			toReturn.Add(false);
+			return toReturn;
+		}
+		//else if we are stealing specific resources, check that at least one of them is available here:
+		if(wargoal.Contains("_specific"))
+		{
+			//iterate over the set of resources to target:
+			IFConnectedVariable resourceList = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyPop.getCommunity().getUID() + "_specific");
+			success = (resourceList != null);
+			if(success)
+			{
+				bool foundOne = false;
+				foreach(IFConnectedVariable cv in resourceList.getLowers())
+				{
+					int moid = (int)cv.getVariableAsInt();
+					if((moid &gt; 0) &amp;&amp; (moid &lt; resourcesDistributedByBKind.Count)) //greater than zero because we don't care about the default resource
+					{
+						if(resourcesDistributedByBKind[moid])
+						{
+							foundOne = true;
+							break;
+						}
+					}
+				}
+				if(!foundOne)
+				{
+					toReturn.Add(false);
+					return toReturn;
+				}
+			}
+		}
+	  }
+	  //there may be additional wargoals in the future so make sure the wargoal is "destroy_buildings_":
+	  else if(wargoal.Contains("destroy_buildings_"))
+	  {
+		//there are conditions on wargoal that need to be considered here:
+		//industries, buildingkinds, specific, housing_all, housing_races, housing_leaders, housing_neutral_communities
+		if(wargoal.Contains("_industries"))
+		{
+			//first, the building in question needs to be a workplace:
+			if(!inBuilding.isWorkplace())
+			{
+				toReturn.Add(false);
+				return toReturn;
+			}
+		
+			//get the set of industries to target:
+			HashSet&lt;Int64&gt; moidsTargeted = new HashSet&lt;Int64&gt;();
+			IFConnectedVariable industryList = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyPop.getCommunity().getUID() + "_industries");
+			success = (industryList != null);
+			if(success)
+			{
+				foreach(IFConnectedVariable cv in industryList.getLowers())
+				{
+					moidsTargeted.Add(cv.getVariableAsInt());
+				}
+				if(!moidsTargeted.Contains(inBuilding.getBuildingKind().getIndustry().getMOID()))
+				{
+					toReturn.Add(false);
+					return toReturn;
+				}
+			}
+		}
+		else if(wargoal.Contains("_buildingkinds"))
+		{
+			//get the set of buildingkinds to target:
+			HashSet&lt;Int64&gt; moidsTargeted = new HashSet&lt;Int64&gt;();
+			IFConnectedVariable buildingKindList = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyPop.getCommunity().getUID() + "_buildingkinds");
+			success = (buildingKindList != null);
+			if(success)
+			{
+				foreach(IFConnectedVariable cv in buildingKindList.getLowers())
+				{
+					moidsTargeted.Add(cv.getVariableAsInt());
+				}
+				if(!moidsTargeted.Contains(inBuilding.getBuildingKind().getMOID()))
+				{
+					toReturn.Add(false);
+					return toReturn;
+				}
+			}
+		}
+		else if(wargoal.Contains("_specific"))
+		{
+			//since we already know wargoal is destroy_buildings_, _specific will always mean buildings by UID
+			IFConnectedVariable buildingList = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyPop.getCommunity().getUID() + "_specific");
+			success = (buildingList != null);
+			if(success)
+			{
+				bool found = false;
+				foreach(IFConnectedVariable cv in buildingList.getLowers())
+				{
+					if(cv.getVariableAsInt() == (Int64)inBuilding.getUID())
+					{
+						found = true;
+						break;
+					}
+				}
+				if(!found)
+				{
+					toReturn.Add(false);
+					return toReturn;
+				}
+			}
+		}
+		else if(wargoal.Contains("housing"))
+		{
+			if(!inBuilding.isHousing())
+			{
+				toReturn.Add(false);
+				return toReturn;
+			}
+			
+			//housing_all has now been taken care of, so take care of _races, _leaders, and _neutral_communities
+			if(wargoal.Contains("_races"))
+			{
+				//get the set of races being targeted:
+				HashSet&lt;Int64&gt; moidsTargeted = new HashSet&lt;Int64&gt;();
+				IFConnectedVariable raceList = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inEnemyPop.getCommunity().getUID() + "_races");
+				success = (raceList != null);
+				if(success)
+				{
+					foreach(IFConnectedVariable cv in raceList.getLowers())
+					{
+						moidsTargeted.Add(cv.getVariableAsInt());
+					}
+					bool anyTargetRaceHousesHere = false;
+					foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+					{
+						if(moidsTargeted.Contains(pop.getRace().getMOID()))
+						{
+							anyTargetRaceHousesHere = true;
+							break;
+						}
+					}
+					if(!anyTargetRaceHousesHere)
+					{
+						toReturn.Add(false);
+						return toReturn;
+					}
+				}
+			}
+			else if(wargoal.Contains("_leaders"))
+			{
+				//get the leader collection:
+				IFLeaderCollection leaders = getAPI().getLocalCommunity().getLeaderCollection();
+				if(leaders != null)
+				{
+					bool anyLeaderHousesHere = false;
+					foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+					{
+						if(leaders.getLeaderFlagsForPop(pop) != IFLeaderCollection.eLeaderFlags.cNone)
+						{
+							anyLeaderHousesHere = true;
+							break;
+						}
+					}
+					if(!anyLeaderHousesHere)
+					{
+						toReturn.Add(false);
+						return toReturn;
+					}
+				}
+			}
+			else if(wargoal.Contains("_neutral_communities"))
+			{
+				IFCommunity localCommunity = getAPI().getLocalCommunity();
+				bool anyNeutralHousesHere = false;
+				foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+				{
+					if(pop.getCommunity() != localCommunity)
+					{
+						anyNeutralHousesHere = true;
+						break;
+					}
+				}
+				if(!anyNeutralHousesHere)
+				{
+					toReturn.Add(false);
+					return toReturn;
+				}
+			}
+		}
+	  }
+	  
+	  //the last condition: the target building must be accessible by the enemy pop and it must be on the local map
+	  if(!getAPI().isBuildingAccessibleByPop(inEnemyPop, inBuilding))
+	  {
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  toReturn.Add(true);
+	  return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

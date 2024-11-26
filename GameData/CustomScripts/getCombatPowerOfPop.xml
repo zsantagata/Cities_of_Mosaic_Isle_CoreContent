@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>combat_power minimum</a> <b>double</b> <c>1.0</c></i1> <!-- if a pop is alive they have this minimum weight. Dead pops have weight 0 -->
+			<!-- NTS: max before variables are considered = (race_good_combat + all bonuses) * (1 + ss_mult) * (1 + equip_mult) = 831.25 -->
+			<!-- NTS: a normal healthy person with no training or equipment = (race_average_combat + all bonuses) * 1 * 1 = 80.0 -->
+			<!-- NTS: a wounded, ill, pregnant person with no training or equipment, of a weak race = (race_bad_combat) * 1 * 1 = 35.0 -->
+			
+			<i1><a>combat_power base race_bad_combat</a> <b>double</b> <c>35.0</c></i1>
+			<i1><a>combat_power base race_average_combat</a> <b>double</b> <c>50.0</c></i1>
+			<i1><a>combat_power base race_good_combat</a> <b>double</b> <c>65.0</c></i1>
+			
+			<!-- the reason for "not X" bonus instead of "X" penalty is to make it less possible that a weight goes below the minimum -->
+			<i1><a>combat_power base not_wounded bonus</a> <b>double</b> <c>10.0</c></i1>
+			<i1><a>combat_power base not_ill bonus</a> <b>double</b> <c>10.0</c></i1>
+			<i1><a>combat_power base not_pregnantimmobile bonus</a> <b>double</b> <c>10.0</c></i1>
+			
+			<!-- note that soldier skill is normalized to 0->1 before these take effect -->
+			<i1><a>combat_power soldier_skill exponent</a> <b>double</b> <c>1.5</c></i1> <!-- note that, because a value between 0 and 1 is raised to this power, the endpoints are fixed, and as this value increases the middle values sink towards 0 (and vice versa) -->
+			<i1><a>combat_power soldier_skill multiplier</a> <b>double</b> <c>2.5</c></i1> <!-- 1.0 is the total multiplier if soldier skill is 0, (1.0 + this) is the total multiplier if soldier skill is 1 -->
+			
+			<!-- note that average equipment quality is normalized to 0->1 before these take effect -->
+			<i1><a>combat_power average_equipment_quality exponent</a> <b>double</b> <c>1.2</c></i1> <!-- note that, because a value between 0 and 1 is raised to this power, the endpoints are fixed, and as this value increases the middle values sink towards 0 (and vice versa) -->
+			<i1><a>combat_power average_equipment_quality multiplier</a> <b>double</b> <c>1.5</c></i1> <!-- 1.0 is the total multiplier if quality is 0, (1.0 + this) is the total multiplier if quality is 1 -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script getcombatpowerofpop</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines the combat power of a specific pop (usually for use in combat, but sometimes for use in estimating combat strength) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- combat resolution has one input arguments: IFPop inPop.  There is one output: double outCombatPower.  The output is positive if the pop is alive, and 0.0d otherwise. -->
+	<i1><a>getCombatPowerOfPop</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("getCombatPowerOfPop custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFPop inPop = (IFPop)inArguments[0];
+	  
+	  if(inPop == null)
+	  {
+		  throw new ArgumentException("getCombatPowerOfPop custom script received invalid arguments: inPop cannot be null");
+		  return null;
+	  }
+	  if(inPop.isDead())
+	  {
+		  addDebugMessage(inScriptInstance, "inPop " + inPop.getDebugName() + " is dead, returning 0.0 combat power");
+		  return new List&lt;object&gt;() { 0.0d };
+	  }
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //get consts:
+	  double ss_skill_min = consts.getSoldierSkillMin();
+	  double ss_skill_max = consts.getSoldierSkillMax();
+	  double eq_quality_min = consts.getResourceQualityMin();
+	  double eq_quality_max = consts.getResourceQualityMax();
+	  
+	  //get custom consts:
+	  double minimum_power = customConsts.getDoubleConst("combat_power minimum", out bool success);
+	  if(!success) minimum_power = 1.0d;
+	  
+	  double race_bad_combat_base = customConsts.getDoubleConst("combat_power base race_bad_combat", out success);
+	  if(!success) race_bad_combat_base = 35.0d;
+	  double race_average_combat_base = customConsts.getDoubleConst("combat_power base race_average_combat", out success);
+	  if(!success) race_average_combat_base = 50.0d;
+	  double race_good_combat_base = customConsts.getDoubleConst("combat_power base race_good_combat", out success);
+	  if(!success) race_good_combat_base = 65.0d;
+	  
+	  double not_wounded_bonus = customConsts.getDoubleConst("combat_power base not_wounded bonus", out success);
+	  if(!success) not_wounded_bonus = 10.0d;
+	  double not_ill_bonus = customConsts.getDoubleConst("combat_power base not_ill bonus", out success);
+	  if(!success) not_ill_bonus = 10.0d;
+	  double not_pregnantimmobile_bonus = customConsts.getDoubleConst("combat_power base not_pregnantimmobile bonus", out success);
+	  if(!success) not_pregnantimmobile_bonus = 10.0d;
+	  
+	  double ss_exponent = customConsts.getDoubleConst("combat_power soldier_skill exponent", out success);
+	  if(!success) ss_exponent = 1.5d;
+	  double ss_mult = customConsts.getDoubleConst("combat_power soldier_skill multiplier", out success);
+	  if(!success) ss_mult = 2.5d;
+	  
+	  double eq_exponent = customConsts.getDoubleConst("combat_power average_equipment_quality exponent", out success);
+	  if(!success) eq_exponent = 1.2d;
+	  double eq_mult = customConsts.getDoubleConst("combat_power average_equipment_quality multiplier", out success);
+	  if(!success) eq_mult = 1.5d;
+	  
+	  //get appropriate variables, if they exist:
+	  double individualAdditivePopModifier = variableHandler.getConnectedDouble("combatpoweradditivemodifier_pop" + inPop.getUID(), out success);
+	  if(!success) individualAdditivePopModifier = 0.0d;
+	  double individualMultPopModifier = variableHandler.getConnectedDouble("combatpowermultmodifier_pop" + inPop.getUID(), out success);
+	  if(!success) individualMultPopModifier = 1.0d; //remember that if the connected double does not exist, getConnectedDouble returns 0.0d
+	  
+	  double racial_base = 0.0d;
+	  if(inPop.getRace().hasTag("combat overall decrease"))
+	  {
+		racial_base = race_bad_combat_base;
+	  }
+	  else if(inPop.getRace().hasTag("combat overall increase"))
+	  {
+		racial_base = race_good_combat_base;
+	  }
+	  else
+	  {
+		racial_base = race_average_combat_base;
+	  }
+	  
+	  double wounded_bonus = 0.0d;
+	  if(!inPop.isWounded())
+	  {
+		wounded_bonus = not_wounded_bonus;
+	  }
+	  double ill_bonus = 0.0d;
+	  if(!inPop.isIll())
+	  {
+		ill_bonus = not_ill_bonus;
+	  }
+	  double pregnant_bonus = 0.0d;
+	  if(!inPop.isPregnantImmobile())
+	  {
+		pregnant_bonus = not_pregnantimmobile_bonus;
+	  }
+	  
+	  double ss_val = (inPop.getSoldierSkill() - ss_skill_min) / (ss_skill_max - ss_skill_min);
+	  double eq_val = (inPop.getAverageEquipmentQuality() - eq_quality_min) / (eq_quality_max - eq_quality_min);
+	  
+	  double pop_power = (racial_base + wounded_bonus + ill_bonus + pregnant_bonus + individualAdditivePopModifier) * individualMultPopModifier * (1.0d + ss_mult * Math.Pow(ss_val, ss_exponent)) * (1.0d + eq_mult * Math.Pow(eq_val, eq_exponent));
+	  
+	  double difficulty = 1.0d;
+	  if(getAPI().getLocalCommunity() != inPop.getCommunity())
+	  {
+		difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("foe combat power");
+		pop_power *= difficulty;
+	  }
+	  
+	  pop_power = Math.Max(minimum_power, pop_power);
+	  
+	  addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " has combat power " + pop_power + " from:" +
+		" racial_base=" + racial_base +
+		" wounded_bonus=" + wounded_bonus +
+		" ill_bonus=" + ill_bonus +
+		" pregnant_bonus=" + pregnant_bonus +
+		" individualAdditivePopModifier=" + individualAdditivePopModifier +
+		" individualMultPopModifier=" + individualMultPopModifier +
+		" ss_val=" + ss_val +
+		" eq_val=" + eq_val +
+		" difficulty=" + difficulty
+		);
+	  
+	  return new List&lt;object&gt;() { pop_power };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

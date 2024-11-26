@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<i1><a>calculateCarryWeightOfPops small_race carry_weight value</a> <b>double</b> <c>30.0</c></i1>
+			<i1><a>calculateCarryWeightOfPops average_race carry_weight value</a> <b>double</b> <c>50.0</c></i1>
+			<i1><a>calculateCarryWeightOfPops large_race carry_weight value</a> <b>double</b> <c>75.0</c></i1>
+			
+			<i1><a>calculateCarryWeightOfPops soldier_skill_max carry_weight addition</a> <b>double</b> <c>35.0</c></i1>
+			
+			<i1><a>calculateCarryWeightOfPops wounded carry_weight mult</a> <b>double</b> <c>0.5</c></i1>
+			<i1><a>calculateCarryWeightOfPops ill carry_weight mult</a> <b>double</b> <c>0.75</c></i1>
+			<i1><a>calculateCarryWeightOfPops pregnant_not_immobile carry_weight mult</a> <b>double</b> <c>0.9</c></i1>
+			<i1><a>calculateCarryWeightOfPops pregnant_immobile carry_weight mult</a> <b>double</b> <c>0.5</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script calculateCarryWeightOfPops</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which calculates an estimate of how many goods a group of pops (presumably on a delegation) can carry.  This is deterministic but not an enforced restriction -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	List<IFPop> inPops
+	-->
+	
+	<!-- output:
+	double outTotalCarryWeight
+	-->
+	<i1><a>calculateCarryWeightOfPops</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(List&lt;IFPop&gt;)}
+	      }, out _))
+	    {
+			throw new ArgumentException("calculateCarryWeightOfPops custom script received invalid arguments");
+			return null;
+	    }
+		
+		List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[0];
+		
+		if(inPops == null)
+		{
+			throw new ArgumentException("getRaceCareValues custom script received invalid arguments: inPops cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		double soldierSkillMax = consts.getSoldierSkillMax();
+		
+		//get custom consts:
+		double smallRaceBase = customConsts.getDoubleConst("calculateCarryWeightOfPops small_race carry_weight value", out bool success);
+		if(!success) smallRaceBase = 30.0d;
+		double mediumRaceBase = customConsts.getDoubleConst("calculateCarryWeightOfPops medium_race carry_weight value", out success);
+		if(!success) mediumRaceBase = 50.0d;
+		double largeRaceBase = customConsts.getDoubleConst("calculateCarryWeightOfPops large_race carry_weight value", out success);
+		if(!success) largeRaceBase = 75.0d;
+		
+		double soldierSkillCarryWeightAddMax = customConsts.getDoubleConst("calculateCarryWeightOfPops soldier_skill_max carry_weight addition", out success);
+		if(!success) soldierSkillCarryWeightAddMax = 35.0d;
+		
+		double woundedMult = customConsts.getDoubleConst("calculateCarryWeightOfPops wounded carry_weight mult", out success);
+		if(!success) woundedMult = 0.5d;
+		double illMult = customConsts.getDoubleConst("calculateCarryWeightOfPops ill carry_weight mult", out success);
+		if(!success) illMult = 0.75d;
+		double pregnantMult = customConsts.getDoubleConst("calculateCarryWeightOfPops pregnant_not_immobile carry_weight mult", out success);
+		if(!success) pregnantMult = 0.9d;
+		double pregnantImmobileMult = customConsts.getDoubleConst("calculateCarryWeightOfPops pregnant_immobile carry_weight mult", out success);
+		if(!success) pregnantImmobileMult = 0.5d;
+		
+		double sumOfCarryWeights = 0.0d;
+		foreach(IFPop pop in inPops)
+		{
+			if(pop == null)
+				continue;
+			if(pop.isDead())
+				continue;
+				
+			double baseCarryWeight = 0.0d;
+				
+			if(pop.getRace().hasTag("small carry weight"))
+			{
+				baseCarryWeight = smallRaceBase;
+			}
+			else if(pop.getRace().hasTag("large carry weight"))
+			{
+				baseCarryWeight = largeRaceBase;
+			}
+			else
+			{
+				baseCarryWeight = mediumRaceBase;
+			}
+			
+			double soldierSkillAdd = soldierSkillCarryWeightAddMax * (pop.getSoldierSkill()) / soldierSkillMax;
+			
+			double healthMult = 1.0d;
+			if(pop.isWounded())
+			{
+				healthMult *= woundedMult;
+			}
+			if(pop.isIll())
+			{
+				healthMult *= illMult;
+			}
+			if(pop.isPregnant())
+			{
+				if(pop.isPregnantImmobile())
+				{
+					healthMult *= pregnantImmobileMult;
+				}
+				else
+				{
+					healthMult *= pregnantMult;
+				}
+			}
+			
+			double thisPopCarryWeight = Math.Max(0.0d, (baseCarryWeight + soldierSkillAdd) * healthMult);
+			addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " carry weight=" + thisPopCarryWeight + " from base=" + baseCarryWeight + " soldierSkillAdd=" + soldierSkillAdd + " healthMult=" + healthMult);
+			
+			sumOfCarryWeights += thisPopCarryWeight;
+		}
+		addDebugMessage(inScriptInstance, "total carry weight of group of " + inPops.Count + " pops=" + sumOfCarryWeights);
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		toReturn.Add(sumOfCarryWeights);
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

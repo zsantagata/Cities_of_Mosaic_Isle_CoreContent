@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<!-- TODO explain each bit of the xml files and mod loading and how it works -->
+<!-- attributes: a moddableObject delcaration NEEDS name= attribute.  If and only if kind= attribute is "remove", the moddableObject is deleted.  This shifts the ordering of moddableObjects of that type (no in-game effect).  The default object cannot be removed.  When the kind=attribute is "remove", none of the declared elements matter. -->
+<!-- however note that spritesheets cannot be deleted, or have their list elements deleted/replaced/added to; they can only have their information overwritten by redeclaring the spritesheet -->
+<!-- lists: for list-type (including lists of tuples) moddable qualities, if the kind= attribute does not exist, or is "overwrite", previous items/default items in the list are discarded and new items added.  If the kind= attribute is "remove", then items are being removed from previous items/default items in the list (exact match for the first tuple-item).  If the kind= attribute is "add", then items are appended to the previously-declared/default-declared list.  If the kind= attribute is "replace", then the first item in the tuple list which has the same first inner-element (always a name or a reference to an MO) will have its other inner-elements replaced with the values provided.  When a non-tuple list is marked "replace", no action is taken (rethink what you're trying to do). -->
+<!-- default: if the name of an object is default, as are all objects in this file, then the object is not one that should exist during play.  Instead, the object is a fallback object.  Furthermore, when declaring a non-default object, if any element is not declared, the value contained by the default object is used. -->
+<!-- this means a modder could change the default values if they wanted to speed up the declaration of a group of similar objects.  However, remember: unless and until the default values in this file are restored, the changes will continue to other objects declared in the future if they do not declare all elements.  If this is not desired behavior, then it is the modder's responsibility to re-establish the values here in this file at the end of their files or mod. -->
+<core_data>
+	<!-- if these custom consts are 0, then the debug messages from these scripts are not logged.  Otherwise, they are logged. -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- logging consts related to this file's scripts must have this format or they won't work: -->
+			<!-- log_script_milcalc [calc name] -->
+			<i1><a>log_script_milcalc normalmilcalc</a> <b>int</b> <c>1</c></i1>
+			
+			<!-- other consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<!-- following this format will prevent name collisions: -->
+			<!-- milStrength [calc name] [variable] -->
+			<i1><a>milStrength normalmilcalc pop_contribution vertex</a> <b>int</b> <c>200</c></i1>
+			<i1><a>milStrength normalmilcalc pop_contribution asymptote_mult</a> <b>double</b> <c>10.0</c></i1>
+			<i1><a>milStrength normalmilcalc pop_contribution atvertex_mult</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>milStrength normalmilcalc trainingfactor empty</a> <b>double</b> <c>1.0</c></i1> <!-- this is used if the foreignAI does not have trainingfactor as a variable -->
+		</mCustomVariableList>
+	</customconsts>
+
+  <igMilStrengthCalculation name="normalMilCalc">
+	<mTagList>
+	</mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+	
+    <mScript> <!-- this script has one input: IFCommunity inCommunity. This script has one output: the new value of mil strength.  The value will be constrained between 0.0d and the maximum mil strength value as held by moddable game consts. -->
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	  return null;
+	}
+	
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	//TODO any racial considerations here, any variables that change anything here
+	//military strength is based on: pop count, military equipment quantity and quality, and a "training factor"
+	
+	//pop count:
+    Int64 popCount = 0;
+	foreach(IFPop pop in inCommunity.getPopsLoyalToCommunity(true, false))
+	{
+		if(!pop.hasDelegation() &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cInForeignCommunity))
+		{
+			popCount++;
+		}
+	}
+    foreach(var kvpair in inCommunity.getAdditionalUndeclaredPopCounts())
+    {
+		popCount += (Int64)kvpair.Value;
+    } 
+	if(popCount &lt;= 0)
+    {
+      addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " milStrength must be 0.0d for pop count of 0; returning early");
+      //return early
+      return new List&lt;object&gt;() { 0.0d };
+	}
+    Int64 popCountMilStrengthVertex = customConsts.getIntConst("milStrength normalmilcalc pop_contribution vertex", out bool success);
+	if(!success) popCountMilStrengthVertex = 200;
+    //at the vertex, the pop contribution multiplier is pop_contrib_atvertex; at pop count 0, the pop contribution multiplier is 0.0d; at infinity, the pop contribution multiplier is pop_contrib_asymptote
+    double pop_contrib_asymptote = customConsts.getDoubleConst("milStrength normalmilcalc pop_contribution asymptote_mult", out success);
+	if(!success) pop_contrib_asymptote = 10.0d;
+    double pop_contrib_atvertex = customConsts.getDoubleConst("milStrength normalmilcalc pop_contribution atvertex_mult", out success);
+	if(!success) pop_contrib_atvertex = 1.0d;
+    
+    double pop_count_multiplier = pop_contrib_asymptote * popCount / (popCount + popCountMilStrengthVertex * ((pop_contrib_asymptote / pop_contrib_atvertex) - 1));
+	
+	//military equipment quantity and quality:
+	//assemble a list of all military equipment:
+	List&lt;IFResource&gt; milResources = new List&lt;IFResource&gt;();
+	for(int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+		if(res.isMilEquip())
+		{
+			milResources.Add(res);
+		}
+	}
+	//average qualities of military equipment, with "not enough military equipment" at a minimum quality value
+	double minQual = consts.getResourceQualityMin();
+	double qualitySum = 0.0d;
+	IFResourcePool resPool = inCommunity.getResourcePool();
+	for(int i = 0; i &lt; milResources.Count; i++)
+	{
+		IFResource res = milResources[i];
+		Int64 countExisting = (Int64)resPool.getResourceQuantity(res);
+		double qualityRes = resPool.getResourceQuality(res);
+		if(countExisting &lt; popCount)
+		{
+			qualityRes = (qualityRes * countExisting + minQual * (popCount - countExisting)) / (popCount);
+		}
+		qualitySum += qualityRes;
+      }
+      double qualityAvg = minQual;
+      if(milResources.Count != 0)
+      {
+		qualityAvg = qualitySum / milResources.Count;
+      }
+
+      //TODO: once combat calculations are figured out, turn qualityAvg into some sort of factor
+      double equipmentFactor = 1.0d;
+
+      //"training factor":
+      double todayTrainingFactor = variableHandler.getDouble("ai" + inCommunity.getUID() + "_trainingFactor", out success);
+      if(!success)
+      {
+		  todayTrainingFactor = customConsts.getDoubleConst("milStrength normalmilcalc trainingfactor empty", out success);
+		  if(!success) todayTrainingFactor = 1.0d;
+      }
+
+      double milStrength = pop_count_multiplier * equipmentFactor * todayTrainingFactor * consts.getMilStrengthMax();
+      addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " milStrength changing to " + milStrength + " from pop_count_multiplier=" + pop_count_multiplier + ", equipmentFactor= " + equipmentFactor + ", todayTrainingFactor=" + todayTrainingFactor);
+
+      return new List&lt;object&gt;() { milStrength };
+	</mScript> 
+	
+  </igMilStrengthCalculation>
+  
+</core_data>

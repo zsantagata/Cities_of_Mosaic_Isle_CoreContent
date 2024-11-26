@@ -1,0 +1,214 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>determineAttackerResults_resourcesTarget goods_destroy base</a> <b>double</b> <c>7.5</c></i1> <!-- each pop will destroy this amount of goods if destroying goods -->
+	  <i1><a>determineAttackerResults_resourcesTarget goods_steal base</a> <b>double</b> <c>3.75</c></i1> <!-- each pop will steal this amount of goods if stealing goods -->
+	  
+	  <!-- based on a pop's military equipment and military skill, it could destroy less or more goods -->
+	  <i1><a>determineAttackerResults_resourcesTarget goods_destroy mil_equip_factor min</a> <b>double</b> <c>0.9</c></i1> <!-- military equipment hardly changes how many goods a pop can destroy -->
+	  <i1><a>determineAttackerResults_resourcesTarget goods_destroy mil_equip_factor max</a> <b>double</b> <c>1.1</c></i1> <!-- military equipment hardly changes how many goods a pop can destroy -->
+	  <i1><a>determineAttackerResults_resourcesTarget goods_destroy soldier_skill_factor min</a> <b>double</b> <c>0.75</c></i1> <!-- soldier skill slightly changes how many goods a pop can destroy -->
+	  <i1><a>determineAttackerResults_resourcesTarget goods_destroy soldier_skill_factor max</a> <b>double</b> <c>1.25</c></i1> <!-- soldier skill slightly changes how many goods a pop can destroy -->
+	  
+	  <i1><a>determineAttackerResults_resourcesTarget goods_destroy total_rand_multiplier min</a> <b>double</b> <c>0.70</c></i1> <!-- circumstance can significantly change how many goods pops destroy -->
+	  <i1><a>determineAttackerResults_resourcesTarget goods_destroy total_rand_multiplier max</a> <b>double</b> <c>1.40</c></i1> <!-- circumstance can significantly change how many goods pops destroy -->
+	  
+	  <i1><a>determineAttackerResults_resourcesTarget goods_steal soldier_skill_factor min</a> <b>double</b> <c>0.85</c></i1> <!-- soldier skill slightly changes how many goods a pop can steal -->
+	  <i1><a>determineAttackerResults_resourcesTarget goods_steal soldier_skill_factor max</a> <b>double</b> <c>1.50</c></i1> <!-- soldier skill slightly changes how many goods a pop can steal -->
+	  
+	  <i1><a>determineAttackerResults_resourcesTarget goods_steal total_rand_multiplier min</a> <b>double</b> <c>0.60</c></i1> <!-- circumstance can significantly change how many goods pops steal -->
+	  <i1><a>determineAttackerResults_resourcesTarget goods_steal total_rand_multiplier max</a> <b>double</b> <c>1.80</c></i1> <!-- circumstance can significantly change how many goods pops steal -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script determineattackerresults_resourcestarget</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which determines the result of one day of player-sourced-delegation attack on an enemy community -->
+  <!-- this specific script is a common script for the attack target of "resources" -->
+  <!-- if this is a war delegation, the attackers will try to destroy resources.  Otherwise, the attackers will try to steal resources -->
+  <!-- priority resources for destruction are: food, hstasis, medicine, military.  priority resources for stealing are these, and trade resources.  All other resources are considered non-priority and will be stolen only if there are no priority resources. -->
+  <!-- This script will take the appropriate resources away, and add them to the delegation's resource pool (if stealing). -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation,
+	List<IFPop> inDelegationAttackers, //can be empty but should not be null
+	List<IFPop> inEnemyDefenders, //can be empty but should not be null
+	bool inRaiding //if false it means war
+	
+	There is one output: double outAlwaysZeroOutput.  It is unused but is placed here to make this script's output the same as other determineAttackerResults_ scripts -->
+	<i1><a>determineAttackerResults_resourcesTarget</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation), typeof(List&lt;IFPop&gt;), typeof(List&lt;IFPop&gt;), typeof(bool)}
+	  }, out _))
+	{
+		throw new ArgumentException("determineAttackerResults_resourcesTarget custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	List&lt;IFPop&gt; inDelegationAttackers = (List&lt;IFPop&gt;)inArguments[1];
+	List&lt;IFPop&gt; inEnemyDefenders = (List&lt;IFPop&gt;)inArguments[2];  //this is unused but we include it here to have this script's inputs the same as other determineAttackerResults_ scripts
+	bool inRaiding = (bool)inArguments[3];
+	
+	IFCommunity inEnemyCommunity = inDelegation.getTargetCommunity();
+	
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	//first: if inDelegationAttackers is empty, there is nothing to process:
+	List&lt;object&gt; toReturn = new List&lt;object&gt;() { 0.0d };
+	if(inDelegationAttackers.Count == 0)
+	{
+		addDebugMessage(inScriptInstance, "There are no attackers, so no processing needs to happen");
+		return toReturn;
+	}
+	
+	double resQualMin = consts.getResourceQualityMin();
+	double resQualMax = consts.getResourceQualityMax();
+	double soldierSkillMin = consts.getSoldierSkillMin();
+	double soldierSkillMax = consts.getSoldierSkillMax();
+	
+	//get all the custom consts:
+	double goodsDestroyBase = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_destroy base", out bool success);
+	if(!success) goodsDestroyBase = 7.5d;
+	
+	double milEquipFactorMin = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_destroy mil_equip_factor min", out success);
+	if(!success) milEquipFactorMin = 0.9d;
+	double milEquipFactorMax = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_destroy mil_equip_factor max", out success);
+	if(!success) milEquipFactorMax = 1.1d;
+	
+	double soldierSkillDestroyFactorMin = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_destroy soldier_skill_factor min", out success);
+	if(!success) soldierSkillDestroyFactorMin = 0.75d;
+	double soldierSkillDestroyFactorMax = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_destroy soldier_skill_factor max", out success);
+	if(!success) soldierSkillDestroyFactorMax = 1.25d;
+	
+	double randDestroyFactorMin = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_destroy total_rand_multiplier min", out success);
+	if(!success) randDestroyFactorMin = 0.7d;
+	double randDestroyFactorMax = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_destroy total_rand_multiplier max", out success);
+	if(!success) randDestroyFactorMax = 1.4d;
+	
+	double goodsStealBase = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_steal base", out success);
+	if(!success) goodsStealBase = 3.75d;
+	
+	double soldierSkillStealFactorMin = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_steal soldier_skill_factor min", out success);
+	if(!success) soldierSkillStealFactorMin = 0.85d;
+	double soldierSkillStealFactorMax = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_steal soldier_skill_factor max", out success);
+	if(!success) soldierSkillStealFactorMax = 1.50d;
+	
+	double randStealFactorMin = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_steal total_rand_multiplier min", out success);
+	if(!success) randStealFactorMin = 0.60d;
+	double randStealFactorMax = customConsts.getDoubleConst("determineAttackerResults_resourcesTarget goods_steal total_rand_multiplier max", out success);
+	if(!success) randStealFactorMax = 1.80d;
+	
+	double goodsImpactBase = inRaiding ? goodsStealBase : goodsDestroyBase;
+	double soldierSkillFactorMin = inRaiding ? soldierSkillStealFactorMin : soldierSkillDestroyFactorMin;
+	double soldierSkillFactorMax = inRaiding ? soldierSkillStealFactorMax : soldierSkillDestroyFactorMax;
+	double randFactorMin = inRaiding ? randStealFactorMin : randDestroyFactorMin;
+	double randFactorMax = inRaiding ? randStealFactorMax : randDestroyFactorMax;
+	
+	//first, count up the total resources impacted:
+	double countResourcesImpacted = 0.0d;
+	foreach(IFPop attacker in inDelegationAttackers)
+	{
+		double soldierSkillFactor = soldierSkillFactorMin + (soldierSkillFactorMax - soldierSkillFactorMin) * ((attacker.getSoldierSkill() - soldierSkillMin) / (soldierSkillMax - soldierSkillMin));
+		double randFactor = randFactorMin + (randFactorMax - randFactorMin) * getAPI().calcRand();
+		double milEquipFactor = inRaiding ? 1.0d : milEquipFactorMin + (milEquipFactorMax - milEquipFactorMin) * ((attacker.getAverageEquipmentQuality() - resQualMin) / (resQualMax - resQualMin));
+		double popResourcesImpacted = goodsImpactBase * milEquipFactor * soldierSkillFactor * randFactor;
+		
+		addDebugMessage(inScriptInstance, "pop " + attacker.getDebugName() + " will " + (inRaiding ? "steal " : "destroy ") + popResourcesImpacted + " priority resources");
+		countResourcesImpacted += popResourcesImpacted;
+	}
+	addDebugMessage(inScriptInstance, countResourcesImpacted + " resources total will be " + (inRaiding ? "stolen" : "destroyed"));
+	
+	//steal/destroy priority resources:
+	Int64 priorityFlags = 0;
+	priorityFlags |= (Int64)IFResource.eResourceQualities.cFood;
+	priorityFlags |= (Int64)IFResource.eResourceQualities.cHStasis;
+	priorityFlags |= (Int64)IFResource.eResourceQualities.cWoundHeal;
+	priorityFlags |= (Int64)IFResource.eResourceQualities.cDiseaseHeal;
+	priorityFlags |= (Int64)IFResource.eResourceQualities.cMilEquip;
+	if(inRaiding)
+	{
+		priorityFlags |= (Int64)IFResource.eResourceQualities.cDrug;
+		priorityFlags |= (Int64)IFResource.eResourceQualities.cTrade;
+	}
+	IFResourcePool delegationResourcePool = inDelegation.getResourcePool();
+	List&lt;IFResource&gt; resourcePriorities = new List&lt;IFResource&gt;();
+	
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res != null)
+		{
+			if(!res.isNotInResourcePool())
+			{
+				if(res.isFood() || res.isHStasis() || res.isWoundHeal() || res.isDiseaseHeal() || res.isMilEquip())
+				{
+					resourcePriorities.Add(res);
+				}
+				else if(inRaiding &amp;&amp; (res.isDrug() || res.isTrade()))
+				{
+					resourcePriorities.Add(res);
+				}
+			}
+		}
+	}
+	
+	if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;()
+		{ inEnemyCommunity.getResourcePool(), true, false, resourcePriorities,
+		  countResourcesImpacted, true, false, false, false, false, false, true }, //more random quantities
+		out List&lt;object&gt; outPriorityResourcesConsumed, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+	{
+		double actualResourcesConsumed = (double)outPriorityResourcesConsumed[0];
+		countResourcesImpacted -= actualResourcesConsumed;
+		addDebugMessage(inScriptInstance, actualResourcesConsumed + " priority resources " + (inRaiding ? "stolen" : "destroyed"));
+		if(inRaiding)
+		{
+			Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesStolen = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)outPriorityResourcesConsumed[2];
+			foreach(var kvpair in resourcesStolen)
+			{
+				delegationResourcePool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+			}
+		}
+	}
+	
+	//if there is left over effort, steal or destroy amongst all resources:
+	if(countResourcesImpacted &gt; 0.0d)
+	{
+		if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;()
+			{ inEnemyCommunity.getResourcePool(), false, false, null, countResourcesImpacted, true, false, false, false, false, false, true }, //more random quantities
+			out List&lt;object&gt; outNonPriorityResourcesConsumed, true, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+		{
+			double actualResourcesConsumed = (double)outNonPriorityResourcesConsumed[0];
+			addDebugMessage(inScriptInstance, actualResourcesConsumed + " non-priority resources " + (inRaiding ? "stolen" : "destroyed"));
+			if(inRaiding)
+			{
+				Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesStolen = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)outNonPriorityResourcesConsumed[2];
+				foreach(var kvpair in resourcesStolen)
+				{
+					delegationResourcePool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+				}
+			}
+		}
+	}
+	
+	return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

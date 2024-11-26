@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<!-- TODO explain each bit of the xml files and mod loading and how it works -->
+<!-- attributes: a moddableObject delcaration NEEDS name= attribute.  If and only if kind= attribute is "remove", the moddableObject is deleted.  This shifts the ordering of moddableObjects of that type (no in-game effect).  The default object cannot be removed.  When the kind=attribute is "remove", none of the declared elements matter. -->
+<!-- however note that spritesheets cannot be deleted, or have their list elements deleted/replaced/added to; they can only have their information overwritten by redeclaring the spritesheet -->
+<!-- lists: for list-type (including lists of tuples) moddable qualities, if the kind= attribute does not exist, or is "overwrite", previous items/default items in the list are discarded and new items added.  If the kind= attribute is "remove", then items are being removed from previous items/default items in the list (exact match for the first tuple-item).  If the kind= attribute is "add", then items are appended to the previously-declared/default-declared list.  If the kind= attribute is "replace", then the first item in the tuple list which has the same first inner-element (always a name or a reference to an MO) will have its other inner-elements replaced with the values provided.  When a non-tuple list is marked "replace", no action is taken (rethink what you're trying to do). -->
+<!-- default: if the name of an object is default, as are all objects in this file, then the object is not one that should exist during play.  Instead, the object is a fallback object.  Furthermore, when declaring a non-default object, if any element is not declared, the value contained by the default object is used. -->
+<!-- this means a modder could change the default values if they wanted to speed up the declaration of a group of similar objects.  However, remember: unless and until the default values in this file are restored, the changes will continue to other objects declared in the future if they do not declare all elements.  If this is not desired behavior, then it is the modder's responsibility to re-establish the values here in this file at the end of their files or mod. -->
+<core_data>
+	<!-- if these custom consts are 0, then the debug messages from these scripts are not logged.  Otherwise, they are logged. -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- logging consts related to this file's scripts must have this format or they won't work: -->
+			<!-- log_script_milcalc [calc name] -->
+			<i1><a>log_script_milcalc playeronlymilcalc</a> <b>int</b> <c>1</c></i1>
+			
+			<!-- other consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<!-- following this format will prevent name collisions: -->
+			<!-- milStrength [calc name] [variable] -->
+			
+			<!-- the military strength of the local community will be calculated by the sum of the combat power of all alive pops of the community -->
+			<!-- pops in settlement and emigration delegations will not count, and pops in other delegations will count at only a fraction -->
+			<!-- the combat power script includes equipment and health (obviously), so it's all summed up there -->
+			<i1><a>milStrength playeronlymilcalc pop_delegation reduce_factor</a> <b>double</b> <c>0.5</c></i1> <!-- the combat power of pops in delegations that intend to return will be multiplied by this -->
+			<!-- NTS: an untrained, unequipped healthy person of an average race has a combat power of 80.0 -->
+			<!-- NTS: a perfectly trained, perfectly equipped healthy person of a powerful race has a combat power of 831.25 -->
+			<i1><a>milStrength playeronlymilcalc pop_power vertex</a> <b>double</b> <c>50000</c></i1> <!-- at this sum of combat power, the pop_power multiplier will be as below -->
+			<i1><a>milStrength playeronlymilcalc pop_power atvertex_mult</a> <b>double</b> <c>0.95</c></i1> <!-- at the combat power above, the pop_power multiplier will be this -->
+			<i1><a>milStrength playeronlymilcalc pop_power asymptote_mult</a> <b>double</b> <c>1.35</c></i1> <!-- as combat power goes to infinity, the pop_power multiplier will tend to this -->
+			
+			<!-- the getCombatPowerOfPop script which calculates combat power only includes equipment which the pop is currently holding. -->
+			<!-- however, military power should include equipment that a pop *could* hold -->
+			<!-- we could either directly link getCombatPowerOfPop to this by replicating the calculation, change getCombatPowerOfPop weirdly, or handwave it -->
+			<!-- for ease of calculation, we choose to handwave it: if a pop could equip a full set of military equipment at perfect quality, their power should be multiplied by ((combat_power average_equipment_quality multiplier) + 1) -->
+			<!-- so, linearly scale up to that multiplier based on how much military equipment quality could be improved from the stockpile -->
+			<!-- no custom consts are used in doing this -->
+		</mCustomVariableList>
+	</customconsts>
+
+  <igMilStrengthCalculation name="playerOnlyMilCalc">
+	<mPlayerMilStrengthQuals>3</mPlayerMilStrengthQuals> <!-- 0x1 = player only calculation; 0x2 = player only calculation that can be chosen randomly -->
+	
+	<mTagList>
+	</mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+	
+    <mScript> <!-- this script has one input: IFCommunity inCommunity. This script has one output: the new value of mil strength.  The value will be constrained between 0.0d and the maximum mil strength value as held by moddable game consts. -->
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	  return null;
+	}
+	
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	var customScripts = getAPI().getCustomScripts();
+	
+	//the player's defending military ability is based on:
+	//population count, soldier skill, and health
+	//presence of certain buildings (like pits or walls), and location of mustering points
+	//equipment held by pops
+	//equipment in storage right now
+	
+	//the player's attacking military ability is based on:
+	//population count, soldier skill, and health
+	//resources necessary for a war/raiding delegation (food, hstasis, wound cure, ill cure)
+	//equipment held by pops
+	//equipment in storage right now
+	
+	//in the base game, there are not buildings which improve fights or attack enemies themselves (such as a trap); there are only pits and walls.
+	//Therefore, while buildings enable logistics (where pops muster, where attackers are restricted to unless they attack buildings, etc.) which certainly impacts military outcomes, they do not represent "fighting power".
+	//Same for resources necessary for a war/raiding delegation.
+	//Based on the understanding that most players like overcoming the odds using cleverness, ignoring buildings in calculating military power can help bring fun for the player as they prove expectations wrong.
+	//Regarding resources, players will likely consider non-military resources as part of their "economic" strength and it could be unintuitive to consider them for both economic and military strength.
+	//Therefore, this calculation will ignore buildings and non-military resources.
+	
+	//The "fighting power" of the community is, therefore, the people the community could gather to fight and the equipment the community could give them.
+	//Pops in delegations expected to return (war, raiding, trade, diplomacy) have a partial applicability of the word "could" and therefore their contribution is multiplied by a fraction
+	
+	//fetch consts:
+	double minQual = consts.getResourceQualityMin();
+	double maxQual = consts.getResourceQualityMax();
+	
+	//fetch custom consts:
+	double delegationReduceFactor = customConsts.getDoubleConst("milStrength playeronlymilcalc pop_delegation reduce_factor", out bool success);
+	if(!success) delegationReduceFactor = 0.5d;
+	
+	double popPowerVertex = customConsts.getDoubleConst("milStrength playeronlymilcalc pop_power vertex", out success);
+	if(!success) popPowerVertex = 50000.0d;
+	double popPowerVertexMult = customConsts.getDoubleConst("milStrength playeronlymilcalc pop_power atvertex_mult", out success);
+	if(!success) popPowerVertexMult = 0.95d;
+	double popPowerAsymptote = customConsts.getDoubleConst("milStrength playeronlymilcalc pop_power asymptote_mult", out success);
+	if(!success) popPowerAsymptote = 1.35d;
+	
+	double maxCombatPowerEquipMult = customConsts.getDoubleConst("combat_power average_equipment_quality multiplier", out success);
+	if(!success) maxCombatPowerEquipMult = 1.5d;
+	
+	//first, gather all military resources:
+	Dictionary&lt;IFResource, double&gt; milEquipResourceCounts = new Dictionary&lt;IFResource, double&gt;();
+	Dictionary&lt;IFResource, double&gt; milEquipResourceQualities = new Dictionary&lt;IFResource, double&gt;();
+	IFResourcePool resPool = inCommunity.getResourcePool();
+	int totalCountOfResourceKinds = (int)getAPI().getTotalCountOfMO("resources");
+	for(int moid = 1; moid &lt; totalCountOfResourceKinds; moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res != null)
+		{
+			if(res.isMilEquip())
+			{
+				milEquipResourceCounts.Add(res, resPool.getResourceQuantity(res));
+				milEquipResourceQualities.Add(res, resPool.getResourceQuality(res));
+			}
+		}
+	}
+	
+	//then, tally up power from pops:
+	double totalPower = 0.0d;
+	foreach(IFPop pop in inCommunity.getPopsLoyalToCommunity(true, false))
+	{
+			double delegationMult = 1.0d;
+			if(pop.hasDelegation())
+			{
+				if((pop.getDelegation().getDelegationType() == IFDelegation.eDelegationType.cSettlement) || (pop.getDelegation().getDelegationType() == IFDelegation.eDelegationType.cEmigration))
+				{
+					//it is not expected for this pop to return to the community so it would not reasonably be included in any fights
+					continue;
+				}
+				delegationMult = 0.5d;
+			}
+			
+			//for each military resource, fetch how much better the pop's equipment could be if it equipped from the community resource pool:
+			double totalQualityImprovement = 0.0d;
+			foreach(var kvpair in milEquipResourceQualities)
+			{
+				double equipQual = pop.getEquipmentQuality(kvpair.Key);
+				if(equipQual &lt; kvpair.Value)
+				{
+					if(milEquipResourceCounts[kvpair.Key] &gt;= 1.0d)
+					{
+						milEquipResourceCounts[kvpair.Key] -= 1.0d;
+						totalQualityImprovement += (kvpair.Value - equipQual);
+					}
+				}
+			}
+			totalQualityImprovement /= (milEquipResourceQualities.Count);
+			totalQualityImprovement /= (maxQual - minQual);
+			//now totalQualityImprovement is between 0.0 and 1.0 (for "no improvement" -> "perfect improvement")
+			
+			double multForPotentialImprovement = 1.0d + (totalQualityImprovement * maxCombatPowerEquipMult);
+			
+			double pop_power = 0.0d;
+			if(customScripts.runCustomScriptCheckTypes("getCombatPowerOfPop", new List&lt;object&gt;() { pop },
+									out List&lt;object&gt; combatPower, true, typeof(double)))
+			{
+				pop_power = (double)combatPower[0];
+			}
+			
+			double contribFromThisPop = pop_power * delegationMult * multForPotentialImprovement;
+			
+			addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " contributes " + pop_power + " from direct power=" + pop_power + " delegation multiplier=" + delegationMult + " multForPotentialImprovement=" + multForPotentialImprovement);
+			totalPower += contribFromThisPop;
+	}
+	
+	double milStrength = popPowerAsymptote * totalPower / (totalPower + popPowerVertex * ( (popPowerAsymptote / popPowerVertexMult) - 1));
+	milStrength *= consts.getMilStrengthMax();
+	
+	addDebugMessage(inScriptInstance, "player community mil strength is now " + milStrength + " (before limit of " + consts.getMilStrengthMax() + ") from total combat power of " + totalPower);
+	milStrength = Math.Min(milStrength, consts.getMilStrengthMax());
+
+    return new List&lt;object&gt;() { milStrength };
+	</mScript> 
+	
+  </igMilStrengthCalculation>
+  
+</core_data>

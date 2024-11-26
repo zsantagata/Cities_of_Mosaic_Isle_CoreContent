@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the NeutralLeaveMap state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: A pop is NeutralLeaveMap when it is a neutral pop during peacetime, and it wants to leave the map -->
+		<i1><a>NeutralLeaveMap</a>
+		<b>0.1</b><c>25.0</c></i1>
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to NeutralLeaveMap: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_NeutralLeaveMap -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>pathfinding_state_NeutralLeaveMap leave_map radius</a> <b>double</b> <c>0.25</c></i1> <!-- if a pop is closer than this to the map edge it will leave the map -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_neutralleavemap_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_neutralleavemap_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_neutralleavemap</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to NeutralLeaveMap: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_NeutralLeaveMap -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_NeutralLeaveMap_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_NeutralLeaveMap_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_NeutralLeaveMap_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//the following conditions are necessary for transition into this state:
+				//A) the pop must be neutral (AKA neither loyal to the player community or an enemy)
+				//B) the pop must not desire to stay on the map (AKA it has spent too long on the map)
+				bool neutral = (inPop.getCommunity() != getAPI().getLocalCommunity()) &amp;&amp; !getAPI().isHostileCommunity(inPop.getCommunity());
+				bool desireToStay = false;
+				if(neutral)
+				{
+					if(customScripts.runCustomScriptCheckTypes("doesNeutralPopDesireToStay", new List&lt;object&gt;() {inPop},
+						out List&lt;object&gt; desiresToStay, false, typeof(bool)))
+					{
+						desireToStay = (bool)desiresToStay[0];
+					}
+				}
+				toReturn.Add(neutral &amp;&amp; !desireToStay);
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_NeutralLeaveMap_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_NeutralLeaveMap_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_NeutralLeaveMap_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//we can do some cleanup of the neutral pop here: if it has a home, remove that assignment
+				if(inPop.hasHomeBuilding())
+				{
+					inPop.setHomeBuilding(null);
+				}
+				
+				//this is simple: just tell the pop to leave the map
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(true);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_NeutralLeaveMap" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+
+				addDebugMessage(inScriptInstance, "default state_NeutralLeaveMap script is finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//if we are close to the map edge, leave:
+				bool close_to_map_edge = false;
+				double x_loc = inPop.getMapLocationX();
+				double y_loc = inPop.getMapLocationY();
+				double radiusToLeaveMap = customConsts.getDoubleConst("pathfinding_state_NeutralLeaveMap leave_map radius", out bool success);
+				if(!success) radiusToLeaveMap = 0.25d;
+				if((x_loc &lt;= radiusToLeaveMap) || (y_loc &lt;= radiusToLeaveMap))
+				{
+					close_to_map_edge = true;
+				}
+				else if((inLocalMap.getMapDimensions().Item1 &lt;= (x_loc + radiusToLeaveMap)) || (inLocalMap.getMapDimensions().Item2 &lt;= (y_loc + radiusToLeaveMap)))
+				{
+					close_to_map_edge = true;
+				}
+				if(close_to_map_edge)
+				{
+					inPop.removePopFromMap(IFPop.ePopLocation.cUnspecifiedNowhere);
+					addDebugMessage(inScriptInstance, "pop has left the map; removing from map (pathfinding scripts will return information for Idle state)");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if we are somehow in battle unexpectedly, transition this pop based on its loyalty and mustered status:
+				if(inBattleOngoing)
+				{
+					string newState = "";
+					if(inPop.getCommunity() == getAPI().getLocalCommunity())
+					{
+						if(inPop.isMustered())
+						{
+							newState = "Idle";
+						}
+						else
+						{
+							newState = "UnmusteredInBattle";
+						}
+					}
+					else if(getAPI().getHostileCommunities().Contains(inPop.getCommunity()))
+					{
+						newState = "EnemyIdleEval";
+					}
+					else
+					{
+						newState = "UnmusteredInBattle";
+					}
+					//construct toReturn as necessary:
+					toReturn.Add(newState);
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if this pop suddenly has a violent intent, stop leaving the map and perform the violent intent:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"ViolentIntent", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the ViolentIntent state due to: " + " pop is neutral and has violent intent");
+						toReturn.Add("ViolentIntent");
+						toReturn.Add((IFBuilding)validTgt[1]);
+						toReturn.Add((IFPop)validTgt[2]);
+						toReturn.Add((bool)validTgt[3]);
+						toReturn.Add((double)validTgt[4]);
+						toReturn.Add((double)validTgt[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the ViolentIntent state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if we want to stay on the map again but do not have a home, transition to NeutralWanderingNoHome
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"NeutralWanderingNoHome", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt2, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt2[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the NeutralWanderingNoHome state due to: " + " pop now wants to stay on the map and has no home");
+						toReturn.Add("NeutralWanderingNoHome");
+						toReturn.Add((IFBuilding)validTgt2[1]);
+						toReturn.Add((IFPop)validTgt2[2]);
+						toReturn.Add((bool)validTgt2[3]);
+						toReturn.Add((double)validTgt2[4]);
+						toReturn.Add((double)validTgt2[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the NeutralWanderingNoHome state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if we want to stay on the map again and have a home again, transition to NeutralWanderingNearHome
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"NeutralWanderingNearHome", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt3, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt3[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the NeutralWanderingNearHome state due to: " + " pop now wants to stay on the map and has a home");
+						toReturn.Add("NeutralWanderingNearHome");
+						toReturn.Add((IFBuilding)validTgt3[1]);
+						toReturn.Add((IFPop)validTgt3[2]);
+						toReturn.Add((bool)validTgt3[3]);
+						toReturn.Add((double)validTgt3[4]);
+						toReturn.Add((double)validTgt3[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the NeutralWanderingNearHome state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//we're here because the pop wants to leave the map still but is not close enough to do so; stay in this state and keep moving
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"NeutralLeaveMap", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt4, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt4[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the NeutralLeaveMap state due to: " + " pop is neutral and has not reached map edge yet");
+						toReturn.Add("NeutralLeaveMap");
+						toReturn.Add((IFBuilding)validTgt4[1]);
+						toReturn.Add((IFPop)validTgt4[2]);
+						toReturn.Add((bool)validTgt4[3]);
+						toReturn.Add((double)validTgt4[4]);
+						toReturn.Add((double)validTgt4[5]);
+						return toReturn;
+					}
+				}
+				//we failed to call a script correctly somehow.  Transition to Idle instead:
+				addDebugMessage(inScriptInstance, "custom scripts indicated pop could not stay in the NeutralLeaveMap state so pop is transitioning directly to Idle state");
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_NeutralLeaveMap</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

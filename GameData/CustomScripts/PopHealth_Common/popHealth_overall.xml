@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+		<i1><a>popHealth_overall water_to_hstasis mult</a> <b>double</b> <c>0.1</c></i1> <!-- hstasis health benefits from having water needs met -->
+		<i1><a>popHealth_overall mcal_to_hstasis mult</a> <b>double</b> <c>0.1</c></i1> <!-- hstasis health benefits from having mcal needs met -->
+		<i1><a>popHealth_overall from_each above_threshold_bonus mult</a> <b>double</b> <c>0.25</c></i1> <!-- having an individual health need above the high threshold provides a bonus to overall health -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script pophealth_overall</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which handles overall pop health (this should be called after protein/mcal/water/hstasis health scripts are called) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop
+	
+	There is no output -->
+	<i1><a>popHealth_overall</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popHealth_overall custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	  double low_thresh = consts.getHealthLowThreshold();
+	  double high_thresh = consts.getHealthHighThreshold();
+	  double min = consts.getHealthMin();
+	  double max = consts.getHealthMax();
+	  
+	  // TODO any race or other non-standard considerations 
+	  
+	  // there are two effects that are modeled here which change individual health levels (protein, mcal, water and hstasis) from their direct calculations above: 
+	  // A) people who are not incapable will seek out a minimum of their MCal, water, and HStasis needs to keep themselves alive.  These healths have increased minimums for capable pops.  Protein is deliberately kept out of this. 
+	  // B) homeostasis consumes food and water to heat/cool the body, so HStasis health gets a bonus from MCal health and water health 
+	  // also we do bounds checking that individual health levels are between min and max 
+	  
+	  // there are two effects that individual health levels have on overall health: 
+	  // C) as each of protein/MCal/water/hstasis health levels reach above a threshold (ideal conditions), overall stress is reduced, resulting in a minor overall health bonus 
+	  // D) as protein/MCal/water/hstasis health fall below a threshold towards minimum levels, overall health must approach minimum 
+	  
+	  //for printout:
+	  string log = "";
+	  
+	  double protHealthNew = inPop.getProteinHealth();
+	  double mcalHealthNew = inPop.getMCalHealth();
+	  double waterHealthNew = inPop.getWaterHealth();
+	  double hstasisHealthNew = inPop.getHStasisHealth();
+	  
+	  // A) 
+	  if(inPop.isPopNoHealthStatus()) {
+	    log += "pop has no health status";
+	    // protein deliberately kept out of this 
+		if(mcalHealthNew &lt; low_thresh) {
+		  mcalHealthNew = low_thresh;
+		  log += ", therefore mcal health will not fall below " + low_thresh;
+		}
+		if(waterHealthNew &lt; low_thresh) {
+		  waterHealthNew = low_thresh;
+		  log += ", therefore water health will not fall below " + low_thresh;
+		}
+		if(hstasisHealthNew &lt; low_thresh) {
+		  hstasisHealthNew = low_thresh;
+		  log += ", therefore hstasis health will not fall below " + low_thresh;
+		}
+		log += ";";
+	  }
+	  
+	  // B) 
+	  //TODO: label biomes as cold or hot (and have this changeable by variables), so that only one of these applies at a time:
+	  bool success = false;
+	  if(waterHealthNew &gt; low_thresh)
+	  {
+		double water_to_hstasis_factor = customConsts.getDoubleConst("popHealth_overall water_to_hstasis mult", out success);
+		if(!success) water_to_hstasis_factor = 0.1d;
+	    hstasisHealthNew = (hstasisHealthNew + (water_to_hstasis_factor * (waterHealthNew - low_thresh)));
+	    log += " using water health to maintain homeostasis (increase hstasis by " + (water_to_hstasis_factor * (waterHealthNew - low_thresh)) + " to " + hstasisHealthNew + ");";
+	  }
+	  if(mcalHealthNew &gt; low_thresh)
+	  {
+		double mcal_to_hstasis_factor = customConsts.getDoubleConst("popHealth_overall mcal_to_hstasis mult", out success);
+		if(!success) mcal_to_hstasis_factor = 0.1d;
+	    hstasisHealthNew = (hstasisHealthNew + (mcal_to_hstasis_factor * (mcalHealthNew - low_thresh)));
+	    log += " using mcal health to maintain homeostasis (increase hstasis by " + (mcal_to_hstasis_factor * (mcalHealthNew - low_thresh)) + " to " + hstasisHealthNew + ");";
+	  }
+	  
+	  // bounds 
+	  if(protHealthNew &lt; min) {
+	    protHealthNew = min;
+	  }
+	  else if (protHealthNew &gt; max) {
+	    protHealthNew = max;
+	  }
+	  if(mcalHealthNew &lt; min) {
+	    mcalHealthNew = min;
+      }
+	  else if (mcalHealthNew &gt; max) {
+	    mcalHealthNew = max;
+	  }
+	  if(waterHealthNew &lt; min) {
+	    waterHealthNew = min;
+	  }
+	  else if (waterHealthNew &gt; max) {
+	    waterHealthNew = max;
+	  }
+	  if(hstasisHealthNew &lt; min) {
+	    hstasisHealthNew = min;
+	  }
+	  else if (hstasisHealthNew &gt; max) {
+	    hstasisHealthNew = max;
+	  }
+	  
+	  // C) 
+	  double additiveBonus = 0;
+	  double bonus_factor = customConsts.getDoubleConst("popHealth_overall from_each above_threshold_bonus mult", out success);
+	  if(!success) bonus_factor = 0.25d;
+	  if(protHealthNew &gt; high_thresh) {
+	    log += " high protein health providing bonus to overall health of " + ((protHealthNew - high_thresh) * bonus_factor) + ";";
+	    additiveBonus = additiveBonus + ((protHealthNew - high_thresh) * bonus_factor);
+	  }
+	  if(mcalHealthNew &gt; high_thresh) {
+	    log += " high mcal health providing bonus to overall health of " + ((mcalHealthNew - high_thresh) * bonus_factor) + ";";
+	    additiveBonus = additiveBonus + ((mcalHealthNew - high_thresh) * bonus_factor);
+	  }
+	  if(waterHealthNew &gt; high_thresh) {
+	    log += " high water health providing bonus to overall health of " + ((waterHealthNew - high_thresh) * bonus_factor) + ";";
+	    additiveBonus = additiveBonus + ((waterHealthNew - high_thresh) * bonus_factor);
+	  }
+	  if(hstasisHealthNew &gt; high_thresh) {
+	    log += " high hstasis health providing bonus to overall health of " + ((hstasisHealthNew - high_thresh) * bonus_factor) + ";";
+	    additiveBonus = additiveBonus + ((hstasisHealthNew - high_thresh) * bonus_factor);
+	  }
+	  
+	  // D) 
+	  double multMalus = 0.25; // later on we would need to divide by 4 to get an average of the individual healths.  Instead of starting at 1.0 and doing the division later, speed things up by doing it now. 
+	  if(protHealthNew &lt; low_thresh) {
+	    log += " low protein health providing multiplicative penalty to overall health of " + ((protHealthNew - min)/(low_thresh - min)) + ";";
+	    multMalus = multMalus * (protHealthNew - min);
+		multMalus = multMalus / (low_thresh - min);
+	  }
+	  if(mcalHealthNew &lt; low_thresh) {
+	    log += " low mcal health providing multiplicative penalty to overall health of " + ((mcalHealthNew - min)/(low_thresh - min)) + ";";
+	    multMalus = multMalus * (mcalHealthNew - min);
+		multMalus = multMalus / (low_thresh - min);
+	  }
+	  if(waterHealthNew &lt; low_thresh) {
+	    log += " low water health providing multiplicative penalty to overall health of " + ((waterHealthNew - min)/(low_thresh - min)) + ";";
+	    multMalus = multMalus * (waterHealthNew - min);
+		multMalus = multMalus / (low_thresh - min);
+	  }
+	  if(hstasisHealthNew &lt; low_thresh) {
+	    log += " low hstasis health providing multiplicative penalty to overall health of " + ((hstasisHealthNew - min)/(low_thresh - min)) + ";";
+	    multMalus = multMalus * (hstasisHealthNew - min);
+		multMalus = multMalus / (low_thresh - min);
+	  }
+	  
+	  // bounds 
+	  double overall_health = (multMalus * (4*additiveBonus + protHealthNew + mcalHealthNew + waterHealthNew + hstasisHealthNew)); // the multiplication of additiveBonus by 4 is to undo the average factor we started with for multMalus 
+	  if(overall_health &lt; min) {
+	    overall_health = min;
+	  }
+	  else if (overall_health &gt; max) {
+	    overall_health = max;
+	  }
+	  
+	  addDebugMessage(inScriptInstance, log);
+	  
+	  inPop.setProteinHealth(protHealthNew);
+	  inPop.setMCalHealth(mcalHealthNew);
+	  inPop.setWaterHealth(waterHealthNew);
+	  inPop.setHStasisHealth(hstasisHealthNew);
+	  inPop.setOverallHealth(overall_health);
+	  
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

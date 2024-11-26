@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script storeOrFetchResourcesForEvent</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which stores or retrieves resources associated with an instance of an event, using the variableHandler -->
+  <!-- note that this script will override any stored values without notification (besides the variableHandler's default messages) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus,
+	Int64 inEventReportUID,
+	bool inStoring, //if false, fetching
+	Dictionary<IFResource, Tuple<double, double>> inResourcesToStore, //can only be null if inStoring is false
+	string inAdditionalLabel, //some events have multiple groups of resources they want to store/fetch.  //NOTE TO SELF AND MODDERS: for Wanderers' goods to be seizeable by the default Inn custom button script, this must be the empty string.  Other labels will not be seizeable.
+	Int64 inExpiryDate, //if storing, use this expiry date
+	bool inIncludeResourceQualityInString
+	-->
+	
+	<!-- output:
+	Dictionary<IFResource, Tuple<double, double>> outResourceCountsAndQualities, //will always be filled with the correct resources whether storing or fetching
+	string outTextOfResourcesStoredOrFetched
+	-->
+	<i1><a>storeOrFetchResourcesForEvent</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(bool), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string), typeof(Int64), typeof(bool)}
+	      }, out _))
+	    {
+			throw new ArgumentException("storeOrFetchResourcesForEvent custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		bool inStoring = (bool)inArguments[2];
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inResourcesToStore = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)inArguments[3];
+		string inAdditionalLabel = (string)inArguments[4];
+		Int64 inExpiryDate = (Int64)inArguments[5];
+		bool inIncludeResourceQualityInString = (bool)inArguments[6];
+		
+		if(inEventReportUID &lt; 0)
+		{
+			throw new ArgumentException("storeOrFetchResourcesForEvent custom script received invalid arguments: inEventReportUID cannot be negative");
+			return null;
+		}
+		if(inStoring &amp;&amp; inResourcesToStore == null)
+		{
+			throw new ArgumentException("storeOrFetchResourcesForEvent custom script received invalid arguments: inResourcesToStore cannot be null when storing resources");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; outResourceCountsAndQualities;
+		string outTextOfResourcesStoredOrFetched = "";
+		
+		if(inStoring)
+		{
+			outResourceCountsAndQualities = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;(inResourcesToStore);
+			
+			Int64 countOfResourceTypesStored = inResourcesToStore.Count;
+			variableHandler.storeIntVariable(inExpiryDate, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceTypeCount_report" + inEventReportUID, countOfResourceTypesStored);
+			
+			int index = 0;
+			foreach(var qualQuan in inResourcesToStore)
+			{
+				Int64 moid = (Int64)qualQuan.Key.getMOID();
+				double quan = qualQuan.Value.Item1;
+				double qual = qualQuan.Value.Item2;
+				variableHandler.storeIntVariable(inExpiryDate, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceMOID" + index + "_report" + inEventReportUID, moid);
+				variableHandler.storeDoubleVariable(inExpiryDate, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceQuan" + index + "_report" + inEventReportUID, quan);
+				variableHandler.storeDoubleVariable(inExpiryDate, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceQual" + index + "_report" + inEventReportUID, qual);
+				
+				index++;
+				
+				//TODO: format double quantity correctly by using description scripts instead of manually assembling here
+				outTextOfResourcesStoredOrFetched += qualQuan.Key.getDisplayName() + ": " + quan + (inIncludeResourceQualityInString ? " " + getAPI().getDisplayStringForQuality(qual) : "") + "\n";
+			}
+		}
+		else
+		{
+			outResourceCountsAndQualities = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+			
+			Int64 countOfResourcesStored = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceTypeCount_report" + inEventReportUID, out bool success);
+			if(!success) countOfResourcesStored = 0;
+			
+			for(int index = 0; index &lt; countOfResourcesStored; index++)
+			{
+				Int64 moid = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceMOID" + index + "_report" + inEventReportUID, out success);
+				if(!success) continue;
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res == null) continue;
+				double quan = variableHandler.getDouble("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceQuan" + index + "_report" + inEventReportUID, out success);
+				if(!success) continue;
+				double qual = variableHandler.getDouble("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceQual" + index + "_report" + inEventReportUID, out success);
+				if(!success) continue;
+				
+				outResourceCountsAndQualities.Add(res, Tuple.Create(quan, qual));
+				
+				//TODO: format double quantity correctly by using description scripts instead of manually assembling here
+				outTextOfResourcesStoredOrFetched += res.getDisplayName() + ": " + quan + (inIncludeResourceQualityInString ? " " + getAPI().getDisplayStringForQuality(qual) : "") + "\n";
+			}
+		}
+		if(outResourceCountsAndQualities.Count != 0)
+		{
+			//remove the last line break:
+			outTextOfResourcesStoredOrFetched = outTextOfResourcesStoredOrFetched.TrimEnd('\n');
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outResourceCountsAndQualities, outTextOfResourcesStoredOrFetched };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

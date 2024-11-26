@@ -1,0 +1,14 @@
+buildingkind tags to implement:
+
+road benefit: output increase vs radius increase/distance decrease (second one for kin or distribution calculations possibly) vs increase leader workplace count factor (a discount on how much this building contributes to leader's controlled workplaces)
+provides: water vs mcal vs protein vs hstasis (quality proportion of range is after colon)
+housing disease frequency factor
+housing hstasis need decrease factor
+flammable
+houses: leaders vs wanderers vs delegations vs normal pops vs only certain races
+worker happiness impact: value per worker (will be * workers in this building / total pops of the race before being fed into employment happiness)
+worker danger factor
+worker disease frequency factor
+ignore worker skill
+scale radius to max workers
+"leader_does_not_override_skill_if_leading"

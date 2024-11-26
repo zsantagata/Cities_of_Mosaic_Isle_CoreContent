@@ -1,0 +1,409 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>foodprocessor custom output predition before_replace_text</a> <b>string</b>
+			<c>This workplace has a [0]% chance of preventing foods from decaying if they are below quality [1].</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script workplaceproduction_food processor</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+
+  <igBuildingKind name="Food Processor">
+    <Encyclopedia_Entry>
+	  <full_path>Buildings/Food Processor</full_path>
+	  <body_text>Food Processor.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mBuildingKindQualities>0x4002</mBuildingKindQualities><!-- 0x2 = overwater enable, 0x4000 = workplace chooses one output resource instead of making all at once -->
+	<mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+
+	<mPopDaysToBuild>9</mPopDaysToBuild> <!-- values below 1 will be treated as 1 -->
+	<mBaseDurability>75</mBaseDurability>
+	
+	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive).  If nothing exists, this building does not require any resources to build.  If one entry has a quantity of 0, then this building can be built with resources or not. -->
+	  <i1>
+	    <a>TAG:stony</a>
+	    <b>100</b>
+	  </i1>
+	</mResourcesToBuild>
+	
+	<mOutputMultBasedOnConstructionResources>
+	</mOutputMultBasedOnConstructionResources>
+	
+	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value -->
+	  <i1>
+	    <a>TAG:stony</a>
+		<b>2.5</b>
+	  </i1>
+	</mDurabilityMultBasedOnConstructionResources>
+	
+	<mBeautyValue>-2</mBeautyValue>
+	<mBeautyRadius>15</mBeautyRadius>
+    <mBeautySynergyBuildings><!-- basic list of names -->
+	</mBeautySynergyBuildings>
+	
+    <mSSIDs>
+		<i>Food Processor</i>
+	</mSSIDs>
+	
+	<mMaxWorkers>16</mMaxWorkers>
+	<mIndustry>Husbandry</mIndustry>
+	<mRadius>0</mRadius>
+	<mDesolationRateInRadius>0.0</mDesolationRateInRadius> <!-- this is used by in-game moddable scripts for workplaces.  At the time of service calculation, desolation is distributed to appropriate land sources (extract-from-land workplaces) or all tiles in radius (others).  This can also obviously be used by daily scripts or custom workplace scripts. -->
+	
+	<mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor> <!-- this is a list of: reference to resource (common input resource), list of references to resources (outputs for which consumption of the common-input-resource is disabled), list of references to resources (other resources which must be consumed while the common-input-resource is being consumed), list of references to resources (other resources which cannot be consumed while the common-input-resource is being consumed) -->
+	  <i1>
+	    <a>Olives</a>
+		<b>
+		  <i1>Cheese</i1>
+		</b>
+		<c>
+		</c>
+		<d>
+		  <i1>Meat</i1>
+		  <i1>Fish</i1>
+		</d>
+		<e>1.0</e>
+		<f>1.0</f>
+	  </i1>
+	  <i1>
+	    <a>Meat</a>
+		<b>
+		  <i1>Cheese</i1>
+		</b>
+		<c>
+		</c>
+		<d>
+		  <i1>Olives</i1>
+		  <i1>Fish</i1>
+		</d>
+		<e>1.0</e>
+		<f>1.0</f>
+	  </i1>
+	  <i1>
+	    <a>Fish</a>
+		<b>
+		  <i1>Cheese</i1>
+		</b>
+		<c>
+		</c>
+		<d>
+		  <i1>Meat</i1>
+		  <i1>Olives</i1>
+		</d>
+		<e>1.0</e>
+		<f>1.0</f>
+	  </i1>
+	  <i1>
+	    <a>Milk</a>
+		<b>
+		  <i1>Oil</i1>
+		</b>
+		<c>
+		</c>
+		<d>
+		</d>
+		<e>1.0</e>
+		<f>1.0</f>
+	  </i1>
+	  <i1>
+	    <a>Mustard Seed</a>
+		<b>
+		</b>
+		<c>
+		</c>
+		<d>
+		</d>
+		<e>0.4</e>
+		<f>1.0</f>
+	  </i1>
+	  <i1>
+	    <a>Salt</a>
+		<b>
+		</b>
+		<c>
+		</c>
+		<d>
+		</d>
+		<e>0.4</e>
+		<f>1.5</f>
+	  </i1>
+	</mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor>
+	
+	<mRequiredResourceInputs>
+	</mRequiredResourceInputs>
+	
+	<mOutputResources><!-- basic list of names: possibilities, chosen by player in the moment.  Not all created at once -->
+	  <i1>Oil</i1>
+	  <i1>Cheese</i1>
+	  <!-- note that the food processor also has "just feed into script" as a possible output -->
+	</mOutputResources>
+	
+	<mOutputDirectToScriptName>Preserve</mOutputDirectToScriptName>
+	
+	<mScriptCalledDaily></mScriptCalledDaily> <!-- exactly what it says on the tin: if this building is fully constructed, this script is called daily.  First input is the building itself. -->
+	<mScriptCalledBetweenOutputCalculationAndResolution>
+		//script intent: if output is "direct to script" then the workers are actively trying to prevent decay of food goods.
+	
+		//common to all workplace scripts:
+		if(inArguments.Length &lt; 7)
+		{
+		  return null;
+		}
+		IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+		Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInput = (Dictionary&lt;IFResource, double&gt;)inArguments[1];
+		Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)inArguments[2];
+		Dictionary&lt;IFResource, double&gt; inResourcesCreated = (Dictionary&lt;IFResource, double&gt;)inArguments[3];
+		double inQuality = (double)inArguments[4];
+		bool inWorkplaceOn = (bool)inArguments[5];
+		bool inJustPredicting = (bool)inArguments[6];
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		var customConsts = getAPI().getCustomConsts();
+		var consts = getAPI().getConsts();
+		var customScripts = getAPI().getCustomScripts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		string outPredictionText = "";
+		
+		//start of unique part of script:
+		if(inWorkplaceOn)
+		{
+			if(inWorkplace.getWorkplaceComponent().getOutputResourceChosen() != null)
+			{
+			  //we are making Oil or Cheese, not feeding into the script
+			}
+			else
+			{
+				//this is a goods workplace so we have input quantity and quality.
+				//quantity is the percentage chance goods will not fall below the chosen quality
+				//quality is a threshold: goods above this quality won't benefit from this building
+				
+				double prob_to_store = 0.0d;
+				//the following code is a small recreation of what is in workplaceproduction_resourcecreationbuilding_common
+				{
+				  //fetch values:
+				  double productionValue = variableHandler.getDouble("workplace" + inWorkplace.getUID().ToString() + "_inProductionValue", out success);
+				  if(!success) productionValue = 0.0d;
+				  double minQualChooseable = consts.getResourceQualityMinChoosable();
+				  double maxQualChooseable = consts.getResourceQualityMaxChoosable();
+				  double minQual = consts.getResourceQualityMin();
+				  double maxQual = consts.getResourceQualityMax();
+				  double quantityRawMin = customConsts.getDoubleConst("workplaceproduction_resourcecreationbuilding_common quantity_total_raw minimum", out success);
+				  if(!success) quantityRawMin = 0.025d;
+				  double quantityMultMax = customConsts.getDoubleConst("workplaceproduction_resourcecreationbuilding_common quantity_total_mult maximum", out success);
+				  if(!success) quantityMultMax = 2.0d;
+				  
+				  if(productionValue * quantityMultMax &lt;= quantityRawMin)
+				  {
+					prob_to_store = 0.0d;
+					inQuality = minQualChooseable;
+				  }
+				  else
+				  {
+					double quantityMax = productionValue * quantityMultMax;
+					double slope = quantityMax / (minQualChooseable - maxQual); //this should be negative.  Deliberately use maxQual instead of maxQualChooseable so that maxQualChooseable is not a fixed point
+					double offset = (-1.0d) * slope * maxQual; //should be positive
+					
+					//now that we have the actual quality at which the goods will be created, calculate total quantity created:
+					prob_to_store = slope * inQuality + offset; //will be positive and greater than quantityRawMin
+				  }
+				}
+				inResourcesCreated.Clear(); //must do this to make sure C# code does not try to create resources of default
+				
+				if(prob_to_store &gt; 100.0d)
+				{
+					prob_to_store = 1.0d;
+				}
+				else
+				{
+					prob_to_store /= 100.0d;
+				}
+				outPredictionText = customConsts.getStringConst("foodprocessor custom output predition before_replace_text", out success);
+				if(!success) outPredictionText = "This workplace has a [0] chance of preventing foods from decaying if they are below quality [1].";
+				outPredictionText = outPredictionText
+					.Replace("[0]", getAPI().getDisplayStringForDouble(prob_to_store * 100))
+					.Replace("[1]", getAPI().getDisplayStringForQuality(inQuality));
+						
+				if(!inJustPredicting)
+				{
+					addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " set to preservation, will prevent each food type in resource pool from decaying with probability " + prob_to_store + " if it would decay below quality " + inQuality);
+
+					//multiple of this building can exist, but their actions are completely independent.  use a connectedVariable of LIST combination type to store all of them
+					UInt64 map_uid = getAPI().getLocalCommunity().getDomesticComponent().getMap().getUID();
+					
+					success = variableHandler.connectedVariableExists("probFoodPreservation_map" + map_uid);
+					if(!success)
+					{
+						variableHandler.addConnectedInt("probFoodPreservation_map" + map_uid, 0L, out IFConnectedVariable _, getAPI().getCalendar().getCurrentDate(), IFConnectedVariable.eCombinationType.cLIST);
+					}
+					variableHandler.addConnectedDouble("foodProcessor" + inWorkplace.getUID() + "_probFoodPreservation_map" + map_uid, prob_to_store, out IFConnectedVariable probFoodPresSpecific, getAPI().getCalendar().getCurrentDate());
+					variableHandler.connectVariables(probFoodPresSpecific, "probFoodPreservation_map" + map_uid); //lower first in arg list
+
+					success = variableHandler.connectedVariableExists("thresholdFoodPreservation_map" + map_uid);
+					if(!success)
+					{
+						variableHandler.addConnectedInt("thresholdFoodPreservation_map" + map_uid, 0L, out IFConnectedVariable _, getAPI().getCalendar().getCurrentDate(), IFConnectedVariable.eCombinationType.cLIST);
+					}
+					variableHandler.addConnectedDouble("foodProcessor" + inWorkplace.getUID() + "_thresholdFoodPreservation_map" + map_uid, inQuality, out IFConnectedVariable thresholdFoodPresSpecific, getAPI().getCalendar().getCurrentDate());
+					variableHandler.connectVariables(thresholdFoodPresSpecific, "thresholdFoodPreservation_map" + map_uid); //lower first in arg list
+				}
+				//force the output quality to minimum quality here to prevent housing quality calculations caring about this as a service
+				inQuality = consts.getResourceQualityMin();
+			}
+		}
+		else
+		{
+			//must do this for any custom-script-having service workplace that does not force best quality service:
+			inQuality = consts.getResourceQualityMin();
+		}
+		
+		//outputs: generally if they do not need to be changed, don't modify the values going out, even as a "sanity/safety check".  Doing so would force changes to this script if other scripts change (from, for example, mods)
+		
+		toReturn.Add(inResourcesConsumedAsInput);
+		toReturn.Add(inResourcesConsumedOtherwise);
+		toReturn.Add(inResourcesCreated);
+		toReturn.Add(inQuality);
+		toReturn.Add(inWorkplaceOn);
+		toReturn.Add(outPredictionText);
+		return toReturn;
+  </mScriptCalledBetweenOutputCalculationAndResolution>
+	
+	<mOutputResourceQuanDailyFactor>0.5</mOutputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make output goods per day approximately equal to 0.9 for a single unskilled worker using one perfectly-average common good, for a workplace that does not work the land. -->
+	<mInputResourceQuanDailyFactor>1</mInputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make input goods per day per worker approximately equal to 1, spread over all inputs (not counting those which are required to be consumed TODO figure that out?). -->
+	
+	<mIsHousing>0</mIsHousing> <!-- bool, true if nonzero -->
+	<mIsWorkplace>1</mIsWorkplace> <!-- bool, true if nonzero -->
+	<mTagList>
+	  <i1>road benefit increase leader control count</i1>
+	  <i1>workplace cannot output more than input</i1> <!-- this tag means that a workplace cannot output a quantity of resources greater than the sum of its input resources -->
+	  
+	  <!-- description tags: -->
+	  <i1>description_shape_top_noun:roof tiles</i1>
+	  <i1>description_shape_side_noun:walls</i1>
+	  <i1>description_shape_middle_noun:mills</i1>
+	  <i1>description_shape_bottom_noun:stones</i1>
+	</mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+  </igBuildingKind>
+  
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community
+	bool inJustPredicting
+	
+	outputs:
+	Dictionary<IFResource, double> outResourcesConsumedAsInputs, //"which should/would be" consumed as inputs; this script does not do it
+	Dictionary<IFResource, double> outResourcesConsumedOtherwise, //"which should/would be" consumed additionally; this script does not do it
+	Dictionary<IFResource, double> outputResourcesCreated, //"which should/would be" added to the pool; this script does not do it
+	double outputQuality,
+	bool outputQualityWasChanged //this is only true if outputQuality is different than what the workplace in question had on its qual/quan dial
+	bool outIsWorkplaceOn
+	 -->
+	<i1><a>workplaceproduction_food processor</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  bool inJustPredicting = (bool)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  
+	  Dictionary&lt;IFResource, double&gt; outResourcesConsumedAsInputs = new Dictionary&lt;IFResource, double&gt;();
+	  Dictionary&lt;IFResource, double&gt; outResourcesConsumedOtherwise = new Dictionary&lt;IFResource, double&gt;();
+	  Dictionary&lt;IFResource, double&gt; outputResourcesCreated = new Dictionary&lt;IFResource, double&gt;();
+	  double outputQuality = consts.getResourceQualityMin();
+	  bool outputQualityWasChanged = false;
+	  bool outIsWorkplaceOn = false;
+	  
+	  //this script is only used because Food Processor has restrictions on which inputs can be used for script-only output, and we want to restrict those *before* calling the common workplace production scripts
+	  if(inWorkplace.getWorkplaceComponent().getOutputResourceChosen() != null)
+	  {
+		//we are making Oil or Cheese, not feeding into the script
+	  }
+	  else
+	  {
+		//here are the inputs that cannot be used for script-only output:
+		List&lt;string&gt; resourcesToInvalidateNames = new List&lt;string&gt;() { "Olives", "Meat", "Fish", "Milk" }; //TODO this should probably be a custom const list
+		List&lt;IFResource&gt; resourcesToDisable = new List&lt;IFResource&gt;();
+		foreach(string name in resourcesToInvalidateNames)
+		{
+			IFResource res = (IFResource)getAPI().getMOFromInternalName("resources", name);
+			if(res != null)
+			{
+				if(inWorkplace.getWorkplaceComponent().getInputsChosen().Contains(res))
+					resourcesToDisable.Add(res);
+			}
+		}
+		foreach(IFResource res in resourcesToDisable)
+		{
+			inWorkplace.getWorkplaceComponent().toggleWorkplaceInputChosen(res);
+		}
+	  }
+	  
+	    //now that the inputs have been restricted successfully, use all the common workplace scripts:
+		if(customScripts.runCustomScriptCheckTypes("workplaceproduction_common", new List&lt;object&gt;() { inWorkplace, inCommunity, inJustPredicting }, out List&lt;object&gt; productionOutputs, false, 
+			typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(double), typeof(bool), typeof(bool)))
+		{
+			outResourcesConsumedAsInputs = (Dictionary&lt;IFResource, double&gt;)productionOutputs[0];
+			outResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)productionOutputs[1];
+			outputResourcesCreated = (Dictionary&lt;IFResource, double&gt;)productionOutputs[2];
+			outputQuality = (double)productionOutputs[3];
+			outputQualityWasChanged = (bool)productionOutputs[4];
+			outIsWorkplaceOn = (bool)productionOutputs[5];
+		}
+	  
+	  return new List&lt;object&gt;() { outResourcesConsumedAsInputs, outResourcesConsumedOtherwise, outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn };
+	</b>
+	</i1>
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

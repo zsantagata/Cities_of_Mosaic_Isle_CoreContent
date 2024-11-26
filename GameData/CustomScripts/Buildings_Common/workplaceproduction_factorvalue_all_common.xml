@@ -1,0 +1,605 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<i1><a>workplaceproduction_factorvalue_all_common log_debug_messages_when_just_predicting if_nonzero</a> <b>int</b> <c>0</c></i1>
+			<i1><a>workplaceproduction_factorvalue_labor_common log_debug_messages_when_just_predicting if_nonzero</a> <b>int</b> <c>0</c></i1>
+			<i1><a>workplaceproduction_factorvalue_land_common log_debug_messages_when_just_predicting if_nonzero</a> <b>int</b> <c>0</c></i1>
+			<i1><a>workplaceproduction_factorvalue_capital_common log_debug_messages_when_just_predicting if_nonzero</a> <b>int</b> <c>0</c></i1>
+			
+			<i1><a>workplaceproduction_factorvalue_labor_common skill_factor min</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>workplaceproduction_factorvalue_labor_common skill_factor max</a> <b>double</b> <c>8.0</c></i1>
+			
+			<i1><a>workplaceproduction_factorvalue_capital_common building_damage_mult min</a> <b>double</b> <c>0.40</c></i1>
+			<i1><a>workplaceproduction_factorvalue_capital_common building_damage_mult max</a> <b>double</b> <c>1.0</c></i1>
+			
+			<!-- This alert is sent if a workplace has non-zero, but not enough, resources it wants to consume. -->
+			<i1><a>workplace not_enough_resources alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+			<i1><a>workplace not_enough_resources alert before_replace_text</a> <b>string</b>
+			<c>Workplace [0] lacks necessary resources.  Less or no work will be done.</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script workplaceproduction_factorvalue_all_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script workplaceproduction_factorvalue_labor_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script workplaceproduction_factorvalue_land_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script workplaceproduction_factorvalue_capital_common</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which is the overarching workplace production-factor calculation script for buildingkinds that do not have a specific one -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community
+	bool inJustPredicting
+	
+	outputs:
+	double outProductionValue,
+	Dictionary<IFResource, double> outputResourcesConsumedAsInputs
+	Dictionary<IFResource, double> outputResourcesConsumedOtherwise
+	 -->
+	<i1><a>workplaceproduction_factorvalue_all_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_all_common custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  bool inJustPredicting = (bool)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_all_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_all_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_all_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_all_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  
+	  double outProductionValue = 0.0d;
+	  Dictionary&lt;IFResource, double&gt; outputResourcesConsumedAsInputs = new Dictionary&lt;IFResource, double&gt;();
+	  Dictionary&lt;IFResource, double&gt; outputResourcesConsumedOtherwise = new Dictionary&lt;IFResource, double&gt;();
+	  
+	  Int64 logWhileJustPredictingInt = customConsts.getIntConst("workplaceproduction_factorvalue_all_common log_debug_messages_when_just_predicting if_nonzero", out bool success);
+	  if(!success) logWhileJustPredictingInt = 0;
+	  bool logStuff = (!inJustPredicting || (logWhileJustPredictingInt != 0));
+	  
+	  //factors-of-production calculations:
+	  //note that we want to fire pops that can't work (if they haven't been already) before advancing further in the calculations.  Certainly we should do that before calculating how much input we're using.
+	  //labor factor value script does that
+	  string buildingKindName = inWorkplace.getBuildingKind().getInternalName();
+	  string scriptToRunName = "workplaceproduction_factorvalue_labor_common";
+	  if(customScripts.doesCustomScriptExistWithName("workplaceproduction_factorvalue_labor_" + buildingKindName))
+	  {
+		scriptToRunName = "workplaceproduction_factorvalue_labor_" + buildingKindName;
+	  }
+	  double laborValue = 0.0d;
+	  if(customScripts.runCustomScriptCheckTypes(scriptToRunName, new List&lt;object&gt;() { inWorkplace, inCommunity, inJustPredicting }, out List&lt;object&gt; laborFactorOutputs, false, 
+		typeof(double)))
+	  {
+		laborValue = (double)laborFactorOutputs[0];
+	  }
+	  
+	  scriptToRunName = "workplaceproduction_factorvalue_capital_common";
+	  if(customScripts.doesCustomScriptExistWithName("workplaceproduction_factorvalue_capital_" + buildingKindName))
+	  {
+		scriptToRunName = "workplaceproduction_factorvalue_capital_" + buildingKindName;
+	  }
+	  double capitalValue = 0.0d;
+	  if(customScripts.runCustomScriptCheckTypes(scriptToRunName, new List&lt;object&gt;() { inWorkplace, inCommunity, inJustPredicting }, out List&lt;object&gt; capitalFactorOutputs, false, 
+		typeof(double)))
+	  {
+		capitalValue = (double)capitalFactorOutputs[0];
+	  }
+	  
+	  scriptToRunName = "workplaceproduction_factorvalue_land_common";
+	  if(customScripts.doesCustomScriptExistWithName("workplaceproduction_factorvalue_land_" + buildingKindName))
+	  {
+		scriptToRunName = "workplaceproduction_factorvalue_land_" + buildingKindName;
+	  }
+	  double landValue = 0.0d;
+	  if(customScripts.runCustomScriptCheckTypes(scriptToRunName, new List&lt;object&gt;() { inWorkplace, inCommunity, inJustPredicting }, out List&lt;object&gt; landFactorOutputs, false, 
+		typeof(double), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;)))
+	  {
+		landValue = (double)landFactorOutputs[0];
+		outputResourcesConsumedAsInputs = (Dictionary&lt;IFResource, double&gt;)landFactorOutputs[1];
+		outputResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)landFactorOutputs[2];
+	  }
+	  
+	  //make sure all values are positive:
+	  if(laborValue &lt; 0.0d)
+	  {
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " laborValue was less than 0 (" + laborValue + "), setting outProductionValue to 0.0d");
+	  }
+	  else if(capitalValue &lt; 0.0d)
+	  {
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " capitalValue was less than 0 (" + capitalValue + "), setting outProductionValue to 0.0d");
+	  }
+	  else if(landValue &lt; 0.0d)
+	  {
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " landValue was less than 0 (" + landValue + "), setting outProductionValue to 0.0d");
+	  }
+	  else
+	  {
+		outProductionValue = laborValue * capitalValue * landValue;
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " outProductionValue = " + outProductionValue + " from laborValue = " + laborValue + " capitalValue = " + capitalValue + " landValue = " + landValue);
+	  }
+	  
+	  return new List&lt;object&gt;() { outProductionValue, outputResourcesConsumedAsInputs, outputResourcesConsumedOtherwise };
+	</b>
+	</i1>
+	
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community
+	bool inJustPredicting
+	
+	outputs:
+	double outLaborValue
+	 -->
+	<i1><a>workplaceproduction_factorvalue_labor_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_labor_common custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  bool inJustPredicting = (bool)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_labor_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_labor_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_labor_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_labor_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  
+	  double outLaborValue = 0.0d;
+	  
+	  Int64 logWhileJustPredictingInt = customConsts.getIntConst("workplaceproduction_factorvalue_labor_common log_debug_messages_when_just_predicting if_nonzero", out bool success);
+	  if(!success) logWhileJustPredictingInt = 0;
+	  bool logStuff = (!inJustPredicting || (logWhileJustPredictingInt != 0));
+	  
+	  //check that all pops can work, and specifically work here:
+	  HashSet&lt;IFPop&gt; popsToFire = new HashSet&lt;IFPop&gt;(); //use this because we can't modify worker pops in a foreach loop
+	  foreach(IFPop pop in inWorkplace.getWorkplaceComponent().getWorkerPops())
+	  {
+		if(!pop.isCapableOfWorking())
+		{
+			popsToFire.Add(pop);
+		}
+		else if(pop.isIll() &amp;&amp; !getAPI().canIllPopsOfRaceWorkInIndustry(pop.getRace(), inWorkplace.getBuildingKind().getIndustry()))
+		{
+			popsToFire.Add(pop);
+		}
+	  }
+	  foreach(IFPop pop in popsToFire)
+	  {
+		pop.setWorkplaceBuilding(null);
+	  }
+	  
+	  //TODO any racial considerations should go here
+	  
+	  outLaborValue = (double)(inWorkplace.getWorkplaceComponent().getWorkerPops().Count);
+	  
+	  return new List&lt;object&gt;() { outLaborValue };
+	</b>
+	</i1>
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community
+	bool inJustPredicting
+	
+	outputs:
+	double outCapitalValue
+	 -->
+	<i1><a>workplaceproduction_factorvalue_capital_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_capital_common custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  bool inJustPredicting = (bool)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_capital_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_capital_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_capital_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_capital_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  
+	  double outCapitalValue = 0.0d;
+	  
+	  Int64 logWhileJustPredictingInt = customConsts.getIntConst("workplaceproduction_factorvalue_capital_common log_debug_messages_when_just_predicting if_nonzero", out bool success);
+	  if(!success) logWhileJustPredictingInt = 0;
+	  bool logStuff = (!inJustPredicting || (logWhileJustPredictingInt != 0));
+	  double skillFactorMin = customConsts.getDoubleConst("workplaceproduction_factorvalue_labor_common skill_factor min", out success);
+	  if(!success) skillFactorMin = 1.0d;
+	  double skillFactorMax = customConsts.getDoubleConst("workplaceproduction_factorvalue_labor_common skill_factor max", out success);
+	  if(!success) skillFactorMax = 8.0d;
+	  double buildingDamageMultMin = customConsts.getDoubleConst("workplaceproduction_factorvalue_capital_common building_damage_mult min", out success);
+	  if(!success) buildingDamageMultMin = 0.4d;
+	  double buildingDamageMultMax = customConsts.getDoubleConst("workplaceproduction_factorvalue_capital_common building_damage_mult max", out success);
+	  if(!success) buildingDamageMultMax = 1.0d;
+	  
+	  double min_skill = consts.getWorkerSkillMin();
+	  double max_skill = consts.getWorkerSkillMax();
+	  
+	  //capital is a combination of "human capital" (in this case skill), building factor, building material, and building damage:
+	  bool ledByLeader = inWorkplace.getBuildingKind().hasTag("leader_does_not_override_skill_if_leading") ? false : 
+	    inCommunity.hasDomesticComponent() ? (inCommunity.getDomesticComponent().getIndustrySkills().getBuildingBeingDirected(inWorkplace.getBuildingKind().getIndustry()) == inWorkplace) :
+	    false;
+	  double skillValue = inCommunity.hasDomesticComponent() ?
+		(ledByLeader ? inCommunity.getDomesticComponent().getIndustrySkills().getAverageSkill(inWorkplace.getBuildingKind().getIndustry()) : inCommunity.getDomesticComponent().getIndustrySkills().getLeaderSkill(inWorkplace.getBuildingKind().getIndustry())) :
+	    consts.getWorkerSkillMin();
+	  double buildingDamageRatio = ((double)(inWorkplace.getCurrentBuildingDurability())) / inWorkplace.getMaxBuildingDurability();
+	
+	  double skillMult = skillFactorMin + ( ((skillFactorMax - skillFactorMin) * (skillValue - min_skill)) / ( max_skill - min_skill ) );
+	  double buildingFactor = inWorkplace.getBuildingKind().getOutputResourceQuanDailyFactor();
+	  double constructionResourcesMult = inWorkplace.getBuildingKind().getOutputMultForConstructionResource(inWorkplace.getMadeOfResource());
+	  double buildingDamageMult = buildingDamageMultMin + (buildingDamageMultMax - buildingDamageMultMin) * buildingDamageRatio;
+	  
+	  outCapitalValue = skillMult * buildingFactor * constructionResourcesMult * buildingDamageMult;
+	  if(logStuff)
+	  {
+		addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " outCapitalValue = " + outCapitalValue + " from skillValue = " + skillValue + " causing skillMult = " + skillMult + " buildingFactor = " + buildingFactor + " constructionResourcesMult = " + constructionResourcesMult + " buildingDamageMult = " + buildingDamageMult);
+	  }
+	  
+	  return new List&lt;object&gt;() { outCapitalValue };
+	</b>
+	</i1>
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community
+	bool inJustPredicting
+	
+	outputs:
+	double outLandValue
+	Dictionary<IFResource, double> outputResourcesConsumedAsInputs
+	Dictionary<IFResource, double> outputResourcesConsumedOtherwise
+	 -->
+	<i1><a>workplaceproduction_factorvalue_land_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_land_common custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  bool inJustPredicting = (bool)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_land_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_land_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_land_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_factorvalue_land_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  
+	  double outLandValue = 0.0d;
+	  Dictionary&lt;IFResource, double&gt; outputResourcesConsumedAsInputs = new Dictionary&lt;IFResource, double&gt;();
+	  Dictionary&lt;IFResource, double&gt; outputResourcesConsumedOtherwise = new Dictionary&lt;IFResource, double&gt;();
+	  
+	  Int64 logWhileJustPredictingInt = customConsts.getIntConst("workplaceproduction_factorvalue_land_common log_debug_messages_when_just_predicting if_nonzero", out bool success);
+	  if(!success) logWhileJustPredictingInt = 0;
+	  bool logStuff = (!inJustPredicting || (logWhileJustPredictingInt != 0));
+	  
+	  bool no_inputs_valid = inWorkplace.getBuildingKind().isCanUseNoInputs();
+	  bool no_inputs = inWorkplace.getWorkplaceComponent().getInputsChosen().Count == 0;
+	  
+	  if(!no_inputs_valid &amp;&amp; no_inputs)
+	  {
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " has no inputs but buildingkind must have inputs to operate; returning land factor of 0.0d and no resources consumed");
+	  }
+	  else
+	  {
+		List&lt;double&gt; quan_to_feed_OFI = new List&lt;double&gt;();
+		List&lt;double&gt; qual_to_feed_OFI = new List&lt;double&gt;();
+		  
+		//there are three groups of resources consumed to care about:
+		//A) the resources necessary to operate the workplace at all
+		//B) the resources necessary to operate the workplace with current resource inputs
+		//C) the resources which feed into production
+		//treat each group in the following way:
+		//A) if the workplace does not have each of these resources available in quantity = (getWorkerPops().Count * getInputResourceQuanDailyFactor) then the workplace cannot operate and consumes no resources.  Otherwise the resources are consumed.
+		//B) if the workplace does not have one of these resources available (after satisfying the above requirement) in quantity equal to the amount demanded for the associated input, then consumption of the associated input is reduced proportionally.  Otherwise consume equal amounts.
+		//C) After satisfying A and B, the workplace consumes up to (getWorkerPops().Count * getInputResourceQuanDailyFactor * weight proportion) of each input if available, and these resources' qualities and amounts feed into production.
+		
+		//A)
+		IFResourcePool resourcepool = inCommunity.getResourcePool();
+		ReadOnlyCollection&lt;IFResource&gt; necessary_to_operate = inWorkplace.getBuildingKind().getRequiredResourceInputs();
+		double input_quan_daily = inWorkplace.getBuildingKind().getInputResourceQuanDailyFactor();
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		for(int i = 0; i &lt; necessary_to_operate.Count; i++)
+		{
+			IFResource res = necessary_to_operate[i];
+			double quantity = resourcepool.getResourceQuantity(res);
+			if((quantity &lt; input_quan_daily) || (!inWorkplace.isResourceAccessible(res)))
+			{
+				//set things correctly for early exit:
+				if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " does not have " + input_quan_daily + " of required resource " + res.getDebugName() + " available and therefore cannot operate; amount in pool: " + quantity);
+				
+				//here, send the alert manually since we are returning immediately:
+				Int64 enable_if_not_zero = customConsts.getIntConst("workplace not_enough_resources alert enable_if_not_zero", out success);
+				if(!success) enable_if_not_zero = 0;
+				if(enable_if_not_zero != 0)
+				{
+					string text = customConsts.getStringConst("workplace not_enough_resources alert before_replace_text", out success);
+					if(!success) text = "Workplace [0] lacks necessary resources.  Less or no work will be done.";
+					text = text.Replace("[0]", inWorkplace.getDisplayName());
+					
+					getAPI().createAlert(text, 255, 255, 255, false, null, inWorkplace); //the numbers are r/g/b, and false is for not pausing
+				}
+				
+				return new List&lt;object&gt;() { 0.0d, outputResourcesConsumedAsInputs, outputResourcesConsumedOtherwise };
+			}
+			if(!outputResourcesConsumedOtherwise.ContainsKey(res))
+				outputResourcesConsumedOtherwise.Add(res, 0.0d);
+			outputResourcesConsumedOtherwise[res] += input_quan_daily;
+		}
+		
+		//C)
+		bool send_alert = false;
+		ReadOnlyCollection&lt;IFResource&gt; want_to_consume = inWorkplace.getWorkplaceComponent().getInputsChosen();
+		//before we get to calculating, we need to reduce the set in C) if any of those resources are not available:
+		HashSet&lt;IFResource&gt; actually_available = new HashSet&lt;IFResource&gt;();
+		double totalInputWeight = 0.0d;
+		foreach(IFResource res in want_to_consume)
+		{
+			if(inWorkplace.isResourceAccessible(res) &amp;&amp; (resourcepool.getResourceQuantity(res) &gt; 0.0d))
+			{
+				actually_available.Add(res);
+				totalInputWeight += inWorkplace.getBuildingKind().getInputWeightForInputResource(res);
+				if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " will consume resource " + res.getDebugName() + " as part of production");
+			}
+			else
+			{
+				if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " does not have input resource " + res.getDebugName() + " available and this resource will be excluded; amount in pool: " + resourcepool.getResourceQuantity(res));
+				
+				send_alert = true;
+			}
+		}
+		want_to_consume = new ReadOnlyCollection&lt;IFResource&gt;(actually_available.ToList());
+		
+		double running_sum = 0.0d;
+		//this block calculates the quantity of all resources consumed by this workplace
+		if((want_to_consume.Count != 0) &amp;&amp; (totalInputWeight != 0.0d))
+		{
+			Int64 worker_count = inWorkplace.getWorkplaceComponent().getWorkerPops().Count;
+			double desired_amount_of_total_resources_to_consume = worker_count * input_quan_daily;
+			if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " will attempt to consume " + desired_amount_of_total_resources_to_consume + " of each input resource (and possible associated required resource), if available");
+
+			foreach(IFResource res in want_to_consume)
+			{
+				double amount_consumed = 0.0d;
+				double desired_amount_this_resource_to_consume = desired_amount_of_total_resources_to_consume * inWorkplace.getBuildingKind().getInputWeightForInputResource(res) / totalInputWeight;
+				if(resourcepool.getResourceQuantity(res) &gt;= desired_amount_this_resource_to_consume)
+				{
+					amount_consumed = desired_amount_this_resource_to_consume;
+				}
+				else
+				{
+					amount_consumed = resourcepool.getResourceQuantity(res);
+					send_alert = true;
+				}
+				//B)
+				HashSet&lt;IFResource&gt; resConsumedRightNow = new HashSet&lt;IFResource&gt;() { res };
+				foreach(IFResource otherReq in inWorkplace.getBuildingKind().getOtherRequiredResourcesForInputResource(res))
+				{
+					if(!inWorkplace.isResourceAccessible(res))
+					{
+						amount_consumed = 0.0d;
+						send_alert = true;
+						if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " cannot consume resource " + res.getDebugName() + " because required other resource is not available: " + otherReq.getDisplayName());
+					}
+					else if(resourcepool.getResourceQuantity(otherReq) &lt; amount_consumed)
+					{
+						amount_consumed = resourcepool.getResourceQuantity(otherReq);
+						send_alert = true;
+						if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " reducing amount of consumed resource " + res.getDebugName() + " to " + amount_consumed + " because required other resource is only available in that quantity: " + otherReq.getDebugName());
+					}
+					if(amount_consumed == 0.0d)
+					{
+						break;
+					}
+					resConsumedRightNow.Add(otherReq);
+				}
+
+				if(amount_consumed != 0.0d)
+				{
+					//we are consuming "amount_consumed" of each resource in resConsumedRightNow
+					running_sum += amount_consumed;
+					if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " consuming " + amount_consumed + " of " + res.getDebugName() + " and all required other resources for this resource");
+					
+					double resourceFitness = inWorkplace.getBuildingKind().getFitnessFactorForInputResource(res);
+					
+					quan_to_feed_OFI.Add(resourceFitness * (amount_consumed / (desired_amount_this_resource_to_consume))); //before resourceFitness, should be a ratio between 0.0 and 1.0 for "how much of this desired input (which is actually productive and is not just a necessity for operation) is available?"
+					qual_to_feed_OFI.Add(resourcepool.getResourceQuality(res));
+					foreach(IFResource consumingRes in resConsumedRightNow)
+					{
+						if(consumingRes == res)
+						{
+							if(!outputResourcesConsumedAsInputs.ContainsKey(consumingRes))
+								outputResourcesConsumedAsInputs.Add(consumingRes, 0.0d);
+							outputResourcesConsumedAsInputs[consumingRes] += amount_consumed;
+						}
+						else
+						{
+							if(!outputResourcesConsumedOtherwise.ContainsKey(consumingRes))
+								outputResourcesConsumedOtherwise.Add(consumingRes, 0.0d);
+							outputResourcesConsumedOtherwise[consumingRes] += amount_consumed;
+						}
+					}
+				}
+			}
+		}
+		
+		if((no_inputs &amp;&amp; no_inputs_valid) || (running_sum &gt; 0.0d))
+		{
+			//if the work input state is 'no inputs', or there are inputs selected, use the calcOutputFromInputs function:
+			//(this will be okay even if the first two inArguments have no elements)
+			outLandValue = getAPI().calcOutputFromInputs(quan_to_feed_OFI, qual_to_feed_OFI, true, false);
+		}
+		//special case: if there are inputs selected and the total input weight (and running sum) is zero but there are resources in "want to consume", then only resource inputs with weight of zero are selected.  Treat as if no inputs:
+		else if((!no_inputs) &amp;&amp; (totalInputWeight == 0.0d) &amp;&amp; (want_to_consume.Count != 0))
+		{
+			//(this will be okay even though the first two inArguments have no elements)
+			outLandValue = getAPI().calcOutputFromInputs(quan_to_feed_OFI, qual_to_feed_OFI, true, false);
+		}
+		else
+		{
+			//no resources are available so no work should be done
+			if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " needs inputs, but no inputs are being consumed");
+		}
+
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " outLandValue = " + outLandValue + " based on output calculation from inputs");
+
+		//here, send the alert if desired:
+		if(send_alert)
+		{
+			Int64 enable_if_not_zero = customConsts.getIntConst("workplace not_enough_resources alert enable_if_not_zero", out success);
+			if(!success) enable_if_not_zero = 0;
+			if(enable_if_not_zero != 0)
+			{
+				string text = customConsts.getStringConst("workplace not_enough_resources alert before_replace_text", out success);
+				if(!success) text = "Workplace [0] lacks necessary resources.  Less or no work will be done.";
+				text = text.Replace("[0]", inWorkplace.getDisplayName());
+				
+				getAPI().createAlert(text, 255, 255, 255, false, null, inWorkplace); //the numbers are r/g/b, and false is for not pausing
+			}
+		}
+	  }
+	  
+	  //TODO here: if the workplace extracts from the land and the land has desolation, decrease outLandValue proportionally to how much it is present on the resource parcels extracted from
+	  
+	  return new List&lt;object&gt;() { outLandValue, outputResourcesConsumedAsInputs, outputResourcesConsumedOtherwise };
+	</b>
+	</i1>
+		
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

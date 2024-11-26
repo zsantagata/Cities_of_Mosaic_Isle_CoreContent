@@ -1,0 +1,147 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script recalcAllResourcesLocallySourceable</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which sets up the stored list of resources that the provided community can create from its land and/or buildings -->
+  <!-- this script should be called when a community's foreign AI is being set up.  This script calls clearResourcesLocallySourceable  -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunity
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>recalcAllResourcesLocallySourceable</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("recalcAllResourcesLocallySourceable custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		if(inCommunity == null)
+		{
+		  throw new ArgumentException("recalcAllResourcesLocallySourceable custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		customScripts.runCustomScript("clearResourcesLocallySourceable", new List&lt;object&gt;() {inCommunity}, out _);
+	
+		//first we should look and see which resources are producable for this biome
+		//also have a list of food that is producable for this biome (at least one should be enabled)
+		Dictionary&lt;IFResource, double&gt; producableProb = new Dictionary&lt;IFResource, double&gt;();
+		List&lt;IFResource&gt; producableFood = new List&lt;IFResource&gt;();
+		double waterRatio = inCommunity.getWaterRatio();
+		//water first:
+		if (waterRatio != 0.0d)
+		{
+			IFTerrainBiome waterbiome = inCommunity.getWaterBiome();
+			if(waterbiome != null)
+			{
+				for(int i = 1; i &lt; getAPI().getTotalCountOfMO("terrainsources"); i++)
+				{
+					IFTerrainSource terrainsource = (IFTerrainSource)getAPI().getMOFromMOID("terrainsources", i);
+					double prob = waterbiome.getTerrainSourceProbability(terrainsource);
+					IFTerrainBiome.eTerrainSourceRichness richness = waterbiome.getTerrainSourceRichness(terrainsource);
+					if((prob != 0.0d) &amp;&amp; (richness != IFTerrainBiome.eTerrainSourceRichness.cNone))
+					{
+						foreach(IFResource res in terrainsource.getAllowedResourcesWater())
+						{
+							if(!res.hasTag("only from pops"))
+							{
+								if(!producableProb.ContainsKey(res))
+								{
+									producableProb.Add(res, 0.0d);
+								}
+								producableProb[res] = 1.0d - ((1.0d - prob) * (1.0d - producableProb[res])); //this is an OR of the existing probability and the new prob
+								if(res.isFood() &amp;&amp; !producableFood.Contains(res))
+									producableFood.Add(res);
+							}
+						}
+					}
+				}
+			}
+		}
+		//land second:
+		if (waterRatio != 1.0d)
+		{
+			IFTerrainBiome landbiome = inCommunity.getLandBiome();
+			if(landbiome != null)
+			{
+				for(int i = 1; i &lt; getAPI().getTotalCountOfMO("terrainsources"); i++)
+				{
+					IFTerrainSource terrainsource = (IFTerrainSource)getAPI().getMOFromMOID("terrainsources", i);
+					double prob = landbiome.getTerrainSourceProbability(terrainsource);
+					IFTerrainBiome.eTerrainSourceRichness richness = landbiome.getTerrainSourceRichness(terrainsource);
+					if((prob != 0.0d) &amp;&amp; (richness != IFTerrainBiome.eTerrainSourceRichness.cNone))
+					{
+						foreach(IFResource res in terrainsource.getAllowedResourcesLand())
+						{
+							if(!res.hasTag("only from pops"))
+							{
+								if(!producableProb.ContainsKey(res))
+								{
+									producableProb.Add(res, 0.0d);
+								}
+								producableProb[res] = 1.0d - ((1.0d - prob) * (1.0d - producableProb[res])); //this is an OR of the existing probability and the new prob
+								if(res.isFood() &amp;&amp; !producableFood.Contains(res))
+									producableFood.Add(res);
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		//choose one food prob to be available:
+		HashSet&lt;IFResource&gt; producableRes = new HashSet&lt;IFResource&gt;();
+		if(producableFood.Count != 0)
+		{
+			IFResource foodResAvailable = producableFood[(int)getAPI().calcRandIntUnder(producableFood.Count)];
+			addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " has food resource " + foodResAvailable.getDebugName() + " available automatically");
+			producableRes.Add(foodResAvailable);
+		}
+
+		//for all the rest, base availability on probability:
+		foreach(var kvpair in producableProb)
+		{
+			double prob = kvpair.Value;
+			prob = Math.Max(0.0d, Math.Min(1.0d, prob));
+			bool available = getAPI().calcProb(prob);
+			addDebugMessage(inScriptInstance, "resource " + kvpair.Key.getDebugName() + " is " + (available ? "" : "not ") + "available due to probability " + kvpair.Value);
+			if(available) producableRes.Add(kvpair.Key);
+		}
+	
+		//store all producable resources:
+		foreach(IFResource res in producableRes)
+		{
+			customScripts.runCustomScript("setResourcesLocallySourceable", new List&lt;object&gt;() {inCommunity, res, true}, out _);
+		}
+	
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

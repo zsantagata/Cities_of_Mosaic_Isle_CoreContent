@@ -1,0 +1,154 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- trade desire mult is the "margin" or "profit" that the delegation will seek in its proposal -->
+			<i1><a>request_trade_proposal_action trade_desire_mult min</a> <b>double</b> <c>0.9</c></i1>
+			<i1><a>request_trade_proposal_action trade_desire_mult max</a> <b>double</b> <c>1.15</c></i1>
+			
+			<!-- pool ratio min is the minimum proportion of their whole resource pool that the delegation will attempt to trade -->
+			<i1><a>request_trade_proposal_action pool_ratio_min min</a> <b>double</b> <c>0.1</c></i1>
+			<i1><a>request_trade_proposal_action pool_ratio_min max</a> <b>double</b> <c>0.3</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script request_trade_proposal_action</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which assembles a trade proposal from one of the trade delegations within the building -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has one input: IFBuilding inBuilding.  It has no outputs. -->
+	<!-- this script is called by Delegation Hall custom button scripts -->
+	<i1><a>request_trade_proposal_action</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("request_trade_proposal_action custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("request_trade_proposal_action custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  
+	  //first: choose the delegation to trade with:
+	  IFDelegation delToPropose = null;
+	  HashSet&lt;IFDelegation&gt; possibleDelegations = new HashSet&lt;IFDelegation&gt;();
+	  foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+	  {
+		if(pop.hasDelegation() &amp;&amp; pop.getDelegation().getDelegationType() == IFDelegation.eDelegationType.cTrade)
+		{
+			possibleDelegations.Add(pop.getDelegation());
+		}
+	  }
+	  List&lt;IFDelegation&gt; possibleDelegationsList = new List&lt;IFDelegation&gt;(possibleDelegations);
+	  
+	  if(possibleDelegationsList.Count &gt; 0)
+    {
+    delToPropose = possibleDelegationsList[(int)getAPI().calcRandIntUnder(possibleDelegationsList.Count)];
+    addDebugMessage(inScriptInstance, delToPropose.getDebugName() + " will propose a trade");
+
+    //then, get the proposed resources:
+    if(customScripts.runCustomScriptCheckTypes("getResourceDesireValues", new List&lt;object&gt;() { delToPropose.getSourceCommunity() }, out List&lt;object&gt; returnDesireVals, false, typeof(List&lt;double&gt;)))
+		{
+			List&lt;double&gt; resourceDesireValues = (List&lt;double&gt;)returnDesireVals[0];
+			IFResourcePool localPool = getAPI().getLocalCommunity().getResourcePool();
+			
+			double tradeAdvantageMin = customConsts.getDoubleConst("request_trade_proposal_action trade_desire_mult min", out bool success);
+			if(!success) tradeAdvantageMin = 0.9d;
+			double tradeAdvantageMax = customConsts.getDoubleConst("request_trade_proposal_action trade_desire_mult max", out success);
+			if(!success) tradeAdvantageMax = 1.15d;
+			double tradeAdvantage = tradeAdvantageMin + (tradeAdvantageMax - tradeAdvantageMin) * getAPI().calcRand();
+			
+			double poolRatioMinMin = customConsts.getDoubleConst("request_trade_proposal_action pool_ratio_min min", out success);
+			if(!success) poolRatioMinMin = 0.1d;
+			double poolRatioMinMax = customConsts.getDoubleConst("request_trade_proposal_action pool_ratio_min max", out success);
+			if(!success) poolRatioMinMax = 0.3d;
+			double poolRatioMin = poolRatioMinMin + (poolRatioMinMax - poolRatioMinMin) * getAPI().calcRand();
+			
+			if(customScripts.runCustomScriptCheckTypes("proposeTradeBetweenTwoResourcePools", new List&lt;object&gt;() { delToPropose.getResourcePool(), localPool, resourceDesireValues, tradeAdvantage, poolRatioMinMin,
+				double.MaxValue, double.MaxValue, double.MaxValue}, out List&lt;object&gt; proposeTradeValues, false, typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(bool)))
+			{
+				Dictionary&lt;IFResource, double&gt; delResourceCounts = (Dictionary&lt;IFResource, double&gt;)proposeTradeValues[0];
+				Dictionary&lt;IFResource, double&gt; playerResourceCounts = (Dictionary&lt;IFResource, double&gt;)proposeTradeValues[1];
+				bool validProposal = (bool)proposeTradeValues[2];
+				
+				if(validProposal)
+				{
+					Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesOffered = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+					Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+					
+					foreach(var kvpair in delResourceCounts)
+					{
+						resourcesOffered.Add(kvpair.Key, Tuple.Create(kvpair.Value, delToPropose.getResourcePool().getResourceQuality(kvpair.Key)));
+					}
+					foreach(var kvpair in playerResourceCounts)
+					{
+						resourcesRequested.Add(kvpair.Key, Tuple.Create(kvpair.Value, localPool.getResourceQuality(kvpair.Key)));
+					}
+					
+					//find the event and event status:
+					string eventName = "Requested Trade Proposal Event";
+					IFEvent evt = (IFEvent)getAPI().getMOFromInternalName("events", eventName);
+					if(evt != null)
+					{
+						IFEventStatus status = (IFEventStatus)getAPI().getSO("eventstatuses", evt.getMOID());
+						bool somethingWentWrong = false;
+						if(status != null)
+						{
+							Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+							if(!customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { status, (Int64)inBuilding.getUID(), true, resourcesOffered, "offered",
+								currentDate + 1, true}, out _, false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+							{
+								somethingWentWrong = true;
+							}
+							if(!customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { status, (Int64)inBuilding.getUID(), true, resourcesRequested, "requested",
+								currentDate + 1, true}, out _, false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+							{
+								somethingWentWrong = true;
+							}
+							
+							if(!somethingWentWrong)
+							{
+								//store the building and delegation UID:
+								variableHandler.storeIntVariable(currentDate + 1, "Requested Trade Proposal Event_buildingUID", (Int64)inBuilding.getUID());
+								variableHandler.storeIntVariable(currentDate + 1, "Requested Trade Proposal Event_delegationUID", (Int64)delToPropose.getUID());
+								
+								//indicate that this building has proposed a trade:
+								variableHandler.storeIntVariable(currentDate, "request_trade_proposal_building" + inBuilding.getUID() + "_lastdate", currentDate);
+								
+								//evoke the event:
+								evt.evokeEventImmediately(false, true); //evoke-only events start disabled (and should remain disabled) but let the gating script run because there is a real gating script
+							}
+						}
+					}
+				}
+			}
+		}
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

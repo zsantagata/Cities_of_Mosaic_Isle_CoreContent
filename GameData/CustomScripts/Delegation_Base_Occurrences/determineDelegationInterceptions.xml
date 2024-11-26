@@ -1,0 +1,251 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>determineDelegationInterceptions intercept_probability max</a> <b>double</b> <c>1.0</c></i1>
+	  <i1><a>determineDelegationInterceptions intercept_probability min</a> <b>double</b> <c>0.1</c></i1>
+	  <!-- As the absolute value of defenders increases, the chance of the "next" interception rises.  As the absolute value of attackers not yet intercepted increases, the chance of the "next" interception rises. -->
+	  <!-- the factors for both of these start at a value, and asymptotically increase to 1 -->
+	  <i1><a>determineDelegationInterceptions defender_count_factor min</a> <b>double</b> <c>0.4</c></i1>
+	  <i1><a>determineDelegationInterceptions defender_count_factor vertex count</a> <b>int</b> <c>16</c></i1>
+	  <i1><a>determineDelegationInterceptions defender_count_factor vertex value</a> <b>double</b> <c>0.75</c></i1>
+	  <i1><a>determineDelegationInterceptions attacker_count_factor min</a> <b>double</b> <c>0.4</c></i1>
+	  <i1><a>determineDelegationInterceptions attacker_count_factor vertex count</a> <b>int</b> <c>16</c></i1>
+	  <i1><a>determineDelegationInterceptions attacker_count_factor vertex value</a> <b>double</b> <c>0.75</c></i1>
+	  
+	  <!-- As the military strength of the community rises, the chance of interception rises.  But it starts at a moderately high value anyway. -->
+	  <i1><a>determineDelegationInterceptions military_strength_factor min</a> <b>double</b> <c>0.6666</c></i1>
+	  <i1><a>determineDelegationInterceptions military_strength_factor max</a> <b>double</b> <c>1.5</c></i1>
+	  
+	  <!-- As the economic strength of the community rises, the community has more to defend, so it is less likely that the defenders will be in the correct places.  This only starts at a threshold of economic strength. -->
+	  <i1><a>determineDelegationInterceptions econ_strength_factor threshold</a> <b>double</b> <c>0.4</c></i1> <!-- This is proportion of the whole range -->
+	  <i1><a>determineDelegationInterceptions econ_strength_factor min</a> <b>double</b> <c>1.0</c></i1>
+	  <i1><a>determineDelegationInterceptions econ_strength_factor max</a> <b>double</b> <c>0.6</c></i1>
+	  
+	  <!-- The race speeds will be used to determine interception chance as well.  The enemy community's water ratio is used to weight each race's land and water speeds, and then the attacking and defending pop race speeds are summed pop-by-pop -->
+	  <!-- The factor is equal to the ratio of defender speed / attacker speed -->
+	  <i1><a>determineDelegationInterceptions racial_speed_factor min</a> <b>double</b> <c>0.25</c></i1> <!-- defenders get a minimum because sometimes they can plant themselves in important locations and not move and let the attackers get in reach. -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script determinedelegationinterceptions</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which determines which pops between a delegation and enemy community fight, and which ones bypass each other to go to their targets -->
+  <!-- The probability of defenders intercepting attackers is related to the count of defenders and attackers, military and economic strength of the community, and racial factors. -->
+  <!-- It can be the case that there are defenders who raid the camp and also attackers who go to their goal at the same time. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation,
+	List<IFPop> inDelegationAttackers, //can be empty but should not be null
+	List<IFPop> inEnemyDefenders, //can be empty but should not be null
+	bool inRaiding //if false it means war
+	
+	There are two outputs: List<IFPop> outDelegationAttackersNotIntercepted, List<IFPop> outEnemyDefendersNotIntercepting.  The attackers not intercepted will continue on to their goal, and the defenders not intercepting will raid the delegation's camp.  Either or both outputs can be empty, but will not be null. -->
+	<i1><a>determineDelegationInterceptions</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation), typeof(List&lt;IFPop&gt;), typeof(List&lt;IFPop&gt;), typeof(bool)}
+	  }, out _))
+	{
+		throw new ArgumentException("determineDelegationInterceptions custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	List&lt;IFPop&gt; inDelegationAttackers = (List&lt;IFPop&gt;)inArguments[1];
+	List&lt;IFPop&gt; inEnemyDefenders = (List&lt;IFPop&gt;)inArguments[2];
+	bool inRaiding = (bool)inArguments[3];
+	
+	IFCommunity inEnemyCommunity = inDelegation.getTargetCommunity();
+	
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	if(inEnemyDefenders == null)
+	{
+		inEnemyDefenders = new List&lt;IFPop&gt;();
+	}
+	else
+	{
+		inEnemyDefenders = new List&lt;IFPop&gt;(inEnemyDefenders); //create a copy because we will be modifying this
+	}
+	
+	//first: if either inDelegationAttackers or inEnemyDefenders is empty, there are no interceptions:
+	if((inDelegationAttackers == null) || (inDelegationAttackers.Count == 0) || (inEnemyDefenders.Count == 0))
+	{
+		addDebugMessage(inScriptInstance, "There are no attackers or no defenders, so no interceptions happen. Attacker count=" + inDelegationAttackers.Count + " defender count=" + inEnemyDefenders.Count);
+		return new List&lt;object&gt;() { inDelegationAttackers, inEnemyDefenders };
+	}
+	inDelegationAttackers = new List&lt;IFPop&gt;(inDelegationAttackers); //create a copy because we will modify this
+	
+	//get all the custom consts:
+	double interceptProbMax = customConsts.getDoubleConst("determineDelegationInterceptions intercept_probability max", out bool success);
+	if(!success) interceptProbMax = 1.0d;
+	if(interceptProbMax &gt; 1.0d) interceptProbMax = 1.0d;
+	if(interceptProbMax &lt; 0.0d) interceptProbMax = 1.0d;
+	double interceptProbMin = customConsts.getDoubleConst("determineDelegationInterceptions intercept_probability min", out success);
+	if(!success) interceptProbMin = 0.1d;
+	if(interceptProbMin &gt; 1.0d) interceptProbMin = 0.1d;
+	if(interceptProbMin &lt; 0.0d) interceptProbMin = 0.1d;
+	
+	double defenderCountFactorMin = customConsts.getDoubleConst("determineDelegationInterceptions defender_count_factor min", out success);
+	if(!success) defenderCountFactorMin = 0.4d;
+	if(defenderCountFactorMin &gt; 1.0d) defenderCountFactorMin = 0.4d;
+	if(defenderCountFactorMin &lt; 0.0d) defenderCountFactorMin = 0.4d;
+	Int64 defenderCountFactorVertexCount = customConsts.getIntConst("determineDelegationInterceptions defender_count_factor vertex count", out success);
+	if(!success) defenderCountFactorVertexCount = 16;
+	if(defenderCountFactorVertexCount &lt;= 0.0d) defenderCountFactorVertexCount = 16;
+	double defenderCountFactorVertexValue = customConsts.getDoubleConst("determineDelegationInterceptions defender_count_factor vertex value", out success);
+	if(!success) defenderCountFactorVertexValue = 0.75d;
+	if(defenderCountFactorVertexValue &gt;= 1.0d) defenderCountFactorVertexValue = 0.75d;
+	if(defenderCountFactorVertexValue &lt; defenderCountFactorMin) defenderCountFactorVertexValue = 0.75d;
+	
+	double attackerCountFactorMin = customConsts.getDoubleConst("determineDelegationInterceptions attacker_count_factor min", out success);
+	if(!success) attackerCountFactorMin = 0.4d;
+	if(attackerCountFactorMin &gt; 1.0d) attackerCountFactorMin = 0.4d;
+	if(attackerCountFactorMin &lt; 0.0d) attackerCountFactorMin = 0.4d;
+	Int64 attackerCountFactorVertexCount = customConsts.getIntConst("determineDelegationInterceptions attacker_count_factor vertex count", out success);
+	if(!success) attackerCountFactorVertexCount = 16;
+	if(attackerCountFactorVertexCount &lt;= 0.0d) attackerCountFactorVertexCount = 16;
+	double attackerCountFactorVertexValue = customConsts.getDoubleConst("determineDelegationInterceptions attacker_count_factor vertex value", out success);
+	if(!success) attackerCountFactorVertexValue = 0.75d;
+	if(attackerCountFactorVertexValue &gt;= 1.0d) attackerCountFactorVertexValue = 0.75d;
+	if(attackerCountFactorVertexValue &lt; attackerCountFactorMin) attackerCountFactorVertexValue = 0.75d;
+	
+	double milStrengthFactorMin = customConsts.getDoubleConst("determineDelegationInterceptions military_strength_factor min", out success);
+	if(!success) milStrengthFactorMin = 0.6666d;
+	if(milStrengthFactorMin &lt; 0.0d) milStrengthFactorMin = 0.6666d;
+	double milStrengthFactorMax = customConsts.getDoubleConst("determineDelegationInterceptions military_strength_factor max", out success);
+	if(!success) milStrengthFactorMax = 1.5d;
+	if(milStrengthFactorMax &lt; 0.0d) milStrengthFactorMax = 1.5d;
+	
+	double econStrengthFactorThreshold = customConsts.getDoubleConst("determineDelegationInterceptions econ_strength_factor threshold", out success);
+	if(!success) econStrengthFactorThreshold = 0.4d;
+	if(econStrengthFactorThreshold &lt; 0.0d) econStrengthFactorThreshold = 0.4d;
+	if(econStrengthFactorThreshold &gt; 1.0d) econStrengthFactorThreshold = 0.4d;
+	double econStrengthFactorMin = customConsts.getDoubleConst("determineDelegationInterceptions econ_strength_factor min", out success);
+	if(!success) econStrengthFactorMin = 1.0d;
+	if(econStrengthFactorMin &lt; 0.0d) econStrengthFactorMin = 1.0d;
+	double econStrengthFactorMax = customConsts.getDoubleConst("determineDelegationInterceptions econ_strength_factor max", out success);
+	if(!success) econStrengthFactorMax = 0.6d;
+	if(econStrengthFactorMax &lt; 0.0d) econStrengthFactorMax = 0.6d;
+	
+	double racialSpeedFactorMin = customConsts.getDoubleConst("determineDelegationInterceptions racial_speed_factor min", out success);
+	if(!success) racialSpeedFactorMin = 0.25d;
+	
+	//with all the custom consts, calculate the probabilities:
+	double waterSpeedMult = inEnemyCommunity.getWaterRatio();
+	double landSpeedMult = 1.0d - waterSpeedMult;
+	double attackerSpeedTotal = 0.0d;
+	double defenderSpeedTotal = 0.0d;
+	foreach(IFPop pop in inDelegationAttackers)
+	{
+		IFRace race = pop.getRace();
+		attackerSpeedTotal += race.getLandSpeed() * landSpeedMult;
+		attackerSpeedTotal += race.getWaterSpeed() * waterSpeedMult;
+	}
+	foreach(IFPop pop in inEnemyDefenders)
+	{
+		IFRace race = pop.getRace();
+		defenderSpeedTotal += race.getLandSpeed() * landSpeedMult;
+		defenderSpeedTotal += race.getWaterSpeed() * waterSpeedMult;		
+	}
+	double racialSpeedFactor = 1.0d;
+	if(attackerSpeedTotal != 0.0d) //this shouldn't happen, but just in case
+	{
+		racialSpeedFactor = defenderSpeedTotal / attackerSpeedTotal;
+	}
+	if(racialSpeedFactor &lt; racialSpeedFactorMin) racialSpeedFactor = racialSpeedFactorMin;
+	
+	double econProportion = inEnemyCommunity.getEconStrength() / consts.getEconStrengthMax();
+	double econStrengthFactor = 1.0d;
+	if(econProportion &gt; econStrengthFactorThreshold)
+	{
+		econStrengthFactor = econStrengthFactorMin + ((econProportion - econStrengthFactorThreshold) * (econStrengthFactorMax - econStrengthFactorMin));
+	}
+	else
+	{
+		econStrengthFactor = econStrengthFactorMin;
+	}
+	
+	double milProportion = inEnemyCommunity.getMilStrength() / consts.getMilStrengthMax();
+	double milStrengthFactor = ((milProportion) * (milStrengthFactorMax - milStrengthFactorMin)) + milStrengthFactorMin;
+	
+	//f(x) = base + (infin_val * x / (x + vertex * ( (infin_val / vertex_val) - 1)))
+	//the above equation makes an asymptotical curve where f(0) = base, f(vertex) = vertex_val + base, and f(x)->infin_val + base as x->infinity
+	//domain cared about: x between 0 and infinity
+	double infin_val = 1.0d - attackerCountFactorMin;
+	double vertex_val = attackerCountFactorVertexValue - attackerCountFactorMin;
+	double attackerCountFactor = attackerCountFactorMin + (infin_val * inDelegationAttackers.Count / (inDelegationAttackers.Count + attackerCountFactorVertexCount * ((infin_val / vertex_val) - 1)));
+	
+	infin_val = 1.0d - defenderCountFactorMin;
+	vertex_val = defenderCountFactorVertexValue - defenderCountFactorMin;
+	double defenderCountFactor = defenderCountFactorMin + (infin_val * inEnemyDefenders.Count / (inEnemyDefenders.Count + defenderCountFactorVertexCount * ((infin_val / vertex_val) - 1)));
+	
+	double total_intercept_prob = defenderCountFactor * attackerCountFactor * milStrengthFactor * econStrengthFactor * racialSpeedFactor;
+	if(total_intercept_prob &gt; interceptProbMax) total_intercept_prob = interceptProbMax;
+	if(total_intercept_prob &lt; interceptProbMin) total_intercept_prob = interceptProbMin;
+	
+	addDebugMessage(inScriptInstance, "intercept probability=" + total_intercept_prob + " from max/min of " + interceptProbMax + "/" + interceptProbMin + " and" +
+		" defenderCountFactor = " + defenderCountFactor +
+		" attackerCountFactor = " + attackerCountFactor +
+		" milStrengthFactor = " + milStrengthFactor +
+		" econStrengthFactor = " + econStrengthFactor +
+		" racialSpeedFactor = " + racialSpeedFactor);
+	
+	//now we must decide which attackers are intercepted and which ones are not:
+	List&lt;IFPop&gt; attackingPopsBypassingDefenders = new List&lt;IFPop&gt;();
+	while((inDelegationAttackers.Count != 0) &amp;&amp; (inEnemyDefenders.Count != 0))
+	{
+		bool interception = getAPI().calcProb(total_intercept_prob);
+		if(!interception)
+		{
+			attackingPopsBypassingDefenders.Add(inDelegationAttackers[0]);
+			inDelegationAttackers.RemoveAt(0);
+			continue;
+		}
+		IFPop attackingPop = inDelegationAttackers[0];
+		inDelegationAttackers.RemoveAt(0);
+		IFPop defendingPop = inEnemyDefenders[0];
+		inEnemyDefenders.RemoveAt(0);
+		IFPop thirdPop = null;
+		bool thirdPopIsAttacking = false;
+		if(inDelegationAttackers.Count &gt; inEnemyDefenders.Count)
+		{
+			thirdPop = inDelegationAttackers[0];
+			inDelegationAttackers.RemoveAt(0);
+			thirdPopIsAttacking = true;
+		}
+		else if(inDelegationAttackers.Count &lt; inEnemyDefenders.Count)
+		{
+			thirdPop = inEnemyDefenders[0];
+			inEnemyDefenders.RemoveAt(0);
+			thirdPopIsAttacking = false;
+		}
+		
+		//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
+		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackingPop, defendingPop, thirdPop, thirdPopIsAttacking, 0.0d, 0.0d }, out _);
+	}
+	
+	//there may be pops which attack and are not intercepted:
+	attackingPopsBypassingDefenders.AddRange(inDelegationAttackers);
+	
+	List&lt;object&gt; toReturn = new List&lt;object&gt;() { attackingPopsBypassingDefenders, inEnemyDefenders };
+	return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

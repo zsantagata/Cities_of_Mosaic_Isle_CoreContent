@@ -1,0 +1,273 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- only one of these should exist and its name should be "default" -->
+  <customconsts name="default">
+  
+    <mLogFirstTimeVariableDoesNotExist>1</mLogFirstTimeVariableDoesNotExist> <!-- if this variable is nonzero, then the first time a custom const is requested and that const does not exist at all, and the first time a custom const is requested and it exists but is the wrong type, a message will be printed to the log -->
+  
+    <!-- this is the only list that exists in this class.  This class establishes custom consts that are used in scripts, or exist for logging purposes.  It is a list of string/string/string where the first string is name, the second string is type, and the third is the actual value of the custom const.  all of these strings have whitespace trimmed from the start and end.-->
+	<!-- these custom consts cannot be changed by game code or scripts. -->
+	<!-- if name is equal to the name of a previously declared custom const, the previous one will be overwritten -->
+	<!-- all names have case ignored -->
+	<!-- the type must be equal to one of the following (without the slashes): int/double/string -->
+	<!-- if the type is int or double, the provided value must parse correctly.  string always parses correctly.  -->
+	<mCustomVariableList>
+	  <!-- Logging variables are here because there are a lot of them and they are auto-generated.  Logging variables always start with "log_", have a middle text that indicates the subject which issues the log message, and end with "_CATEGORY" where CATEGORY is a pre-existing grouping of messages ("all" indicates that all messages, regardless of grouping, should be printed to log; if true it overrides other variables).  If a Logging variable exists and is an int with non-zero value, then it is considered active; any other situation it is not active. -->
+	    <!-- the following log variables group messages from multiple places in the C# code, and therefore have a subject which is different than the class name that sends the message -->
+	    <i1><a>log_userinterface_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_userinterface_general</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_userinterface_scenario</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_userinterface_options</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_userinterface_ingame</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_userinterface_mods</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_userinterface_speed</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_userinterface_resources</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_userinterface_encyclopedia</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_midnighttransition_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_midnighttransition_basic</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_midnighttransition_execTask</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_midnighttransition_customScript</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_midnighttransition_inputs</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_daytimehappeningqueue_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_daytimehappeningqueue_cleanupso</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_gamestates_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_gamestates_overlay</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_gamestates_military</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_gamestates_cityview</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_gamestates_infoview</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_gamestates_diploview</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_gamestates_general</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_saves_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_saves_general</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_savegame_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_savegame_addresourcepool</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_savegame_addcommunity</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_savegame_addpop</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_savegame_addindustryskills</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_savegame_addmap</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_savegame_addeventreport</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_sounds_all</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_sounds_source</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_sounds_play</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_sounds_direction</a> <b>int</b> <c>0</c></i1> <!-- holy cow this is so much spam only turn on if you're debugging this specifically -->
+	    <i1><a>log_sounds_music</a> <b>int</b> <c>1</c></i1>
+		
+	    <!-- the following log variables group messages from singular classes in the C# code, and therefore have a subject which is equal to the class name that sends the message -->
+		
+		<i1><a>log_moddableCustomConsts_all</a> <b>int</b> <c>1</c></i1>
+		<i1><a>log_moddableCustomConsts_missing</a> <b>int</b> <c>1</c></i1>
+		<i1><a>log_moddableCustomConsts_wrongtype</a> <b>int</b> <c>1</c></i1>
+		
+		<!-- script logging (prints comiAPISpace debug from the scripts themselves; there are no other messages from the script-running classes) -->
+	    <i1><a>log_script_all</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_script_mMusicToPlayNext</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopPeacePathfinding</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHousingQualityServiceBonus</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHousingQualityGoodsBonus</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHousingQualityBeautyBonus</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHousingQualityWaterPenalty</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHousingQualityFoodPenalty</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHousingQualityHStasisPenalty</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHousingQualityDurabilityPenalty</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHousingQualityFinalize</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopDeathFromIllness</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopDeathFromWound</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopDeathFromOldAge</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopIllnessFromEnvironment</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopIllnessFromOthersInHousing</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopIllnessFromOthersInWorkplace</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopWoundFromWorkplace</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopWoundFromExposure</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopHealthProtein</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopHealthMCal</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopHealthWater</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopHealthHStasis</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopHealthWoundCureItem</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopHealthIllCureItem</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopHealthOverall</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopHealthOverall</a> <b>int</b> <c>1</c></i1>
+		<!-- be super super careful about setting workplace script logging on, as each time you swing the qual/quan slider these scripts are called and that can be a lot -->
+	    <i1><a>log_script_mWorkplaceLaborFactor</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_script_mWorkplaceResourceFactor</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_script_mWorkplaceConsume</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_script_mWorkplaceGoodsQuanQual</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_script_mWorkplaceServicesQuanQual</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_script_mWorkplaceFromLandQuanQual</a> <b>int</b> <c>0</c></i1>
+		
+	    <i1><a>log_script_mMapGenAssignWater</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mMapGenAssignPassBuild</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mMapGenDistributeResources</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mMapGenGetParcel</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mMapGenCullDoodads</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mMapGenCheckMap</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_script_mHousingPregnancyCheck</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mBuildingDurabilityDaily</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mDesolationRestorationDaily</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mResourceDecayDaily</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mCalculateDistributionNetwork</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mFindHouseForPop</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopConsumeDaily</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mCanPopsMakeBaby</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mLetPopsMakeBaby</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopGiveBirth</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_script_mPopAddWound</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopAddIllness</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_script_mScriptsDeterminingWhichScriptToRun</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mScriptsDeterminingTarget</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_script_mHappinessIndividualCombinationBase</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHappinessEmploymentFactor</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHappinessKinFactor</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHappinessMatesFactor</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHappinessJealousyFactor</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHappinessIndustryLeaderCountFactor</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHappinessIllnessCommunityFactor</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHappinessSpecificCauseDecay</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHappinessDeathsOfPops</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_script_mBuildingConstruction</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mForeignDelegationAtForeignCommunityEvaluation</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_script_mCanHirePopAtWorkplace</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mFirePopAtWorkplace</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mRotateOutputResource</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mIndustrySkillIncreaseDaily</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mIndustrySkillDecreaseDaily</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mSoldierSkillDecreaseDaily</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mChooseNewCityLeaderLocalCommunity</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mCanAssignPopToMusteringPoint</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mEntryToActualBattle</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mExitFromActualBattle</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mWarOrRaidingDelegationAttack</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mWarOrRaidingDelegationWaitOneDay</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHardcodedHistory</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mResourcePoolDescription</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mCanPopJoinDelegation</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mCanDelegationLaunch</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mCalculateLocalPredictionStrength</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mDoesPopLookForNewHome</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mDelegationResourcesDegrade</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mGeneratePopResources</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mPopDeletionDelay</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mBuildingDeletionDelay</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mCommunityDeletionDelay</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_script_mPopDeathFromIrrelevance</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mLeaderStepdown</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mDelegationReturnPrisonerConversion</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mHousingQualitySpecificPop</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_mCalcServiceQualityOfBuilding</a> <b>int</b> <c>1</c></i1>
+		
+		<!-- TODO as more scripts are added to the game, put their logging variables here -->
+		
+	    <i1><a>log_calendar_all</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_igEvent_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igEvent_general</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igEvent_pregate</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igEvent_gate</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igEvent_MTTH</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igEvent_uponhappening</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igEvent_choices</a> <b>int</b> <c>1</c></i1> <!-- this also includes scripts that run when a choice is chosen -->
+		
+	    <i1><a>log_variableHandler_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_variableHandler_general</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_variableHandler_unconnected</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_variableHandler_connected</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_variableHandler_connectedRecalc</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_igBuildingKind_all</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_igBuildingKind_general</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igBuildingKind_housing</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igBuildingKind_workplace</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igBuildingKind_service</a> <b>int</b> <c>1</c></i1>
+		<!-- be super super careful about setting workplace script logging on, as each time you swing the qual/quan slider these scripts are called and that can be a lot -->
+	    <i1><a>log_igBuildingKind_script</a> <b>int</b> <c>0</c></i1>
+		
+	    <i1><a>log_igBuilding_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igBuilding_sprites</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_igCommunity_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igCommunity_general</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igCommunity_leader</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igCommunity_relations</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igCommunity_delegation</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_igDelegation_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igDelegation_general</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igDelegation_movement</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igDelegation_pops</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igDelegation_events</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_igIndustrySkills_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igIndustrySkills_average</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igIndustrySkills_leader</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_igResourcePool_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igResourcePool_quality</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igResourcePool_quantity</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_mapGenerator_all</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_mapGenerator_mapGen</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_mapGenerator_mapGenTile</a> <b>int</b> <c>0</c></i1> <!-- this prints out mapGen's attempts to find a base tile/doodad/resource tile to fit the map; lots of spam -->
+		
+	    <i1><a>log_WorldMap_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_WorldMap_general</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_igRace_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igRace_general</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igRace_delegation</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igRace_happiness</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igRace_health</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igRace_housing</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igRace_leader</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igRace_military</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igRace_status</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igRace_workplace</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_igPop_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igPop_pathfinding</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_pathfindingpopregister_all</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_pathfindingpopregister_update</a> <b>int</b> <c>0</c></i1> <!-- this prints out pop state calculations every frame; lots of spam -->
+		
+	    <i1><a>log_igForeignCommunityComponent_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igForeignCommunityComponent_path</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igForeignCommunityComponent_ai</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_igLeaderCollection_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igLeaderCollection_cityleader</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igLeaderCollection_raceleader</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igLeaderCollection_industryleader</a> <b>int</b> <c>1</c></i1>
+		
+	    <i1><a>log_igHappinessCollection_all</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_igHappinessCollection_add_cause</a> <b>int</b> <c>1</c></i1>
+		
+		<!-- TODO as more classes are added, add logging statements to them and add custom consts above -->
+		
+		<!-- non-logging custom consts are in this list, instead of in gameConsts, because the custom consts here don't need to exist in order for the C# code to work properly. -->
+		<!-- custom consts which are not logging consts will only be accessed by scripts.  The consts may not exist, in which case the call will return Int64.MinValue, double.NaN, or string.Empty -->
+		<!-- those values could probably cause havoc in scripts, so it is the responsibility of the script writer to check if the custom const exists before using the return value. -->
+		<!-- the consts that are added in core_data are those used in the unmodded game scripts.  Modders should not expect that these values will go untouched by other mods, or that these values exist at all (they could be deleted by other mods) -->
+		
+		<!-- custom const lists work like this: -->
+		<!-- they are string lists, delimited by commas.  If your script needs internal commas in entries, figure it out yourself (use [COMMA] or something) -->
+		<!-- (if the list needs to be doubles or ints, there are C# functions to convert strings to int/double and you can store variables if you don't want to repeat the process) -->
+		<!-- they are not replaced when a repeat entry occurs, but can be removed if mCustomVariableList kind="remove" is used -->
+		<!-- instead of being replaced, they are appended to.  So the below double entry adds all the below list entries ("hello", "world", "how", "are", "you") -->
+		<!-- in order to remove entries, the string [REMOVE] must be present at least once inbetween <c> and </c> (all instances of [REMOVE] do not become part of the entry, so "water[REMOVE][REMOVE]polo,is a funny word" would try to remove both "waterpolo" and "is a funny word" from the list) -->
+	    <i1><a>example_list</a> <b>list</b> <c>hello,world</c></i1>
+	    <i1><a>example_list</a> <b>list</b> <c>how,are,you</c></i1>
+		
+	</mCustomVariableList>
+  </customconsts>
+</core_data>

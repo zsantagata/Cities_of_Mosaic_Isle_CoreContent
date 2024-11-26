@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- contracting illness from other pops in a siege works like this: -->
+	  <!-- there is a chance, per pop ill in the community, that other pops are exposed to another ill pop. -->
+	  <!-- then there is the chance that the pop contracts an illness from being exposed -->
+	  <!-- (the total chance of contracting an illness is the sum of same race and different race; the use of the two weights is just for choosing the source pop.  Total chance does not change even if there are no pops in one of the categories) -->
+	  <i1><a>determineDefenderIllnesses illness_from_others same_race rate</a> <b>double</b> <c>0.075</c></i1>
+	  <i1><a>determineDefenderIllnesses illness_from_others different_race rate</a> <b>double</b> <c>0.03</c></i1>
+	  <i1><a>determineDefenderIllnesses illness_from_others exposure_per_ill_pop additive rate</a> <b>double</b> <c>0.01</c></i1> <!-- this means that at a high enough population of sick pops, all other pops in the community will be exposed to illness daily -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script determinedefenderillnesses</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which calculates how many more pops of a community under siege become ill.  This script will reify such pops if necessary. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFCommunity inCommunity
+	
+	There is no output -->
+	<i1><a>determineDefenderIllnesses</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFCommunity)   }
+	  }, out _))
+	{
+		throw new ArgumentException("determineDefenderIllnesses custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	
+	var customConsts = getAPI().getCustomConsts();
+	
+	//a problem here is that not all pops of the community are reified.  Doing so would/could mean a performance and memory hit, but would allow us to use existing scripts to handle all of this.
+	//instead, we approximate the behavior of illness-from-environment scripts and deal with only the necessary pops
+	
+	List&lt;IFPop&gt; allPopsIllList = new List&lt;IFPop&gt;();
+	Dictionary&lt;IFRace, List&lt;IFPop&gt;&gt; allPopsIll = new Dictionary&lt;IFRace, List&lt;IFPop&gt;&gt;();
+	//now, for each (declared or undeclared) pop in the target community, calculate chance of sickness:
+	foreach(IFPop pop in inCommunity.getPopsLoyalToCommunity())
+	{
+		if(pop.isDead() || (pop.getPopLocation() != IFPop.ePopLocation.cInForeignCommunity))
+			continue;
+			
+		customScripts.runCustomScript("commonIllnessFromEnvironment", new List&lt;object&gt;() { pop }, out _);
+		
+		if(pop.isIll())
+		{
+			if(!allPopsIll.ContainsKey(pop.getRace()))
+				allPopsIll.Add(pop.getRace(), new List&lt;IFPop&gt;());
+			allPopsIll[pop.getRace()].Add(pop);
+			allPopsIllList.Add(pop);
+		}
+	}
+	
+    //TODO modify these per biome
+    double chance_healthy_pop_check_sick = customConsts.getDoubleConst("popHealth illness_from_environment healthy_pop_check_sick_anyway rate", out bool success);
+    if(!success) chance_healthy_pop_check_sick = 0.001d;
+    double rate = customConsts.getDoubleConst("popHealth illness_from_environment rate", out success);
+    if(!success) rate = 0.10d;
+	double totalChance = chance_healthy_pop_check_sick * rate;
+	
+	Dictionary&lt;IFRace, Int64&gt; popsToMakeSickFromEnvironmentDict = new Dictionary&lt;IFRace, Int64&gt;();
+	foreach(var kvpair in inCommunity.getAdditionalUndeclaredPopCounts())
+	{
+		popsToMakeSickFromEnvironmentDict.Add(kvpair.Key, 0);
+		for(Int64 i = 0; i &lt; (Int64)kvpair.Value; i++)
+		{
+			if(getAPI().calcProb(totalChance))
+				popsToMakeSickFromEnvironmentDict[kvpair.Key]++;
+		}
+	}
+	
+	foreach(var kvpair in popsToMakeSickFromEnvironmentDict)
+	{
+		if(kvpair.Value != 0)
+		{
+			if(customScripts.runCustomScriptCheckTypes("fetchPopsFromForeignCommunity", new List&lt;object&gt;() { inCommunity, kvpair.Value, kvpair.Key, IFPop.ePopSex.cUnisexNone, false, false, false, true,
+				false, false, false, false, false, false, false, false, false, false, true, true }, out List&lt;object&gt; returnedPops, false, typeof(List&lt;IFPop&gt;)))
+			{
+				foreach(IFPop pop in (List&lt;IFPop&gt;)returnedPops[0])
+				{
+					pop.addIllness(true);
+					if(!allPopsIll.ContainsKey(pop.getRace()))
+						allPopsIll.Add(pop.getRace(), new List&lt;IFPop&gt;());
+					allPopsIll[pop.getRace()].Add(pop);
+					allPopsIllList.Add(pop);
+				}
+			}
+		}
+	}
+	
+	//now spread illness.  In a siege, pops of the defending community are forced into a small area, increasing the rate of spread between pops.
+	double chancePerIllPop = customConsts.getDoubleConst("determineDefenderIllnesses illness_from_others exposure_per_ill_pop additive rate", out success);
+	if(!success) chancePerIllPop = 0.01d;
+	double diffRaceRate = customConsts.getDoubleConst("determineDefenderIllnesses illness_from_others different_race rate", out success);
+	if(!success) diffRaceRate = 0.03d;
+	double sameRaceRate = customConsts.getDoubleConst("determineDefenderIllnesses illness_from_others same_race rate", out success);
+	if(!success) sameRaceRate = 0.075d;
+	
+	double chanceOfExposure = chancePerIllPop * allPopsIllList.Count;
+	chanceOfExposure = Math.Min(1.0d, Math.Max(0.0d, chanceOfExposure));
+	
+	double chanceOfContract = diffRaceRate + sameRaceRate;
+	double sameRaceProb = sameRaceRate / chanceOfContract;
+	chanceOfContract = Math.Min(1.0d, Math.Max(0.0d, chanceOfContract));
+	
+	foreach(IFPop pop in inCommunity.getPopsLoyalToCommunity())
+	{
+		if(pop.isDead() || (pop.getPopLocation() != IFPop.ePopLocation.cInForeignCommunity))
+			continue;
+		
+		if(getAPI().calcProb(chanceOfExposure) &amp;&amp; getAPI().calcProb(chanceOfContract))
+		{
+			IFPop contractedFrom = null;
+			if(getAPI().calcProb(sameRaceProb) &amp;&amp; allPopsIll.ContainsKey(pop.getRace()) &amp;&amp; (allPopsIll[pop.getRace()].Count != 0))
+			{
+				contractedFrom = allPopsIll[pop.getRace()][(int)getAPI().calcRandIntUnder(allPopsIll[pop.getRace()].Count)];
+			}
+			else
+			{
+				contractedFrom = allPopsIllList[(int)getAPI().calcRandIntUnder(allPopsIllList.Count)];
+			}
+		
+			pop.addIllness(false, contractedFrom);
+		}
+	}
+	
+	Dictionary&lt;IFRace, Int64&gt; popsToMakeSickFromOthersDict = new Dictionary&lt;IFRace, Int64&gt;();
+	foreach(var kvpair in inCommunity.getAdditionalUndeclaredPopCounts())
+	{
+		popsToMakeSickFromOthersDict.Add(kvpair.Key, 0);
+		for(Int64 i = 0; i &lt; (Int64)kvpair.Value; i++)
+		{
+			if(getAPI().calcProb(chanceOfExposure) &amp;&amp; getAPI().calcProb(chanceOfContract))
+				popsToMakeSickFromOthersDict[kvpair.Key]++;
+		}
+	}
+	
+	foreach(var kvpair in popsToMakeSickFromOthersDict)
+	{
+		if(kvpair.Value != 0)
+		{
+			if(customScripts.runCustomScriptCheckTypes("fetchPopsFromForeignCommunity", new List&lt;object&gt;() { inCommunity, kvpair.Value, kvpair.Key, IFPop.ePopSex.cUnisexNone, false, false, false, true,
+				false, false, false, false, false, false, false, false, false, false, true, true }, out List&lt;object&gt; returnedPops, false, typeof(List&lt;IFPop&gt;)))
+			{
+				foreach(IFPop pop in (List&lt;IFPop&gt;)returnedPops[0])
+				{
+					IFPop contractedFrom = null;
+					if(getAPI().calcProb(sameRaceProb) &amp;&amp; allPopsIll.ContainsKey(pop.getRace()) &amp;&amp; (allPopsIll[pop.getRace()].Count != 0))
+					{
+						contractedFrom = allPopsIll[pop.getRace()][(int)getAPI().calcRandIntUnder(allPopsIll[pop.getRace()].Count)];
+					}
+					else
+					{
+						contractedFrom = allPopsIllList[(int)getAPI().calcRandIntUnder(allPopsIllList.Count)];
+					}
+					
+					pop.addIllness(false, contractedFrom);
+				}
+			}
+		}
+	}
+	
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

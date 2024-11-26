@@ -1,0 +1,247 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of scripts related to the deletion of saveable objects (SOs are objects which are generated during gameplay, as opposed to moddable objects (MOs) which are created after all mod information is loaded) -->
+  
+  <!-- custom consts related to deletion: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+		<!-- SOs are not cleaned up immediately when they are eligible because history, events, and other scripts may want to reference them even when they are gone -->
+		<!-- note that C# code will take care of non-script-related cleanup (such as removing a deleted building from the map, kicking out any housed pops, etc.) of all SOs on its own -->
+		<!-- these moddable scripts exist so A) I can mess with how long certain "important" SOs stick around for history/events to look at and B) in case modders find a use for changing anything here (should only really be done if setting "do not delete" variables ahead of time isn't an option) -->
+	
+		<!-- pops are only cleaned up by C# code if they are a member of a "general" community (Wanderers/Rebels/GenericEnemy) or if they have been dead for longer than consts.getPopKeepAfterDeadDaysGeneral(), and: -->
+		<!-- they are not The Lady -->
+		<!-- they are not on the local map -->
+		<!-- they are not in a delegation -->
+		<!-- there is not a "do not delete" variable active for them -->
+		<!-- the below determine for how long various conditions should apply.  All conditions are multiplied together (but "general" communities shouldn't have leaders in the first place) -->
+		<i1><a>deletion pop local delay factor</a> <b>double</b> <c>4.0</c></i1> <!-- these pops, after their death, are kept for kept for consts.getPopKeepAfterDeadDaysGeneral() * this -->
+		<i1><a>deletion pop rebel delay factor</a> <b>double</b> <c>2.0</c></i1> <!-- these pops, after their death or other eligibility for deletion, are kept for kept for consts.getPopKeepAfterDeadDaysGeneral() * this -->
+		<i1><a>deletion pop wanderer delay factor</a> <b>double</b> <c>0.5</c></i1> <!-- these pops, after their death or other eligibility for deletion, are kept for kept for consts.getPopKeepAfterDeadDaysGeneral() * this -->
+		<i1><a>deletion pop enemy delay factor</a> <b>double</b> <c>0.5</c></i1> <!-- these pops, after their death or other eligibility for deletion, are kept for kept for consts.getPopKeepAfterDeadDaysGeneral() * this -->
+		<i1><a>deletion pop industry_leader delay factor</a> <b>double</b> <c>1.5</c></i1> <!-- these pops, after their death, are kept for kept for consts.getPopKeepAfterDeadDaysGeneral() * this -->
+		<i1><a>deletion pop race_leader delay factor</a> <b>double</b> <c>2.0</c></i1> <!-- these pops, after their death, are kept for kept for consts.getPopKeepAfterDeadDaysGeneral() * this -->
+		<i1><a>deletion pop city_leader delay factor</a> <b>double</b> <c>3.0</c></i1> <!-- these pops, after their death, are kept for kept for consts.getPopKeepAfterDeadDaysGeneral() * this -->
+		<!-- so, for example, every local city leader will be saved for 3.0 * 4.0 * consts.getPopKeepAfterDeadDaysGeneral() days after their death -->
+
+		<!-- buildings are only cleaned up by C# code after they have been destroyed, when they are being built but are canceled (through marking them for deletion), or when they have no associated map -->
+		<!-- there also must not be a "do not delete" variable active for them -->
+		<!-- the below determine for how long various conditions should apply.  All conditions are added together -->
+		<i1><a>deletion building housing delay day count</a> <b>int</b> <c>60</c></i1> <!-- these buildings, after their destruction, are kept for this day count -->
+		<i1><a>deletion building workplace delay day count</a> <b>int</b> <c>30</c></i1> <!-- these buildings, after their destruction, are kept for this day count -->
+		<i1><a>deletion building mustering_point delay day count</a> <b>int</b> <c>30</c></i1> <!-- these buildings, after their destruction, are kept for this day count -->
+		<!-- the script will also look for a custom const called "deletion building BUILDINGKIND_INTERNALNAME delay count" where BUILDINGKIND_INTERNALNAME is replaced with the specific buildingkind of the building -->
+
+		<!-- delegations are cleaned up by C# code at an appropriate time after they have returned to their home community or been totally lost.  There is no way for scripts to delay this -->
+		
+		<!-- communities are cleaned up by C# code if all the following conditions are true: -->
+		<!-- they are a normal community -->
+		<!-- they are not the player community -->
+		<!-- they have no alive or dead pops loyal to the community -->
+		<!-- they have no delegations going to or from the community -->
+		<!-- there is not a "do not delete" variable active for them -->
+		<!-- no delay factors -->
+		
+	</mCustomVariableList>
+  </customconsts>
+  
+  <gamescripts name="default">
+	<!-- these scripts are called when all other conditions for the SO to be deleted are true (including checking for the "do not delete" variable.  This variable is checked again after the script is run) -->
+	<!-- these scripts are called during midnight processing -->
+	<!-- note that if any of these scripts increases the deletion delay the script will be called twice for the SO: first when the "normal" deletion would occur and is prevented, then secondly after the do-not-delete variable expires (and presumably these scripts are coded correctly not to re-add the do-not-delete variable on the second call) -->
+  
+    <!-- pop deletion has one input argument: IFPop which we are deleting.  There is no output. -->
+	<mPopDeletionDelay>
+	    //input count check:
+	    if(inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+		
+	    IFPop inPop = (IFPop)inArguments[0];
+
+		var customConsts = getAPI().getCustomConsts();
+		var consts = getAPI().getConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		Int64 dayOfDeathOrFirstDeletionAttempt = 0L;
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		bool storeFirstDeletionAttemptDate = false;
+		//if the pop is not dead, it is being cleaned up because it is an off-map generic; record the first time and use that as the "day of death":
+		if(!inPop.isDead())
+		{
+			Int64 firstDeletionAttemptDate = variableHandler.getInt("popDeletion_firstDeletionAttemptDate_pop" + inPop.getUID(), out success);
+			if(firstDeletionAttemptDate != 0)
+			{
+				dayOfDeathOrFirstDeletionAttempt = firstDeletionAttemptDate;
+			}
+			else
+			{
+				storeFirstDeletionAttemptDate = true;
+				dayOfDeathOrFirstDeletionAttempt = currentDate;
+			}
+		}
+		else
+		{
+			dayOfDeathOrFirstDeletionAttempt = inPop.getDayOfDeath();
+		}
+
+		Int64 generalDayDelay = consts.getPopKeepAfterDeadDaysGeneral();
+		double totalDaysDelayed = generalDayDelay;
+		
+		double localDelayFactor = customConsts.getDoubleConst("deletion pop local delay factor", out success);
+		if(!success) localDelayFactor = 4.0d;
+		double rebelDelayFactor = customConsts.getDoubleConst("deletion pop rebel delay factor", out success);
+		if(!success) rebelDelayFactor = 2.0d;
+		double wandererDelayFactor = customConsts.getDoubleConst("deletion pop wanderer delay factor", out success);
+		if(!success) wandererDelayFactor = 0.5d;
+		double enemyDelayFactor = customConsts.getDoubleConst("deletion pop enemy delay factor", out success);
+		if(!success) enemyDelayFactor = 0.5d;
+		
+		double industryLeaderDelayFactor = customConsts.getDoubleConst("deletion industry_leader enemy delay factor", out success);
+		if(!success) industryLeaderDelayFactor = 1.5d;
+		double raceLeaderDelayFactor = customConsts.getDoubleConst("deletion race_leader enemy delay factor", out success);
+		if(!success) raceLeaderDelayFactor = 2.0d;
+		double cityLeaderDelayFactor = customConsts.getDoubleConst("deletion city_leader enemy delay factor", out success);
+		if(!success) cityLeaderDelayFactor = 3.0d;
+		
+		if(inPop.getCommunity() == getAPI().getLocalCommunity())
+			totalDaysDelayed *= localDelayFactor;
+		else if(inPop.getCommunity() == getAPI().getRebelsCommunity())
+			totalDaysDelayed *= rebelDelayFactor;
+		else if(inPop.getCommunity() == getAPI().getWandererCommunity())
+			totalDaysDelayed *= wandererDelayFactor;
+		else if(inPop.getCommunity() == getAPI().getGenericEnemyCommunity())
+			totalDaysDelayed *= enemyDelayFactor;
+			
+		//upon their death, the hardcoded history script should record whether the pop was industry leader/race leader/city leader at the time of their death
+		//this script will check at a later date obviously, so the IFLeaderCollection information will have changed
+		//also this script will extend the variables' expiration dates so that events and other scripts will continue to see those variables
+		
+		bool wasCityLeader = false;
+		bool wasRaceLeader = false;
+		bool wasIndustryLeader = false;
+		if(variableHandler.getInt("popDeathRecord_wasCityLeader_pop" + inPop.getUID(), out success) != 0)
+		{
+			wasCityLeader = true;
+			totalDaysDelayed *= cityLeaderDelayFactor;
+		}
+		if(variableHandler.getInt("popDeathRecord_wasRaceLeader_pop" + inPop.getUID(), out success) != 0)
+		{
+			wasRaceLeader = true;
+			totalDaysDelayed *= raceLeaderDelayFactor;
+		}
+		if(variableHandler.getInt("popDeathRecord_wasIndustryLeader_pop" + inPop.getUID(), out success) != 0)
+		{
+			wasIndustryLeader = true;
+			totalDaysDelayed *= industryLeaderDelayFactor;
+		}
+		
+		//now extend the deletion time if we are not yet past it:
+		if((Int64)totalDaysDelayed + dayOfDeathOrFirstDeletionAttempt &gt; currentDate)
+		{
+			//add a "do not delete" variable for the remaining time:
+			string notToDeleteMarkingName = APIconsts.cDoNotDeleteSOVariableNames[(int)APIconsts.eSOsMarkableAsDoNotDelete.cPop];
+			notToDeleteMarkingName += inPop.getUID();
+			
+			//the connected variable value does not matter, only its existence.  it will expire when its lowers expire
+			//the top variable doesn't exist if we've gotten here, and the lower shouldn't exist yet
+			variableHandler.addConnectedInt(notToDeleteMarkingName, 0L, out IFConnectedVariable topDoNotDelete, -1L);
+			variableHandler.addConnectedInt(notToDeleteMarkingName + "_mPopDeletionDelay", 0L, out IFConnectedVariable lowerDoNotDelete, (Int64)totalDaysDelayed + dayOfDeathOrFirstDeletionAttempt + 1);
+			variableHandler.connectVariables(lowerDoNotDelete, topDoNotDelete);
+			
+			//extend all saved information for the remaining time:
+			if(wasCityLeader)
+			{
+				variableHandler.storeIntVariable((Int64)totalDaysDelayed + dayOfDeathOrFirstDeletionAttempt + 1, "popDeathRecord_wasCityLeader_pop" + inPop.getUID(), 1L);
+			}
+			if(wasRaceLeader)
+			{
+				variableHandler.storeIntVariable((Int64)totalDaysDelayed + dayOfDeathOrFirstDeletionAttempt + 1, "popDeathRecord_wasRaceLeader_pop" + inPop.getUID(), 1L);
+			}
+			if(wasIndustryLeader)
+			{
+				variableHandler.storeIntVariable((Int64)totalDaysDelayed + dayOfDeathOrFirstDeletionAttempt + 1, "popDeathRecord_wasIndustryLeader_pop" + inPop.getUID(), 1L);
+				variableHandler.storeIntVariable((Int64)totalDaysDelayed + dayOfDeathOrFirstDeletionAttempt + 1, "popDeathRecord_industryMOIDLedByPop_pop" + inPop.getUID(), 
+					variableHandler.getInt("popDeathRecord_industryMOIDLedByPop_pop" + inPop.getUID(), out success));
+			}
+			if(storeFirstDeletionAttemptDate)
+			{
+				variableHandler.storeIntVariable((Int64)totalDaysDelayed + dayOfDeathOrFirstDeletionAttempt + 1, "popDeletion_firstDeletionAttemptDate_pop" + inPop.getUID(), currentDate);
+			}
+		}
+		
+		return null;
+	</mPopDeletionDelay>
+	
+    <!-- building deletion has one input argument: IFBuilding which we are deleting.  There is no output. -->
+	<mBuildingDeletionDelay>
+	    //input count check:
+	    if(inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+		
+	    IFBuilding inBuilding = (IFBuilding)inArguments[0];
+
+		var customConsts = getAPI().getCustomConsts();
+		var consts = getAPI().getConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		Int64 additionalDelayDays = 0;
+
+		Int64 housingDelayDayCount = customConsts.getIntConst("deletion building housing delay day count", out success);
+		if(!success) housingDelayDayCount = 60;
+		Int64 workplaceDelayDayCount = customConsts.getIntConst("deletion building workplace delay day count", out success);
+		if(!success) workplaceDelayDayCount = 30;
+		Int64 musteringPointDelayDayCount = customConsts.getIntConst("deletion building mustering_point delay day count", out success);
+		if(!success) musteringPointDelayDayCount = 30;
+
+		if(inBuilding.isHousing())
+			additionalDelayDays += housingDelayDayCount;
+		if(inBuilding.isWorkplace())
+			additionalDelayDays += workplaceDelayDayCount;
+		if(inBuilding.isMusteringPoint())
+			additionalDelayDays += musteringPointDelayDayCount;
+		
+		//now extend the deletion time if we are not yet past it and have not already done so:
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		if((variableHandler.getInt("buildingDeletion_alreadyDelayed_building" + inBuilding.getUID(), out success) == 0) &amp;&amp; (additionalDelayDays &gt; 0))
+		{
+			//add a "do not delete" variable for the remaining time:
+			string notToDeleteMarkingName = APIconsts.cDoNotDeleteSOVariableNames[(int)APIconsts.eSOsMarkableAsDoNotDelete.cBuilding];
+			notToDeleteMarkingName += inBuilding.getUID();
+			
+			//the connected variable value does not matter, only its existence.  it will expire when its lowers expire
+			variableHandler.addConnectedInt(notToDeleteMarkingName, 0L, out IFConnectedVariable topDoNotDelete, -1L);
+			variableHandler.addConnectedInt(notToDeleteMarkingName + "_mBuildingDeletionDelay", 0L, out IFConnectedVariable lowerDoNotDelete, currentDate + additionalDelayDays);
+			variableHandler.connectVariables(lowerDoNotDelete, topDoNotDelete);
+			
+			//add a variable indicating we have already delayed the deletion date:
+			variableHandler.storeIntVariable(currentDate + additionalDelayDays + 2, "buildingDeletion_alreadyDelayed_building" + inBuilding.getUID(), 1L);
+		}
+		
+		return null;
+	</mBuildingDeletionDelay>
+	
+    <!-- community deletion has one input argument: IFCommunity which we are deleting.  There is no output. -->
+	<mCommunityDeletionDelay>
+	    //input count check:
+	    if(inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+		
+		//this script only exists for modders/future work.  As of now in the base game nothing extends the time before a community is deleted
+		
+		return null;
+	</mCommunityDeletionDelay>
+	
+	
+  
+  </gamescripts>
+  
+</core_data>

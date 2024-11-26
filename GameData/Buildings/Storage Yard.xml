@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igBuildingKind name="Storage Yard">
+    <Encyclopedia_Entry>
+	  <full_path>Buildings/Storage Yard</full_path>
+	  <body_text>Storage Yard.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mBuildingKindQualities>0x7</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x4 = passable -->
+    <mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+
+	<mPopDaysToBuild>1</mPopDaysToBuild>
+	<mBaseDurability>100</mBaseDurability>
+	
+	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive).  If nothing exists, this building does not require any resources to build -->
+	</mResourcesToBuild>
+	
+	<mBeautyValue>-5</mBeautyValue> <!-- TODO any beauty thing -->
+	<mBeautyRadius>1</mBeautyRadius>
+    <mBeautySynergyBuildings>
+	</mBeautySynergyBuildings>
+	
+    <mSSIDs>
+		<i>Storage Yard</i>
+	</mSSIDs>
+	
+	<mMaxWorkers>0</mMaxWorkers>
+	<mIndustry>Distribution</mIndustry>
+	<mRadius>6</mRadius>
+	
+	<mIsHousing>0</mIsHousing> <!-- bool, true if nonzero -->
+	<mIsWorkplace>0</mIsWorkplace> <!-- bool, true if nonzero -->
+	
+	<mTagList>
+	  <i1>road benefit distance decrease</i1>
+	  <i1>distribution</i1>
+	  
+	  <!-- description tags: -->
+	  <i1>description_shape_top_noun:poletops</i1>
+	  <i1>description_shape_side_noun:poles</i1>
+	  <i1>description_shape_middle_noun:open spaces</i1>
+	  <i1>description_shape_bottom_noun:resource piles</i1>
+	</mTagList>
+  </igBuildingKind>
+  
+</core_data>

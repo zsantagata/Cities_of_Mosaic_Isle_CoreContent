@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script doesneutralpopdesiretostay</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which checks if a given neutral pop wants to stay on the local map or not -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- does neutral pop desire to stay has one argument: IFPop inPop.  It has one output: bool outDesiresToStay. -->
+	<!-- this script is called when a neutral pop is pathfinding.  Neutral pops have different pathfinding depending on whether they want to stay or not; this is to make sure they get off the map eventually. -->
+	<i1><a>doesNeutralPopDesireToStay</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("doesNeutralPopDesireToStay custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFPop inPop = (IFPop)inArguments[0];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity checking: a null input, a non-neutral pop, or a dead pop are invalid inputs:
+	  if(inPop == null)
+	  {
+		  throw new ArgumentException("doesNeutralPopDesireToStay custom script received invalid argument inPop: null");
+		  return null;
+	  }
+	  if(inPop.isDead())
+	  {
+		  throw new ArgumentException("doesNeutralPopDesireToStay custom script received invalid argument inPop: pop is dead");
+		  return null;
+	  }
+	  if(inPop.getCommunity() == getAPI().getLocalCommunity())
+	  {
+		  throw new ArgumentException("doesNeutralPopDesireToStay custom script received invalid argument inPop: pop is loyal, not neutral");
+		  return null;
+	  }
+	  if(getAPI().isHostileCommunity(inPop.getCommunity()))
+	  {
+		  throw new ArgumentException("doesNeutralPopDesireToStay custom script received invalid argument inPop: pop is hostile, not neutral");
+		  return null;
+	  }
+	  
+	  //there is a widely-used connected variable that determines a neutral pop's willingness to stay.  The variable is:
+	  string variableName = "desireToStayOnMap_pop" + inPop.getUID();
+	  //if the variable does not exist or non-positive, the pop wishes to leave.  Only if the variable exists and is positive does the pop wish to stay
+	  //note that this function is a *checking* function, not an update function, so changes to the variable should occur elsewhere
+	  
+	  double desireToStay = variableHandler.getConnectedDouble(variableName, out bool success);
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	  if(success &amp;&amp; (desireToStay &gt; 0.0d))
+	  {
+		  addDebugMessage(inScriptInstance, "neutral pop " + inPop.getDebugName() + " desires to stay on map with strength=" + desireToStay);
+		  toReturn.Add(true);
+	  }
+	  else
+	  {
+		  addDebugMessage(inScriptInstance, "neutral pop " + inPop.getDebugName() + " does not desire to stay on map; value exists=" + success + ", value strength=" + desireToStay);
+	      toReturn.Add(false);
+	  }
+	  
+	  return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

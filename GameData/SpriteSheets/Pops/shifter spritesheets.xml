@@ -1,0 +1,2460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <spritesheet name="Shifter neutral ss">
+    <mSheetTypeName>igRace</mSheetTypeName>
+	<mPath>_Previs Pops/Shifter/shifter neutral SS</mPath>
+    <mTagList></mTagList>
+	<mSpriteList>
+	  <sprite>
+	    <id>0</id>
+		<name>idle</name>
+		<frames>2</frames>
+		<y_origin>0</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>1</id>
+		<name>idle_lightgear</name>
+		<frames>2</frames>
+		<y_origin>34</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>2</id>
+		<name>idle_heavygear</name>
+		<frames>2</frames>
+		<y_origin>68</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>3</id>
+		<name>Walking No Gear</name>
+		<frames>2</frames>
+		<y_origin>102</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>4</id>
+		<name>Walking Light Gear</name>
+		<frames>2</frames>
+		<y_origin>136</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>5</id>
+		<name>Walking Heavy Gear</name>
+		<frames>2</frames>
+		<y_origin>170</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>6</id>
+		<name>moving</name>
+		<frames>2</frames>
+		<y_origin>204</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>7</id>
+		<name>moving_lightgear</name>
+		<frames>2</frames>
+		<y_origin>238</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>8</id>
+		<name>moving_heavygear</name>
+		<frames>2</frames>
+		<y_origin>272</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>9</id>
+		<name>wounded</name>
+		<frames>2</frames>
+		<y_origin>306</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>10</id>
+		<name>wounded_lightgear</name>
+		<frames>2</frames>
+		<y_origin>340</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>11</id>
+		<name>wounded_heavygear</name>
+		<frames>2</frames>
+		<y_origin>374</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>12</id>
+		<name>fighting</name>
+		<frames>2</frames>
+		<y_origin>408</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>13</id>
+		<name>fighting_lightgear</name>
+		<frames>2</frames>
+		<y_origin>442</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>14</id>
+		<name>fighting_heavygear</name>
+		<frames>2</frames>
+		<y_origin>476</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>15</id>
+		<name>dead</name>
+		<frames>2</frames>
+		<y_origin>510</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>16</id>
+		<name>dead_lightgear</name>
+		<frames>2</frames>
+		<y_origin>544</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>17</id>
+		<name>dead_heavygear</name>
+		<frames>2</frames>
+		<y_origin>578</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>18</id>
+		<name>sick</name>
+		<frames>2</frames>
+		<y_origin>612</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>19</id>
+		<name>sick_lightgear</name>
+		<frames>2</frames>
+		<y_origin>646</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>20</id>
+		<name>sick_heavygear</name>
+		<frames>2</frames>
+		<y_origin>680</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>21</id>
+		<name>enemydamagingbuilding</name>
+		<frames>2</frames>
+		<y_origin>714</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>22</id>
+		<name>enemydamagingbuilding_lightgear</name>
+		<frames>2</frames>
+		<y_origin>748</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>23</id>
+		<name>enemydamagingbuilding_heavygear</name>
+		<frames>2</frames>
+		<y_origin>782</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>24</id>
+		<name>enemyfleeingmapstealing</name>
+		<frames>2</frames>
+		<y_origin>816</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>25</id>
+		<name>enemyfleeingmapstealing_lightgear</name>
+		<frames>2</frames>
+		<y_origin>850</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>26</id>
+		<name>enemyfleeingmapstealing_heavygear</name>
+		<frames>2</frames>
+		<y_origin>884</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>27</id>
+		<name>enemyfleeingmapabduction</name>
+		<frames>2</frames>
+		<y_origin>918</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>28</id>
+		<name>enemyfleeingmapabduction_lightgear</name>
+		<frames>2</frames>
+		<y_origin>952</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>29</id>
+		<name>enemyfleeingmapabduction_heavygear</name>
+		<frames>2</frames>
+		<y_origin>986</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	</mSpriteList>
+  </spritesheet>
+  
+  <spritesheet name="Shifter local ss">
+    <mSheetTypeName>igRace</mSheetTypeName>
+	<mPath>_Previs Pops/Shifter/shifter local SS</mPath>
+    <mTagList><i>local</i></mTagList>
+	<mSpriteList>
+	  <sprite>
+	    <id>0</id>
+		<name>idle</name>
+		<frames>2</frames>
+		<y_origin>0</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>1</id>
+		<name>idle_lightgear</name>
+		<frames>2</frames>
+		<y_origin>34</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>2</id>
+		<name>idle_heavygear</name>
+		<frames>2</frames>
+		<y_origin>68</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>3</id>
+		<name>Walking No Gear</name>
+		<frames>2</frames>
+		<y_origin>102</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>4</id>
+		<name>Walking Light Gear</name>
+		<frames>2</frames>
+		<y_origin>136</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>5</id>
+		<name>Walking Heavy Gear</name>
+		<frames>2</frames>
+		<y_origin>170</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>6</id>
+		<name>moving</name>
+		<frames>2</frames>
+		<y_origin>204</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>7</id>
+		<name>moving_lightgear</name>
+		<frames>2</frames>
+		<y_origin>238</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>8</id>
+		<name>moving_heavygear</name>
+		<frames>2</frames>
+		<y_origin>272</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>9</id>
+		<name>wounded</name>
+		<frames>2</frames>
+		<y_origin>306</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>10</id>
+		<name>wounded_lightgear</name>
+		<frames>2</frames>
+		<y_origin>340</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>11</id>
+		<name>wounded_heavygear</name>
+		<frames>2</frames>
+		<y_origin>374</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>12</id>
+		<name>fighting</name>
+		<frames>2</frames>
+		<y_origin>408</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>13</id>
+		<name>fighting_lightgear</name>
+		<frames>2</frames>
+		<y_origin>442</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>14</id>
+		<name>fighting_heavygear</name>
+		<frames>2</frames>
+		<y_origin>476</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>15</id>
+		<name>dead</name>
+		<frames>2</frames>
+		<y_origin>510</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>16</id>
+		<name>dead_lightgear</name>
+		<frames>2</frames>
+		<y_origin>544</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>17</id>
+		<name>dead_heavygear</name>
+		<frames>2</frames>
+		<y_origin>578</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>18</id>
+		<name>sick</name>
+		<frames>2</frames>
+		<y_origin>612</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>19</id>
+		<name>sick_lightgear</name>
+		<frames>2</frames>
+		<y_origin>646</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>20</id>
+		<name>sick_heavygear</name>
+		<frames>2</frames>
+		<y_origin>680</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>21</id>
+		<name>enemydamagingbuilding</name>
+		<frames>2</frames>
+		<y_origin>714</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>22</id>
+		<name>enemydamagingbuilding_lightgear</name>
+		<frames>2</frames>
+		<y_origin>748</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>23</id>
+		<name>enemydamagingbuilding_heavygear</name>
+		<frames>2</frames>
+		<y_origin>782</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>24</id>
+		<name>enemyfleeingmapstealing</name>
+		<frames>2</frames>
+		<y_origin>816</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>25</id>
+		<name>enemyfleeingmapstealing_lightgear</name>
+		<frames>2</frames>
+		<y_origin>850</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>26</id>
+		<name>enemyfleeingmapstealing_heavygear</name>
+		<frames>2</frames>
+		<y_origin>884</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>27</id>
+		<name>enemyfleeingmapabduction</name>
+		<frames>2</frames>
+		<y_origin>918</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>28</id>
+		<name>enemyfleeingmapabduction_lightgear</name>
+		<frames>2</frames>
+		<y_origin>952</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>29</id>
+		<name>enemyfleeingmapabduction_heavygear</name>
+		<frames>2</frames>
+		<y_origin>986</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	</mSpriteList>
+  </spritesheet>
+  
+  <spritesheet name="Shifter genericenemies ss">
+    <mSheetTypeName>igRace</mSheetTypeName>
+	<mPath>_Previs Pops/Shifter/shifter genericenemies SS</mPath>
+    <mTagList><i>genericenemies</i></mTagList>
+	<mSpriteList>
+	  <sprite>
+	    <id>0</id>
+		<name>idle</name>
+		<frames>2</frames>
+		<y_origin>0</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>1</id>
+		<name>idle_lightgear</name>
+		<frames>2</frames>
+		<y_origin>34</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>2</id>
+		<name>idle_heavygear</name>
+		<frames>2</frames>
+		<y_origin>68</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>3</id>
+		<name>Walking No Gear</name>
+		<frames>2</frames>
+		<y_origin>102</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>4</id>
+		<name>Walking Light Gear</name>
+		<frames>2</frames>
+		<y_origin>136</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>5</id>
+		<name>Walking Heavy Gear</name>
+		<frames>2</frames>
+		<y_origin>170</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>6</id>
+		<name>moving</name>
+		<frames>2</frames>
+		<y_origin>204</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>7</id>
+		<name>moving_lightgear</name>
+		<frames>2</frames>
+		<y_origin>238</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>8</id>
+		<name>moving_heavygear</name>
+		<frames>2</frames>
+		<y_origin>272</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>9</id>
+		<name>wounded</name>
+		<frames>2</frames>
+		<y_origin>306</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>10</id>
+		<name>wounded_lightgear</name>
+		<frames>2</frames>
+		<y_origin>340</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>11</id>
+		<name>wounded_heavygear</name>
+		<frames>2</frames>
+		<y_origin>374</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>12</id>
+		<name>fighting</name>
+		<frames>2</frames>
+		<y_origin>408</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>13</id>
+		<name>fighting_lightgear</name>
+		<frames>2</frames>
+		<y_origin>442</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>14</id>
+		<name>fighting_heavygear</name>
+		<frames>2</frames>
+		<y_origin>476</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>15</id>
+		<name>dead</name>
+		<frames>2</frames>
+		<y_origin>510</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>16</id>
+		<name>dead_lightgear</name>
+		<frames>2</frames>
+		<y_origin>544</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>17</id>
+		<name>dead_heavygear</name>
+		<frames>2</frames>
+		<y_origin>578</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>18</id>
+		<name>sick</name>
+		<frames>2</frames>
+		<y_origin>612</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>19</id>
+		<name>sick_lightgear</name>
+		<frames>2</frames>
+		<y_origin>646</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>20</id>
+		<name>sick_heavygear</name>
+		<frames>2</frames>
+		<y_origin>680</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>21</id>
+		<name>enemydamagingbuilding</name>
+		<frames>2</frames>
+		<y_origin>714</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>22</id>
+		<name>enemydamagingbuilding_lightgear</name>
+		<frames>2</frames>
+		<y_origin>748</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>23</id>
+		<name>enemydamagingbuilding_heavygear</name>
+		<frames>2</frames>
+		<y_origin>782</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>24</id>
+		<name>enemyfleeingmapstealing</name>
+		<frames>2</frames>
+		<y_origin>816</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>25</id>
+		<name>enemyfleeingmapstealing_lightgear</name>
+		<frames>2</frames>
+		<y_origin>850</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>26</id>
+		<name>enemyfleeingmapstealing_heavygear</name>
+		<frames>2</frames>
+		<y_origin>884</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>27</id>
+		<name>enemyfleeingmapabduction</name>
+		<frames>2</frames>
+		<y_origin>918</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>28</id>
+		<name>enemyfleeingmapabduction_lightgear</name>
+		<frames>2</frames>
+		<y_origin>952</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>29</id>
+		<name>enemyfleeingmapabduction_heavygear</name>
+		<frames>2</frames>
+		<y_origin>986</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	</mSpriteList>
+  </spritesheet>
+  
+  <spritesheet name="Shifter rebels ss">
+    <mSheetTypeName>igRace</mSheetTypeName>
+	<mPath>_Previs Pops/Shifter/shifter rebels SS</mPath>
+    <mTagList><i>rebels</i></mTagList>
+	<mSpriteList>
+	  <sprite>
+	    <id>0</id>
+		<name>idle</name>
+		<frames>2</frames>
+		<y_origin>0</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>1</id>
+		<name>idle_lightgear</name>
+		<frames>2</frames>
+		<y_origin>34</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>2</id>
+		<name>idle_heavygear</name>
+		<frames>2</frames>
+		<y_origin>68</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>3</id>
+		<name>Walking No Gear</name>
+		<frames>2</frames>
+		<y_origin>102</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>4</id>
+		<name>Walking Light Gear</name>
+		<frames>2</frames>
+		<y_origin>136</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>5</id>
+		<name>Walking Heavy Gear</name>
+		<frames>2</frames>
+		<y_origin>170</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>6</id>
+		<name>moving</name>
+		<frames>2</frames>
+		<y_origin>204</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>7</id>
+		<name>moving_lightgear</name>
+		<frames>2</frames>
+		<y_origin>238</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>8</id>
+		<name>moving_heavygear</name>
+		<frames>2</frames>
+		<y_origin>272</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>9</id>
+		<name>wounded</name>
+		<frames>2</frames>
+		<y_origin>306</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>10</id>
+		<name>wounded_lightgear</name>
+		<frames>2</frames>
+		<y_origin>340</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>11</id>
+		<name>wounded_heavygear</name>
+		<frames>2</frames>
+		<y_origin>374</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>12</id>
+		<name>fighting</name>
+		<frames>2</frames>
+		<y_origin>408</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>13</id>
+		<name>fighting_lightgear</name>
+		<frames>2</frames>
+		<y_origin>442</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>14</id>
+		<name>fighting_heavygear</name>
+		<frames>2</frames>
+		<y_origin>476</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>15</id>
+		<name>dead</name>
+		<frames>2</frames>
+		<y_origin>510</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>16</id>
+		<name>dead_lightgear</name>
+		<frames>2</frames>
+		<y_origin>544</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>17</id>
+		<name>dead_heavygear</name>
+		<frames>2</frames>
+		<y_origin>578</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>18</id>
+		<name>sick</name>
+		<frames>2</frames>
+		<y_origin>612</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>19</id>
+		<name>sick_lightgear</name>
+		<frames>2</frames>
+		<y_origin>646</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>20</id>
+		<name>sick_heavygear</name>
+		<frames>2</frames>
+		<y_origin>680</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>21</id>
+		<name>enemydamagingbuilding</name>
+		<frames>2</frames>
+		<y_origin>714</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>22</id>
+		<name>enemydamagingbuilding_lightgear</name>
+		<frames>2</frames>
+		<y_origin>748</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>23</id>
+		<name>enemydamagingbuilding_heavygear</name>
+		<frames>2</frames>
+		<y_origin>782</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>24</id>
+		<name>enemyfleeingmapstealing</name>
+		<frames>2</frames>
+		<y_origin>816</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>25</id>
+		<name>enemyfleeingmapstealing_lightgear</name>
+		<frames>2</frames>
+		<y_origin>850</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>26</id>
+		<name>enemyfleeingmapstealing_heavygear</name>
+		<frames>2</frames>
+		<y_origin>884</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>27</id>
+		<name>enemyfleeingmapabduction</name>
+		<frames>2</frames>
+		<y_origin>918</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>28</id>
+		<name>enemyfleeingmapabduction_lightgear</name>
+		<frames>2</frames>
+		<y_origin>952</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>29</id>
+		<name>enemyfleeingmapabduction_heavygear</name>
+		<frames>2</frames>
+		<y_origin>986</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	</mSpriteList>
+  </spritesheet>
+  
+  <spritesheet name="Shifter thelady ss">
+    <mSheetTypeName>igRace</mSheetTypeName>
+	<mPath>_Previs Pops/Shifter/shifter thelady SS</mPath>
+    <mTagList><i>thelady</i></mTagList>
+	<mSpriteList>
+	  <sprite>
+	    <id>0</id>
+		<name>idle</name>
+		<frames>2</frames>
+		<y_origin>0</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>1</id>
+		<name>idle_lightgear</name>
+		<frames>2</frames>
+		<y_origin>34</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>2</id>
+		<name>idle_heavygear</name>
+		<frames>2</frames>
+		<y_origin>68</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>3</id>
+		<name>Walking No Gear</name>
+		<frames>2</frames>
+		<y_origin>102</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>4</id>
+		<name>Walking Light Gear</name>
+		<frames>2</frames>
+		<y_origin>136</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>5</id>
+		<name>Walking Heavy Gear</name>
+		<frames>2</frames>
+		<y_origin>170</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>6</id>
+		<name>moving</name>
+		<frames>2</frames>
+		<y_origin>204</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>7</id>
+		<name>moving_lightgear</name>
+		<frames>2</frames>
+		<y_origin>238</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>8</id>
+		<name>moving_heavygear</name>
+		<frames>2</frames>
+		<y_origin>272</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>9</id>
+		<name>wounded</name>
+		<frames>2</frames>
+		<y_origin>306</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>10</id>
+		<name>wounded_lightgear</name>
+		<frames>2</frames>
+		<y_origin>340</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>11</id>
+		<name>wounded_heavygear</name>
+		<frames>2</frames>
+		<y_origin>374</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>12</id>
+		<name>fighting</name>
+		<frames>2</frames>
+		<y_origin>408</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>13</id>
+		<name>fighting_lightgear</name>
+		<frames>2</frames>
+		<y_origin>442</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>14</id>
+		<name>fighting_heavygear</name>
+		<frames>2</frames>
+		<y_origin>476</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>15</id>
+		<name>dead</name>
+		<frames>2</frames>
+		<y_origin>510</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>16</id>
+		<name>dead_lightgear</name>
+		<frames>2</frames>
+		<y_origin>544</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>17</id>
+		<name>dead_heavygear</name>
+		<frames>2</frames>
+		<y_origin>578</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>18</id>
+		<name>sick</name>
+		<frames>2</frames>
+		<y_origin>612</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>19</id>
+		<name>sick_lightgear</name>
+		<frames>2</frames>
+		<y_origin>646</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>20</id>
+		<name>sick_heavygear</name>
+		<frames>2</frames>
+		<y_origin>680</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>21</id>
+		<name>enemydamagingbuilding</name>
+		<frames>2</frames>
+		<y_origin>714</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>22</id>
+		<name>enemydamagingbuilding_lightgear</name>
+		<frames>2</frames>
+		<y_origin>748</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>23</id>
+		<name>enemydamagingbuilding_heavygear</name>
+		<frames>2</frames>
+		<y_origin>782</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>24</id>
+		<name>enemyfleeingmapstealing</name>
+		<frames>2</frames>
+		<y_origin>816</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>25</id>
+		<name>enemyfleeingmapstealing_lightgear</name>
+		<frames>2</frames>
+		<y_origin>850</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>26</id>
+		<name>enemyfleeingmapstealing_heavygear</name>
+		<frames>2</frames>
+		<y_origin>884</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>27</id>
+		<name>enemyfleeingmapabduction</name>
+		<frames>2</frames>
+		<y_origin>918</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>28</id>
+		<name>enemyfleeingmapabduction_lightgear</name>
+		<frames>2</frames>
+		<y_origin>952</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>29</id>
+		<name>enemyfleeingmapabduction_heavygear</name>
+		<frames>2</frames>
+		<y_origin>986</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	</mSpriteList>
+  </spritesheet>
+  
+  <spritesheet name="Shifter wanderers ss">
+    <mSheetTypeName>igRace</mSheetTypeName>
+	<mPath>_Previs Pops/Shifter/shifter wanderers SS</mPath>
+    <mTagList><i>wanderers</i></mTagList>
+	<mSpriteList>
+	  <sprite>
+	    <id>0</id>
+		<name>idle</name>
+		<frames>2</frames>
+		<y_origin>0</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>1</id>
+		<name>idle_lightgear</name>
+		<frames>2</frames>
+		<y_origin>34</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>2</id>
+		<name>idle_heavygear</name>
+		<frames>2</frames>
+		<y_origin>68</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>3</id>
+		<name>Walking No Gear</name>
+		<frames>2</frames>
+		<y_origin>102</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>4</id>
+		<name>Walking Light Gear</name>
+		<frames>2</frames>
+		<y_origin>136</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>5</id>
+		<name>Walking Heavy Gear</name>
+		<frames>2</frames>
+		<y_origin>170</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>6</id>
+		<name>moving</name>
+		<frames>2</frames>
+		<y_origin>204</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>7</id>
+		<name>moving_lightgear</name>
+		<frames>2</frames>
+		<y_origin>238</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>8</id>
+		<name>moving_heavygear</name>
+		<frames>2</frames>
+		<y_origin>272</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>9</id>
+		<name>wounded</name>
+		<frames>2</frames>
+		<y_origin>306</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>10</id>
+		<name>wounded_lightgear</name>
+		<frames>2</frames>
+		<y_origin>340</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>11</id>
+		<name>wounded_heavygear</name>
+		<frames>2</frames>
+		<y_origin>374</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>12</id>
+		<name>fighting</name>
+		<frames>2</frames>
+		<y_origin>408</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>13</id>
+		<name>fighting_lightgear</name>
+		<frames>2</frames>
+		<y_origin>442</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>14</id>
+		<name>fighting_heavygear</name>
+		<frames>2</frames>
+		<y_origin>476</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>15</id>
+		<name>dead</name>
+		<frames>2</frames>
+		<y_origin>510</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>16</id>
+		<name>dead_lightgear</name>
+		<frames>2</frames>
+		<y_origin>544</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>17</id>
+		<name>dead_heavygear</name>
+		<frames>2</frames>
+		<y_origin>578</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>18</id>
+		<name>sick</name>
+		<frames>2</frames>
+		<y_origin>612</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>19</id>
+		<name>sick_lightgear</name>
+		<frames>2</frames>
+		<y_origin>646</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>20</id>
+		<name>sick_heavygear</name>
+		<frames>2</frames>
+		<y_origin>680</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>21</id>
+		<name>enemydamagingbuilding</name>
+		<frames>2</frames>
+		<y_origin>714</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>22</id>
+		<name>enemydamagingbuilding_lightgear</name>
+		<frames>2</frames>
+		<y_origin>748</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>23</id>
+		<name>enemydamagingbuilding_heavygear</name>
+		<frames>2</frames>
+		<y_origin>782</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>24</id>
+		<name>enemyfleeingmapstealing</name>
+		<frames>2</frames>
+		<y_origin>816</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>25</id>
+		<name>enemyfleeingmapstealing_lightgear</name>
+		<frames>2</frames>
+		<y_origin>850</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>26</id>
+		<name>enemyfleeingmapstealing_heavygear</name>
+		<frames>2</frames>
+		<y_origin>884</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>27</id>
+		<name>enemyfleeingmapabduction</name>
+		<frames>2</frames>
+		<y_origin>918</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>28</id>
+		<name>enemyfleeingmapabduction_lightgear</name>
+		<frames>2</frames>
+		<y_origin>952</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>29</id>
+		<name>enemyfleeingmapabduction_heavygear</name>
+		<frames>2</frames>
+		<y_origin>986</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	</mSpriteList>
+  </spritesheet>
+  
+  <spritesheet name="Shifter2 local ss">
+    <mSheetTypeName>igRace</mSheetTypeName>
+	<mPath>_Previs Pops/Shifter/shifter2 local SS</mPath>
+    <mTagList><i>local</i></mTagList>
+	<mSpriteList>
+	  <sprite>
+	    <id>0</id>
+		<name>idle</name>
+		<frames>2</frames>
+		<y_origin>0</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>1</id>
+		<name>idle_lightgear</name>
+		<frames>2</frames>
+		<y_origin>34</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>2</id>
+		<name>idle_heavygear</name>
+		<frames>2</frames>
+		<y_origin>68</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>3</id>
+		<name>Walking No Gear</name>
+		<frames>2</frames>
+		<y_origin>102</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>4</id>
+		<name>Walking Light Gear</name>
+		<frames>2</frames>
+		<y_origin>136</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>5</id>
+		<name>Walking Heavy Gear</name>
+		<frames>2</frames>
+		<y_origin>170</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>6</id>
+		<name>moving</name>
+		<frames>2</frames>
+		<y_origin>204</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>7</id>
+		<name>moving_lightgear</name>
+		<frames>2</frames>
+		<y_origin>238</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>8</id>
+		<name>moving_heavygear</name>
+		<frames>2</frames>
+		<y_origin>272</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>9</id>
+		<name>wounded</name>
+		<frames>2</frames>
+		<y_origin>306</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>10</id>
+		<name>wounded_lightgear</name>
+		<frames>2</frames>
+		<y_origin>340</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>11</id>
+		<name>wounded_heavygear</name>
+		<frames>2</frames>
+		<y_origin>374</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>12</id>
+		<name>fighting</name>
+		<frames>2</frames>
+		<y_origin>408</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>13</id>
+		<name>fighting_lightgear</name>
+		<frames>2</frames>
+		<y_origin>442</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>14</id>
+		<name>fighting_heavygear</name>
+		<frames>2</frames>
+		<y_origin>476</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>15</id>
+		<name>dead</name>
+		<frames>2</frames>
+		<y_origin>510</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>16</id>
+		<name>dead_lightgear</name>
+		<frames>2</frames>
+		<y_origin>544</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>17</id>
+		<name>dead_heavygear</name>
+		<frames>2</frames>
+		<y_origin>578</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>18</id>
+		<name>sick</name>
+		<frames>2</frames>
+		<y_origin>612</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>19</id>
+		<name>sick_lightgear</name>
+		<frames>2</frames>
+		<y_origin>646</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>20</id>
+		<name>sick_heavygear</name>
+		<frames>2</frames>
+		<y_origin>680</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>21</id>
+		<name>enemydamagingbuilding</name>
+		<frames>2</frames>
+		<y_origin>714</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>22</id>
+		<name>enemydamagingbuilding_lightgear</name>
+		<frames>2</frames>
+		<y_origin>748</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>23</id>
+		<name>enemydamagingbuilding_heavygear</name>
+		<frames>2</frames>
+		<y_origin>782</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>24</id>
+		<name>enemyfleeingmapstealing</name>
+		<frames>2</frames>
+		<y_origin>816</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>25</id>
+		<name>enemyfleeingmapstealing_lightgear</name>
+		<frames>2</frames>
+		<y_origin>850</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>26</id>
+		<name>enemyfleeingmapstealing_heavygear</name>
+		<frames>2</frames>
+		<y_origin>884</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>27</id>
+		<name>enemyfleeingmapabduction</name>
+		<frames>2</frames>
+		<y_origin>918</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>28</id>
+		<name>enemyfleeingmapabduction_lightgear</name>
+		<frames>2</frames>
+		<y_origin>952</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>29</id>
+		<name>enemyfleeingmapabduction_heavygear</name>
+		<frames>2</frames>
+		<y_origin>986</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	</mSpriteList>
+  </spritesheet>
+  
+  <spritesheet name="Shifter3 local ss">
+    <mSheetTypeName>igRace</mSheetTypeName>
+	<mPath>_Previs Pops/Shifter/shifter3 local SS</mPath>
+    <mTagList><i>local</i><i>do not choose randomly</i></mTagList>
+	<mSpriteList>
+	  <sprite>
+	    <id>0</id>
+		<name>idle</name>
+		<frames>2</frames>
+		<y_origin>0</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>1</id>
+		<name>idle_lightgear</name>
+		<frames>2</frames>
+		<y_origin>34</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>2</id>
+		<name>idle_heavygear</name>
+		<frames>2</frames>
+		<y_origin>68</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>3</id>
+		<name>Walking No Gear</name>
+		<frames>2</frames>
+		<y_origin>102</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>4</id>
+		<name>Walking Light Gear</name>
+		<frames>2</frames>
+		<y_origin>136</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>5</id>
+		<name>Walking Heavy Gear</name>
+		<frames>2</frames>
+		<y_origin>170</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>6</id>
+		<name>moving</name>
+		<frames>2</frames>
+		<y_origin>204</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>7</id>
+		<name>moving_lightgear</name>
+		<frames>2</frames>
+		<y_origin>238</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>8</id>
+		<name>moving_heavygear</name>
+		<frames>2</frames>
+		<y_origin>272</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>9</id>
+		<name>wounded</name>
+		<frames>2</frames>
+		<y_origin>306</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>10</id>
+		<name>wounded_lightgear</name>
+		<frames>2</frames>
+		<y_origin>340</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>11</id>
+		<name>wounded_heavygear</name>
+		<frames>2</frames>
+		<y_origin>374</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>12</id>
+		<name>fighting</name>
+		<frames>2</frames>
+		<y_origin>408</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>13</id>
+		<name>fighting_lightgear</name>
+		<frames>2</frames>
+		<y_origin>442</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>14</id>
+		<name>fighting_heavygear</name>
+		<frames>2</frames>
+		<y_origin>476</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>15</id>
+		<name>dead</name>
+		<frames>2</frames>
+		<y_origin>510</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>16</id>
+		<name>dead_lightgear</name>
+		<frames>2</frames>
+		<y_origin>544</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>17</id>
+		<name>dead_heavygear</name>
+		<frames>2</frames>
+		<y_origin>578</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>18</id>
+		<name>sick</name>
+		<frames>2</frames>
+		<y_origin>612</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>19</id>
+		<name>sick_lightgear</name>
+		<frames>2</frames>
+		<y_origin>646</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>20</id>
+		<name>sick_heavygear</name>
+		<frames>2</frames>
+		<y_origin>680</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>21</id>
+		<name>enemydamagingbuilding</name>
+		<frames>2</frames>
+		<y_origin>714</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>22</id>
+		<name>enemydamagingbuilding_lightgear</name>
+		<frames>2</frames>
+		<y_origin>748</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>23</id>
+		<name>enemydamagingbuilding_heavygear</name>
+		<frames>2</frames>
+		<y_origin>782</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>24</id>
+		<name>enemyfleeingmapstealing</name>
+		<frames>2</frames>
+		<y_origin>816</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>25</id>
+		<name>enemyfleeingmapstealing_lightgear</name>
+		<frames>2</frames>
+		<y_origin>850</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>26</id>
+		<name>enemyfleeingmapstealing_heavygear</name>
+		<frames>2</frames>
+		<y_origin>884</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>27</id>
+		<name>enemyfleeingmapabduction</name>
+		<frames>2</frames>
+		<y_origin>918</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>28</id>
+		<name>enemyfleeingmapabduction_lightgear</name>
+		<frames>2</frames>
+		<y_origin>952</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	  
+	  <sprite>
+	    <id>29</id>
+		<name>enemyfleeingmapabduction_heavygear</name>
+		<frames>2</frames>
+		<y_origin>986</y_origin>
+		<width>30</width>
+		<height>33</height>
+		<fps>2.0</fps>
+	  </sprite>
+	</mSpriteList>
+  </spritesheet>
+  
+</core_data>

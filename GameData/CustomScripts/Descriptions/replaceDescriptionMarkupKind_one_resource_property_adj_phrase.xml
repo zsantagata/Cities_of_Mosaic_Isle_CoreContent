@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <i1><a>replaceDescriptionMarkupKind_one_resource_property_adj_phrase default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_resource list_of_options</a> <b>list</b> <c>property_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_resource_property_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+  <!-- RESOURCE tag: property_adj -->
+
+  <!-- this file holds the implementation of a custom script which takes a community and from it, returns an adjective from the resource's tags relating to its intrinsic properties -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFResource inResource, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_resource_property_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFResource)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_resource_property_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFResource inResource = (IFResource)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inResource == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_resource_property_adj_phrase custom script received invalid arguments: inResource cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	List&lt;string&gt; possibleAdjectives = new List&lt;string&gt;();
+	foreach(string tag in inResource.getTagList())
+	{
+		if(tag.Contains("property_adj:"))
+		{
+			possibleAdjectives.Add(tag.Replace("property_adj:", "").ToLower());
+		}
+	}
+	
+	if(possibleAdjectives.Count != 0)
+	{
+		outDescription = possibleAdjectives[(int)getAPI().calcRandIntUnder(possibleAdjectives.Count)];
+	}
+	if(outDescription == "")
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_resource_property_adj_phrase default before_replace_text", out success);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of scripts which are called when the player chooses an option relating to a delegation's base occurrence: war/raiding/trade/delegation/emigration.  Settlement is handled elsewhere. -->
+  <gamescripts name="default">
+  
+	<!-- delegation attacking has four inputs: IFDelegation inDelegation, double inDelegationMorale, double inCommunityMorale, string inWarTarget.  There are three outputs: string outTextToDisplay, double outNewDelegationMorale, double outNewCommunityMorale -->
+	<!-- this script will be called when the Attack option is selected -->
+	<mWarOrRaidingDelegationAttack>
+        //input count check:
+        if (inArguments.Length &lt; 4)
+        {
+            return null;
+        }
+			
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		double inDelegationMorale = (double)inArguments[1];
+		double inCommunityMorale = (double)inArguments[2];
+		string inWarTarget = (string)inArguments[3];
+		
+		//this is common to attacking/waiting for both war and raiding delegations, so it is in a custom script:
+	    var customScripts = getAPI().getCustomScripts();
+		if(!customScripts.runCustomScriptCheckTypes("siegeCommon", new List&lt;object&gt;() { inDelegation, inDelegation.getDelegationType() == IFDelegation.eDelegationType.cRaiding, false, inDelegationMorale, inCommunityMorale, inWarTarget }, out List&lt;object&gt; outputs, false, 
+			typeof(string), typeof(double), typeof(double))
+		  )
+		{
+			addDebugMessage(inScriptInstance, "mWarOrRaidingDelegationAttack failed to execute: subscript siegeCommon failed to execute");
+			return null;
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		toReturn.Add((string)outputs[0]);
+		toReturn.Add((double)outputs[1]);
+		toReturn.Add((double)outputs[2]);
+		return toReturn;
+	</mWarOrRaidingDelegationAttack>
+	
+	<!-- delegation waiting one day has four inputs: IFDelegation inDelegation, double inDelegationMorale, double inCommunityMorale, string inWarTarget.  There are three outputs: string outTextToDisplay, double outNewDelegationMorale, double outNewCommunityMorale -->
+	<!-- this script will be called when the Wait One Day option is selected -->
+	<mWarOrRaidingDelegationWaitOneDay>
+        //input count check:
+        if (inArguments.Length &lt; 4)
+        {
+            return null;
+        }
+			
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		double inDelegationMorale = (double)inArguments[1];
+		double inCommunityMorale = (double)inArguments[2];
+		string inWarTarget = (string)inArguments[3];
+		
+		//this is common to attacking/waiting for both war and raiding delegations, so it is in a custom script:
+	    var customScripts = getAPI().getCustomScripts();
+		if(!customScripts.runCustomScriptCheckTypes("siegeCommon", new List&lt;object&gt;() { inDelegation, inDelegation.getDelegationType() == IFDelegation.eDelegationType.cRaiding, true, inDelegationMorale, inCommunityMorale, inWarTarget }, out List&lt;object&gt; outputs, false, 
+			typeof(string), typeof(double), typeof(double))
+		  )
+		{
+			addDebugMessage(inScriptInstance, "mWarOrRaidingDelegationWaitOneDay failed to execute: subscript siegeCommon failed to execute");
+			return null;
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		toReturn.Add((string)outputs[0]);
+		toReturn.Add((double)outputs[1]);
+		toReturn.Add((double)outputs[2]);
+		return toReturn;
+	</mWarOrRaidingDelegationWaitOneDay>
+	
+	
+	
+  </gamescripts>
+  
+</core_data>

@@ -1,0 +1,332 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!--
+battle goal AI works like this:
+
+the top level variable that holds the battle goal is a string. The name of the variable is:
+"battleAI_battleGoal_community" + [enemy community UID]
+
+The values it can be are:
+"hurt_loyal_all"
+"hurt_loyal_races"
+"hurt_loyal_leaders"
+"hurt_neutral_communities"
+"hurt_neutral_races"
+"hurt_pops_specific"
+"destroy_buildings_all"
+"destroy_buildings_industries"
+"destroy_buildings_buildingkinds"
+"destroy_buildings_housing_all"
+"destroy_buildings_housing_races"
+"destroy_buildings_housing_leaders"
+"destroy_buildings_housing_neutral_communities"
+"destroy_buildings_specific"
+"abduct_pops_all"
+"abduct_pops_races"
+"abduct_pops_leaders"
+"abduct_pops_specific"
+"steal_resources_all"
+"steal_resources_specific"
+
+If the battle goal starts with hurt_, that means the battle goal is based on killing/wounding pops.
+If the battle goal starts with destroy_buildings_, that means the battle goal is based on destroying buildings.
+If the battle goal starts with abduct_pops_, that means the battle goal is based on abducting pops.
+If the battle goal starts with steal_resources_, that means the battle goal is based on stealing resources.
+
+If the battle goal ends with _all, that means no more conditions are applied to the battle goal.
+If the battle goal ends with _races, that means the targets are filtered by a list of races.
+If the battle goal ends with _leaders, that means the targets are only those associated with leaders (City/Race/Industry all count).
+If the battle goal ends with _communities, that means the targets are only those loyal to specific communities.
+If the battle goal ends with _industries or _buildingkinds, that means the targets are only those buildings which are of the industry/buildingkind.
+If the battle goal ends with _specific, that means the targets are only those with specific UIDs.
+
+The connected variable lists which hold details on the battle goal are named:
+"battleAI_battleGoal_community" + [enemy community UID] + "_races" //MOIDs of races
+"battleAI_battleGoal_community" + [enemy community UID] + "_communities" //UIDs of communities
+"battleAI_battleGoal_community" + [enemy community UID] + "_industries" //MOIDs of industries
+"battleAI_battleGoal_community" + [enemy community UID] + "_buildingkinds" //MOIDs of buildingkinds
+"battleAI_battleGoal_community" + [enemy community UID] + "_specific" //UIDs of buildings or pops, or MOIDs of resources
+
+the top level variable that holds whether the battle has been abandoned is an int. The name of the variable is:
+"battleAI_abandonedBattleGoal_community" + [enemy community UID]
+if the variable is 0, the battle goal has not yet been abandoned.  Anything else indicates it has been abandoned.
+
+the top level variable that holds whether the battle goal has been achieved is an int. The name of the variable is:
+"battleAI_reachedBattleGoal_community" + [enemy community UID]
+if the variable is 0, the battle goal has not yet been reached.  Anything else indicates it has been reached.
+
+abandonment is calculated based on if a threshold proportion of the attackers have been wounded or killed.  That proportion is held in a top-level variable, named:
+"battleAI_abandonBattleGoalThreshold_community" + [enemy community UID]
+
+success is calculated based on if a threshold proportion of the possible targets have been hurt/destroyed/abducted/stolen.  That proportion is held in a top-level variable, named:
+"battleAI_reachBattleGoalThreshold_community" + [enemy community UID]
+	-->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script battleaiinitializewargoal</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which initializes the wargoal for an enemy community -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- initialize wargoal has five inputs: IFCommunity inEnemyCommunity, string inWargoalName, double inProportionHurtForAbandon, double inProportionTargetsHitForSuccess, List<Int64> inUIDsOrMOIDs.  It has no outputs. -->
+	<!-- this script is called by other scripts which start a battle and want to set up battle AI so enemy pops path correctly.  This should be called AFTER *HOSTILE* pops are on the map! -->
+	<i1><a>battleAIInitializeWargoal</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity), typeof(string), typeof(double), typeof(double), typeof(List&lt;Int64&gt;)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("battleAIInitializeWargoal custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFCommunity inEnemyCommunity = (IFCommunity)inArguments[0];
+	  string inWargoalName = (string)inArguments[1];
+	  double inProportionHurtForAbandon = (double)inArguments[2];
+	  double inProportionTargetsHitForSuccess = (double)inArguments[3];
+	  List&lt;Int64&gt; inUIDsOrMOIDs = (List&lt;Int64&gt;)inArguments[4];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input community should not be null
+	  if(inEnemyCommunity == null)
+	  {
+		  throw new ArgumentException("battleAIInitializeWargoal custom script received invalid argument: the input community should not be null");
+		  return null;
+	  }
+	  //sanity check: the input doubles should be between 0.0d and 1.0d
+	  if((inProportionHurtForAbandon &lt; 0.0d) || (inProportionHurtForAbandon &gt; 1.0d))
+	  {
+		  addDebugMessage(inScriptInstance, "inProportionHurtForAbandon was outside of valid range of 0.0d to 1.0d inclusive; limiting value of " + inProportionHurtForAbandon);
+		  inProportionHurtForAbandon = Math.Max(0.0d, Math.Min(1.0d, inProportionHurtForAbandon));
+	  }
+	  if((inProportionTargetsHitForSuccess &lt; 0.0d) || (inProportionTargetsHitForSuccess &gt; 1.0d))
+	  {
+		  addDebugMessage(inScriptInstance, "inProportionTargetsHitForSuccess was outside of valid range of 0.0d to 1.0d inclusive; limiting value of " + inProportionTargetsHitForSuccess);
+		  inProportionTargetsHitForSuccess = Math.Max(0.0d, Math.Min(1.0d, inProportionTargetsHitForSuccess));
+	  }
+	  
+	  //it is okay for inUIDsOrMOIDs to be null:
+	  if(inUIDsOrMOIDs == null) inUIDsOrMOIDs = new List&lt;Int64&gt;();
+	  //the war goal is always lower case:
+	  inWargoalName = inWargoalName.ToLower();
+	  
+	  Int64 enemyCommunityUID = (Int64)inEnemyCommunity.getUID();
+	  Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+	  
+	  //store the wargoal:
+	  variableHandler.storeStringVariable(currentDate, "battleAI_battleGoal_community" + enemyCommunityUID, inWargoalName);
+	  
+	  //at the outset, the war goal has neither been abandoned or reached:
+	  variableHandler.storeIntVariable(currentDate, "battleAI_abandonedBattleGoal_community" + enemyCommunityUID, 0L);
+	  variableHandler.storeIntVariable(currentDate, "battleAI_reachedBattleGoal_community" + enemyCommunityUID, 0L);
+	  
+	  //store the thresholds for abandonment and goal being reached:
+	  variableHandler.storeDoubleVariable(currentDate, "battleAI_abandonBattleGoalThreshold_community" + enemyCommunityUID, inProportionHurtForAbandon);
+	  variableHandler.storeDoubleVariable(currentDate, "battleAI_reachBattleGoalThreshold_community" + enemyCommunityUID, inProportionTargetsHitForSuccess);
+	  
+	  //specifically for the abduct and steal wargoals: count how many enemy pops there are on the community map to start with (this will be a factor in success)
+	  if(inWargoalName.Contains("abduct") || inWargoalName.Contains("steal"))
+	  {
+		Int64 countEnemyPops = 0L;
+		Int64 countTargetAbductPops = 0L;
+		bool abduct = inWargoalName.Contains("abduct");
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			if(pop.getCommunity() == inEnemyCommunity)
+			{
+				countEnemyPops++;
+			}
+			else if(abduct)
+			{
+				if(inWargoalName.Contains("_races"))
+				{
+					if(inUIDsOrMOIDs.Contains((Int64)pop.getRace().getMOID()))
+					{
+						countTargetAbductPops++;
+					}
+				}
+				else if(inWargoalName.Contains("_leaders"))
+				{
+					if(getAPI().getLocalCommunity().getLeaderCollection().getLeaderFlagsForPop(pop) != IFLeaderCollection.eLeaderFlags.cNone)
+					{
+						countTargetAbductPops++;
+					}
+				}
+				else if(inWargoalName.Contains("_specific"))
+				{
+					if(inUIDsOrMOIDs.Contains((Int64)pop.getUID()))
+					{
+						countTargetAbductPops++;
+					}
+				}
+				else if(inWargoalName.Contains("_all"))
+				{
+					countTargetAbductPops++;
+				}
+			}
+		}
+		
+		variableHandler.storeIntVariable(currentDate, "battleAI_startingAttackerCount_community" + enemyCommunityUID, countEnemyPops);
+		if(abduct)
+		{
+			variableHandler.storeIntVariable(currentDate, "battleAI_startingTargetsToAbductCount_community" + enemyCommunityUID, countTargetAbductPops);
+		}
+	  }
+	  
+	  addDebugMessage(inScriptInstance, "enemy community has stored wargoal " + inWargoalName + " with abandon threshold " + inProportionHurtForAbandon + " and success threshold " + inProportionTargetsHitForSuccess);
+	  
+	  if(inWargoalName.Contains("_races"))
+	  {
+		//store the MOIDs of races that are being targeted:
+		variableHandler.addConnectedInt("battleAI_battleGoal_community" + enemyCommunityUID + "_races", 0L /*this does not matter because this is a list variable*/, out IFConnectedVariable targetListVbl,
+			currentDate, IFConnectedVariable.eCombinationType.cLIST);
+		variableHandler.clearConnectedVariable(targetListVbl); //if the variable still exists somehow, clear it
+		
+		for(int i = 0; i &lt; inUIDsOrMOIDs.Count; i++)
+		{
+			Int64 moid = inUIDsOrMOIDs[i];
+			//check that the MOID is valid:
+			if(moid == 0) continue; //don't use the default race
+			IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+			if(race == null) continue;
+			
+			variableHandler.addConnectedInt("battleAI_battleGoalTarget" + i + "_community" + enemyCommunityUID, moid, out IFConnectedVariable targetVbl, currentDate);
+			variableHandler.clearConnectedVariable(targetVbl); //if the variable still exists somehow, clear it
+			variableHandler.connectVariables(targetVbl, targetListVbl);
+		}
+		
+		addDebugMessage(inScriptInstance, "community " + inEnemyCommunity.getDebugName() + " has stored the MOIDs of " + targetListVbl.getVariableAsInt() + " races as targets");
+	  }
+	  else if(inWargoalName.Contains("_communities"))
+	  {
+		//store the MOIDs of communities that are being targeted:
+		variableHandler.addConnectedInt("battleAI_battleGoal_community" + enemyCommunityUID + "_communities", 0L /*this does not matter because this is a list variable*/, out IFConnectedVariable targetListVbl,
+			currentDate, IFConnectedVariable.eCombinationType.cLIST);
+		variableHandler.clearConnectedVariable(targetListVbl); //if the variable still exists somehow, clear it
+		
+		for(int i = 0; i &lt; inUIDsOrMOIDs.Count; i++)
+		{
+			Int64 uid = inUIDsOrMOIDs[i];
+			//check that the UID is valid:
+			if(uid == enemyCommunityUID) continue; //don't target self
+			IFCommunity community = (IFCommunity)getAPI().getSO("communities", uid);
+			if(community == null) continue;
+			
+			variableHandler.addConnectedInt("battleAI_battleGoalTarget" + i + "_community" + enemyCommunityUID, uid, out IFConnectedVariable targetVbl, currentDate);
+			variableHandler.clearConnectedVariable(targetVbl); //if the variable still exists somehow, clear it
+			variableHandler.connectVariables(targetVbl, targetListVbl);
+		}
+		
+		addDebugMessage(inScriptInstance, "community " + inEnemyCommunity.getDebugName() + " has stored the UIDs of " + targetListVbl.getVariableAsInt() + " communities as targets");
+	  }
+	  else if(inWargoalName.Contains("_industries"))
+	  {
+		//store the MOIDs of industries that are being targeted:
+		variableHandler.addConnectedInt("battleAI_battleGoal_community" + enemyCommunityUID + "_industries", 0L /*this does not matter because this is a list variable*/, out IFConnectedVariable targetListVbl,
+			currentDate, IFConnectedVariable.eCombinationType.cLIST);
+		variableHandler.clearConnectedVariable(targetListVbl); //if the variable still exists somehow, clear it
+		
+		for(int i = 0; i &lt; inUIDsOrMOIDs.Count; i++)
+		{
+			Int64 moid = inUIDsOrMOIDs[i];
+			//check that the MOID is valid:
+			if(moid == 0) continue; //don't use the default industry
+			IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", moid);
+			if(industry == null) continue;
+			
+			variableHandler.addConnectedInt("battleAI_battleGoalTarget" + i + "_community" + enemyCommunityUID, moid, out IFConnectedVariable targetVbl, currentDate);
+			variableHandler.clearConnectedVariable(targetVbl); //if the variable still exists somehow, clear it
+			variableHandler.connectVariables(targetVbl, targetListVbl);
+		}
+		
+		addDebugMessage(inScriptInstance, "community " + inEnemyCommunity.getDebugName() + " has stored the MOIDs of " + targetListVbl.getVariableAsInt() + " industries as targets");
+	  }
+	  else if(inWargoalName.Contains("_buildingkinds"))
+	  {
+		//store the MOIDs of buildingkinds that are being targeted:
+		variableHandler.addConnectedInt("battleAI_battleGoal_community" + enemyCommunityUID + "_buildingkinds", 0L /*this does not matter because this is a list variable*/, out IFConnectedVariable targetListVbl,
+			currentDate, IFConnectedVariable.eCombinationType.cLIST);
+		variableHandler.clearConnectedVariable(targetListVbl); //if the variable still exists somehow, clear it
+		
+		for(int i = 0; i &lt; inUIDsOrMOIDs.Count; i++)
+		{
+			Int64 moid = inUIDsOrMOIDs[i];
+			//check that the MOID is valid:
+			if(moid == 0) continue; //don't use the default buildingkind
+			IFBuildingKind buildingkind = (IFBuildingKind)getAPI().getMOFromMOID("buildingkinds", moid);
+			if(buildingkind == null) continue;
+			
+			variableHandler.addConnectedInt("battleAI_battleGoalTarget" + i + "_community" + enemyCommunityUID, moid, out IFConnectedVariable targetVbl, currentDate);
+			variableHandler.clearConnectedVariable(targetVbl); //if the variable still exists somehow, clear it
+			variableHandler.connectVariables(targetVbl, targetListVbl);
+		}
+		
+		addDebugMessage(inScriptInstance, "community " + inEnemyCommunity.getDebugName() + " has stored the MOIDs of " + targetListVbl.getVariableAsInt() + " buildingkinds as targets");
+	  }
+	  else if(inWargoalName.Contains("_specific"))
+	  {
+		//UIDs of buildings or pops, or MOIDs of resources
+		bool buildings = inWargoalName.Contains("destroy");
+		bool resources = inWargoalName.Contains("steal");
+		bool pops = !buildings &amp;&amp; !resources;
+		
+		//store the MOIDs or UIDs that are being targeted:
+		variableHandler.addConnectedInt("battleAI_battleGoal_community" + enemyCommunityUID + "_specific", 0L /*this does not matter because this is a list variable*/, out IFConnectedVariable targetListVbl,
+			currentDate, IFConnectedVariable.eCombinationType.cLIST);
+		variableHandler.clearConnectedVariable(targetListVbl); //if the variable still exists somehow, clear it
+		
+		IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+		
+		for(int i = 0; i &lt; inUIDsOrMOIDs.Count; i++)
+		{
+			Int64 ID = inUIDsOrMOIDs[i];
+			//check that the ID is valid:
+			if(resources)
+			{
+				if(ID == 0) continue; //don't use the default resource
+				IFResource resource = (IFResource)getAPI().getMOFromMOID("resources", ID);
+				if(resource == null) continue;
+			}
+			else if(buildings)
+			{
+				IFBuilding building = (IFBuilding)getAPI().getSO("buildings", ID);
+				if(building == null) continue;
+				if(!map.isBuildingOnThisMap(building)) continue; //cannot target buildings off the map
+			}
+			else
+			{
+				IFPop pop = (IFPop)getAPI().getSO("pops", ID);
+				if(pop == null) continue;
+				if(!getAPI().getPopsWithinLocalCommunityMap().Contains(pop)) continue; //cannot target pops off the map
+				if(pop.getCommunity() == inEnemyCommunity) continue; //cannot target pops on same side
+				if(pop.isDead()) continue; //cannot target dead pops
+			}
+			
+			variableHandler.addConnectedInt("battleAI_battleGoalTarget" + i + "_community" + enemyCommunityUID, ID, out IFConnectedVariable targetVbl, currentDate);
+			variableHandler.clearConnectedVariable(targetVbl); //if the variable still exists somehow, clear it
+			variableHandler.connectVariables(targetVbl, targetListVbl);
+		}
+		
+		string label = buildings ? "buildings" : (resources ? "resources" : "pops");
+		addDebugMessage(inScriptInstance, "community " + inEnemyCommunity.getDebugName() + " has stored the " + (resources ? "MOID" : "UID") + "s of " + targetListVbl.getVariableAsInt() + " " + label + " as targets");
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

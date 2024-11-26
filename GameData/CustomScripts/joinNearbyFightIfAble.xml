@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<!-- these repositionings are for visual effect: -->
+			<i1><a>fighting_pop_display_offset first_pop x_value</a> <b>double</b> <c>-0.25</c></i1>
+			<i1><a>fighting_pop_display_offset first_pop y_value</a> <b>double</b> <c>-0.25</c></i1>
+			<i1><a>fighting_pop_display_offset second_pop x_value</a> <b>double</b> <c>0.25</c></i1>
+			<i1><a>fighting_pop_display_offset second_pop y_value</a> <b>double</b> <c>0.25</c></i1>
+			<i1><a>fighting_pop_display_offset third_pop x_value</a> <b>double</b> <c>-0.25</c></i1>
+			<i1><a>fighting_pop_display_offset third_pop y_value</a> <b>double</b> <c>0.25</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script joinnearbyfightifable</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which resolves an attempt by pathfinding scripts to transition a given pop into a given pathfinding state -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- join nearby fight if able has one argument: IFPop inPop.  It has one output: bool outSuccess.  The output is true if there was a nearby fight which this pop did indeed join (it is the responsibility of the caller to make sure the pop's pathfinding transitions to Fighting if the return value is true). -->
+	<!-- this script is a convenience for pathfinding scripts, as in many of them, a pop will want to fight a nearby foe -->
+	<!-- fights work like this: -->
+	<!-- when two pops are close enough during one's pathfinding evaluation, and the one pathfinding wants to fight the other, the two will start a fight, overriding other pathfinding -->
+	<!-- fights occur on specific (passable) points on the map.  Each point can hold only one fight.  Pops will be moved to the closest unoccupied point to their average location.  (If such a location does not exist, they do not fight). -->
+	<!-- a fight goes on for a while (as determined by the Fighting pathfinding state minimum pathfinding time).  During this time, the fight may be joined by another pop, making a three-person fight and refreshing the fight timer.  The side with two pops on it has an advantage. -->
+	<!-- if a fourth pop encounters a fight with three people, and it is on the side of the two people, it cannot join the fight. -->
+	<!-- if a fourth pop encounters a fight with three people, and it is on the side of the one person, it can split the fight: one of the two foes (at random) is chosen to start a new fight with the fourth pop at a nearby location, and all fight timers are refreshed. -->
+	<!-- eventually, a fight timer ends.  Wounds and deaths are distributed to the pops fighting, and the pops stop fighting, and start other pathfinding. -->
+	<!-- this script determines if the provided pop should be the third pop to join a fight, or the fourth pop to start a new fight.  If so, this script performs the necessary arrangements.  Otherwise, this script changes nothing. -->
+	<i1><a>joinNearbyFightIfAble</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("joinNearbyFightIfAble custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFPop inPop = (IFPop)inArguments[0];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity checking: a null input pop is an invalid input:
+	  if(inPop == null)
+	  {
+		  throw new ArgumentException("joinNearbyFightIfAble custom script received invalid argument inPop: null");
+		  return null;
+	  }
+	  
+	  //basic checking: if the input pop is wounded or dead, it cannot start a fight:
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	  if(inPop.isDead() || inPop.isWounded())
+	  {
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " cannot join a fight because it is wounded or dead");
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  //if the provided pop is an enemy, its foes are loyal/neutral pops, and vice versa
+	  bool isEnemy = getAPI().isHostileCommunity(inPop.getCommunity());
+	  
+	  IFConnectedVariable listOfAllFights = variableHandler.getConnectedVariable("battleAI_listOfAllFights");
+	  if(listOfAllFights == null)
+	  {
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " cannot join a fight because there are no ongoing fights");
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  IFConnectedVariable closestValidFight = null;
+	  double distanceOfClosestValidFight = double.MaxValue;
+	  bool closestValidFightIsThree = false;
+	  foreach(IFConnectedVariable fightVbl in listOfAllFights.getLowers())
+	  {
+		//fight variables are list variables arranged in the following way:
+		//the name of the list variable is battleAI_ongoingfight_loc[x]_[y]
+		//the first element is the x location of the fight (which is also in the name)
+		//the second element is the y location of the fight (which is also in the name)
+		//the third element is the UID of the first pop in the fight
+		//the fourth element is the UID of the second pop in the fight
+		//the fifth element is the UID of the third pop in the fight, if it exists
+		
+		//therefore, if a fight variable has four elements, it can always be joined:
+		if(fightVbl.getVariableAsInt() == 4L)
+		{
+			IFPop firstPop = (IFPop)getAPI().getSO("pops", (UInt64)fightVbl.getLowers()[2].getVariableAsInt());
+			IFPop secondPop = (IFPop)getAPI().getSO("pops", (UInt64)fightVbl.getLowers()[3].getVariableAsInt());
+			if((firstPop == null) || (secondPop == null))
+			{
+				//something went wrong so ignore this fight:
+				continue;
+			}
+			Tuple&lt;double, double&gt; fightLoc = Tuple.Create((double)fightVbl.getLowers()[0].getVariableAsInt(), (double)fightVbl.getLowers()[1].getVariableAsInt());
+			double distance = getAPI().calcDistanceBetweenPoints(inPop.getMapLocationTuple(), fightLoc);
+			if(distance &lt; distanceOfClosestValidFight)
+			{
+				distanceOfClosestValidFight = distance;
+				closestValidFight = fightVbl;
+				closestValidFightIsThree = false;
+			}
+		}
+		//if a fight variable has five elements, it can be joined if only one pop is on the same side as the input pop:
+		else if(fightVbl.getVariableAsInt() == 5L)
+		{
+			IFPop firstPop = (IFPop)getAPI().getSO("pops", (UInt64)fightVbl.getLowers()[2].getVariableAsInt());
+			IFPop secondPop = (IFPop)getAPI().getSO("pops", (UInt64)fightVbl.getLowers()[3].getVariableAsInt());
+			IFPop thirdPop = (IFPop)getAPI().getSO("pops", (UInt64)fightVbl.getLowers()[4].getVariableAsInt());
+			if((firstPop == null) || (secondPop == null) || (thirdPop == null))
+			{
+				//something went wrong so ignore this fight:
+				continue;
+			}
+			int enemyCount = (isEnemy ? 1 : 0);
+			if(getAPI().isHostileCommunity(firstPop.getCommunity()))
+				enemyCount++;
+			if(getAPI().isHostileCommunity(secondPop.getCommunity()))
+				enemyCount++;
+			if(getAPI().isHostileCommunity(thirdPop.getCommunity()))
+				enemyCount++;
+			//enemyCount should be 2 for us to be able to split the fight:
+			if(enemyCount == 2)
+			{
+				Tuple&lt;double, double&gt; fightLoc = Tuple.Create((double)fightVbl.getLowers()[0].getVariableAsInt(), (double)fightVbl.getLowers()[1].getVariableAsInt());
+				double distance = getAPI().calcDistanceBetweenPoints(inPop.getMapLocationTuple(), fightLoc);
+				if(distance &lt; distanceOfClosestValidFight)
+				{
+					distanceOfClosestValidFight = distance;
+					closestValidFight = fightVbl;
+					closestValidFightIsThree = true;
+				}
+			}
+		}
+	  }
+	  
+	  if(closestValidFight == null)
+	  {
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " cannot join a fight because there is no ongoing fight which is valid to join");
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  double joinFightRadius = customConsts.getDoubleConst("pathfinding_state_Fighting start_fight radius", out bool success);
+	  if(!success) joinFightRadius = 1.25d;
+	  
+	  if(joinFightRadius &lt; distanceOfClosestValidFight)
+	  {
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " cannot join a fight because the closest valid fight is too far away: threshold distance=" + joinFightRadius + " but actual distance=" + distanceOfClosestValidFight);
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  if(closestValidFightIsThree)
+	  {
+		addDebugMessage(inScriptInstance, inPop.getDebugName() + " is splitting fight " + closestValidFight.getInternalName() + " into two as fourth fighter");
+		IFPop firstPop = (IFPop)getAPI().getSO("pops", (UInt64)closestValidFight.getLowers()[2].getVariableAsInt());
+		IFPop secondPop = (IFPop)getAPI().getSO("pops", (UInt64)closestValidFight.getLowers()[3].getVariableAsInt());
+		IFPop thirdPop = (IFPop)getAPI().getSO("pops", (UInt64)closestValidFight.getLowers()[4].getVariableAsInt());
+		
+		//choose one of the two foes to remove from the original fight:
+		IFPop newOtherFighter = null;
+		if(isEnemy != getAPI().isHostileCommunity(firstPop.getCommunity()))
+		{
+			newOtherFighter = firstPop;
+		}
+		if(isEnemy != getAPI().isHostileCommunity(secondPop.getCommunity()))
+		{
+			newOtherFighter = ((newOtherFighter != null) &amp;&amp; (getAPI().calcRandIntUnder(2) == 0)) ? newOtherFighter : secondPop;
+		}
+		if(isEnemy != getAPI().isHostileCommunity(thirdPop.getCommunity()))
+		{
+			newOtherFighter = ((newOtherFighter != null) &amp;&amp; (getAPI().calcRandIntUnder(2) == 0)) ? newOtherFighter : thirdPop;
+		}
+		
+		//find a nearby, passable location where the pops can fight, where a fight is not already ongoing (the function call will return false if there is no such location):
+		if(customScripts.runCustomScriptCheckTypes("findLocationForFight", new List&lt;object&gt;() {newOtherFighter, inPop},
+			out List&lt;object&gt; validLoc, false, typeof(Int64), typeof(Int64)))
+		{
+			Int64 newFightLocX = (Int64)validLoc[0];
+			Int64 newFightLocY = (Int64)validLoc[1];
+		
+			if(!variableHandler.addConnectedInt("battleAI_fighterUID_pop" + newOtherFighter.getUID(), (Int64)newOtherFighter.getUID(), out IFConnectedVariable otherFighterVbl, getAPI().getCalendar().getCurrentDate()))
+			{
+				//the above returns false if the connected variable already exists; which it should (since it's part of the current three-person fight).  Clear it now to make the three-person into a two-person fight:
+				variableHandler.clearConnectedVariable(otherFighterVbl); //remove all uppers and lowers
+			}
+			//create the new fighter's variable:
+			if(!variableHandler.addConnectedInt("battleAI_fighterUID_pop" + inPop.getUID(), (Int64)inPop.getUID(), out IFConnectedVariable newFighterVbl, getAPI().getCalendar().getCurrentDate()))
+			{
+				//the above returns false if the connected variable already exists; if so, this pop has not been properly cleared from a previous fight.  Do so now:
+				variableHandler.clearConnectedVariable(newFighterVbl); //remove all uppers and lowers
+			}
+			
+			//create the x and y variables (erase them if they exist previously):
+			variableHandler.addConnectedInt("battleAI_ongoingfight_loc" + newFightLocX + "_" + newFightLocY + "_xloc", newFightLocX, out IFConnectedVariable newFightLocXVbl, getAPI().getCalendar().getCurrentDate());
+			variableHandler.clearConnectedVariable(newFightLocXVbl);
+			variableHandler.addConnectedInt("battleAI_ongoingfight_loc" + newFightLocX + "_" + newFightLocY + "_yloc", newFightLocY, out IFConnectedVariable newFightLocYVbl, getAPI().getCalendar().getCurrentDate());
+			variableHandler.clearConnectedVariable(newFightLocYVbl);
+			
+			//assemble the new fight (it will not previously exist, because findLocationForFight looks for locations where there is no fight):
+			variableHandler.addConnectedInt("battleAI_ongoingfight_loc" + newFightLocX + "_" + newFightLocY, 0L /*this does not matter because it is a list variable*/, out IFConnectedVariable newFightVbl,
+				getAPI().getCalendar().getCurrentDate(), IFConnectedVariable.eCombinationType.cLIST);
+			variableHandler.connectVariables(newFightLocXVbl, newFightVbl);
+			variableHandler.connectVariables(newFightLocYVbl, newFightVbl);
+			variableHandler.connectVariables(newFighterVbl, newFightVbl);
+			variableHandler.connectVariables(otherFighterVbl, newFightVbl);
+			variableHandler.connectVariables(newFightVbl, listOfAllFights);
+			
+			//position all pops correctly:
+			double firstPopOffsetX = customConsts.getDoubleConst("fighting_pop_display_offset first_pop x_value", out success);
+			if(!success) firstPopOffsetX = 0.0d;
+			double firstPopOffsetY = customConsts.getDoubleConst("fighting_pop_display_offset first_pop y_value", out success);
+			if(!success) firstPopOffsetY = 0.0d;
+			double secondPopOffsetX = customConsts.getDoubleConst("fighting_pop_display_offset second_pop x_value", out success);
+			if(!success) secondPopOffsetX = 0.0d;
+			double secondPopOffsetY = customConsts.getDoubleConst("fighting_pop_display_offset second_pop y_value", out success);
+			if(!success) secondPopOffsetY = 0.0d;
+			
+			IFPop firstPopOld = (IFPop)getAPI().getSO("pops", (UInt64)closestValidFight.getLowers()[2].getVariableAsInt());
+			IFPop secondPopOld = (IFPop)getAPI().getSO("pops", (UInt64)closestValidFight.getLowers()[3].getVariableAsInt());
+			IFPop firstPopNew = inPop;
+			IFPop secondPopNew = newOtherFighter;
+			Int64 old_fight_loc_x = closestValidFight.getLowers()[0].getVariableAsInt();
+			Int64 old_fight_loc_y = closestValidFight.getLowers()[1].getVariableAsInt();
+			if(firstPopOld != null)
+			{
+				firstPopOld.setMapLocation(old_fight_loc_x + firstPopOffsetX, old_fight_loc_y + firstPopOffsetY);
+			}
+			if(secondPopOld != null)
+			{
+				secondPopOld.setMapLocation(old_fight_loc_x + secondPopOffsetX, old_fight_loc_y + secondPopOffsetY);
+			}
+			firstPopNew.setMapLocation(newFightLocX + firstPopOffsetX, newFightLocY + firstPopOffsetY);
+			secondPopNew.setMapLocation(newFightLocX + secondPopOffsetX, newFightLocY + secondPopOffsetY);
+			
+			//if the inPop is in the Ordered state, save its target (this has already been done for the others):
+			if(inPop.getPathfindingState() == "ordered")
+			{
+				variableHandler.storeDoubleVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_orderedPopSavedTargetX_pop" + inPop.getUID(), inPop.getPathfindingTgtTuple().Item1);
+				variableHandler.storeDoubleVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_orderedPopSavedTargetY_pop" + inPop.getUID(), inPop.getPathfindingTgtTuple().Item2);
+			}
+		
+			//set all pops to Fighting state with refreshed timers:
+			firstPop.forcePathfindingState("Fighting", true);
+			secondPop.forcePathfindingState("Fighting", true);
+			thirdPop.forcePathfindingState("Fighting", true);
+			//it's the responsibility of the calling function to do this for inPop
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "unable to find nearby location to split off a new fight");
+			toReturn.Add(false);
+			return toReturn;
+		}
+	  }
+	  else
+	  {
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " is joining fight " + closestValidFight.getInternalName() + " as third fighter");
+		IFPop firstPop = (IFPop)getAPI().getSO("pops", (UInt64)closestValidFight.getLowers()[2].getVariableAsInt());
+		IFPop secondPop = (IFPop)getAPI().getSO("pops", (UInt64)closestValidFight.getLowers()[3].getVariableAsInt());
+		
+		//add the new fighter to the fight:
+		if(!variableHandler.addConnectedInt("battleAI_fighterUID_pop" + inPop.getUID(), (Int64)inPop.getUID(), out IFConnectedVariable newFighterVbl, getAPI().getCalendar().getCurrentDate()))
+		{
+			//the above returns false if the connected variable already exists; if so, this pop has not been properly cleared from a previous fight.  Do so now:
+			variableHandler.clearConnectedVariable(newFighterVbl); //remove all uppers and lowers
+		}
+		variableHandler.connectVariables(newFighterVbl, closestValidFight);
+		
+		//set the new fighter's location correctly:
+		Int64 fight_loc_x = closestValidFight.getLowers()[0].getVariableAsInt();
+		Int64 fight_loc_y = closestValidFight.getLowers()[1].getVariableAsInt();
+		double thirdPopOffsetX = customConsts.getDoubleConst("fighting_pop_display_offset third_pop x_value", out success);
+		if(!success) thirdPopOffsetX = 0.0d;
+		double thirdPopOffsetY = customConsts.getDoubleConst("fighting_pop_display_offset third_pop y_value", out success);
+		if(!success) thirdPopOffsetY = 0.0d;
+		inPop.setMapLocation(fight_loc_x + thirdPopOffsetX, fight_loc_y + thirdPopOffsetY);
+		
+		//if the inPop is in the Ordered state, save its target (this has already been done for the others):
+		if(inPop.getPathfindingState() == "ordered")
+		{
+			variableHandler.storeDoubleVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_orderedPopSavedTargetX_pop" + inPop.getUID(), inPop.getPathfindingTgtTuple().Item1);
+			variableHandler.storeDoubleVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_orderedPopSavedTargetY_pop" + inPop.getUID(), inPop.getPathfindingTgtTuple().Item2);
+		}
+			
+		//set all pops to Fighting state with refreshed timers:
+		firstPop.forcePathfindingState("Fighting", true);
+		secondPop.forcePathfindingState("Fighting", true);
+		//it's the responsibility of the calling function to do this for inPop
+	  }
+	  
+	  toReturn.Add(true);
+	  return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

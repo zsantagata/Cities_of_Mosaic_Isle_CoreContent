@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- personal 3p pronoun: he/she/they, as in "he fought well" -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop list_of_options</a> <b>list</b> <c>personal_3ppronoun_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase unisex_none before_replace_text</a> <b>string</b> <c>they</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase unisex_male before_replace_text</a> <b>string</b> <c>he</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase unisex_female before_replace_text</a> <b>string</b> <c>she</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase unisex_both before_replace_text</a> <b>string</b> <c>they</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a pop and from it, returns a string that is the pop's third person pronoun as the subject as an action -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFPop inPop, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inPop == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase custom script received invalid arguments: inPop cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	
+	//determine the sex of the pop:
+	switch(inPop.getSex())
+	{
+		default:
+		case IFPop.ePopSex.cUnisexNone:
+			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase unisex_none", out success);
+			if(!success) outDescription = "they";
+		break;
+		
+		case IFPop.ePopSex.cUnisexBoth:
+			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase unisex_both", out success);
+			if(!success) outDescription = "they";
+		break;
+		
+		case IFPop.ePopSex.cMale:
+			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase unisex_male", out success);
+			if(!success) outDescription = "he";
+		break;
+		
+		case IFPop.ePopSex.cFemale:
+			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_personal_3ppronoun_phrase unisex_female", out success);
+			if(!success) outDescription = "she";
+		break;
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

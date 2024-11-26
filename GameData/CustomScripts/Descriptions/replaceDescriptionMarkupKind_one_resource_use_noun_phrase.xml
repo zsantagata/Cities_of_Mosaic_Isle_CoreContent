@@ -1,0 +1,169 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_one_resource_use_noun_phrase default before_replace_text</a> <b>string</b> <c>[0]</c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_resource list_of_options</a> <b>list</b> <c>use_noun_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_resource_use_noun_phrase food nouns</a> <b>string</b> <c>food,supplies,nutrition</c></i1> <!-- any form of food -->
+	  <i1><a>replaceDescriptionMarkupKind_one_resource_use_noun_phrase hstasis nouns</a> <b>string</b> <c>belongings,possessions</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_resource_use_noun_phrase medicine nouns</a> <b>string</b> <c>medicine,medical supplies</c></i1> <!-- wound heal or ill heal -->
+	  <i1><a>replaceDescriptionMarkupKind_one_resource_use_noun_phrase drug nouns</a> <b>string</b> <c>drugs,supplies for celebration,intoxicants</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_resource_use_noun_phrase milequip nouns</a> <b>string</b> <c>armaments,equipment,gear</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_resource_use_noun_phrase trade nouns</a> <b>string</b> <c>trade goods,valuables</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_resource_use_noun_phrase nothing nouns</a> <b>string</b> <c>unfinished goods,raw materials,materials</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_resource_use_noun_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- RESOURCE tag: use_noun -->
+
+  <!-- this file holds the implementation of a custom script which takes an resource and from it, returns a string that is a noun phrase indicating the resource (related to its use) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFResource inResource, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_resource_use_noun_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFResource)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_resource_use_noun_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFResource inResource = (IFResource)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	if(inResource == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_resource_use_noun_phrase custom script received invalid arguments: inResource cannot be null");
+		return null;
+	}
+	
+	List&lt;string&gt; possibleSelections = new List&lt;string&gt;();
+	if(inResource.isFood())
+	{
+		string adjsWithCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_resource_use_noun_phrase food nouns", out success);
+		if(success)
+		{
+			List&lt;string&gt; toAdd = new List&lt;string&gt;(adjsWithCommas.Split(','));
+			foreach(string adj in toAdd)
+			{
+				possibleSelections.Add(adj);
+			}
+		}
+	}
+	if(inResource.isHStasis())
+	{
+		string adjsWithCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_resource_use_noun_phrase hstasis nouns", out success);
+		if(success)
+		{
+			List&lt;string&gt; toAdd = new List&lt;string&gt;(adjsWithCommas.Split(','));
+			foreach(string adj in toAdd)
+			{
+				possibleSelections.Add(adj);
+			}
+		}
+	}
+	if(inResource.isWoundHeal() || inResource.isDiseaseHeal())
+	{
+		string adjsWithCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_resource_use_noun_phrase medicine nouns", out success);
+		if(success)
+		{
+			List&lt;string&gt; toAdd = new List&lt;string&gt;(adjsWithCommas.Split(','));
+			foreach(string adj in toAdd)
+			{
+				possibleSelections.Add(adj);
+			}
+		}
+	}
+	if(inResource.isDrug())
+	{
+		string adjsWithCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_resource_use_noun_phrase drug nouns", out success);
+		if(success)
+		{
+			List&lt;string&gt; toAdd = new List&lt;string&gt;(adjsWithCommas.Split(','));
+			foreach(string adj in toAdd)
+			{
+				possibleSelections.Add(adj);
+			}
+		}
+	}
+	if(inResource.isMilEquip())
+	{
+		string adjsWithCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_resource_use_noun_phrase milequip nouns", out success);
+		if(success)
+		{
+			List&lt;string&gt; toAdd = new List&lt;string&gt;(adjsWithCommas.Split(','));
+			foreach(string adj in toAdd)
+			{
+				possibleSelections.Add(adj);
+			}
+		}
+	}
+	if(inResource.isTrade())
+	{
+		string adjsWithCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_resource_use_noun_phrase trade nouns", out success);
+		if(success)
+		{
+			List&lt;string&gt; toAdd = new List&lt;string&gt;(adjsWithCommas.Split(','));
+			foreach(string adj in toAdd)
+			{
+				possibleSelections.Add(adj);
+			}
+		}
+	}
+	
+	if(possibleSelections.Count == 0)
+	{
+		string adjsWithCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_resource_use_noun_phrase nothing nouns", out success);
+		if(success)
+		{
+			List&lt;string&gt; toAdd = new List&lt;string&gt;(adjsWithCommas.Split(','));
+			foreach(string adj in toAdd)
+			{
+				possibleSelections.Add(adj);
+			}
+		}
+	}
+	
+	//also, if there are any tags for a use noun, include them as well:
+	foreach(string tag in inResource.getTagList())
+	{
+		if(tag.Contains("use_noun:"))
+		{
+			possibleSelections.Add(tag.Replace("use_noun:", "").ToLower());
+		}
+	}
+	
+	if(possibleSelections.Count &gt; 0)
+	{
+		outDescription = possibleSelections[(int)getAPI().calcRandIntUnder(possibleSelections.Count)];
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

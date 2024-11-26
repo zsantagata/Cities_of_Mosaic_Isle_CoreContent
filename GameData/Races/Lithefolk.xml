@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources:
+	TODO implement these custom consts: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igRace name="Lithefolk">
+    <Encyclopedia_Entry>
+	  <full_path>Races/Lithefolk</full_path>
+	  <body_text>Lithefolk.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSingleNoun>Lithe</mSingleNoun>
+	<mPluralNoun>Lithefolk</mPluralNoun>
+	<mCollectiveNoun>Lithefolk</mCollectiveNoun>
+	<mAdjective>Lithe</mAdjective>
+	<mSpecialAttributes>0x680</mSpecialAttributes><!-- 0x80 = can breathe overwater, 0x200 = can mother children, 0x400 = can father children -->
+	
+	<mIndustryProductivities>
+	  <i1>
+	    <a>Crafting</a>
+		<b>1.15</b>
+		<c>0x0</c>
+	  </i1>
+	  <i2>
+	    <a>Medicine</a>
+		<b>1.15</b>
+		<c>0x0</c>
+	  </i2>
+	  <i3>
+	    <a>Jewelry</a>
+		<b>1.15</b>
+		<c>0x0</c>
+	  </i3>
+	  <i5>
+	    <a>*</a>
+		<b>1.0</b>
+		<c>0x0</c>
+	  </i5>
+	</mIndustryProductivities>
+	
+	<mConsumptionSpecificResourceModifiers><!-- this is a list of: reference to resource, special qualities -->
+	  <i1>
+		<a>Oil</a>
+		<b>0x3</b><!-- 0x1 = more health from consuming, 0x2 = more happiness from consuming -->
+	  </i1>
+	</mConsumptionSpecificResourceModifiers>
+	
+	<mSSIDs>
+		<i>Shifter neutral ss</i>
+		<i>Shifter local ss</i>
+		<i>Shifter thelady ss</i>
+		<i>Shifter rebels ss</i>
+		<i>Shifter genericenemies ss</i>
+		<i>Shifter wanderers ss</i>
+	</mSSIDs>
+    <mLandSpeed>0.9</mLandSpeed>
+    <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+    <mWaterSpeed>0.9</mWaterSpeed>
+    <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+
+    <mTagList>
+	  <i1>six limbs</i1>
+	  <i1>humanoid torso</i1>
+	  <i1>tail</i1>
+	  <i1>reptilian</i1>
+	  <i1>powerful combatants</i1>
+	  
+		<!-- description tags: -->
+		<i1>general_adj:intimidating</i1>
+		<i1>general_adj:muscular</i1>
+		<i1>general_adj:swaying</i1>
+		<i1>bodypart_vision:eyes</i1>
+		<i1>bodypart_hearing:earholes</i1>
+		<i1>bodypart_smelling:nose</i1>
+		<i1>bodypart_taste:tongue</i1>
+		<i1>bodypart_outer:skin</i1>
+		<i1>bodypart_graspsingle:hand</i1>
+		<i1>bodypart_landtravel:tail</i1>
+		<i1>bodypart_watertravel:tail</i1>
+		<i1>bodypart_expression:face</i1>
+		<i1>bodypart_decorative:scales</i1>
+	</mTagList>
+  </igRace>
+  
+  
+</core_data>

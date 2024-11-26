@@ -1,0 +1,237 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- the chance that the attackers find 2:1 fights is related to their average soldier skill -->
+	  <i1><a>determineAttackerResults_peopleTarget advantage prob min</a> <b>double</b> <c>0.15</c></i1>
+	  <i1><a>determineAttackerResults_peopleTarget advantage prob max</a> <b>double</b> <c>0.85</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script determineattackerresults_peopletarget</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which determines the result of one day of player-sourced-delegation attack on an enemy community -->
+  <!-- this specific script is a common script for the attack target of "people" -->
+  <!-- attackers will try to have 2:1 fights against pops in the enemy community, but if they fail they will take 1:1 fights instead -->
+  <!-- this script will reify pops if necessary.  Enemy defenders will be de-prioritized  -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation,
+	List<IFPop> inDelegationAttackers, //can be empty but should not be null
+	List<IFPop> inEnemyDefenders, //can be empty but should not be null
+	bool inRaiding //if false it means war
+	
+	There is one output: double outAlwaysZeroOutput.  It is unused but is placed here to make this script's output the same as other determineAttackerResults_ scripts -->
+	<i1><a>determineAttackerResults_peopleTarget</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation), typeof(List&lt;IFPop&gt;), typeof(List&lt;IFPop&gt;), typeof(bool)}
+	  }, out _))
+	{
+		throw new ArgumentException("determineAttackerResults_peopleTarget custom script received invalid arguments");
+		return null;
+	}
+	
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	List&lt;IFPop&gt; inDelegationAttackers = (List&lt;IFPop&gt;)inArguments[1];
+	List&lt;IFPop&gt; inEnemyDefenders = (List&lt;IFPop&gt;)inArguments[2];
+	bool inRaiding = (bool)inArguments[3];
+	
+	IFCommunity inEnemyCommunity = inDelegation.getTargetCommunity();
+	
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	//if inDelegationAttackers is empty, there is nothing to process:
+	List&lt;object&gt; toReturn = new List&lt;object&gt;() { 0.0d };
+	if(inDelegationAttackers == null || inDelegationAttackers.Count == 0)
+	{
+		addDebugMessage(inScriptInstance, "There are no attackers, so no processing needs to happen");
+		return toReturn;
+	}
+	inDelegationAttackers = new List&lt;IFPop&gt;(inDelegationAttackers); //create a copy because we will modify this
+	
+	double soldierSkillMin = consts.getSoldierSkillMin();
+	double soldierSkillMax = consts.getSoldierSkillMax();
+	
+	//get all the custom consts:
+	double combatAdvantageProbMin = customConsts.getDoubleConst("determineAttackerResults_peopleTarget advantage prob min", out bool success);
+	if(!success) combatAdvantageProbMin = 0.15d;
+	double combatAdvantageProbMax = customConsts.getDoubleConst("determineAttackerResults_peopleTarget advantage prob max", out success);
+	if(!success) combatAdvantageProbMax = 0.85d;
+	
+	int victoriousFightsAndNotTakenFights = 0; //this is only used if inRaiding is true
+	
+	//first, count up the average soldier skill, and then group up the attackers:
+	double averageSoldierSkill = 0.0d;
+	foreach(IFPop pop in inDelegationAttackers)
+	{
+		averageSoldierSkill += pop.getSoldierSkill();
+	}
+	averageSoldierSkill /= inDelegationAttackers.Count;
+	double advantageProb = combatAdvantageProbMin + (combatAdvantageProbMax - combatAdvantageProbMin) * (averageSoldierSkill - soldierSkillMin) / (soldierSkillMax - soldierSkillMin);
+	Queue&lt;IFPop&gt; singlePopAttackers = new Queue&lt;IFPop&gt;();
+	Queue&lt;Tuple&lt;IFPop, IFPop&gt;&gt; doublePopAttackers = new Queue&lt;Tuple&lt;IFPop, IFPop&gt;&gt;();
+	while(inDelegationAttackers.Count != 0)
+	{
+		if((inDelegationAttackers.Count &gt;= 2) &amp;&amp; getAPI().calcProb(advantageProb))
+		{
+			doublePopAttackers.Enqueue(Tuple.Create(inDelegationAttackers[0], inDelegationAttackers[1]));
+			inDelegationAttackers.RemoveAt(0);
+			inDelegationAttackers.RemoveAt(0);
+		}
+		else
+		{
+			singlePopAttackers.Enqueue(inDelegationAttackers[0]);
+			inDelegationAttackers.RemoveAt(0);
+		}
+	}
+	
+	addDebugMessage(inScriptInstance, "From attacker average soldier skill of " + averageSoldierSkill + " (causing advantageProb=" + advantageProb + ") and total non-intercepted attacker count of " + inDelegationAttackers.Count + " there are " + singlePopAttackers.Count + " single-pop fights and " + doublePopAttackers.Count + " double-pop fights");
+	
+	//targets: first, choose non-defending real targets
+	//         secondly, choose to reify targets
+	//         thirdly, choose defenders
+	
+	List&lt;IFPop&gt; nonDefendingRealTargets = new List&lt;IFPop&gt;();
+	foreach(IFPop pop in inEnemyCommunity.getPopsLoyalToCommunity(true, false))
+	{
+		if(pop.getPopLocation() != IFPop.ePopLocation.cInForeignCommunity)
+			continue;
+		if(inEnemyDefenders.Contains(pop))
+			continue;
+		nonDefendingRealTargets.Add(pop);
+	}
+	addDebugMessage(inScriptInstance, "nonDefendingRealTargets.Count=" + nonDefendingRealTargets.Count);
+	//double pop attackers first:
+	while((doublePopAttackers.Count != 0) &amp;&amp; (nonDefendingRealTargets.Count != 0))
+	{
+		int index = (int)getAPI().calcRandIntUnder(nonDefendingRealTargets.Count); //don't just choose 0 because order of these pops is non-random
+		Tuple&lt;IFPop, IFPop&gt; attackers = doublePopAttackers.Dequeue();
+		IFPop defender = nonDefendingRealTargets[index];
+		
+		//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
+		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackers.Item1, defender, attackers.Item2, true, 0.0d, 0.0d }, out _);
+		
+		if(defender.isDead() || defender.isWounded()) victoriousFightsAndNotTakenFights++;
+		nonDefendingRealTargets.RemoveAt(index);
+	}
+	while((singlePopAttackers.Count != 0) &amp;&amp; (nonDefendingRealTargets.Count != 0))
+	{
+		int index = (int)getAPI().calcRandIntUnder(nonDefendingRealTargets.Count); //don't just choose 0 because order of these pops is non-random
+		IFPop attacker = singlePopAttackers.Dequeue();
+		IFPop defender = nonDefendingRealTargets[index];
+		
+		//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
+		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attacker, defender, null, false, 0.0d, 0.0d }, out _);
+		
+		if(defender.isDead() || defender.isWounded()) victoriousFightsAndNotTakenFights++;
+		nonDefendingRealTargets.RemoveAt(index);
+	}
+	
+	//now that all non-defending real targets are exhausted, if there are attackers remaining, reify pops for them to fight:
+	int countOfPopsToReify = doublePopAttackers.Count + singlePopAttackers.Count;
+	if(countOfPopsToReify != 0)
+	{
+		if(customScripts.runCustomScriptCheckTypes("reifyPopsFromForeignCommunity", new List&lt;object&gt;()
+			{ inEnemyCommunity, null, null, null, null, null, true, (Int64)countOfPopsToReify },
+			out List&lt;object&gt; scriptOutputs, false, typeof(List&lt;IFPop&gt;)))
+		{
+			List&lt;IFPop&gt; defenders = (List&lt;IFPop&gt;)scriptOutputs[0];
+			addDebugMessage(inScriptInstance, "community pops reified count=" + defenders.Count);
+			while((doublePopAttackers.Count != 0) &amp;&amp; (defenders.Count != 0))
+			{
+				Tuple&lt;IFPop, IFPop&gt; attackers = doublePopAttackers.Dequeue();
+				
+				//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
+				customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackers.Item1, defenders[0], attackers.Item2, true, 0.0d, 0.0d }, out _);
+				
+				if(defenders[0].isDead() || defenders[0].isWounded()) victoriousFightsAndNotTakenFights++;
+				defenders.RemoveAt(0);
+			}
+			while((singlePopAttackers.Count != 0) &amp;&amp; (defenders.Count != 0))
+			{
+				IFPop attacker = singlePopAttackers.Dequeue();
+				IFPop defender = defenders[0];
+				
+				//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
+				customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attacker, defender, null, false, 0.0d, 0.0d }, out _);
+				
+				if(defender.isDead() || defender.isWounded()) victoriousFightsAndNotTakenFights++;
+				defenders.RemoveAt(0);
+			}
+		}
+	}
+	
+	//if there are any attackers left over, have them target the non-dead defenders:
+	List&lt;IFPop&gt; nonDeadDefenders = new List&lt;IFPop&gt;();
+	foreach(IFPop pop in inEnemyDefenders)
+	{
+		if(!pop.isDead())
+			nonDeadDefenders.Add(pop);
+	}
+	addDebugMessage(inScriptInstance, "nonDeadDefenders.Count=" + nonDeadDefenders.Count);
+	while((doublePopAttackers.Count != 0) &amp;&amp; (nonDeadDefenders.Count != 0))
+	{
+		Tuple&lt;IFPop, IFPop&gt; attackers = doublePopAttackers.Dequeue();
+		IFPop defender = nonDeadDefenders[0];
+		
+		//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
+		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackers.Item1, defender, attackers.Item2, true, 0.0d, 0.0d }, out _);
+			
+		if(defender.isDead() || defender.isWounded()) victoriousFightsAndNotTakenFights++;
+		nonDeadDefenders.RemoveAt(0);
+	}
+	while((singlePopAttackers.Count != 0) &amp;&amp; (nonDeadDefenders.Count != 0))
+	{
+		IFPop attacker = singlePopAttackers.Dequeue();
+		IFPop defender = nonDeadDefenders[0];
+		
+		//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
+		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attacker, defender, null, false, 0.0d, 0.0d }, out _);
+		
+		if(defender.isDead() || defender.isWounded()) victoriousFightsAndNotTakenFights++;
+		nonDeadDefenders.RemoveAt(0);
+	}
+	
+	//for a war delegation, the point is simply to hurt the pops.  For a raiding delegation, this is just a necessary step in abducting the pops.
+	//Only non-dead, wounded pops can be abducted.
+	//Restrict this to player-sourced delegations only, as foreign delegations have their own way of determining which pops are abducted which respects race care values
+	if(inRaiding &amp;&amp; (inDelegation.getSourceCommunity() == getAPI().getLocalCommunity()))
+	{
+		victoriousFightsAndNotTakenFights += doublePopAttackers.Count;
+		victoriousFightsAndNotTakenFights += singlePopAttackers.Count;
+		
+		addDebugMessage(inScriptInstance, "delegation will now try to abduct " + victoriousFightsAndNotTakenFights + " present, wounded pops from enemy community");
+		
+		foreach(IFPop pop in inEnemyCommunity.getPopsLoyalToCommunity(true, false))
+		{
+			if(victoriousFightsAndNotTakenFights &lt;= 0)
+				break;
+			if(!pop.isWounded() || (pop.getPopLocation() != IFPop.ePopLocation.cInForeignCommunity) || (pop.hasDelegation()))
+				continue;
+			
+			pop.setDelegation(inDelegation);
+			pop.removePopFromMap(IFPop.ePopLocation.cInDelegation);
+			victoriousFightsAndNotTakenFights--;
+		}
+	}
+	
+	return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

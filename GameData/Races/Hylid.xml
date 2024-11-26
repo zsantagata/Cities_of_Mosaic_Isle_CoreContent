@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources:
+	TODO implement these custom consts: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igRace name="Hylid">
+    <Encyclopedia_Entry>
+	  <full_path>Races/Hylid</full_path>
+	  <body_text>Hylid.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSingleNoun>Hylid</mSingleNoun>
+	<mPluralNoun>Hylidae</mPluralNoun>
+	<mCollectiveNoun>Hylidae</mCollectiveNoun>
+	<mAdjective>Hylidae</mAdjective>
+	<mSpecialAttributes>0x6c0</mSpecialAttributes><!-- 0x40 = can breathe underwater, 0x80 = can breathe overwater, 0x200 = can mother children, 0x400 = can father children -->
+	
+	<mIndustryProductivities>
+	  <i1>
+	    <a>Farming</a>
+		<b>0.9</b>
+		<c>0x0</c>
+	  </i1>
+	  <i2>
+	    <a>Fishing</a>
+		<b>0.9</b>
+		<c>0x0</c>
+	  </i2>
+	  <i3>
+	    <a>Hunting</a>
+		<b>0.9</b>
+		<c>0x0</c>
+	  </i3>
+	  <i4>
+	    <a>Husbandry</a>
+		<b>0.9</b>
+		<c>0x4000</c><!-- 0x4000 = dislike industry-->
+	  </i4>
+	  <i5>
+	    <a>Diplomacy</a>
+		<b>1.2</b>
+		<c>0x0</c>
+	  </i5>
+	  <i6>
+	    <a>Smelting</a>
+		<b>1.0</b>
+		<c>0x4000</c><!-- 0x4000 = dislike industry-->
+	  </i6>
+	  <i7>
+	    <a>*</a>
+		<b>1.0</b>
+		<c>0x0</c> 
+	  </i7>
+	</mIndustryProductivities>
+	
+	<mSSIDs>
+		<i>hylid neutral male SS</i>
+		<i>hylid local male SS</i>
+		<i>hylid thelady male SS</i>
+		<i>hylid rebels male SS</i>
+		<i>hylid genericenemies male SS</i>
+		<i>hylid wanderers male SS</i>
+		<i>hylid neutral female SS</i>
+		<i>hylid local female SS</i>
+		<i>hylid thelady female SS</i>
+		<i>hylid rebels female SS</i>
+		<i>hylid genericenemies female SS</i>
+		<i>hylid wanderers female SS</i>
+	</mSSIDs>
+    <mLandSpeed>1.0</mLandSpeed>
+    <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+    <mWaterSpeed>0.8</mWaterSpeed>
+    <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+
+    <mTagList>
+	  <i1>four limbs</i1>
+	  <i1>amphibian</i1>
+	  <i1>colorchanging</i1>
+	  <i1>humanoid</i1>
+	  <i1>humanoid torso</i1>
+	  <i1>humanoid legs</i1>
+	  <!-- while this race can breathe underwater it is not naturally aquatic -->
+	  
+		<!-- description tags: -->
+		<i1>general_adj:slick</i1>
+		<i1>general_adj:slimy</i1>
+		<i1>general_adj:colorful</i1>
+		<i1>bodypart_vision:eyes</i1>
+		<i1>bodypart_hearing:ears</i1>
+		<i1>bodypart_smelling:nose</i1>
+		<i1>bodypart_taste:tongue</i1>
+		<i1>bodypart_outer:skin</i1>
+		<i1>bodypart_graspsingle:hand</i1>
+		<i1>bodypart_landtravel:feet</i1>
+		<i1>bodypart_watertravel:legs</i1>
+		<i1>bodypart_expression:face</i1>
+		<i1>bodypart_decorative:colorations</i1>
+	</mTagList>
+  </igRace>
+  
+</core_data>

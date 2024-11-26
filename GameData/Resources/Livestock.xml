@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+		<!-- a shark loses a tooth once a week, and a dozen teeth makes a fine necklace -->
+		<i1><a>livestock Shark farmed_resource list</a> <b>list</b> <c>Jewelry</c></i1> <!-- this should be a list of resource internal names, and should have a custom consts indicating how many per day -->
+		<i1><a>livestock Shark farmed_resource Jewelry daily value</a> <b>double</b> <c>0.085</c></i1> <!-- should be non-negative -->
+		
+		<!-- if a chicken lays a <70 gram egg once a day, this is their rate of production.  One feather every other day. -->
+		<i1><a>livestock Chicken farmed_resource list</a> <b>list</b> <c>Eggs,Feathers</c></i1> <!-- this should be a list of resource internal names, and should have a custom consts indicating how many per day -->
+		<i1><a>livestock Chicken farmed_resource Eggs daily value</a> <b>double</b> <c>0.15</c></i1> <!-- should be non-negative -->
+		<i1><a>livestock Chicken farmed_resource Feathers daily value</a> <b>double</b> <c>0.5</c></i1> <!-- should be non-negative -->
+		
+		<!-- if a duck lays a 100 gram egg a dozen times per year, this is their rate of production.  One and a half feather every day. -->
+		<i1><a>livestock Duck farmed_resource list</a> <b>list</b> <c>Eggs,Feathers</c></i1> <!-- this should be a list of resource internal names, and should have a custom consts indicating how many per day -->
+		<i1><a>livestock Duck farmed_resource Eggs daily value</a> <b>double</b> <c>0.0075</c></i1> <!-- should be non-negative -->
+		<i1><a>livestock Duck farmed_resource Feathers daily value</a> <b>double</b> <c>1.5</c></i1> <!-- should be non-negative -->
+		
+		<!-- if a sheep produces 10 pounds of wool a year, and a pregnant/was-just-pregnant sheep can produce 1 pound of milk per day, this is the result (milk/2 because half of livestock are male, /2 because sheep are not pregnant all the time) -->
+		<i1><a>livestock Sheep farmed_resource list</a> <b>list</b> <c>Wool,Milk</c></i1> <!-- this should be a list of resource internal names, and should have a custom consts indicating how many per day -->
+		<i1><a>livestock Sheep farmed_resource Wool daily value</a> <b>double</b> <c>0.028</c></i1> <!-- should be non-negative -->
+		<i1><a>livestock Sheep farmed_resource Milk daily value</a> <b>double</b> <c>0.25</c></i1> <!-- should be non-negative -->
+		
+		<!-- if a camel produces 5 pounds of wool a year, and a pregnant/was-just-pregnant camel can produce 40 pound of milk per day, this is the result (milk/2 because half of livestock are male, /2 because sheep are not pregnant all the time) -->
+		<i1><a>livestock Camel farmed_resource list</a> <b>list</b> <c>Wool,Milk</c></i1> <!-- this should be a list of resource internal names, and should have a custom consts indicating how many per day -->
+		<i1><a>livestock Camel farmed_resource Wool daily value</a> <b>double</b> <c>0.014</c></i1> <!-- should be non-negative -->
+		<i1><a>livestock Camel farmed_resource Milk daily value</a> <b>double</b> <c>10.0</c></i1> <!-- should be non-negative -->
+	</mCustomVariableList>
+  </customconsts>
+  
+  <!-- animals are special resources in that their main purpose is breakdown -->
+  <!-- all animals can be hunted or farmed, but some might be foolish to farm or not good hunting.  Depends on the biome and the animal -->
+  <!-- all animals can be trapped.  Depends on the biome and the animal -->
+  
+  <!-- note to self: the breakdown values are for one whole animal -->
+  <igResource name="Deer">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Livestock/Deer</full_path>
+	  <body_text>Deer.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSSID>Animal Icons</mSSID>
+	<mSpriteID>3</mSpriteID><!-- sprite for icon -->
+    <mResourceQualities>0x400</mResourceQualities> <!--enable manual breakdown-->
+	<mDecaySpeed>0.143</mDecaySpeed><!-- most animals or livestock will starve in 14 days; this means going from average quality to minimum in 7 days -->
+	<mDesolationFactor>3.0</mDesolationFactor> <!-- deer are populous.  Reference duck = 1.0d -->
+	<mProductionSpeed>0.01</mProductionSpeed> <!-- for animals, this serves as a "size factor", impacting how many resources they need to consume (including the time/effort of pops looking after them) and how quickly they reproduce.  Higher values = less resources and less time to reproduce.  Reference duck = 0.5d. -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Meat</a>
+		<b>55</b>
+	  </i1>
+	  <i2>
+	    <a>Leather</a>
+		<b>60</b>
+	  </i2>
+	  <i3>
+	    <a>Bone</a>
+		<b>25</b>
+	  </i3>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>animal</i1>
+		<i1>hunt-animal</i1>
+		<i1>trap-animal</i1>
+		<i1>slaughter-animal</i1>
+		<i1>eats-plant-food</i1>
+		<i1>eats-plant-food-only</i1>
+		<i1>breathes-overwater</i1>
+		<i1>overwater-grazer</i1> <!-- indicates this animal has both "eats-plant-food" and "breathes-overwater" -->
+		<i1>no-distribution-spreadness-decay</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:livestock</i1>
+		<i1>use_noun:livestock</i1>
+		<i1>qual_low_adj:sickly</i1>
+		<i1>qual_low_adj:unhealthy</i1>
+		<i1>qual_high_adj:fat</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>property_adj:sprightly</i1>
+		<i1>degrade_noun:refuse</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Boar">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Livestock/Boar</full_path>
+	  <body_text>Boar.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSSID>Animal Icons</mSSID>
+	<mSpriteID>5</mSpriteID><!-- sprite for icon -->
+    <mResourceQualities>0x400</mResourceQualities> <!--enable manual breakdown-->
+	<mDecaySpeed>0.143</mDecaySpeed><!-- most animals or livestock will starve in 14 days; this means going from average quality to minimum in 7 days -->
+	<mDesolationFactor>3.0</mDesolationFactor> <!-- boar are populous.  Reference duck = 1.0d -->
+	<mProductionSpeed>0.015</mProductionSpeed> <!-- for animals, this serves as a "size factor", impacting how many resources they need to consume (including the time/effort of pops looking after them) and how quickly they reproduce.  Higher values = less resources and less time to reproduce.  Reference duck = 0.5d. -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Meat</a>
+		<b>50</b>
+	  </i1>
+	  <i2>
+	    <a>Leather</a>
+		<b>40</b>
+	  </i2>
+	  <i3>
+	    <a>Bone</a>
+		<b>45</b>
+	  </i3>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>animal</i1>
+		<i1>hunt-animal</i1>
+		<i1>trap-animal</i1>
+		<i1>slaughter-animal</i1>
+		<i1>dangerous animal</i1>
+		<i1>eats-plant-food</i1>
+		<i1>eats-misc-food</i1>
+		<i1>eats-animal-food</i1>
+		<i1>breathes-overwater</i1>
+		<i1>overwater-grazer</i1> <!-- indicates this animal has both "eats-plant-food" and "breathes-overwater" -->
+		<i1>no-distribution-spreadness-decay</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:livestock</i1>
+		<i1>use_noun:livestock</i1>
+		<i1>qual_low_adj:sickly</i1>
+		<i1>qual_low_adj:unhealthy</i1>
+		<i1>qual_high_adj:fat</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>property_adj:waddling</i1>
+		<i1>degrade_noun:refuse</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Bear"> <!-- this is based on black bears, not grizzlies or polar bears -->
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Livestock/Bear</full_path>
+	  <body_text>Bear.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSSID>Animal Icons</mSSID>
+	<mSpriteID>6</mSpriteID><!-- sprite for icon -->
+    <mResourceQualities>0x400</mResourceQualities> <!--enable manual breakdown-->
+	<mDecaySpeed>0.143</mDecaySpeed><!-- most animals or livestock will starve in 14 days; this means going from average quality to minimum in 7 days -->
+	<mDesolationFactor>15.0</mDesolationFactor> <!-- bears are territorial and few in number.  Reference duck = 1.0d -->
+	<mProductionSpeed>0.0025</mProductionSpeed> <!-- for animals, this serves as a "size factor", impacting how many resources they need to consume (including the time/effort of pops looking after them) and how quickly they reproduce.  Higher values = less resources and less time to reproduce.  Reference duck = 0.5d. -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Meat</a>
+		<b>120</b>
+	  </i1>
+	  <i2>
+	    <a>Leather</a>
+		<b>150</b>
+	  </i2>
+	  <i3>
+	    <a>Bone</a>
+		<b>100</b>
+	  </i3>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>animal</i1>
+		<i1>hunt-animal</i1>
+		<i1>trap-animal</i1>
+		<i1>slaughter-animal</i1>
+		<i1>dangerous animal</i1>
+		<i1>attack animal</i1>
+		<i1>eats-plant-food</i1>
+		<i1>eats-misc-food</i1>
+		<i1>eats-animal-food</i1>
+		<i1>breathes-overwater</i1>
+		<i1>overwater-grazer</i1> <!-- indicates this animal has both "eats-plant-food" and "breathes-overwater" -->
+		<i1>no-distribution-spreadness-decay</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:livestock</i1>
+		<i1>use_noun:livestock</i1>
+		<i1>qual_low_adj:sickly</i1>
+		<i1>qual_low_adj:unhealthy</i1>
+		<i1>qual_high_adj:fat</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>property_adj:large</i1>
+		<i1>degrade_noun:refuse</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Shark"> <!-- tbh rather small sharks -->
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Livestock/Shark</full_path>
+	  <body_text>Shark.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSSID>Animal Icons</mSSID>
+	<mSpriteID>4</mSpriteID><!-- sprite for icon -->
+    <mResourceQualities>0x400</mResourceQualities> <!--enable manual breakdown-->
+	<mDecaySpeed>0.143</mDecaySpeed><!-- most animals or livestock will starve in 14 days; this means going from average quality to minimum in 7 days -->
+	<mDesolationFactor>5.0</mDesolationFactor> <!-- sharks are common but not as common as fish.  Reference duck = 1.0d -->
+	<mProductionSpeed>0.0045</mProductionSpeed> <!-- for animals, this serves as a "size factor", impacting how many resources they need to consume (including the time/effort of pops looking after them) and how quickly they reproduce.  Higher values = less resources and less time to reproduce.  Reference duck = 0.5d. -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Meat</a>
+		<b>65</b>
+	  </i1>
+	  <i2>
+	    <a>Leather</a>
+		<b>90</b>
+	  </i2>
+	  <i3>
+	    <a>Jewelry</a>
+		<b>2</b>
+	  </i3>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>animal</i1>
+		<i1>hunt-animal</i1>
+		<i1>trap-animal</i1>
+		<i1>slaughter-animal</i1>
+		<i1>dangerous animal</i1>
+		<i1>attack animal</i1>
+		<i1>eats-animal-food</i1>
+		<i1>eats-animal-food-only</i1>
+		<i1>breathes-underwater</i1>
+		<i1>no-distribution-spreadness-decay</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:livestock</i1>
+		<i1>use_noun:livestock</i1>
+		<i1>qual_low_adj:sickly</i1>
+		<i1>qual_low_adj:unhealthy</i1>
+		<i1>qual_high_adj:fat</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>property_adj:swift</i1>
+		<i1>degrade_noun:refuse</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Chicken">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Livestock/Chicken</full_path>
+	  <body_text>Chicken.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSSID>Animal Icons</mSSID>
+	<mSpriteID>1</mSpriteID><!-- sprite for icon -->
+    <mResourceQualities>0x400</mResourceQualities> <!--enable manual breakdown-->
+	<mDecaySpeed>0.143</mDecaySpeed><!-- most animals or livestock will starve in 14 days; this means going from average quality to minimum in 7 days -->
+	<mDesolationFactor>2.0</mDesolationFactor> <!-- wild chickens can be numerous but not always.  Reference duck = 1.0d -->
+	<mProductionSpeed>0.6</mProductionSpeed> <!-- for animals, this serves as a "size factor", impacting how many resources they need to consume (including the time/effort of pops looking after them) and how quickly they reproduce.  Higher values = less resources and less time to reproduce.  Reference duck = 0.5d. -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Meat</a>
+		<b>2</b>
+	  </i1>
+	  <i3>
+	    <a>Feathers</a>
+		<b>10</b>
+	  </i3>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>animal</i1>
+		<i1>hunt-animal</i1>
+		<i1>trap-animal</i1>
+		<i1>slaughter-animal</i1>
+		<i1>eats-plant-food</i1>
+		<i1>eats-misc-food</i1>
+		<i1>eats-animal-food</i1>
+		<i1>breathes-overwater</i1>
+		<i1>overwater-grazer</i1> <!-- indicates this animal has both "eats-plant-food" and "breathes-overwater" -->
+		<i1>no-distribution-spreadness-decay</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:livestock</i1>
+		<i1>use_noun:livestock</i1>
+		<i1>qual_low_adj:sickly</i1>
+		<i1>qual_low_adj:unhealthy</i1>
+		<i1>qual_high_adj:fat</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>property_adj:egglaying</i1>
+		<i1>degrade_noun:refuse</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Duck">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Livestock/Duck</full_path>
+	  <body_text>Duck.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSSID>Animal Icons</mSSID>
+	<mSpriteID>2</mSpriteID><!-- sprite for icon -->
+    <mResourceQualities>0x400</mResourceQualities> <!--enable manual breakdown-->
+	<mDecaySpeed>0.143</mDecaySpeed><!-- most animals or livestock will starve in 14 days; this means going from average quality to minimum in 7 days -->
+	<mDesolationFactor>1.0</mDesolationFactor> <!-- ducks are numerous and fly in from afar, making it hard to depopulate a local area by hunting or capturing them.  Reference duck = 1.0d -->
+	<mProductionSpeed>0.5</mProductionSpeed> <!-- for animals, this serves as a "size factor", impacting how many resources they need to consume (including the time/effort of pops looking after them) and how quickly they reproduce.  Higher values = less resources and less time to reproduce.  Reference duck = 0.5d. -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Meat</a>
+		<b>3</b>
+	  </i1>
+	  <i3>
+	    <a>Feathers</a>
+		<b>20</b>
+	  </i3>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>animal</i1>
+		<i1>hunt-animal</i1>
+		<i1>trap-animal</i1>
+		<i1>slaughter-animal</i1>
+		<i1>eats-plant-food</i1>
+		<i1>eats-misc-food</i1>
+		<i1>eats-animal-food</i1>
+		<i1>breathes-overwater</i1>
+		<i1>overwater-grazer</i1> <!-- indicates this animal has both "eats-plant-food" and "breathes-overwater" -->
+		<i1>no-distribution-spreadness-decay</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:livestock</i1>
+		<i1>use_noun:livestock</i1>
+		<i1>qual_low_adj:sickly</i1>
+		<i1>qual_low_adj:unhealthy</i1>
+		<i1>qual_high_adj:fat</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>property_adj:feathered</i1>
+		<i1>degrade_noun:refuse</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Sheep">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Livestock/Sheep</full_path>
+	  <body_text>Sheep.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSSID>Animal Icons</mSSID>
+	<mSpriteID>7</mSpriteID><!-- sprite for icon -->
+    <mResourceQualities>0x400</mResourceQualities> <!--enable manual breakdown-->
+	<mDecaySpeed>0.143</mDecaySpeed><!-- most animals or livestock will starve in 14 days; this means going from average quality to minimum in 7 days -->
+	<mDesolationFactor>4.0</mDesolationFactor> <!-- sheep often move in great herds but are not ubiquitous.  Reference duck = 1.0d -->
+	<mProductionSpeed>0.007</mProductionSpeed> <!-- for animals, this serves as a "size factor", impacting how many resources they need to consume (including the time/effort of pops looking after them) and how quickly they reproduce.  Higher values = less resources and less time to reproduce.  Reference duck = 0.5d. -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Meat</a>
+		<b>60</b>
+	  </i1>
+	  <i2>
+	    <a>Leather</a>
+		<b>30</b>
+	  </i2>
+	  <i3>
+	    <a>Wool</a>
+		<b>10</b>
+	  </i3>
+	  <i3>
+	    <a>Bone</a>
+		<b>30</b>
+	  </i3>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>animal</i1>
+		<i1>hunt-animal</i1>
+		<i1>trap-animal</i1>
+		<i1>slaughter-animal</i1>
+		<i1>eats-plant-food</i1>
+		<i1>eats-plant-food-only</i1>
+		<i1>breathes-overwater</i1>
+		<i1>overwater-grazer</i1> <!-- indicates this animal has both "eats-plant-food" and "breathes-overwater" -->
+		<i1>no-distribution-spreadness-decay</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:livestock</i1>
+		<i1>use_noun:livestock</i1>
+		<i1>qual_low_adj:sickly</i1>
+		<i1>qual_low_adj:unhealthy</i1>
+		<i1>qual_high_adj:fat</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>property_adj:wooly</i1>
+		<i1>degrade_noun:refuse</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Camel">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Livestock/Camel</full_path>
+	  <body_text>Camel.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSSID>Animal Icons</mSSID>
+	<mSpriteID>0</mSpriteID><!-- sprite for icon -->
+    <mResourceQualities>0x400</mResourceQualities> <!--enable manual breakdown-->
+	<mDecaySpeed>0.143</mDecaySpeed><!-- most animals or livestock will starve in 14 days; this means going from average quality to minimum in 7 days -->
+	<mDesolationFactor>8.0</mDesolationFactor> <!-- camel often move in herds but travel far and wide.  Reference duck = 1.0d -->
+	<mProductionSpeed>0.00077</mProductionSpeed> <!-- for animals, this serves as a "size factor", impacting how many resources they need to consume (including the time/effort of pops looking after them) and how quickly they reproduce.  Higher values = less resources and less time to reproduce.  Reference duck = 0.5d. -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Meat</a>
+		<b>320</b>
+	  </i1>
+	  <i3>
+	    <a>Leather</a>
+		<b>150</b>
+	  </i3>
+	  <i3>
+	    <a>Bone</a>
+		<b>125</b>
+	  </i3>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>animal</i1>
+		<i1>hunt-animal</i1>
+		<i1>trap-animal</i1>
+		<i1>slaughter-animal</i1>
+		<i1>eats-plant-food</i1>
+		<i1>eats-plant-food-only</i1>
+		<i1>breathes-overwater</i1>
+		<i1>overwater-grazer</i1> <!-- indicates this animal has both "eats-plant-food" and "breathes-overwater" -->
+		<i1>no-distribution-spreadness-decay</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:livestock</i1>
+		<i1>use_noun:livestock</i1>
+		<i1>qual_low_adj:sickly</i1>
+		<i1>qual_low_adj:unhealthy</i1>
+		<i1>qual_high_adj:fat</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>property_adj:hoofed</i1>
+		<i1>degrade_noun:refuse</i1>
+	</mTagList>
+  </igResource>
+  
+</core_data>

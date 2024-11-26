@@ -1,0 +1,1358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- only one of these should exist and its name should be "default" -->
+  <translatedstrings name="default">
+	<mLogFirstTimeStringDoesNotExist>1</mLogFirstTimeStringDoesNotExist>
+	<mMissingTranslationString>MISSING_TRANSLATION_STRING</mMissingTranslationString>
+	
+	<mTranslationStrings>
+	
+	<!-- common button labels: -->
+	<i1><a>back_button_text</a>
+	<b>Back</b></i1>
+	<i1><a>apply_button_text</a>
+	<b>Apply</b></i1>
+	
+	<!-- main menu buttons: -->
+	<i1><a>new_game_button_text</a>
+	<b>New Game</b></i1>
+	<i1><a>load_game_button_text</a>
+	<b>Load Game</b></i1>
+	<i1><a>options_button_text</a>
+	<b>Options</b></i1>
+	<i1><a>mods_button_text</a>
+	<b>Mods</b></i1>
+	<i1><a>encyclopedia_button_text</a>
+	<b>Mosaic Encyclopedia</b></i1>
+	<i1><a>credits_button_text</a>
+	<b>Credits</b></i1>
+	<i1><a>exit_button_text</a>
+	<b>Exit</b></i1>
+	
+	<!-- in game buttons: -->
+	<i1><a>city_button_text</a>
+	<b>City</b></i1>
+	<i1><a>info_button_text</a>
+	<b>Info</b></i1>
+	<i1><a>world_button_text</a>
+	<b>World</b></i1>
+	<i1><a>pause_button_text</a>
+	<b>Pause</b></i1>
+	
+	<!-- in game text: -->
+	<i1><a>nosave_confirm_text</a>
+	<b>Are you sure you want to exit?  Progress has not been saved.</b></i1>
+	<i1><a>gameloss_text</a>
+	<b>This community is lost to the ages.</b></i1>
+	<i1><a>calendar_formatted_date</a>
+	<b>Day [0] of [1][2], Year [3]</b></i1>
+	<i1><a>calendar_formatted_month0</a>
+	<b>Early-</b></i1>
+	<i1><a>calendar_formatted_month1</a>
+	<b>Mid-</b></i1>
+	<i1><a>calendar_formatted_month2</a>
+	<b>Late-</b></i1>
+	<i1><a>calendar_formatted_season0</a>
+	<b>Spring</b></i1>
+	<i1><a>calendar_formatted_season1</a>
+	<b>Summer</b></i1>
+	<i1><a>calendar_formatted_season2</a>
+	<b>Autumn</b></i1>
+	<i1><a>calendar_formatted_season3</a>
+	<b>Winter</b></i1>
+	
+	<!-- encyclopedia common text (actual entries are elsewhere) -->
+	<i1><a>encyclopedia_entry_blank_default_text</a>
+	<b>This category has [0] entries and sub-categories in total.  Select an entry or sub-category on the left menu.</b></i1>
+	<i1><a>encyclopediaview_related_description</a>
+	<b>This entry is related to another encyclopedia entry: [0].</b></i1>
+	
+	<!-- encyclopedia buttons -->
+	<i1><a>encyclopediaview_relatedgoto_name</a>
+	<b>View</b></i1>
+	
+	<!-- in game buttons -->
+	<i1><a>textEntry_cancel_name</a>
+	<b>Cancel</b></i1>
+	<i1><a>textEntry_confirm_name</a>
+	<b>Confirm</b></i1>
+	
+	<!-- info view names: -->
+	<i1><a>info_view_events_name</a>
+	<b>Events</b></i1>
+	<i1><a>info_view_cityoverview_name</a>
+	<b>City Overview</b></i1>
+	<i1><a>info_view_military_name</a>
+	<b>Military</b></i1>
+	<i1><a>info_view_diplomacyandtrade_name</a>
+	<b>Diplomacy</b></i1>
+	<i1><a>info_view_raceoverview_name</a>
+	<b>Race Overview</b></i1>
+	<i1><a>info_view_racehappiness_name</a>
+	<b>Race Happiness</b></i1>
+	<i1><a>info_view_racepermissions_name</a>
+	<b>Race Permissions</b></i1>
+	<i1><a>info_view_industries_name</a>
+	<b>Industries</b></i1>
+	<i1><a>info_view_resources_name</a>
+	<b>Resources</b></i1>
+	<i1><a>info_view_history_name</a>
+	<b>History</b></i1>
+	<i1><a>info_view_alerts_name</a>
+	<b>Alerts</b></i1>
+	
+	<!-- diplo view buttons: -->
+	<i1><a>show_delegations_label</a>
+	<b>Show Delegations</b></i1>
+	<i1><a>hide_delegations_label</a>
+	<b>Hide Delegations</b></i1>
+	<i1><a>send_delegation_label</a>
+	<b>Send Delegation</b></i1>
+	<i1><a>view_history_label</a>
+	<b>View History</b></i1>
+	<i1><a>rename_community_label</a>
+	<b>Rename</b></i1>
+	
+	<!-- in game action menu buttons -->
+	<i1><a>overlay_label</a>
+	<b>Overlay</b></i1>
+	<i1><a>military_label</a>
+	<b>Military</b></i1>
+	<i1><a>building_label</a>
+	<b>Building</b></i1>
+	<i1><a>overlay_resource_all_label</a>
+	<b>All</b></i1>
+	<i1><a>overlay_housing_all_label</a>
+	<b>All</b></i1>
+	<i1><a>overlay_industry_all_label</a>
+	<b>All</b></i1>
+	<i1><a>overlay_diplomacy_trade_label</a>
+	<b>Trade</b></i1>
+	<i1><a>overlay_diplomacy_hostdelegations_label</a>
+	<b>Host Delegations</b></i1>
+	<i1><a>overlay_diplomacy_wanderers_label</a>
+	<b>Wanderers</b></i1>
+	<i1><a>delete_building_button</a>
+	<b>Delete</b></i1>
+	
+	<i1><a>box_drag_all_label</a>
+	<b>Box Drag: All</b></i1>
+	<i1><a>box_drag_priority_label</a>
+	<b>Box Drag: Priority</b></i1>
+	<i1><a>stop_command_label</a>
+	<b>Stop</b></i1>
+	<i1><a>musterimmediate_command_label</a>
+	<b>Muster Now</b></i1>
+	<i1><a>movetomuster_command_label</a>
+	<b>Move To Muster</b></i1>
+	<i1><a>unmuster_command_label</a>
+	<b>Unmuster</b></i1>
+	<i1><a>race_filter_command_label</a>
+	<b>Select Only</b></i1>
+	<i1><a>race_rotator_all_label</a>
+	<b>All</b></i1>
+	<i1><a>skill_filter_command_label</a>
+	<b>Select Above</b></i1>
+	<i1><a>skill_filter_text</a>
+	<b>[0] Skill</b></i1>
+	<i1><a>equipment_filter_command_label</a>
+	<b>Select Above</b></i1>
+	<i1><a>equipment_filter_text</a>
+	<b>[0] Equipment</b></i1>
+	<i1><a>select_notfighting_command_label</a>
+	<b>Select Not Fighting</b></i1>
+	
+	<i1><a>selected_pops_total_description</a>
+	<b>[0] pops selected</b></i1>
+	<i1><a>selected_pops_each_description</a>
+	<b>[0] [1] [2]</b></i1> <!-- [number] [loyal/community] [race noun] -->
+	<i1><a>selected_pops_loyal_adj</a>
+	<b>loyal</b></i1>
+	<i1><a>selected_popswounded_description</a>
+	<b>[0] wounded</b></i1>
+	<i1><a>selected_popsdead_description</a>
+	<b>[0] dead</b></i1>
+	<i1><a>selected_popssoldierskill_description</a>
+	<b>Average Soldier Skill (Unhurt): [0]%</b></i1>
+	<i1><a>selected_popsequipment_description</a>
+	<b>Average Equipment Quality (Unhurt): [0]</b></i1>
+	
+	<i1><a>overlay_desolation_text</a>
+	<b>Desolation:</b></i1>
+	<i1><a>overlay_resource_text</a>
+	<b>Resource:</b></i1>
+	<i1><a>overlay_military_text</a>
+	<b>Military:</b></i1>
+	<i1><a>overlay_housing_text</a>
+	<b>Housing:</b></i1>
+	<i1><a>overlay_diplomacy_text</a>
+	<b>Diplomacy:</b></i1>
+	<i1><a>overlay_distribution_text</a>
+	<b>Distribution:</b></i1>
+	<i1><a>overlay_industry_text</a>
+	<b>Industry:</b></i1>
+	
+	<!-- options menu categories -->
+	<i1><a>options_menu_audio_label</a>
+	<b>Audio</b></i1>
+	<i1><a>options_menu_video_label</a>
+	<b>Video</b></i1>
+	<i1><a>options_menu_game_label</a>
+	<b>Game</b></i1>
+	<i1><a>options_menu_difficulty_label</a>
+	<b>Difficulty</b></i1>
+	<i1><a>options_menu_keyboard_label</a>
+	<b>Keyboard</b></i1>
+	
+	<!-- options menu autosave interval names -->
+	<i1><a>options_autosave_weekly_name</a>
+	<b>Weekly</b></i1>
+	<i1><a>options_autosave_monthly_name</a>
+	<b>Monthly</b></i1>
+	<i1><a>options_autosave_bimonthly_name</a>
+	<b>Bi-Monthly</b></i1>
+	<i1><a>options_autosave_seasonally_name</a>
+	<b>Seasonally</b></i1>
+	<i1><a>options_autosave_halfyearly_name</a>
+	<b>Half-Yearly</b></i1>
+	<i1><a>options_autosave_yearly_name</a>
+	<b>Yearly</b></i1>
+	<i1><a>options_autosave_never_name</a>
+	<b>Never</b></i1>
+	
+	<!-- options menu audio descriptions -->
+	<i1><a>options_audio_total_name</a>
+	<b>Total Volume</b></i1>
+	<i1><a>options_audio_music_name</a>
+	<b>Music Volume</b></i1>
+	<i1><a>options_audio_voice_name</a>
+	<b>Voice Volume</b></i1>
+	<i1><a>options_audio_effects_name</a>
+	<b>Effects Volume</b></i1>
+	<i1><a>options_audio_ambient_name</a>
+	<b>Ambient Volume</b></i1>
+	
+	<!-- options menu video descriptions -->
+	<i1><a>options_video_currentreso_text</a>
+	<b>Current Resolution: [0]x[1]</b></i1>
+	<i1><a>options_video_nextreso_text</a>
+	<b>Resolution on next game launch: [0]</b></i1>
+	<i1><a>options_video_fullscreen_text</a>
+	<b>Fullscreen:</b></i1>
+	
+	<!-- options menu difficulty descriptions -->
+	<i1><a>options_difficulty_toplabel_text</a>
+	<b>All settings in this menu can be changed at any time in-game.\nEvent Frequency Sliders:</b></i1>
+	<i1><a>options_difficulty_cityeventfrequency_text</a>
+	<b>City Event Frequency: [0]%</b></i1>
+	<i1><a>options_difficulty_traveleventfrequency_text</a>
+	<b>Travel Event Frequency: [0]%</b></i1>
+	<i1><a>options_difficulty_middlelabel_text</a>
+	<b>Difficulty Sliders:</b></i1>
+	<i1><a>options_difficulty_onlyingame_text</a>
+	<b>The difficulty menu is only available while playing.</b></i1>
+	<i1><a>options_militarytime_walkspeed_text</a>
+	<b>Military-time walkspeed multiplier: [0]%</b></i1>
+	
+	<!-- options menu option descriptions -->
+	<i1><a>options_autosave_off_name</a>
+	<b>Autosave: Off</b></i1>
+	<i1><a>options_autosave_on_name</a>
+	<b>Autosave: On</b></i1>
+	<i1><a>options_autosave_interval_name</a>
+	<b>Autosave Interval:</b></i1>
+	<i1><a>options_autosave_tokeep_name</a>
+	<b>Autosaves To Keep:</b></i1>
+	<i1><a>options_bindmouse_off_name</a>
+	<b>Bind Mouse To Window: Off</b></i1>
+	<i1><a>options_bindmouse_on_name</a>
+	<b>Bind Mouse To Window: On</b></i1>
+	<i1><a>options_mousespeed_text</a>
+	<b>Mouse Map-Scrolling Speed</b></i1>
+	<i1><a>options_buttonspeed_text</a>
+	<b>Button Map-Scrolling Speed</b></i1>
+	
+	<i1><a>options_alertsfadeon_text</a>
+	<b>Alerts Fade on Dismiss: On</b></i1>
+	<i1><a>options_alertsfadeoff_text</a>
+	<b>Alerts Fade on Dismiss: Off</b></i1>
+	<i1><a>options_alertskeep_text</a>
+	<b>Alerts to Keep:</b></i1>
+	<i1><a>options_alertsappeartime_text</a>
+	<b>Alerts Appear Time: [0] seconds</b></i1>
+	<i1><a>options_alertsfadetime_text</a>
+	<b>Alerts Fade Time: [0] seconds</b></i1>
+	<i1><a>options_alertsemptytime_text</a>
+	<b>Alerts Empty Time: [0] seconds</b></i1>
+	<i1><a>options_alertssimultaneousdelaytime_text</a>
+	<b>Alerts Simultaneous Delay Time: [0] seconds</b></i1>
+	
+	<!-- options menu command names -->
+	<i1><a>options_command_change_name</a>
+	<b>Change</b></i1>
+	<i1><a>options_command_none_name</a>
+	<b></b></i1>
+	<i1><a>options_command_scrolln_name</a>
+	<b>Scroll North</b></i1>
+	<i1><a>options_command_scrollw_name</a>
+	<b>Scroll West</b></i1>
+	<i1><a>options_command_scrolls_name</a>
+	<b>Scroll South</b></i1>
+	<i1><a>options_command_scrolle_name</a>
+	<b>Scroll East</b></i1>
+	<i1><a>options_command_dismiss_name</a>
+	<b>Dismiss</b></i1>
+	<i1><a>options_command_scrollup_name</a>
+	<b>Scroll/Zoom Up</b></i1>
+	<i1><a>options_command_scrolldown_name</a>
+	<b>Scroll/Zoom Down</b></i1>
+	<i1><a>options_command_nextview_name</a>
+	<b>Next View</b></i1>
+	<i1><a>options_command_cityview_name</a>
+	<b>City View</b></i1>
+	<i1><a>options_command_infoview_name</a>
+	<b>Info View</b></i1>
+	<i1><a>options_command_diploview_name</a>
+	<b>Diplo View</b></i1>
+	<i1><a>options_command_rotateoverlay_name</a>
+	<b>Rotate Overlay/View</b></i1>
+	<i1><a>options_command_pausemenu_name</a>
+	<b>Pause Menu</b></i1>
+	<i1><a>options_command_stoporcontinue_name</a>
+	<b>Stop/Start Time</b></i1>
+	<i1><a>options_command_ordermusteredpops_name</a>
+	<b>Order Mustered Pops</b></i1>
+	
+	<!-- mod menu buttons -->
+	<i1><a>modmenu_enable_label</a>
+	<b>Enable</b></i1>
+	<i1><a>modmenu_disable_label</a>
+	<b>Disable</b></i1>
+	<i1><a>modmenu_list_text</a>
+	<b>Mods Next Bootup:</b></i1>
+	
+	<!-- event view buttons -->
+	<i1><a>eventview_dismissreport_label</a>
+	<b>Dismiss Report.</b></i1>
+	<i1><a>eventview_fallbackoption_label</a>
+	<b>With no other options, I am forced to ignore this.</b></i1>
+	
+	<!-- event view tooltip text -->
+	<i1><a>eventview_tooltip_fallback_text</a>
+	<b>Remove this report from the Event View, taking no further action.</b></i1>
+	<i1><a>eventview_tooltip_nopredict_text</a>
+	<b>Our advisors cannot predict the outcome of this action.</b></i1>
+	
+	<!-- event view report count text -->
+	<i1><a>eventview_report_count_text</a>
+	<b>Report [0] of [1]\n[2]</b></i1> <!-- [2] = formatted date string -->
+	
+	<!-- city overview buttons: -->
+	<i1><a>cityoverview_refreshbutton_name</a>
+	<b>Refresh</b></i1>
+	
+	<!-- city overview text: -->
+	<i1><a>cityoverview_daysAndName_description</a>
+	<b>Our community, [1], was founded [0] days ago.</b></i1>
+	<i1><a>cityoverview_unhousedpops_description</a>
+	<b>There are [0] pops who need housing.</b></i1>
+	<i1><a>cityoverview_innerRaceCount_description</a>
+	<b>Our community is home to [1] [0].  The [0] suffer from [2] illnesses and [3] wounds, and carry [4] pregnancies.  [5] of these pregnant pops are too far along to work.</b></i1>
+	<i1><a>cityoverview_delegations_description</a>
+	<b>There are [0] delegations from our community traveling to other places.  [1] of our pops are in these delegations.</b></i1>
+	<i1><a>cityoverview_employment_description</a>
+	<b>[0] of our pops have been assigned workplaces, but [1] of our pops have not.</b></i1>
+	<i1><a>cityoverview_nonloyalpopsonmap_description</a>
+	<b>There are [0] pops in our territory who are not loyal to our community, as visitors or enemies.</b></i1>
+	<i1><a>cityoverview_happiness_nullrace_description</a>
+	<b>nobody</b></i1>
+	<i1><a>cityoverview_happiness_description</a>
+	<b>On average, pops in our community are [0]% as happy as they could be.  The unhappiest race are the [3], who are [2]% as happy as they could be.  The happiest race are the [4], who are [1]% as happy as they could be.</b></i1>
+	<i1><a>cityoverview_predictionstrength_description</a>
+	<b>Our wise pops estimate the consequences of our decisions at a strength of [0].</b></i1>
+	<i1><a>cityoverview_nullindustry_description</a>
+	<b>no industry</b></i1>
+	<i1><a>cityoverview_industry_description</a>
+	<b>On average, employed pops in our community have [0]% of total possible skill in their industries.  We are least skilled in [2], at [1]% of total possible skill.</b></i1>
+	<i1><a>cityoverview_nullleader_description</a>
+	<b>no one</b></i1>
+	<i1><a>cityoverview_leader_description</a>
+	<b>All pops in the community know your name is [0], City Leader.  [1] races of our community have chosen race leaders, and [2] have not.  [3] industries have leaders, while [4] do not.</b></i1>
+	<i1><a>cityoverview_buildings_description</a>
+	<b>There are [0] fully constructed buildings in our community, [1] of which are workplaces, [2] of which are housing, and [3] of which are mustering points.  We are constructing [4] buildings, [5] of which are workplaces, [6] of which are housing, and [7] of which are mustering points.</b></i1>
+	
+	<!-- resource view buttons: -->
+	<i1><a>resourceview_manualbreakdown_doit_name</a>
+	<b>Click to breakdown</b></i1>
+	<i1><a>resourceview_chartbutton_swappername_quality</a>
+	<b>Quality</b></i1>
+	<i1><a>resourceview_chartbutton_swappername_quantity</a>
+	<b>Quantity</b></i1>
+	<i1><a>resourceview_chartbutton_rotatorname_food</a>
+	<b>Food</b></i1>
+	<i1><a>resourceview_chartbutton_rotatorname_hstasis</a>
+	<b>HStasis</b></i1>
+	<i1><a>resourceview_chartbutton_rotatorname_illheal</a>
+	<b>IllHeal</b></i1>
+	<i1><a>resourceview_chartbutton_rotatorname_woundheal</a>
+	<b>WoundHeal</b></i1>
+	<i1><a>resourceview_chartbutton_rotatorname_drug</a>
+	<b>Drug</b></i1>
+	<i1><a>resourceview_chartbutton_rotatorname_milequip</a>
+	<b>MilEquip</b></i1>
+	<i1><a>resourceview_chartbutton_rotatorname_trade</a>
+	<b>Trade</b></i1>
+	<i1><a>resourceview_refreshbutton_name</a>
+	<b>Refresh</b></i1>
+	
+	<!-- resource view text: -->
+	<i1><a>resourceview_manualbreakdown_description</a>
+	<b>into the following resources: [0]</b></i1>
+	<i1><a>resourceview_yesterday_buildingconsumeandproduce_text</a>
+	<b>Yesterday, buildings in our community consumed the following resources, including goods consumed by housed pops: [0]\nBuildings also produced yesterday: [1]</b></i1>
+	<i1><a>resourceview_yesterday_popconsumeandproduce_text</a>
+	<b>Yesterday, pops in our community consumed the following resources: [0]\nPops also directly produced yesterday, outside of their workplaces: [1]</b></i1>
+	<i1><a>resourceview_todayestimate_buildingconsume_text</a>
+	<b>We estimate that workplaces operating today will consume: [0]</b></i1>
+	<i1><a>resourceview_todayestimate_buildingproduce_text</a>
+	<b>We estimate that workplaces operating today will produce: [0]</b></i1>
+	
+	<!-- military view buttons: -->
+	<i1><a>militaryview_musterallnow_doit_name</a>
+	<b>Click to muster</b></i1>
+	<i1><a>militaryview_syncallequip_doit_name</a>
+	<b>Click to equip</b></i1>
+	<i1><a>militaryview_unassignall_doit_name</a>
+	<b>Click to clear</b></i1>
+	<i1><a>militaryview_refreshbutton_name</a>
+	<b>Refresh</b></i1>
+	
+	<!-- military view text: -->
+	<i1><a>militaryview_estimatedstrength_description</a>
+	<b>Our community, and others, estimate our military strength is [0] out of [1].</b></i1>
+	<i1><a>militaryview_countsofgroups_description</a>
+	<b>On the local map, there are in total: [0] loyal pops of soldier skill [1]% with equipment of quality [2] on average, [3] neutral pops of soldier skill [4]% with equipment of quality [5] on average, and [6] enemies of soldier skill [7]% with equipment of quality [8] on average.</b></i1>
+	<i1><a>militaryview_hostilecommunities_description</a>
+	<b>We are treating any members of the following communities as hostile: [0].</b></i1>
+	<i1><a>militaryview_racelistelement_description</a>
+	<b>Of loyal [0] present in the community, [1] are wounded.  The [2] unwounded [0] have soldier skill [3]% and equipment of quality [4] on average.\n</b></i1>
+	<i1><a>militaryview_musterallnow_description</a>
+	<b>all non-wounded loyal pops on the local map, including those sheltering in buildings, immediately.</b></i1>
+	<i1><a>militaryview_musteringpointoverall_description</a>
+	<b>There are [0] mustering points in the community with [1] assigned pops total.\n</b></i1>
+	<i1><a>militaryview_musteringpointlistelement_description</a>
+	<b>Mustering point [0] has [1] assigned pops.  The current command is: [2].\n</b></i1>
+	<i1><a>militaryview_syncallequip_description</a>
+	<b>all loyal pops as their mustering points instruct, unequipping any pops that are not assigned a mustering point.  No effect if hostiles are on the map.</b></i1>
+	<i1><a>militaryview_unassignall_description</a>
+	<b>all assignments of loyal pops to mustering points.  Pops will no longer be employed if the mustering point is also a workplace.</b></i1>
+	<i1><a>militaryview_resourcelistelement_description</a>
+	<b>Our stockpile holds [0].  [1] of our community could increase their combat power by carrying this equipment.\n</b></i1>
+	
+	<!-- industry view buttons: -->
+	<i1><a>industryview_raceselectorall_name</a>
+	<b>All</b></i1>
+	<i1><a>industryview_refreshbutton_name</a>
+	<b>Refresh</b></i1>
+	<i1><a>industryview_resetbutton_name</a>
+	<b>Reset</b></i1>
+	<i1><a>industryview_industryrotatorall_name</a>
+	<b>All</b></i1>
+	<i1><a>industryview_unemployall_name</a>
+	<b>Click</b></i1>
+	<i1><a>industryview_unemployunproductive_name</a>
+	<b>Click</b></i1>
+	<i1><a>industryview_sickpopstoggle_name</a>
+	<b>Click</b></i1>
+	<i1><a>industryview_buildingkindhire_name</a>
+	<b>Click</b></i1>
+	<i1><a>industryview_buildingkindfire_name</a>
+	<b>Click</b></i1>
+	
+	<!-- industry view text: -->
+	<i1><a>industryview_raceselector_description</a>
+	<b>Viewing race:</b></i1>
+	<i1><a>industryview_industryrotator_description</a>
+	<b>is the industry currently being viewed.</b></i1>
+	<i1><a>industryview_unemployall_description</a>
+	<b>to fire all pops of the selected race working in the selected industry.</b></i1>
+	<i1><a>industryview_unemployunproductive_description</a>
+	<b>to fire pops of the selected race assigned to any workplace in the selected industry which is not operating.</b></i1>
+	<i1><a>industryview_sickpops_description</a>
+	<b>to [1] the [0] sick pops of the selected race to work in this industry.</b></i1>
+	<i1><a>industryview_allowsickpops_description</a>
+	<b>allow</b></i1>
+	<i1><a>industryview_disallowsickpops_description</a>
+	<b>disallow</b></i1>
+	<i1><a>industryview_buildingkindhire_description</a>
+	<b>to hire pops of the selected race in workplaces of this kind.</b></i1>
+	<i1><a>industryview_buildingkindfire_description</a>
+	<b>to fire pops of the selected race from workplaces of this kind.</b></i1>
+	<i1><a>industryview_qualquansetter_description</a>
+	<b>Manipulate this dial to set the quality dials of all workplaces of this kind.</b></i1>
+	<i1><a>industryview_allindustries_detailstext_description</a>
+	<b>There are [0] total workplaces in the city, and [1] total pops of the selected race working.</b></i1>
+	<i1><a>industryview_selectedindustry_detailstext_description</a>
+	<b>There are [0] workplaces of the selected industry in the city, and [1] pops of the selected race work in this industry.  The industry is led by [2], and the building being led is [3].</b></i1>
+	<i1><a>industryview_selectedindustry_detailstext_noleader_description</a>
+	<b>no one</b></i1>
+	<i1><a>industryview_selectedindustry_detailstext_leader_description</a>
+	<b>[0]</b></i1>
+	<i1><a>industryview_selectedindustry_detailstext_nobuildingled_description</a>
+	<b>nowhere</b></i1>
+	<i1><a>industryview_selectedindustry_detailstext_buildingled_description</a>
+	<b>[0]</b></i1>
+	<i1><a>industryview_buildingkind_description</a>
+	<b>In total, there are [3] [0] workplaces employing [1] workers of the selected race, and [2] more workers may be employed.</b></i1>
+	
+	<!-- diplomacy info view buttons -->
+	<i1><a>diplomacyview_refresh_name</a>
+	<b>Refresh</b></i1>
+	<i1><a>diplomacyview_showdelegations_name</a>
+	<b>Click</b></i1>
+	<i1><a>diplomacyview_showcommunities_name</a>
+	<b>Click</b></i1>
+	
+	<!-- diplomacy info view text -->
+	<i1><a>diplomacyview_localstrengths_description</a>
+	<b>Other communities estimate our local military strength as [0] of maximum possible, and our economic strength as [1] of maximum possible.</b></i1>
+	<i1><a>diplomacyview_showdelegations_description</a>
+	<b>to show/hide all delegations sent out by the local community.</b></i1>
+	<i1><a>diplomacyview_showcommunities_description</a>
+	<b>to show/hide all foreign communities known by the local community.</b></i1>
+	<i1><a>diplomacyview_foreignpopsonmap_innerlineitem_description</a>
+	<b>[1] from [0]</b></i1>
+	<i1><a>diplomacyview_foreignpopsonmap_outerlineitem_description</a>
+	<b>There are [1] [0] pops in the local community.  [2] of these pops do not belong to a delegation, and the rest are: [3].</b></i1>
+	
+	<!-- race happiness buttons -->
+	<i1><a>racehappinessview_details_label</a>
+	<b>Details</b></i1>
+	
+	<!-- race happiness text -->
+	<i1><a>racehappinessview_basehappiness_description_default</a>
+	<b>Pops of this race have an inborn shift in their attitudes.</b></i1>
+	<i1><a>racehappinessview_individualcombination_description_default</a>
+	<b>Pops of this race use their health, housing quality, and resources consumed to judge their standard of living.</b></i1>
+	<i1><a>racehappinessview_employment_description_default</a>
+	<b>Pops of this race may find it easier to work in certain industries than others, or enjoy not needing to work at all.</b></i1>
+	<i1><a>racehappinessview_kin_description_default</a>
+	<b>Pops of Mosaic Isle feel more comfortable among their own kind.</b></i1>
+	<i1><a>racehappinessview_mates_description_default</a>
+	<b>Pops of Mosaic Isle wish to be able to start a family, if they so choose.</b></i1>
+	<i1><a>racehappinessview_jealousy_description_default</a>
+	<b>Pops of this race do not want to be denied resources, housing, or consideration they think they deserve.</b></i1>
+	<i1><a>racehappinessview_industryleadercount_description_default</a>
+	<b>Pops of this race believe that the existence of Industry Leaders among their kind is a positive sign.</b></i1>
+	<i1><a>racehappinessview_illnessincommunity_description_default</a>
+	<b>Pops of this race worry about illnesses in the community, especially among their own kind.</b></i1>
+	
+	<!-- race overview menu -->
+	<i1><a>raceoverview_popcount_details_text</a>
+	<b>[0]: [1] pops, [2]% of total.</b></i1> <!-- [0] = collective noun -->
+	<i1><a>raceoverview_popcount_wounded_text</a>
+	<b>[0] wounded</b></i1>
+	<i1><a>raceoverview_popcount_ill_text</a>
+	<b>[0] ill</b></i1>
+	<i1><a>raceoverview_popcount_pregnant_text</a>
+	<b>[0] pregnant</b></i1>
+	<i1><a>raceoverview_leader_cityandrace_text</a>
+	<b>City and Race Leader [0]</b></i1>
+	<i1><a>raceoverview_leader_city_text</a>
+	<b>City Leader [0]</b></i1>
+	<i1><a>raceoverview_leader_race_text</a>
+	<b>Race Leader [0]</b></i1>
+	<i1><a>raceoverview_leader_industrycount_text</a>
+	<b>[0] Industry Leaders</b></i1>
+	<i1><a>raceoverview_leader_wounded_text</a>
+	<b>wounded</b></i1>
+	<i1><a>raceoverview_leader_ill_text</a>
+	<b>ill</b></i1>
+	<i1><a>raceoverview_happiness_text</a>
+	<b>Happiness [0]</b></i1>
+	<i1><a>raceoverview_skill_text</a>
+	<b>Military Skill [0]</b></i1>
+	<i1><a>raceoverview_equipment_text</a>
+	<b>Military Equipment: </b></i1>
+	<i1><a>raceoverview_refresh_name</a>
+	<b>Refresh</b></i1>
+	
+	<!-- race permissions buttons -->
+	<i1><a>racepermissionsview_raceeatrotator_name</a>
+	<b>Click</b></i1>
+	<i1><a>racepermissionsview_abilityeatrotator_name</a>
+	<b>Click</b></i1>
+	<i1><a>racepermissionsview_racehouserotator_name</a>
+	<b>Click</b></i1>
+	<i1><a>racepermissionsview_abilityhouserotator_name</a>
+	<b>Click</b></i1>
+	<i1><a>racepermissionsview_kickallpopsfromallhousing_name</a>
+	<b>Click</b></i1>
+	
+	<!-- race permissions text -->
+	<i1><a>racepermissionsview_raceeatrotator0_description</a>
+	<b>to rotate the racial order in which pops gather food to eat.  Current order is Equal.</b></i1>
+	<i1><a>racepermissionsview_raceeatrotator1_description</a>
+	<b>to rotate the racial order in which pops gather food to eat.  Current order is Most Populous Races First.</b></i1>
+	<i1><a>racepermissionsview_raceeatrotator2_description</a>
+	<b>to rotate the racial order in which pops gather food to eat.  Current order is Least Populous Races First.</b></i1>
+	<i1><a>racepermissionsview_raceeatrotator3_description</a>
+	<b>to rotate the racial order in which pops gather food to eat.  Current order is Manual, as per the below list.</b></i1>
+	<i1><a>racepermissionsview_racehouserotator0_description</a>
+	<b>to rotate the racial order in which pops are assigned housing.  Current order is Equal.</b></i1>
+	<i1><a>racepermissionsview_racehouserotator1_description</a>
+	<b>to rotate the racial order in which pops are assigned housing.  Current order is Most Populous Races First.</b></i1>
+	<i1><a>racepermissionsview_racehouserotator2_description</a>
+	<b>to rotate the racial order in which pops are assigned housing.  Current order is Least Populous Races First.</b></i1>
+	<i1><a>racepermissionsview_racehouserotator3_description</a>
+	<b>to rotate the racial order in which pops are assigned housing.  Current order is Manual, as per the below list.</b></i1>
+	<i1><a>racepermissionsview_abilityeatrotator0_description</a>
+	<b>to rotate the health-related order in which pops gather food to eat.  Current order is Equal.</b></i1>
+	<i1><a>racepermissionsview_abilityeatrotator1_description</a>
+	<b>to rotate the health-related order in which pops gather food to eat.  Current order is Incapable First.</b></i1>
+	<i1><a>racepermissionsview_abilityeatrotator2_description</a>
+	<b>to rotate the health-related order in which pops gather food to eat.  Current order is Healthy First.</b></i1>
+	<i1><a>racepermissionsview_abilityhouserotator0_description</a>
+	<b>to rotate the health-related order in which pops are assigned housing.  Current order is Equal.</b></i1>
+	<i1><a>racepermissionsview_abilityhouserotator1_description</a>
+	<b>to rotate the health-related order in which pops are assigned housing.  Current order is Incapable First.</b></i1>
+	<i1><a>racepermissionsview_abilityhouserotator2_description</a>
+	<b>to rotate the health-related order in which pops are assigned housing.  Current order is Healthy First.</b></i1>
+	<i1><a>racepermissionsview_kickallpopsfromallhousing_description</a>
+	<b>to kick all loyal pops from their housing, allowing them to seek new housing at midnight.</b></i1>
+	
+	<!-- history view buttons -->
+	<i1><a>historyview_togglehappenings_name</a>
+	<b>Click</b></i1>
+	<i1><a>historyview_viewlocalhistory_name</a>
+	<b>Click</b></i1>
+	<i1><a>historyview_rotateoutercategory_name</a>
+	<b>Click</b></i1>
+	<i1><a>historyview_rotateinnercategory_name</a>
+	<b>Click</b></i1>
+	<i1><a>historyview_rotatemo_name</a>
+	<b>Click</b></i1>
+	
+	<!-- history view text -->
+	<i1><a>historyview_togglehappenings_description</a>
+	<b>to toggle daily happenings display.</b></i1>
+	<i1><a>historyview_viewlocalhistory_description</a>
+	<b>to go to local community history log.</b></i1>
+	<i1><a>historyview_rotateoutercategory_description</a>
+	<b>to rotate outer category, current category is</b></i1>
+	<i1><a>historyview_outer_alivePopCounts_category__description</a>
+	<b>alive pop counts loyal to, or visiting, the community.</b></i1>
+	<i1><a>historyview_outer_industrySkill_category__description</a>
+	<b>industry skills of the community.</b></i1>
+	<i1><a>historyview_outer_delegationCount_kindInt_description</a>
+	<b>delegation count sent by the community.</b></i1>
+	<i1><a>historyview_outer_estimatedMilitaryStrength_description</a>
+	<b>estimated military strength of the community.</b></i1>
+	<i1><a>historyview_outer_estimatedEconomicStrength_description</a>
+	<b>estimated economic strength of the community.</b></i1>
+	<i1><a>historyview_outer_buildingCount_MOID_description</a>
+	<b>building count of the community.</b></i1>
+	<i1><a>historyview_outer_mapDesolation_category__description</a>
+	<b>land and water desolation of the community.</b></i1>
+	<i1><a>historyview_outer_raceHappiness_category__description</a>
+	<b>race happiness in the community.</b></i1>
+	<i1><a>historyview_outer_predictionStrength_description</a>
+	<b>prediction strength of the community.</b></i1>
+	<i1><a>historyview_rotateinnercategory_description</a>
+	<b>to rotate inner category, current inner category is</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_0_description</a>
+	<b>counts by race.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_1_description</a>
+	<b>only loyal employed pops.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_2_description</a>
+	<b>only loyal unemployed pops.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_3_description</a>
+	<b>only pops on the local map.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_4_description</a>
+	<b>only loyal pops in delegations.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_5_description</a>
+	<b>only loyal pops.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_6_description</a>
+	<b>only visiting pops.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_7_description</a>
+	<b>only sick pops.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_8_description</a>
+	<b>only wounded pops.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_9_description</a>
+	<b>only pops immobile due to pregnancy.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_10_description</a>
+	<b>only healthy pops.</b></i1>
+	<i1><a>historyview_inner_alivePopCounts_category_11_description</a>
+	<b>all pops loyal to the community or on the local map.</b></i1>
+	<i1><a>historyview_inner_industrySkill_category_0_description</a>
+	<b>leader skill.</b></i1>
+	<i1><a>historyview_inner_industrySkill_category_1_description</a>
+	<b>average community skill.</b></i1>
+	<i1><a>historyview_inner_delegationCount_kindInt0_description</a>
+	<b>all delegations.</b></i1>
+	<i1><a>historyview_inner_delegationCount_kindInt1_description</a>
+	<b>war delegations.</b></i1>
+	<i1><a>historyview_inner_delegationCount_kindInt2_description</a>
+	<b>raiding delegations.</b></i1>
+	<i1><a>historyview_inner_delegationCount_kindInt3_description</a>
+	<b>diplomacy delegations.</b></i1>
+	<i1><a>historyview_inner_delegationCount_kindInt4_description</a>
+	<b>trade delegations.</b></i1>
+	<i1><a>historyview_inner_delegationCount_kindInt5_description</a>
+	<b>emigration delegations.</b></i1>
+	<i1><a>historyview_inner_delegationCount_kindInt6_description</a>
+	<b>settlement delegations.</b></i1>
+	<i1><a>historyview_inner_mapDesolation_category_0_description</a>
+	<b>desolation of the whole map.</b></i1>
+	<i1><a>historyview_inner_mapDesolation_category_1_description</a>
+	<b>desolation of only regions of the map from which resources can be extracted.</b></i1>
+	<i1><a>historyview_inner_raceHappiness_category_0_description</a>
+	<b>average happiness of all loyal pops.</b></i1>
+	<i1><a>historyview_inner_raceHappiness_category_1_description</a>
+	<b>happiness by race.</b></i1>
+	<i1><a>historyview_rotatemo_description</a>
+	<b>to rotate moddable object specified; current object is [0].</b></i1>
+	
+	<!-- number display -->
+	<i1><a>thousands_character</a>
+	<b>K</b></i1>
+	<i1><a>millions_character</a>
+	<b>M</b></i1>
+	
+	<!-- pop display menu text -->
+	<i1><a>pop_display_menu_start_text</a>
+	<b>[0] [1] pop [2].  Born [3] years ago.</b></i1> <!-- [0] = race adj, [1] = sex adj, [2] = pop name.  [3] = years ago born (int with an offset added) -->
+	<i1><a>pop_display_menu_loyalty_text</a>
+	<b>[0] [1] of [2].</b></i1> <!-- [0] = title (see below), [1] = in delegation or empty string if not, [2] = community loyalty -->
+	<i1><a>pop_display_menu_titleCityLeader_text</a>
+	<b>City Leader</b></i1>
+	<i1><a>pop_display_menu_titleRaceLeader_text</a>
+	<b>Race Leader ([0])</b></i1> <!-- [0] = plural noun -->
+	<i1><a>pop_display_menu_titleIndustryLeader_text</a>
+	<b>Industry Leader ([0])</b></i1> <!-- [0] = industry name -->
+	<i1><a>pop_display_menu_titleNone_text</a>
+	<b>Citizen</b></i1>
+	<i1><a>pop_display_menu_indelegation_text</a>
+	<b>in delegation</b></i1>
+	<i1><a>pop_display_menu_nullcommunity_text</a>
+	<b>nowhere</b></i1>
+	<i1><a>pop_display_menu_noworkplace_text</a>
+	<b>No workplace.</b></i1>
+	<i1><a>pop_display_menu_workplace_text</a>
+	<b>Working at [0].</b></i1> <!-- [0] = building name -->
+	<i1><a>pop_display_menu_nohousing_text</a>
+	<b>Living rough.</b></i1>
+	<i1><a>pop_display_menu_housing_text</a>
+	<b>Living in [0].</b></i1> <!-- [0] = building name -->
+	<i1><a>pop_display_menu_nomusteringpoint_text</a>
+	<b>No mustering point.</b></i1>
+	<i1><a>pop_display_menu_musteringpoint_text</a>
+	<b>Will muster at [0].</b></i1> <!-- [0] = building name -->
+	<i1><a>pop_display_menu_allbuildings_text</a>
+	<b>[0]  [1]  [2]</b></i1> <!-- [0] = workplace text, [1] = housing text, [2] = mustering point text -->
+	<i1><a>pop_display_menu_health_text</a>
+	<b>[0] is [1].</b></i1> <!-- [0] = pop name, [1] = one of the healths below (wounded/ill/pregnant will be separated by commas) -->
+	<i1><a>pop_display_menu_dead_text</a>
+	<b>dead as of [0]</b></i1> <!-- [0] = date of death, formatted by calendar class -->
+	<i1><a>pop_display_menu_wounded_text</a>
+	<b>wounded</b></i1>
+	<i1><a>pop_display_menu_ill_text</a>
+	<b>ill</b></i1>
+	<i1><a>pop_display_menu_pregnantvisible_text</a>
+	<b>pregnant</b></i1>
+	<i1><a>pop_display_menu_pregnantimmobile_text</a>
+	<b>pregnant (unable to work)</b></i1>
+	<i1><a>pop_display_menu_healthy_text</a>
+	<b>healthy</b></i1>
+	<i1><a>pop_display_menu_healthyseparator_text</a>
+	<b>and</b></i1> <!-- a pop could be "wounded and ill and pregnant (unable to work)" -->
+	<i1><a>pop_display_menu_healthoverall_text</a>
+	<b>Health:</b></i1> <!-- this will be next to the overall health bar -->
+	<i1><a>pop_display_menu_healthmcal_text</a>
+	<b>MCal:</b></i1> <!-- this will be next to the mcal health bar -->
+	<i1><a>pop_display_menu_healthprotein_text</a>
+	<b>Protein:</b></i1> <!-- this will be next to the protein health bar -->
+	<i1><a>pop_display_menu_healthhstasis_text</a>
+	<b>HStasis:</b></i1> <!-- this will be next to the hstasis health bar -->
+	<i1><a>pop_display_menu_healthwater_text</a>
+	<b>Water:</b></i1> <!-- this will be next to the water health bar -->
+	<i1><a>pop_display_menu_soldierskill_text</a>
+	<b>Soldier Skill:</b></i1> <!-- this will be next to the soldier skill bar -->
+	<i1><a>pop_display_menu_equipmentlistelement_text</a> <!-- this is present for each mil equip that the pop holds -->
+	<b>[0] [1]</b></i1> <!-- [0] = resource name, [1] = quality of held -->
+	<i1><a>pop_display_menu_equipmentlistoverall_text</a>
+	<b>Held Equipment: [0]</b></i1> <!-- [0] = list of above -->
+	<i1><a>pop_display_menu_equipmentseparator_text</a>
+	<b>,</b></i1> <!-- a pop could hold "Weaponry +5.03, Armor -14.6" -->
+	
+	<!-- pop display menu buttons -->
+	<i1><a>pop_gotoworkplace_label</a>
+	<b>View Work</b></i1>
+	<i1><a>pop_gotohousing_label</a>
+	<b>View Home</b></i1>
+	<i1><a>pop_changename_name</a>
+	<b>Change Name</b></i1>
+	
+	<!-- pop sex adjectives -->
+	<i1><a>pop_sex_adjective_unisexnone</a>
+	<b></b></i1>
+	<i1><a>pop_sex_adjective_male</a>
+	<b>male</b></i1>
+	<i1><a>pop_sex_adjective_female</a>
+	<b>female</b></i1>
+	<i1><a>pop_sex_adjective_unisexboth</a>
+	<b></b></i1>
+	
+	<!-- community common text -->
+	<i1><a>community_econstrength_text</a>
+	<b>EconStrength: [0] of [1]</b></i1>
+	<i1><a>community_milstrength_text</a>
+	<b>MilStrength: [0] of [1]</b></i1>
+	<i1><a>community_mastercommunity_text</a>
+	<b>This community has a master community: [0]</b></i1>
+	<i1><a>community_servantcommunity_text</a>
+	<b>This community has a [0] servant communities: [1]</b></i1>
+	
+	<!-- building common text -->
+	<i1><a>building_destroyed_text</a>
+	<b>Destroyed.</b></i1>
+	<i1><a>building_underconstructiondefault_text</a>
+	<b>Under construction.</b></i1>
+	<i1><a>building_underconstructionspecific_text</a>
+	<b>Under construction.  Needs [0] more pop-days of construction work to complete.</b></i1>
+	<i1><a>building_equipmentcommand_label</a>
+	<b>Equipment Command:</b></i1>
+	<i1><a>building_nameandbuildtime_text</a>
+	<b>[0]   Built [1]</b></i1>
+	<i1><a>building_constructionmaterial_text</a>
+	<b>Construction Material: [0]</b></i1>
+	<i1><a>building_durability_text</a>
+	<b>Durability: [0] of [1]</b></i1>
+	<i1><a>building_markedfordestruction_text</a>
+	<b>Marked for destruction.</b></i1>
+	
+	<!-- building buttons -->
+	<i1><a>building_changename_name</a>
+	<b>Change Name</b></i1>
+	<i1><a>building_kickouthidingpops_label</a>
+	<b>Rouse Pops</b></i1>
+	<i1><a>building_decreaseworkerlimit_label</a>
+	<b>Decrease Limit</b></i1>
+	<i1><a>building_increaseworkerlimit_label</a>
+	<b>Increase Limit</b></i1>
+	
+	<!-- housing text -->
+	<i1><a>building_housing_quality_text</a>
+	<b>Housing Quality [0]</b></i1>
+	<i1><a>building_housing_servicesstart_text</a>
+	<b>Services:  [0]</b></i1>
+	<i1><a>building_housing_serviceseach_text</a>
+	<b>[0] provides service of quality [1]</b></i1>
+	<i1><a>building_housing_pops_text</a>
+	<b>Housing [0] pops of [1]</b></i1>
+	<i1><a>building_housing_popshealthy_text</a>
+	<b>[0] healthy</b></i1>
+	<i1><a>building_housing_popswounded_text</a>
+	<b>[0] wounded</b></i1>
+	<i1><a>building_housing_popsill_text</a>
+	<b>[0] ill</b></i1>
+	<i1><a>building_housing_popspregnant_text</a>
+	<b>[0] pregnant</b></i1>
+	<i1><a>building_housing_foreigners_text</a>
+	<b>[0] foreign pops from [1], [2]</b></i1> <!-- [0] = count, [1] = community, [2] = delegation -->
+	<i1><a>building_housing_foreignersnodelegation_text</a>
+	<b>no delegation</b></i1>
+	
+	<!-- mustering point text -->
+	<i1><a>mustering_point_soldierskill_text</a>
+	<b>Average Soldier Skill: [0]%</b></i1>
+	<i1><a>mustering_point_equipment_text</a>
+	<b>Average Equipment: [0]</b></i1>
+	<i1><a>mustering_point_workers_text</a>
+	<b>All assigned workers will use this building as a mustering point in battle.</b></i1>
+	<i1><a>mustering_point_nonworkers_text</a>
+	<b>All assigned pops are using this building as a mustering point.</b></i1>
+	<i1><a>mustering_point_popsassignedstart_text</a>
+	<b>Pops Assigned:</b></i1>
+	<i1><a>mustering_point_popsassignednone_text</a>
+	<b>None</b></i1>
+	<i1><a>mustering_point_popsassignedeachgroupsexadj_text</a>
+	<b>[0] [1] [2]</b></i1>
+	<i1><a>mustering_point_popsassignedeachgroupnosexadj_text</a>
+	<b>[0] [1]</b></i1>
+	
+	<!-- mustering point equipment command names -->
+	<i1><a>mustering_point_command_keep_name</a>
+	<b>Keep</b></i1>
+	<i1><a>mustering_point_command_remove_name</a>
+	<b>Remove</b></i1>
+	<i1><a>mustering_point_command_equip_name</a>
+	<b>Equip</b></i1>
+	<i1><a>mustering_point_command_best_name</a>
+	<b>Best</b></i1>
+	<i1><a>mustering_point_command_upgrade_name</a>
+	<b>Upgrade</b></i1>
+	
+	<!-- mustering point equipment command descriptions -->
+	<i1><a>mustering_point_command_keep_description</a>
+	<b>Pops will not change equipment.</b></i1>
+	<i1><a>mustering_point_command_remove_description</a>
+	<b>Pops will remove all equipment.</b></i1>
+	<i1><a>mustering_point_command_equip_description</a>
+	<b>Pops will fully equip from the resource pool, giving up held equipment.</b></i1>
+	<i1><a>mustering_point_command_best_description</a>
+	<b>Pops will equip the best quality equipment.</b></i1>
+	<i1><a>mustering_point_command_upgrade_description</a>
+	<b>Pops will upgrade held equipment if the resource pool has higher quality, but not equip anything new.</b></i1>
+	
+	<!-- workplace descriptions -->
+	<i1><a>workplace_worker_description</a>
+	<b>Workers: [0]\nTotal Worker Count is [1] of [2].</b></i1>
+	<i1><a>workplace_skill_description</a>
+	<b>Industry Skill: [0] of [1].</b></i1>
+	
+	<!-- workplace input/output descriptions -->
+	<i1><a>workplace_input_consume_description</a>
+	<b>This workplace will consume the following resources as inputs, directly contributing to production:[0].\nThis workplace will consume the following resources as a necessity of operation:[1].</b></i1>
+	<i1><a>workplace_input_consume_empty_description</a>
+	<b>Nothing</b></i1>
+	<i1><a>workplace_output_off_description</a>
+	<b>This workplace is off.</b></i1>
+	<i1><a>workplace_output_noworkers_description</a>
+	<b>This workplace has no workers.</b></i1>
+	<i1><a>workplace_output_noinputs_description</a>
+	<b>This workplace has no resource inputs.</b></i1>
+	<i1><a>workplace_output_directscriptfallback_description</a>
+	<b>This workplace will provide an effect of quality [0].</b></i1>
+	<i1><a>workplace_output_nolandresources_description</a>
+	<b>This workplace has no valid resource tiles in its radius.</b></i1>
+	<i1><a>workplace_output_landresources_description</a>
+	<b>This workplace will gather [0].</b></i1>
+	<i1><a>workplace_output_resource_description</a>
+	<b>This workplace will create [0].</b></i1>
+	<i1><a>workplace_output_resourcemany_description</a>
+	<b>resources of quality</b></i1>
+	<i1><a>workplace_output_service_description</a>
+	<b>This workplace will provide a service of quality [0].</b></i1>
+	<i1><a>workplace_output_resourcefallback_description</a>
+	<b>OUTPUT</b></i1>
+	<i1><a>workplace_output_resourceusingprepend_description</a>
+	<b>USING</b></i1>
+	<i1><a>workplace_output_resourcenotusingprepend_description</a>
+	<b>X</b></i1>
+	<i1><a>workplace_output_resourceunavailableprepend_description</a>
+	<b>UNAVAILABLE</b></i1>
+	
+	<!-- workplace input state names -->
+	<i1><a>workplace_state_off_text</a>
+	<b>This workplace is not operating.</b></i1>
+	<i1><a>workplace_state_on_text</a>
+	<b>This workplace is operational.</b></i1>
+	<i1><a>workplace_state_leaderdirected_name</a>
+	<b>Leader Present</b></i1>
+	<i1><a>workplace_state_leaderundirected_name</a>
+	<b>Undirected</b></i1>
+	
+	<!-- delegation type names -->
+	<i1><a>delegation_type_none_name</a>
+	<b>None</b></i1>
+	<i1><a>delegation_type_war_name</a>
+	<b>War</b></i1>
+	<i1><a>delegation_type_raiding_name</a>
+	<b>Raiding</b></i1>
+	<i1><a>delegation_type_diplomacy_name</a>
+	<b>Diplomacy</b></i1>
+	<i1><a>delegation_type_trade_name</a>
+	<b>Trade</b></i1>
+	<i1><a>delegation_type_emigration_name</a>
+	<b>Emigration</b></i1>
+	<i1><a>delegation_type_settlement_name</a>
+	<b>Settlement</b></i1>
+	
+	<!-- delegation naming scheme default -->
+	<i1><a>delegation_naming_scheme</a>
+	<b>[0] Delegation from [1] to [2]</b></i1>
+	
+	<!-- delegations start view buttons -->
+	<i1><a>delegationstartview_rename_name</a>
+	<b>Rename</b></i1>
+	<i1><a>delegationstartview_changetype_name</a>
+	<b>Change Type</b></i1>
+	<i1><a>delegationstartview_send_name</a>
+	<b>Send</b></i1>
+	
+	<!-- war delegation target names -->
+	<i1><a>war_delegation_target_people_name</a>
+	<b>People</b></i1>
+	<i1><a>war_delegation_target_resources_name</a>
+	<b>Resources</b></i1>
+	<i1><a>war_delegation_target_description_text</a>
+	<b>Attackers will target:</b></i1>
+	
+	<!-- war delegation option names -->
+	<i1><a>war_delegation_attack_name</a>
+	<b>Attack</b></i1>
+	<i1><a>war_delegation_waitoneday_name</a>
+	<b>Wait One Day</b></i1>
+	<i1><a>war_delegation_retreat_name</a>
+	<b>Retreat</b></i1>
+	<i1><a>war_delegation_continue_name</a>
+	<b>Continue</b></i1>
+	<i1><a>war_delegation_accept_name</a>
+	<b>Accept</b></i1>
+	
+	<!-- war delegation menu text -->
+	<i1><a>war_delegation_uppermenu_text</a>
+	<b>On Day [0] of the siege of [1], or thereabouts...</b></i1>
+	<i1><a>war_delegation_wounded_description</a>
+	<b>[0] delegation has [1] wounded.</b></i1>
+	<i1><a>war_delegation_healthy_description</a>
+	<b>[0] delegation has [1] healthy and ready to fight, with average military equipment of quality [2] and average soldier skill [3].</b></i1>
+	<i1><a>war_delegation_nofighters_description</a>
+	<b>[0] delegation has no healthy pops and must retreat.</b></i1>
+	<i1><a>war_delegation_prisoners_description</a>
+	<b>[0] delegation has [1] imprisoned.</b></i1>
+	<i1><a>war_delegation_enemywounded_description</a>
+	<b>Enemy community has [0] wounded.</b></i1>
+	<i1><a>war_delegation_enemyhealthy_description</a>
+	<b>Enemy community has [0] healthy to defend it.  The enemy community military strength, before the siege started, was [1].</b></i1>
+	<i1><a>war_delegation_enemynofighters_description</a>
+	<b>Enemy community has no healthy pops and is broken.</b></i1>
+	<i1><a>war_delegation_morale_description</a>
+	<b>Delegation morale is [0]%.  Enemy community morale is [1]%.</b></i1>
+	<i1><a>war_delegation_summary_description</a>
+	<b>The siege of [0] started on [1] and ended on [2].</b></i1>
+	<i1><a>war_delegation_summarytotaldestroy_description</a>
+	<b>The siege resulted in the total destruction of [0].</b></i1>
+	<i1><a>war_delegation_summarynoalive_description</a>
+	<b>There are no more pops present in [0], but pops loyal to this community remain elsewhere.</b></i1>
+	<i1><a>war_delegation_summaryattackersdead_description</a>
+	<b>The attackers were all killed in the siege.</b></i1>
+	<i1><a>war_delegation_summaryattackersbroken_description</a>
+	<b>The attackers were broken and forced to retreat.</b></i1>
+	<i1><a>war_delegation_summarydefendersbroken_description</a>
+	<b>The defenders were broken in spirit, but the attackers retreated nonetheless.</b></i1>
+	<i1><a>war_delegation_summaryattackersleft_description</a>
+	<b>The attackers chose to end the siege.</b></i1>
+	<i1><a>war_delegation_summarycountattackersdead_description</a>
+	<b>[0] dead from the war delegation remain on the territory of [1].</b></i1>
+	<i1><a>war_delegation_summarycountattackerschange_description</a>
+	<b>The delegation will leave the siege with [0] pops compared to when it arrived.</b></i1>
+	<i1><a>war_delegation_summarycountattackerswound_description</a>
+	<b>The delegation suffers from [0] wounds compared to when it arrived.</b></i1>
+	<i1><a>war_delegation_summarycountattackershealthy_description</a>
+	<b>The delegation can rely on [0] healthy pops compared to when it arrived.</b></i1>
+	<i1><a>war_delegation_summarycountattackersnochange_description</a>
+	<b>The delegation leaves without injuries or deaths.</b></i1>
+	<i1><a>war_delegation_justcamped_description</a>
+	<b>This delegation has just set up a siege camp near the community.</b></i1>
+	
+	<!-- diplomacy delegation option names -->
+	<i1><a>diplomacy_delegation_givegift_name</a>
+	<b>Give Gift</b></i1>
+	<i1><a>diplomacy_delegation_leave_name</a>
+	<b>Leave</b></i1>
+	<i1><a>diplomacy_delegation_accept_name</a>
+	<b>Accept</b></i1>
+	
+	<!-- diplomacy delegation target names -->
+	<i1><a>diplomacy_delegation_targetpopulace_name</a>
+	<b>Populace</b></i1>
+	<i1><a>diplomacy_delegation_targetrace_name</a>
+	<b>Race</b></i1>
+	<i1><a>diplomacy_delegation_targetleaders_name</a>
+	<b>Leaders</b></i1>
+	
+	<!-- diplomacy delegation menu text -->
+	<i1><a>diplomacy_delegation_uppermenu_text</a>
+	<b>The diplomats of the delegation decide if they want to give a gift, and if so, what gift and to whom...</b></i1>
+	<i1><a>diplomacy_delegation_instruction_text</a>
+	<b>Select resources to give as a gift.</b></i1>
+	<i1><a>diplomacy_delegation_gift_description</a>
+	<b>The diplomats return home after delivering their gift of resources.</b></i1>
+	<i1><a>diplomacy_delegation_leave_description</a>
+	<b>The diplomats return home, deciding not to gift any resources.</b></i1>
+	
+	<!-- trade delegation option names -->
+	<i1><a>trade_delegation_propose_name</a>
+	<b>Propose Trade</b></i1>
+	<i1><a>trade_delegation_leave_name</a>
+	<b>Leave</b></i1>
+	<i1><a>trade_delegation_accept_name</a>
+	<b>Accept</b></i1>
+	
+	<!-- trade delegation menu text -->
+	<i1><a>trade_delegation_uppermenu_text</a>
+	<b>The traders of the delegation decide how to shape their proposal...</b></i1>
+	<i1><a>trade_delegation_instruction_text</a>
+	<b>Change resources to propose a trade.</b></i1>
+	<i1><a>trade_delegation_success_description</a>
+	<b>The traders have successfully traded with the community!  They are now returning home.</b></i1>
+	<i1><a>trade_delegation_failure_description</a>
+	<b>The traders have worn out the patience of the target community, and are forced to leave without reaching a deal.</b></i1>
+	<i1><a>trade_delegation_leave_description</a>
+	<b>The traders return home, deciding not to make any more proposals.</b></i1>
+	<i1><a>trade_delegation_proposalsremaining_description</a>
+	<b>[0] proposals remaining.</b></i1>
+	
+	<!-- emigration delegation option names -->
+	<i1><a>emigration_delegation_join_name</a>
+	<b>Join Community</b></i1>
+	<i1><a>emigration_delegation_wander_name</a>
+	<b>Become Wanderers</b></i1>
+	<i1><a>emigration_delegation_return_name</a>
+	<b>Return Home</b></i1>
+	<i1><a>emigration_delegation_accept_name</a>
+	<b>Accept</b></i1>
+	
+	<!-- emigration delegation menu text -->
+	<i1><a>emigration_delegation_join_description</a>
+	<b>The migrants join the community, bringing the resources they carry and their hopes for the future.</b></i1>
+	<i1><a>emigration_delegation_wander_description</a>
+	<b>The migrants, faced with no other choice, start to wander the wilds.</b></i1>
+	<i1><a>emigration_delegation_return_description</a>
+	<b>The migrants return to the home community that attempted to cast them out.</b></i1>
+	<i1><a>emigration_delegation_uppermenu_text</a>
+	<b>The migrants plead their case to the local community and ask to join...</b></i1>
+	<i1><a>emigration_delegation_allow_text</a>
+	<b>[0] will allow these migrants to join their community.</b></i1>
+	<i1><a>emigration_delegation_reject_text</a>
+	<b>[0] has turned away the migrants!</b></i1>
+	<i1><a>emigration_delegation_delegation_text</a>
+	<b>Delegation consists of [0] pops holding: [1]</b></i1>
+	
+	<!-- delegation resolution common -->
+	<i1><a>delegation_common_uppermenu_text</a>
+	<b>On [0], or thereabouts...</b></i1>
+	<i1><a>delegation_common_eventlosssudden_text</a>
+	<b>An unpredictable event caused the loss of the remaining delegation members before they could respond.  Such is the world.</b></i1>
+	<i1><a>delegation_common_eventloss_text</a>
+	<b>All members of the delegation have been lost, to death or disloyalty.  The delegation will not return home.</b></i1>
+	<i1><a>delegation_common_eventlossaccept_label</a>
+	<b>Unfortunate.</b></i1>
+	<i1><a>delegation_common_newwounds_text</a>
+	<b>The delegation has suffered [0] new wounds.</b></i1>
+	<i1><a>delegation_common_newillnesses_text</a>
+	<b>The delegation has caught [0] new illnesses.</b></i1>
+	<i1><a>delegation_common_newdeaths_text</a>
+	<b>The delegation has lost [0] of its members.</b></i1>
+	<i1><a>delegation_common_newbirths_text</a>
+	<b>The delegation witnessed [0] births among its members.  [1] of the mothers died in childbirth, and [2] of the children were stillborn.</b></i1>
+	<i1><a>delegation_common_newproblemsaccept_label</a>
+	<b>The wilds are harsh.</b></i1>
+	<i1><a>delegation_common_returningnow_text</a>
+	<b>The delegation has survived its journey and has returned.</b></i1>
+	<i1><a>delegation_common_returninglater_text</a>
+	<b>The delegation has survived its journey and will return on [0].</b></i1>
+	<i1><a>delegation_common_returningaccept_label</a>
+	<b>Understood.</b></i1>
+	<i1><a>delegation_common_evtdismiss_label</a>
+	<b>Dismiss Report.</b></i1>
+	<i1><a>delegation_common_nooptions_label</a>
+	<b>With no other options, the delegation is forced to press on and ignore this.</b></i1>
+	<i1><a>delegation_common_predictionlow_label</a>
+	<b>Our advisors cannot predict the outcome of this action.</b></i1>
+	
+	<!-- delegation start summary view -->
+	<i1><a>delegation_start_summarystart_text</a>
+	<b>[0] Delegation to [1]</b></i1>
+	<i1><a>delegation_start_summarynoroute_text</a>
+	<b>but no possible route!</b></i1>
+	<i1><a>delegation_start_summaryroute_text</a>
+	<b>over [0].</b></i1>
+	<i1><a>delegation_start_summarysize_text</a>
+	<b>Size: [0] pops of overall military skill [1] and average equipment [2].</b></i1>
+	<i1><a>delegation_start_summaryreturndate_text</a>
+	<b>Expected to return on [0].</b></i1>
+	<i1><a>delegation_start_summaryunable_text</a>
+	<b>Cannot send delegation: [0].</b></i1>
+	<i1><a>delegation_start_summaryconsume_text</a>
+	<b>Resources assigned: [0]</b></i1>
+	<i1><a>delegation_nostart_calendartime_text</a>
+	<b>Calendar time is currently stopped until military or event resolution.</b></i1>
+	<i1><a>delegation_nostart_success_text</a>
+	<b>Able to send delegation.</b></i1>
+	
+	<!-- delegation start buttons -->
+	<i1><a>delegation_start_summary_label</a>
+	<b>Summary</b></i1>
+	<i1><a>delegation_start_pops_label</a>
+	<b>Pops</b></i1>
+	<i1><a>delegation_start_resources_label</a>
+	<b>Resources</b></i1>
+	
+	<!-- path types -->
+	<i1><a>path_type_water_only_description</a>
+	<b>water path</b></i1>
+	<i1><a>path_type_land_only_description</a>
+	<b>land path</b></i1>
+	<i1><a>path_type_mixed_description</a>
+	<b>mixed land/water path</b></i1>
+	
+	<!-- base happiness cause names -->
+	<i1><a>basehappy_shift_name</a>
+	<b>Inborn Attitude</b></i1>
+	<i1><a>basehappy_standard_of_living_name</a>
+	<b>Standard of Living</b></i1>
+	<i1><a>basehappy_employment_name</a>
+	<b>Employment</b></i1>
+	<i1><a>basehappy_kin_nearby_name</a>
+	<b>Kin Nearby</b></i1>
+	<i1><a>basehappy_access_to_mates_name</a>
+	<b>Access to Mates</b></i1>
+	<i1><a>basehappy_jealousy_name</a>
+	<b>Jealousy</b></i1>
+	<i1><a>basehappy_industry_leaders_name</a>
+	<b>Industry Leaders</b></i1>
+	<i1><a>basehappy_community_illnesses_name</a>
+	<b>Community Illnesses</b></i1>
+	
+	<!-- history cost/benefit descriptions -->
+	<i1><a>history_cost_0</a>
+	<b>not good</b></i1>
+	<i1><a>history_cost_1</a>
+	<b>bad</b></i1>
+	<i1><a>history_cost_2</a>
+	<b>terrible</b></i1>
+	<i1><a>history_cost_3</a>
+	<b>ruinous</b></i1>
+	<i1><a>history_benefit_0</a>
+	<b>not bad</b></i1>
+	<i1><a>history_benefit_1</a>
+	<b>good</b></i1>
+	<i1><a>history_benefit_2</a>
+	<b>excellent</b></i1>
+	<i1><a>history_benefit_3</a>
+	<b>incredible</b></i1>
+	<i1><a>history_occurrence_nocb</a>
+	<b>[0]: [1] [2] [3].  This was a [4] occurrence.</b></i1> <!-- same as below -->
+	<i1><a>history_occurrence_cb</a>
+	<b>[0]: [1] [2] [3].  This was a [4] occurrence, and [5] for [3].</b></i1> <!-- [0] = date, [1] = actor, [2] = action, [3] = target, [4] = major adjective, [5] = cost/benefit descriptions -->
+	
+	<!-- history actor descriptions -->
+	<i1><a>history_actor_world</a>
+	<b>The world</b></i1>
+	<i1><a>history_actor_pop</a>
+	<b>Pop [0]</b></i1> <!-- [0] = name -->
+	<i1><a>history_actor_pop_not_found</a>
+	<b>A forgotten pop</b></i1>
+	<i1><a>history_actor_player</a>
+	<b>Our local City Leader</b></i1>
+	<i1><a>history_actor_community</a>
+	<b>Community [0]</b></i1> <!-- [0] = name -->
+	<i1><a>history_actor_community_not_found</a>
+	<b>A forgotten community</b></i1>
+	<i1><a>history_actor_race</a>
+	<b>The [0]</b></i1> <!-- [0] = collective noun -->
+	<i1><a>history_actor_race_not_found</a> <!-- shouldn't happen, just backup -->
+	<b>A forgotten group</b></i1>
+	<i1><a>history_actor_nothing_found</a>
+	<b>Something forgotten</b></i1>
+	
+	<!-- history target descriptions -->
+	<i1><a>history_target_world</a>
+	<b>the world</b></i1>
+	<i1><a>history_target_pop</a>
+	<b>pop [0]</b></i1> <!-- [0] = name -->
+	<i1><a>history_target_pop_not_found</a>
+	<b>a forgotten pop</b></i1>
+	<i1><a>history_target_player</a>
+	<b>our local City Leader</b></i1>
+	<i1><a>history_target_community</a>
+	<b>community [0]</b></i1> <!-- [0] = name -->
+	<i1><a>history_target_community_not_found</a>
+	<b>a forgotten community</b></i1>
+	<i1><a>history_target_race</a>
+	<b>the [0]</b></i1> <!-- [0] = collective noun -->
+	<i1><a>history_target_race_not_found</a> <!-- shouldn't happen, just backup -->
+	<b>a forgotten group</b></i1>
+	<i1><a>history_target_nothing_found</a>
+	<b>Something forgotten</b></i1>
+	<i1><a>history_target_delegation</a>
+	<b>delegation from community [0]</b></i1> <!-- [0] = name -->
+	<i1><a>history_target_delegation_not_found</a>
+	<b>delegation from a forgotten community</b></i1>
+	<i1><a>history_target_map</a>
+	<b>land of community [0]</b></i1> <!-- [0] = name -->
+	<i1><a>history_target_map_not_found</a>
+	<b>land of a forgotten community</b></i1>
+	<i1><a>history_target_building</a>
+	<b>building [0]</b></i1> <!-- [0] = name -->
+	<i1><a>history_target_building_not_found</a>
+	<b>a forgotten building</b></i1>
+	<i1><a>history_target_resource</a>
+	<b>[0]</b></i1> <!-- [0] = name -->
+	<i1><a>history_target_resource_not_found</a>
+	<b>a forgotten resource</b></i1> <!-- shouldn't happen, just backup -->
+	
+	<!-- pop selector -->
+	<i1><a>pop_selector_race_filter_label</a>
+	<b>Race Filter:</b></i1>
+	<i1><a>pop_selector_mil_filter_label</a>
+	<b>Military Filter:</b></i1>
+	<i1><a>pop_selector_sex_filter_label</a>
+	<b>Sex Filter:</b></i1>
+	<i1><a>pop_selector_race_all_filter_label</a>
+	<b>All</b></i1>
+	<i1><a>pop_selector_sex_all_filter_label</a>
+	<b>All</b></i1>
+	<i1><a>pop_selector_no_pops_description</a>
+	<b>No eligible pops match the current filters.</b></i1>
+	
+	<i1><a>pop_selector_mil_filter_none</a>
+	<b>None</b></i1>
+	<i1><a>pop_selector_mil_filter_hiskill</a>
+	<b>High Skill</b></i1>
+	<i1><a>pop_selector_mil_filter_loskill</a>
+	<b>Low Skill</b></i1>
+	<i1><a>pop_selector_mil_filter_goodequip</a>
+	<b>Good Equipment</b></i1>
+	<i1><a>pop_selector_mil_filter_badequip</a>
+	<b>Bad Equipment</b></i1>
+	
+	<i1><a>pop_selector_sex_filter_asexual</a>
+	<b>Asexual</b></i1>
+	<i1><a>pop_selector_sex_filter_male</a>
+	<b>Male</b></i1>
+	<i1><a>pop_selector_sex_filter_female</a>
+	<b>Female</b></i1>
+	<i1><a>pop_selector_sex_filter_hermaphroditic</a>
+	<b>Hermaphroditic</b></i1>
+	
+	<i1><a>pop_selector_add_label</a>
+	<b>Add</b></i1>
+	<i1><a>pop_selector_remove_label</a>
+	<b>Remove</b></i1>
+	
+	<!-- event fallbacks -->
+	<i1><a>event_fallback_reso_text</a>
+	<b>We will simply ignore this happenstance, and that will be that.</b></i1>
+	
+	<!-- building menu fallbacks -->
+	<i1><a>building_fallback_production_none</a>
+	<b>This building will produce nothing.</b></i1>
+	
+	</mTranslationStrings>
+	
+	<!-- additional encyclopedia entries (besides those related directly to other MOs) are declared here.  The title is first, then the text. -->
+	<!-- note that for these entries, unlike most moddable fields, the capitalization of the title does matter in uniquely identifying it; so if a modder doesn't overwrite something correctly then both (for example) "Game Concepts: Combat" and "Game Concepts: COMBAT" may appear as different encyclopedia entries -->
+	<mEncyclopediaEntriesAdditional>
+	<i1>
+	<full_path>Lore/The Lady</full_path>
+	<body_text>The Lady, as she is called, is an entity that inhabits Mosaic Isle.  She has lived on the Isle, and looked after its denizens, since a time before record.  If the Lady has a true name or form, no one knows it.  She often appears before the Isle's denizens, offering them aid or coercing them, to pursue her own objectives.
+
+Monuments and offerings to the Lady increase the probability that she will visit, but she may appear as a Wanderer at any time.  She is often called "The Lady of Leaves" because of her method of travel: where leaves swirl amidst a still wind, the Lady is sure to appear.
+  
+The Lady's Garden, an otherwordly domain that few have seen, lies nestled in the Lady's Forest along the Desert Wall Mountains.  It is rumored the Lady will invite guests, but this is rare.  Children born on the Isle are taken to live their childhood in the Lady's Garden, protecting them from the stress and dangers of Isle life.  They are returned grown, on the same day they left, with only vague memories.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	</related_entries_full_paths>
+	</i1>
+	
+	</mEncyclopediaEntriesAdditional>
+  
+  </translatedstrings>
+</core_data>

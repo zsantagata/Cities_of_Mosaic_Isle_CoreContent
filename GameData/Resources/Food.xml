@@ -1,0 +1,472 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igResource name="Beans">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Beans</full_path>
+	  <body_text>Beans.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x104</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.01</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>5</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>-0.75</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>soil-growable</i1>
+		<i1>flammable</i1>
+		<i1>food</i1>
+		<i1>plant-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_adj:staple</i1>
+		<i1>use_noun:staple</i1>
+		<i1>use_noun:protein</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:shriveled</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>property_adj:dry</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Cheese">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Cheese</full_path>
+	  <body_text>Cheese.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x80</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>-0.0006125</mDecaySpeed> <!-- cheese improves over time, but is more vulnerable to rot than (for example) alcohol -->
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>7</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>food</i1>
+		<i1>animal-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_adj:preserved</i1>
+		<i1>use_noun:preserve</i1>
+		<i1>use_noun:protein</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_low_adj:maggoty</i1>
+		<i1>qual_high_adj:aged</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>qual_high_adj:delicious</i1>
+		<i1>property_adj:creamy</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Corn">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Corn</full_path>
+	  <body_text>Corn.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x1</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.01</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>10</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>2.0</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>soil-growable</i1>
+		<i1>flammable</i1>
+		<i1>food</i1>
+		<i1>plant-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_adj:staple</i1>
+		<i1>use_noun:grain</i1>
+		<i1>use_noun:staple</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:juicy</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>qual_high_adj:crunchy</i1>
+		<i1>property_adj:multicolored</i1>
+		<i1>property_adj:yellow</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Eggs">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Eggs</full_path>
+	  <body_text>Eggs.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x200</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.05</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>13</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>food</i1>
+		<i1>animal-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_noun:protein</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:broken</i1>
+		<i1>qual_low_adj:cracked</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>qual_high_adj:large</i1>
+		<i1>property_adj:round</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Fish">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Fish</full_path>
+	  <body_text>Fish.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x2c0</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.2</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>16</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>food</i1>
+		<i1>animal-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_adj:staple</i1>
+		<i1>use_noun:staple</i1>
+		<i1>use_noun:protein</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:slimy</i1>
+		<i1>qual_low_adj:stinking</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>qual_high_adj:large</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>property_adj:scaled</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Fruits">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Fruits</full_path>
+	  <body_text>Fruits.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x0</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.075</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>17</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>0.2</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Alcohol</a>
+		<b>0.035</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>soil-growable</i1>
+		<i1>food</i1>
+		<i1>plant-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_adj:staple</i1>
+		<i1>use_noun:fruit</i1>
+		<i1>use_noun:staple</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:juicy</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>qual_high_adj:sweet</i1>
+		<i1>property_adj:colorful</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Meat">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Meat</full_path>
+	  <body_text>Meat.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x1c0</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.2</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>30</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>food</i1>
+		<i1>animal-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_adj:staple</i1>
+		<i1>use_noun:staple</i1>
+		<i1>use_noun:protein</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:slimy</i1>
+		<i1>qual_low_adj:stinking</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>qual_high_adj:large</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>property_adj:bloody</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Milk">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Milk</full_path>
+	  <body_text>Milk.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x100</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.2</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>32</mSpriteID><!-- sprite for icon -->
+	<mBreakdownResources>
+	  <i1>
+	    <a>Cheese</a>
+		<b>0.01</b>
+	  </i1>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>food</i1>
+		<i1>animal-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_noun:protein</i1>
+		<i1>qual_low_adj:soured</i1>
+		<i1>qual_low_adj:smelly</i1>
+		<i1>qual_low_adj:yellowed</i1>
+		<i1>qual_low_adj:spoiled</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>qual_high_adj:rich</i1>
+		<i1>property_adj:liquid</i1>
+		<i1>degrade_noun:spoilage</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Oil">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Oil</full_path>
+	  <body_text>Oil.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food,-->
+	<mProteinRatio>0x0</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.0006125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>37</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>flammable</i1>
+		<i1>food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_noun:ingredient</i1>
+		<i1>qual_low_adj:rancid</i1>
+		<i1>qual_high_adj:aromatic</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>property_adj:liquid</i1>
+		<i1>degrade_noun:spoilage</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Olives">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Olives</full_path>
+	  <body_text>Olives.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x18</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.025</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>38</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>0.325</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>soil-growable</i1>
+		<i1>food</i1>
+		<i1>plant-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_noun:fruit</i1>
+		<i1>use_noun:ingredient</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:oily</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>qual_high_adj:earthy</i1>
+		<i1>property_adj:pitted</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Seaweed">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Seaweed</full_path>
+	  <body_text>Seaweed.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x0</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.02</mDecaySpeed> <!-- decay is slower than expected because fermented seaweed is edible -->
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>41</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>0.0</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>fibrous</i1>
+		<i1>soil-growable</i1>
+		<i1>food</i1>
+		<i1>plant-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_adj:staple</i1>
+		<i1>use_noun:staple</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:wormy</i1>
+		<i1>qual_low_adj:stinking</i1>
+		<i1>qual_high_adj:chewy</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>property_adj:multicolored</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Vegetables">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Vegetables</full_path>
+	  <body_text>Vegetables.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x2</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.01</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>48</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>0.6</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>soil-growable</i1>
+		<i1>food</i1>
+		<i1>plant-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_adj:staple</i1>
+		<i1>use_noun:staple</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>qual_high_adj:crunchy</i1>
+		<i1>property_adj:multicolored</i1>
+		<i1>property_adj:green</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Wheat">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Food/Wheat</full_path>
+	  <body_text>Wheat.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x1</mResourceQualities><!--food-->
+	<mProteinRatio>0x5</mProteinRatio><!-- max value is 0xFFFF -->
+	<mDecaySpeed>0.01</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>50</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>1.0</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>soil-growable</i1>
+		<i1>flammable</i1>
+		<i1>food</i1>
+		<i1>plant-food</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:edible</i1>
+		<i1>use_adj:staple</i1>
+		<i1>use_noun:grain</i1>
+		<i1>use_noun:staple</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>property_adj:amber</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+</core_data>

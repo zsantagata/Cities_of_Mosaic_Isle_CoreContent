@@ -1,0 +1,346 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+		<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script fetchpopsfromforeigncommunity</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which fetches existing not-dead pops from a foreign community given a list of inputs -->
+  <!-- if the pops to satisfy input conditions do not exist, they can be reified (i.e. created) using the reifyPopsFromForeignCommunity script if inReifyPopsIfDoNotExist is true, and if the community is a normal community -->
+  <!-- this script WILL NOT change the total count of pops in the foreign community; therefore the total list of pops returned might be fewer pops than requested -->
+  <!-- this script WILL NOT modify anything other than reifying pops if necessary.  Callers will need to change this if they care. -->
+  <!-- if a caller wants a specific mix of races, sexes, or other conditions, they should call this script multiple times with different arguments. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFCommunity inForeignCommunity //this must not be null, must not be the local community, and must have a foreign component, but otherwise no restrictions
+	Int64 inTotalPopsRequested,
+	IFRace inOnlyOfRace, //if null, will be ignored
+	IFPop.ePopSex inOnlyOfSex //if unisex none/unisex both or the race does not have both male and female, will be ignored
+	
+	bool inOnlyWounded,
+	bool inOnlyNonWounded,
+	bool inOnlyIll,
+	bool inOnlyNonIll,
+	bool inOnlyPregnant,
+	bool inOnlyNonPregnant,
+	bool inOnlyPregnantImmobile,
+	bool inOnlyNonPregnantImmobile,
+	
+	bool inPreferHighHealth,
+	bool inPreferLowHealth,
+	bool inPreferHighSoldierSkill,
+	bool inPreferLowSoldierSkill,
+	bool inPreferHighEquipmentQuality,
+	bool inPreferLowEquipmentQuality,
+	
+	bool inOnlyPopsAtHome, //not in a delegation or in any other place than cInForeignCommunity
+	bool inReifyPopsIfDoNotExist
+	
+	The output is a List of IFPop generated -->
+	<!-- this script is useful to events which want pops from a foreign community.  It is a common enough thing (just like "generate wanderers/generate generic enemies") that it should have its own dedicated script. -->
+	<!-- comment on inputs: pop count fetched is equal to (or less than, if there is a problem) inTotalPopsRequested (min 1).  Pops will be chosen with a specific priority based on the inPrefer* inputs.
+		The inOnly* inputs will fully ignore pops that do not match their requirements if they are true.  (If false, they have no effect).
+		The inPrefer* inputs will weight pops by their qualities and choose the ones most preferred if they are true.  If opposite inPrefer* are true, they are both made false.  If non-correlating inPrefer* (such as inPreferHighHealth and inPreferHighSoldierSkill) are both true, they will be equally weighted (based on their relative positions on their full ranges).		
+	-->
+	<i1><a>fetchPopsFromForeignCommunity</a>
+	<b>
+			//input count and type check:
+			var customScripts = getAPI().getCustomScripts();
+			if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+				{   typeof(IFCommunity), typeof(Int64), typeof(IFRace), typeof(IFPop.ePopSex),
+					typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool),
+					typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool), typeof(bool),
+					typeof(bool), typeof(bool)}
+			  }, out _))
+			{
+				throw new ArgumentException("fetchPopsFromForeignCommunity custom script received invalid arguments");
+				return null;
+			}
+			
+			IFCommunity inForeignCommunity = (IFCommunity)inArguments[0];
+			Int64 inTotalPopsRequested = (Int64)inArguments[1];
+			IFRace inOnlyOfRace = (IFRace)inArguments[2];
+			IFPop.ePopSex inOnlyOfSex = (IFPop.ePopSex)inArguments[3];
+			
+			bool inOnlyWounded = (bool)inArguments[4];
+			bool inOnlyNonWounded = (bool)inArguments[5];
+			bool inOnlyIll = (bool)inArguments[6];
+			bool inOnlyNonIll = (bool)inArguments[7];
+			bool inOnlyPregnant = (bool)inArguments[8];
+			bool inOnlyNonPregnant = (bool)inArguments[9];
+			bool inOnlyPregnantImmobile = (bool)inArguments[10];
+			bool inOnlyNonPregnantImmobile = (bool)inArguments[11];
+			
+			bool inPreferHighHealth = (bool)inArguments[12];
+			bool inPreferLowHealth = (bool)inArguments[13];
+			bool inPreferHighSoldierSkill = (bool)inArguments[14];
+			bool inPreferLowSoldierSkill = (bool)inArguments[15];
+			bool inPreferHighEquipmentQuality = (bool)inArguments[16];
+			bool inPreferLowEquipmentQuality = (bool)inArguments[17];
+			
+			bool inOnlyPopsAtHome = (bool)inArguments[18];
+			bool inReifyPopsIfDoNotExist = (bool)inArguments[19];
+			
+			//further input checking:
+			if(inForeignCommunity == null)
+			{
+				throw new ArgumentException("fetchPopsFromForeignCommunity custom script received invalid arguments: inForeignCommunity cannot be null");
+				return null;
+			}
+			if(inForeignCommunity == getAPI().getLocalCommunity())
+			{
+				throw new ArgumentException("fetchPopsFromForeignCommunity custom script received invalid arguments: inForeignCommunity cannot be the local community");
+				return null;
+			}
+			
+		    var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			
+			List&lt;IFPop&gt; listPopsGathered = new List&lt;IFPop&gt;(); //pops gathered will be collected here
+			
+			addDebugMessage(inScriptInstance, "attempting to fetch " + inTotalPopsRequested + " pops from foreign community " + inForeignCommunity.getDebugName() + ", filters: " + 
+				" inOnlyOfRace=" + (inOnlyOfRace == null ? "any" : inOnlyOfRace.getDebugName()) +
+				" inOnlyOfSex=" + (inOnlyOfSex.ToString()) +
+				" inOnlyWounded=" + (inOnlyWounded) +
+				" inOnlyNonWounded=" + (inOnlyNonWounded) +
+				" inOnlyIll=" + (inOnlyIll) +
+				" inOnlyNonIll=" + (inOnlyNonIll) +
+				" inOnlyPregnant=" + (inOnlyPregnant) +
+				" inOnlyNonPregnant=" + (inOnlyNonPregnant) +
+				" inOnlyPregnantImmobile=" + (inOnlyPregnantImmobile) +
+				" inOnlyNonPregnantImmobile=" + (inOnlyNonPregnantImmobile) +
+				" inPreferHighHealth=" + (inPreferHighHealth) +
+				" inPreferLowHealth=" + (inPreferLowHealth) +
+				" inPreferHighSoldierSkill=" + (inPreferHighSoldierSkill) +
+				" inPreferLowSoldierSkill=" + (inPreferLowSoldierSkill) +
+				" inPreferHighEquipmentQuality=" + (inPreferHighEquipmentQuality) +
+				" inPreferLowEquipmentQuality=" + (inPreferLowEquipmentQuality) +
+				" inOnlyPopsAtHome=" + (inOnlyPopsAtHome) +
+				".  " + (inReifyPopsIfDoNotExist ? "Will reify undeclared pops" : "Will only look for existing declared pops"));
+			
+			//handle race first, then apply all filters:
+			ReadOnlyCollection&lt;IFPop&gt; allPopsLoyalToCommunity = inForeignCommunity.getPopsLoyalToCommunity(true, false);
+			ReadOnlyDictionary&lt;IFRace, ReadOnlyCollection&lt;IFPop&gt;&gt; listOfPopsByRace = inForeignCommunity.getLoyalPopsByRace(true, false);
+			ReadOnlyCollection&lt;IFPop&gt; declaredPopsToUse;
+			bool raceUnisex = true;
+			if(inOnlyOfRace == null)
+			{
+				declaredPopsToUse = allPopsLoyalToCommunity;
+			}
+			else
+			{
+				raceUnisex = inOnlyOfRace.isUnisex();
+				if(listOfPopsByRace.ContainsKey(inOnlyOfRace))
+				{
+					declaredPopsToUse = listOfPopsByRace[inOnlyOfRace];
+				}
+				else
+				{
+					declaredPopsToUse = (new List&lt;IFPop&gt;()).AsReadOnly();
+				}
+			}
+			bool useSexFilter = !raceUnisex &amp;&amp; ((inOnlyOfSex == IFPop.ePopSex.cMale) || (inOnlyOfSex == IFPop.ePopSex.cFemale));
+			
+			List&lt;IFPop&gt; allPopsAfterFilters = new List&lt;IFPop&gt;(); //this is un-sorted
+			for(int i = 0; i &lt; declaredPopsToUse.Count; i++)
+			{
+				IFPop toFilter = declaredPopsToUse[i];
+				if(toFilter.isDead())
+					continue;
+				
+				if(useSexFilter &amp;&amp; (toFilter.getSex() != inOnlyOfSex))
+					continue;
+				if(inOnlyWounded &amp;&amp; (!toFilter.isWounded()))
+					continue;
+				if(inOnlyNonWounded &amp;&amp; (toFilter.isWounded()))
+					continue;
+				if(inOnlyIll &amp;&amp; (!toFilter.isIll()))
+					continue;
+				if(inOnlyNonIll &amp;&amp; (toFilter.isIll()))
+					continue;
+				if(inOnlyPregnant &amp;&amp; (!toFilter.isPregnant()))
+					continue;
+				if(inOnlyNonPregnant &amp;&amp; (toFilter.isPregnant()))
+					continue;
+				if(inOnlyPregnantImmobile &amp;&amp; (!toFilter.isPregnantImmobile()))
+					continue;
+				if(inOnlyNonPregnantImmobile &amp;&amp; (toFilter.isPregnantImmobile()))
+					continue;
+				if(inOnlyPopsAtHome &amp;&amp; (toFilter.getPopLocation() != IFPop.ePopLocation.cInForeignCommunity))
+					continue;
+				allPopsAfterFilters.Add(toFilter);
+			}
+			addDebugMessage(inScriptInstance, "found " + allPopsAfterFilters.Count + " existing pops matching filters");
+			
+			//now that we have handled all the filters, check if we have enough of the requested pops.  If not, and inReifyPopsIfDoNotExist is true, we can create pops from the additional undeclared pop counts
+			if(allPopsAfterFilters.Count &lt; inTotalPopsRequested)
+			{
+				if(inReifyPopsIfDoNotExist)
+				{
+					Int64 countOfPopsToReify = inTotalPopsRequested - allPopsAfterFilters.Count;
+					//let the reify script take care of whether it's possible to reify or not
+					List&lt;IFRace&gt; forcedRaces = new List&lt;IFRace&gt;();
+					List&lt;IFPop.ePopSex&gt; forcedSexes = new List&lt;IFPop.ePopSex&gt;();
+					//use isWound and isIll to add illnesses to the generated pops if desired, and setPregnantBabyRace and setPregnantDayOver if desired
+					if(inOnlyOfRace != null)
+					{
+						forcedRaces.AddRange(Enumerable.Repeat(inOnlyOfRace, (int)countOfPopsToReify));
+					}
+					if(useSexFilter)
+					{
+						forcedSexes.AddRange(Enumerable.Repeat(inOnlyOfSex, (int)countOfPopsToReify));
+					}
+					bool giveEquipment = inPreferHighEquipmentQuality || (inPreferHighSoldierSkill &amp;&amp; !inPreferLowEquipmentQuality);
+					
+					if(customScripts.runCustomScriptCheckTypes("reifyPopsFromForeignCommunity", new List&lt;object&gt;()
+						{ inForeignCommunity, forcedRaces, forcedSexes, null, null, null, giveEquipment, countOfPopsToReify },
+						out List&lt;object&gt; scriptOutputs, false, typeof(List&lt;IFPop&gt;)))
+					{
+						List&lt;IFPop&gt; popsReified = (List&lt;IFPop&gt;)scriptOutputs[0];
+						
+						//by default, pops will not be wounded/ill/pregnant since we did not provide that information
+						for(int i = 0; i &lt; popsReified.Count; i++)
+						{
+							if(inOnlyWounded)
+							{
+								popsReified[i].addWound(true); //assume exposure wound
+							}
+							if(inOnlyIll)
+							{
+								popsReified[i].addIllness(true); //assume environmental illness
+							}
+							if(inOnlyPregnant || inOnlyPregnantImmobile)
+							{
+								Int64 deliveryDate = getAPI().getCalendar().getCurrentDate() + 
+									(Int64)(popsReified[i].getRace().getTotalPregnancyDays() * getAPI().calcRand());
+								if(inOnlyPregnantImmobile)
+								{
+									deliveryDate = getAPI().getCalendar().getCurrentDate() + 
+									(popsReified[i].getRace().getTotalPregnancyDays() - popsReified[i].getRace().getIncapablePregnancyDays()) +
+									(Int64)(popsReified[i].getRace().getIncapablePregnancyDays() * getAPI().calcRand());
+								}
+								popsReified[i].setPregnantDayOver(deliveryDate);
+								popsReified[i].setPregnantBabyRace(popsReified[i].getRace());
+							}
+						}
+						
+						addDebugMessage(inScriptInstance, "reified " + popsReified.Count + " additional undeclared pops matching filters");
+						allPopsAfterFilters.AddRange(popsReified);
+					}
+				}
+			}
+			
+			//now that we have collected all the pops we can, select pops by preference.
+			//if we have not collected more than desired pops, skip preferences:
+			if(allPopsAfterFilters.Count &gt; inTotalPopsRequested)
+			{
+				if(inPreferHighHealth &amp;&amp; inPreferLowHealth)
+				{
+					inPreferHighHealth = false;
+					inPreferLowHealth = false;
+				}
+				if(inPreferHighEquipmentQuality &amp;&amp; inPreferLowEquipmentQuality)
+				{
+					inPreferHighEquipmentQuality = false;
+					inPreferLowEquipmentQuality = false;
+				}
+				if(inPreferHighSoldierSkill &amp;&amp; inPreferLowSoldierSkill)
+				{
+					inPreferHighSoldierSkill = false;
+					inPreferLowSoldierSkill = false;
+				}
+				
+				bool noPreferences = !(inPreferHighHealth || inPreferLowHealth || inPreferHighEquipmentQuality || inPreferLowEquipmentQuality || inPreferHighSoldierSkill || inPreferLowSoldierSkill);
+				if(noPreferences)
+				{
+					addDebugMessage(inScriptInstance, "selecting pops at random due to lack of preference");
+					List&lt;IFPop&gt; popsChosen = new List&lt;IFPop&gt;();
+					for(int i = 0; i &lt; inTotalPopsRequested; i++)
+					{
+						int index = (int)getAPI().calcRandIntUnder(allPopsAfterFilters.Count);
+						popsChosen.Add(allPopsAfterFilters[index]);
+						allPopsAfterFilters.RemoveAt(index);
+					}
+					allPopsAfterFilters = popsChosen;
+				}
+				else
+				{
+					double healthMin = consts.getHealthMin();
+					double healthMax = consts.getHealthMax();
+					double soldierSkillMin = consts.getSoldierSkillMin();
+					double soldierSkillMax = consts.getSoldierSkillMax();
+					double qualityMin = consts.getResourceQualityMin();
+					double qualityMax = consts.getResourceQualityMax();
+			
+					addDebugMessage(inScriptInstance, "ordering pops by preference");
+					List&lt;Tuple&lt;double, IFPop&gt;&gt; orderedList = new List&lt;Tuple&lt;double, IFPop&gt;&gt;();
+					string logAllScores = "";
+					foreach(IFPop toEvaluate in allPopsAfterFilters)
+					{
+						double score = 0.0d;
+						if(inPreferHighHealth)
+							score += (toEvaluate.getOverallHealth() - healthMin) / (healthMax - healthMin);
+						if(inPreferLowHealth)
+							score += (healthMax - toEvaluate.getOverallHealth()) / (healthMax - healthMin);
+						if(inPreferHighSoldierSkill)
+							score += (toEvaluate.getSoldierSkill() - soldierSkillMin) / (soldierSkillMax - soldierSkillMin);
+						if(inPreferLowSoldierSkill)
+							score += (soldierSkillMax - toEvaluate.getSoldierSkill()) / (soldierSkillMax - soldierSkillMin);
+						if(inPreferHighEquipmentQuality)
+							score += (toEvaluate.getAverageEquipmentQuality() - qualityMin) / (qualityMax - qualityMin);
+						if(inPreferLowEquipmentQuality)
+							score += (qualityMax - toEvaluate.getAverageEquipmentQuality()) / (qualityMax - qualityMin);
+							
+						logAllScores += "pop " + toEvaluate.getDebugName() + " score=" + score + ", ";
+							
+						//order the list by highest-scoring first
+						bool added = false;
+						for(int i = 0; (i &lt; orderedList.Count) &amp;&amp; !added; i++)
+						{
+							if(orderedList[i].Item1 &lt;= score)
+							{
+								orderedList.Insert(i, Tuple.Create(score, toEvaluate));
+								added = true;
+							}
+						}
+						if(!added)
+						{
+							orderedList.Add(Tuple.Create(score, toEvaluate));
+						}
+					}
+					addDebugMessage(inScriptInstance, logAllScores);
+					
+					//take the top inTotalPopsRequested of orderedList:
+					allPopsAfterFilters.Clear();
+					for(int i = 0; i &lt; inTotalPopsRequested; i++)
+					{
+						allPopsAfterFilters.Add(orderedList[i].Item2);
+					}
+				}
+			}
+			
+			string toLog = "returning total of " + allPopsAfterFilters.Count + " pops;";
+			for(int i = 0; i &lt; allPopsAfterFilters.Count; i++)
+			{
+				toLog += "pop[" + i + "]=" + allPopsAfterFilters[i].getDebugName() + ", ";
+			}
+			addDebugMessage(inScriptInstance, toLog);
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;() { allPopsAfterFilters };
+			return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

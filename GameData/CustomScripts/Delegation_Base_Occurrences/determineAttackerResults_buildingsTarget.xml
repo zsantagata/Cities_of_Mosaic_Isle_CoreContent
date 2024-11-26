@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>determineAttackerResults_buildingsTarget building_destroy contribution base</a> <b>double</b> <c>0.05</c></i1> <!-- this is the base contribution that one pop gives to destroy a building -->
+	  <!-- note that this probability is not simply calculated as a probability per pop, because that would be a bit silly.  Instead, the contributions of all pops is added up, and if it reaches an integer, that many buildings are destroyed.
+           The left over fraction is a probability that an additional building is destroyed.  -->
+	  
+	  <!-- based on a pop's military equipment and military skill, it could be more or less effective in destroying a building -->
+	  <i1><a>determineAttackerResults_buildingsTarget building_destroy mil_equip_factor min</a> <b>double</b> <c>0.5</c></i1> <!-- The right equipment plays a big role in being able to destroy a building -->
+	  <i1><a>determineAttackerResults_buildingsTarget building_destroy mil_equip_factor max</a> <b>double</b> <c>2.5</c></i1> <!-- The right equipment plays a big role in being able to destroy a building -->
+	  <i1><a>determineAttackerResults_buildingsTarget building_destroy soldier_skill_factor min</a> <b>double</b> <c>0.95</c></i1> <!-- Even an idiot can break things.  They often do. -->
+	  <i1><a>determineAttackerResults_buildingsTarget building_destroy soldier_skill_factor max</a> <b>double</b> <c>1.15</c></i1> <!-- Training to fight can make people stronger but  -->
+	  
+	  <i1><a>determineAttackerResults_buildingsTarget building_destroy total_rand_multiplier min</a> <b>double</b> <c>0.9</c></i1> <!-- buildings are meant to stay up; circumstance rarely changes this -->
+	  <i1><a>determineAttackerResults_buildingsTarget building_destroy total_rand_multiplier max</a> <b>double</b> <c>1.1</c></i1> <!-- buildings are meant to stay up; circumstance rarely changes this -->
+	  
+	  <!-- TODO: there should be racial considerations here for destroying buildings that are mirrored in pops-on-local-map destroying buildings -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script determineattackerresults_buildingstarget</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which determines the result of one day of player-sourced-delegation attack on an enemy community -->
+  <!-- this specific script is a common script for the attack target of "buildings" -->
+  <!-- this script, along with other scripts for specific capital kinds, can only be called when the delegation is a war delegation trying to destroy the long-term capital of the target community -->
+  <!-- This script will determine if any buildings are destroyed, and how many, and if the target community has a domestic component and a map, which ones. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation,
+	List<IFPop> inDelegationAttackers, //can be empty but should not be null
+	List<IFPop> inEnemyDefenders, //can be empty but should not be null
+	bool inRaiding //if false it means war
+	
+	There is one output: double outCountOfBuildingsDestroyed -->
+	<i1><a>determineAttackerResults_buildingsTarget</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation), typeof(List&lt;IFPop&gt;), typeof(List&lt;IFPop&gt;), typeof(bool)}
+	  }, out _))
+	{
+		throw new ArgumentException("determineAttackerResults_buildingsTarget custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	List&lt;IFPop&gt; inDelegationAttackers = (List&lt;IFPop&gt;)inArguments[1];
+	List&lt;IFPop&gt; inEnemyDefenders = (List&lt;IFPop&gt;)inArguments[2]; //this is unused but we include it here to have this script's inputs the same as other determineAttackerResults_ scripts
+	bool inRaiding = (bool)inArguments[3];
+	
+	IFCommunity inEnemyCommunity = inDelegation.getTargetCommunity();
+	
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	//first: if inDelegationAttackers is empty, there is nothing to process:
+	List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	if(inDelegationAttackers == null || inDelegationAttackers.Count == 0)
+	{
+		addDebugMessage(inScriptInstance, "There are no attackers, so no processing needs to happen");
+		toReturn.Add(0.0d);
+		return toReturn;
+	}
+	inDelegationAttackers = new List&lt;IFPop&gt;(inDelegationAttackers); //create a copy because we will modify this
+	
+	Int64 outCountOfBuildingsDestroyed = 0;
+	
+	double resQualMin = consts.getResourceQualityMin();
+	double resQualMax = consts.getResourceQualityMax();
+	double soldierSkillMin = consts.getSoldierSkillMin();
+	double soldierSkillMax = consts.getSoldierSkillMax();
+	
+	//get all the custom consts:
+	double contributionBase = customConsts.getDoubleConst("determineAttackerResults_buildingsTarget building_destroy contribution base", out bool success);
+	if(!success) contributionBase = 0.05d;
+	
+	double milEquipFactorMin = customConsts.getDoubleConst("determineAttackerResults_buildingsTarget building_destroy mil_equip_factor min", out success);
+	if(!success) milEquipFactorMin = 0.5d;
+	double milEquipFactorMax = customConsts.getDoubleConst("determineAttackerResults_buildingsTarget building_destroy mil_equip_factor min", out success);
+	if(!success) milEquipFactorMax = 2.5d;
+	
+	double soldierSkillFactorMin = customConsts.getDoubleConst("determineAttackerResults_buildingsTarget building_destroy soldier_skill_factor min", out success);
+	if(!success) soldierSkillFactorMin = 0.95d;
+	double soldierSkillFactorMax = customConsts.getDoubleConst("determineAttackerResults_buildingsTarget building_destroy soldier_skill_factor min", out success);
+	if(!success) soldierSkillFactorMax = 1.15d;
+	
+	double randFactorMin = customConsts.getDoubleConst("determineAttackerResults_buildingsTarget building_destroy total_rand_multiplier min", out success);
+	if(!success) randFactorMin = 0.9d;
+	double randFactorMax = customConsts.getDoubleConst("determineAttackerResults_buildingsTarget building_destroy total_rand_multiplier max", out success);
+	if(!success) randFactorMax = 1.1d;
+	
+	//first, get the count of buildings in the target community:
+	Int64 buildingCount = variableHandler.getInt("buildingCount", out success);
+	if((!success) || (buildingCount == 0))
+	{
+		addDebugMessage(inScriptInstance, "Community " + inEnemyCommunity.getDebugName() + " does not have buildingCount variable stored or it is equal to 0; returning from script");
+		toReturn.Add(0.0d);
+		return toReturn;
+	}
+	
+	//second, add up the contributions from all attackers:
+	double sumOfAllContributions = 0.0d;
+	while(inDelegationAttackers.Count != 0)
+	{
+		double soldierSkillFactor = soldierSkillFactorMin + (soldierSkillFactorMax - soldierSkillFactorMin) * ((inDelegationAttackers[0].getSoldierSkill() - soldierSkillMin) / (soldierSkillMax - soldierSkillMin));
+		double randFactor = randFactorMin + (randFactorMax - randFactorMin) * getAPI().calcRand();
+		double milEquipFactor = milEquipFactorMin + (milEquipFactorMax - milEquipFactorMin) * ((inDelegationAttackers[0].getAverageEquipmentQuality() - resQualMin) / (resQualMax - resQualMin));
+		double contribution = contributionBase * milEquipFactor * soldierSkillFactor * randFactor;
+		
+		addDebugMessage(inScriptInstance, "pop " + inDelegationAttackers[0].getDebugName() + " has building-destruction contribution of " + contribution);
+		sumOfAllContributions += contribution;
+		
+		inDelegationAttackers.RemoveAt(0);
+	}
+	
+	//calculate the total building count destroyed from the contributions:
+	Int64 wholeNumberBuildings = (Int64)sumOfAllContributions;
+	bool additionalBuilding = getAPI().calcProb(sumOfAllContributions - wholeNumberBuildings);
+	outCountOfBuildingsDestroyed = wholeNumberBuildings + (additionalBuilding ? 1 : 0);
+	addDebugMessage(inScriptInstance, "Total buildings destroyed is " + outCountOfBuildingsDestroyed + " from total contribution of " + sumOfAllContributions + ", building count before destruction=" + buildingCount);
+	if(outCountOfBuildingsDestroyed &gt; buildingCount)
+		outCountOfBuildingsDestroyed = buildingCount;
+	
+	//destroy those buildings by decreasing the buildingCount:
+	variableHandler.storeIntVariable(Int64.MaxValue, "ai" + inEnemyCommunity.getUID() + "_buildingCount", buildingCount - outCountOfBuildingsDestroyed);
+	//if the enemy community has a map associated with it, destroy the correct number of buildings on the map:
+	if(inEnemyCommunity.hasDomesticComponent() &amp;&amp; (outCountOfBuildingsDestroyed != 0))
+	{
+		IFMap map = inEnemyCommunity.getDomesticComponent().getMap();
+		List&lt;IFBuilding&gt; allBuildings = new List&lt;IFBuilding&gt;();
+		List&lt;int&gt; indeces = new List&lt;int&gt;();
+		foreach(ReadOnlyCollection&lt;IFMapTile&gt; listOfMapTiles in map.getMapTiles())
+		{
+			foreach(IFMapTile tile in listOfMapTiles)
+			{
+				if(tile.isBuildingRoot() &amp;&amp; !tile.getBuilding().isBuildingDestroyed())
+				{
+					allBuildings.Add(tile.getBuilding());
+					indeces.Add(indeces.Count);
+				}
+			}
+		}
+		if(allBuildings.Count &lt;= outCountOfBuildingsDestroyed)
+		{
+			foreach(IFBuilding building in allBuildings)
+			{
+				building.setBuildingDestroyed(true, IFBuilding.eBuildingDestructionReason.cViolence, getAPI().getLocalCommunity());
+			}
+		}
+		else
+		{
+			//select outCountOfBuildingsDestroyed random buildings to be destroyed:
+			HashSet&lt;int&gt; indecesToDestroy = new HashSet&lt;int&gt;();
+			while(indecesToDestroy.Count &lt; outCountOfBuildingsDestroyed)
+			{
+				int randIndex = (int)getAPI().calcRandIntUnder(indeces.Count);
+				indecesToDestroy.Add(indeces[randIndex]);
+				indeces.RemoveAt(randIndex);
+			}
+			foreach(int indexToDestroy in indecesToDestroy)
+			{
+				allBuildings[indexToDestroy].setBuildingDestroyed(true, IFBuilding.eBuildingDestructionReason.cViolence, getAPI().getLocalCommunity());
+			}
+		}
+	}
+	
+	toReturn.Add((double)outCountOfBuildingsDestroyed);
+	return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

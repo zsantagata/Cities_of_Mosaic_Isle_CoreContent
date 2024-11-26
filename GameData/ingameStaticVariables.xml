@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- only one of these should exist and its name should be "default" -->
+  <gameconsts name="default">
+  
+    <!-- sandbox scenario consts: -->
+	<mSandboxPopCount>12</mSandboxPopCount>
+  
+    <!-- resource consts: -->
+    <mResourcePoolMax>25000</mResourcePoolMax><!-- int. the maximum count of resources a resource pool can hold -->
+    <mResourceQualityMax>50.0</mResourceQualityMax><!-- double -->
+    <mResourceQualityMin>-50.0</mResourceQualityMin><!-- double -->
+    <mResourceQualityMaxChoosable>45.0</mResourceQualityMaxChoosable><!-- double, the quality slider on workplaces is limited to this or mResourceQualityMax, whatever is lower -->
+    <mResourceQualityMinChoosable>-45.0</mResourceQualityMinChoosable><!-- double, the quality slider on workplaces is limited to this or mResourceQualityMin, whatever is higher -->
+	
+	<!-- health consts -->
+	<mHealthMax>65536</mHealthMax><!-- double.  internal value -->
+    <mHealthMin>0</mHealthMin><!-- double.  internal value -->
+    <mHealthLowThreshold>26214</mHealthLowThreshold><!-- double.  internal value, below this health decrease will fall off -->
+    <mHealthHighThreshold>52428</mHealthHighThreshold><!-- double.  internal value, below this health increase will fall off -->
+	
+	<!-- other pop consts -->
+	<mSoldierSkillMax>65536</mSoldierSkillMax> <!-- double. internal value -->
+	<mSoldierSkillMin>0</mSoldierSkillMin> <!-- double. newborn pops start at this -->
+	<mWorkerSkillMin>0</mWorkerSkillMin>    <!-- double. applies to both leader skill and average worker skill, direct values are not used (instead we use the position on the range) -->
+	<mWorkerSkillMax>65536</mWorkerSkillMax> <!-- double. applies to both leader skill and average worker skill, direct values are not used (instead we use the position on the range) -->
+	
+	<!-- production consts -->
+	<mProductionNoResourceInputQuality>0.75</mProductionNoResourceInputQuality> <!-- double.  see above -->
+	<mProductionMinResourceInputQuality>1.0</mProductionMinResourceInputQuality><!-- double.  see above -->
+	<mProductionAverageResourceInputQuality>2.0</mProductionAverageResourceInputQuality><!-- double.  see above -->
+	<mProductionPlaceholderConst1>1.0</mProductionPlaceholderConst1>
+	<mProductionPlaceholderConst2>1.65</mProductionPlaceholderConst2>
+	
+	<mProductionWorkerSkillFactorMin>1.0</mProductionWorkerSkillFactorMin><!-- double.  see above -->
+	<mProductionWorkerSkillFactorMax>8.0</mProductionWorkerSkillFactorMax><!-- double.  see above -->
+	
+	<mProductionXCenterPPF>-0.2</mProductionXCenterPPF> <!-- double. the PPF (production possibility frontier) is in this case the tradeoff between quality and quantity as used in making goods from workplaces.  It is a unit circle with its X center here. -->
+	<mProductionYCenterPPF>-0.2</mProductionYCenterPPF> <!-- double. the PPF (production possibility frontier) is in this case the tradeoff between quality and quantity as used in making goods from workplaces.  It is a unit circle with its Y center here. -->
+	
+	<mProductionElasticityOfSubForComplements>0.9</mProductionElasticityOfSubForComplements><!-- double.  see above -->
+	<mProductionElasticityOfSubForSubstitutes>1.1</mProductionElasticityOfSubForSubstitutes><!-- double.  see above -->
+	<mProductionProportionBonusForComplements>0.15</mProductionProportionBonusForComplements><!-- double.  see above -->
+	<mProductionProportionBonusForSubstitites>0.08</mProductionProportionBonusForSubstitites><!-- double.  see above -->
+	
+	
+	<!-- sandbox map generation consts
+            //random map generation works like this:
+            //size is: height (AKA from upper left to lower right) randomly chosen to be from min->max, and then using mapTargetArea the width is calculated
+            //all tiles start off as land, or water if we are forcing all-water
+            //determine if water should be coastal/river/pools/none
+            //if coastal:
+            //  make equation of either: x = ay^3 + by^2 + cy + d + e * sin(f*y) OR y = ax^3 + bx^2 + cy + d + e * sin(f*x)
+            //  assign one side of the equation (greater than or lesser than) as "water" tiles
+            //  note for below: "full span" means width or height, x relating to width and y relating to height
+            //  a = -1.0->1.0 * cube coefficient * (dependent variable full span) / (independent variable full span ^ 3)
+            //  b = -1.0->1.0 * sqaure coefficient * (dependent variable full span) / (independent variable full span ^ 2)
+            //  c = -1.0->1.0 * linear coefficient * (dependent variable full span) / (independent variable full span)
+            //  d = 0->1.0 * dependent variable full span
+            //  e = 0->1.0 * dependent variable full span * sine mult coefficient
+            //  f = 0->1.0 * pi/2 * sine freq coefficient (all trig stuff done in radians)
+            //if river:
+            //  make equation as above, choose random RIVER_WIDTH within range from min->max inclusive
+            //  assign tiles within RIVER_WIDTH of the equation as "water" tiles
+            //if ponds:
+            //  use cellular noise to generate ponds: for noise CoMI uses FastNoise C# by Jordan Peck
+            //  noise frequency's basic unit is one tile, i.e. frequency of 1.0 or greater will randomize independently all things and make white noise
+            //  octaves is how many times a fractal is done, must be between 1 and 9 inclusive
+            //  I don't understand cellular jitter but I used the visualizer and it looked pretty good ¯\_(ツ)_/¯
+            //  if the cell's noise is above pond threshold factor * max value, the cell is a pond
+            //create unpassable regions:
+            //  use blobby noise to determine where doodads should go.  Region is unpassable if noise < min noise value + (0.0->1.0 multiplier) * unpassable range
+            //create unbuildable regions:
+            //  use stringy noise to determine where doodads should go.  Region is unbuildable if noise < min noise value + (0.0->1.0 multiplier) * unbuildable range
+            //before moving on, check (this is the initial check, TODO do this again after assigning resources):
+            //  if water exists, is at least a certain percentage of the water passable?
+            //  if water exists, is at least a certain percentage of the water buildable?
+            //  if water exists, is there enough of it to care?
+            //  if land exists, is at least a certain percentage of land passable?
+            //  if land exists, is at least a certain percentage of land buildable?
+            //  if land exists, is there enough of it to care?
+            //  TODO: based on any other problems I find, add checks here
+            //  if any of the above are problems, reject the map and try again
+            //generate resource regions:
+            //  separate land and water:
+            //    look up how frequent all land sources are, organize from highest frequency to lowest frequency
+            //    calculate if the land source should appear at all (viable for this biome and probability) and cull those that shouldn't
+            //    generate noise over the whole map per land source.  Make threshold = (threshold multiplier for this frequency) * max noise value, any tiles above the threshold have the land source
+            //      land sources indicate whether they use stringy distribution or blobby.  I recommend stringy for land sources which are unpassable
+            //assign base terrain (land) parcels, base terrain (water) parcels, resource parcels (land), resource parcels (water), unpassable doodads, and unbuildable doodads using the following method:
+            //  from the top left corner (0,0), iterating first over y and then over x:
+            //    check how many x squares max we have to place something (example: if there are 4 squares left before map edge, the value is 4)
+            //    randomly choose an x from 1 to the above value
+            //    check how many y squares max we have to place something (must be flush for all our chosen x squares)
+            //    randomly choose a y from 1 to the above value
+            //    assign the tile on current location as the root of a parcel of above dimensions
+            //    indicate internally that all tiles within above dimensions have been assigned for this category
+            //    advance to next unassigned tile
+            //    
+            //    note: the above is just for reference.  The only thing you, the modder, need to make sure is that there exist all NxN tiles up to the value of N for: all base terrain biomes, all doodads, all resources
+            //lastly, cull doodads for: being within X tiles of coast, overlapping resources
+            //MAP HAS BEEN CREATED!
+	-->
+	<mMapMinWidth>200</mMapMinWidth> <!-- int. -->
+	<mMapMaxWidth>250</mMapMaxWidth> <!-- int.  Make close to min width to have less weirdly-shaped maps -->
+	<mMapTargetArea>50000</mMapTargetArea> <!-- int.  min height = target area / max width and max height = target area / min width.  Make = min width * max width to have no skew towards wider/taller maps -->
+	
+	<mMapBaseParcelMaxWidth>3</mMapBaseParcelMaxWidth> <!-- int. see above -->
+	<mMapDoodadMaxWidth>2</mMapDoodadMaxWidth> <!-- int. see above -->
+	<mMapResourceParcelMaxWidth>2</mMapResourceParcelMaxWidth> <!-- int. see above -->
+	<mMapGenAttemptsBeforeHalt>50</mMapGenAttemptsBeforeHalt> <!-- int. how many maps can be rejected before we stop and display a message to the player -->
+	
+	<!-- desolation consts: -->
+	<mDesolationMaxTileValue>100.0</mDesolationMaxTileValue> <!-- desolation goes from 0 to this per tile -->
+	
+	<!-- TODO misc -->
+	<mPopVelocity>50</mPopVelocity> <!-- tiles per day, halved if walking TODO this should probably be per race, per biome? -->
+	<mWorldMapPixelsToMove>15.0</mWorldMapPixelsToMove> <!-- this is the speed at which the view scrolls across the world map (in the sandbox world map selection screen) -->
+	<mLocalMapMaxViewZoom>2.5</mLocalMapMaxViewZoom>
+	<mLocalMapMinViewZoom>0.15</mLocalMapMinViewZoom>
+	<mLocalMapPixelsToMove>30.0</mLocalMapPixelsToMove>
+	<mLocalMapZoomFactor>0.9</mLocalMapZoomFactor>
+	<mDelegationVelocityBase>7.5</mDelegationVelocityBase>
+	<mForeignCommunityMaxEconStrength>100</mForeignCommunityMaxEconStrength>
+	<mForeignCommunityMaxMilStrength>100</mForeignCommunityMaxMilStrength>
+	
+	<mHappinessMin>0</mHappinessMin>
+	<mHappinessMax>100</mHappinessMax>
+	
+	<mPopVelocityIllnessSlowFactor>0.6</mPopVelocityIllnessSlowFactor>
+	<mPopVelocityOverallHealthSlowFactor>0.5</mPopVelocityOverallHealthSlowFactor>
+	
+	<mMoraleMax>100.0</mMoraleMax>
+	
+	<mHappinessLowAlertThreshold>25.0</mHappinessLowAlertThreshold>
+	<mClusteringRadiusPopsPlacedOnMap>6.0</mClusteringRadiusPopsPlacedOnMap>
+	<mDiploMapPixelsToMove>15.0</mDiploMapPixelsToMove>
+	
+	<!-- display threshold consts: -->
+	<mDisplayThreshold_PopGearRatioLM>0.35</mDisplayThreshold_PopGearRatioLM>
+	<mDisplayThreshold_PopGearRatioMH>0.70</mDisplayThreshold_PopGearRatioMH>
+	<mDisplayThreshold_BuildingDurabilityRatioLM>0.40</mDisplayThreshold_BuildingDurabilityRatioLM>
+	<mDisplayThreshold_BuildingDurabilityRatioMH>0.70</mDisplayThreshold_BuildingDurabilityRatioMH>
+	<mDisplayThreshold_BuildingFillRatioLM>0.30</mDisplayThreshold_BuildingFillRatioLM>
+	<mDisplayThreshold_BuildingFillRatioMH>0.70</mDisplayThreshold_BuildingFillRatioMH>
+	<mDisplayThreshold_ResourceParcelDesolationRatioLM>0.50</mDisplayThreshold_ResourceParcelDesolationRatioLM>
+	<mDisplayThreshold_ResourceParcelDesolationRatioMH>0.75</mDisplayThreshold_ResourceParcelDesolationRatioMH>
+	<mDisplayThreshold_DelegationPopCountLM>20</mDisplayThreshold_DelegationPopCountLM>
+	<mDisplayThreshold_DelegationPopCountMH>40</mDisplayThreshold_DelegationPopCountMH>
+	<mDisplayThreshold_CommunityPopCountLM>80</mDisplayThreshold_CommunityPopCountLM>
+	<mDisplayThreshold_CommunityPopCountMH>160</mDisplayThreshold_CommunityPopCountMH>
+	
+	<!-- calendar consts: -->
+	<mCalendarSeasonsPerYear>4</mCalendarSeasonsPerYear>
+	<mCalendarMonthsPerSeason>3</mCalendarMonthsPerSeason>
+	<mCalendarDaysPerMonth>30</mCalendarDaysPerMonth>
+	<mCalendarYearOffset>300</mCalendarYearOffset>
+	<mCalendarPopAgeOffset>16</mCalendarPopAgeOffset>
+	
+	<mDelegationMaximumTravelTime>180</mDelegationMaximumTravelTime> <!-- days; if delegations are traveling for longer than this then they will become wanderers -->
+	<mPopKeepAfterDeadDaysGeneral>30</mPopKeepAfterDeadDaysGeneral> <!-- after this many days dead, pops will be cleaned up; scripts will keep local and leaders around for longer -->
+	<mShouldCustomScriptExceptionsBeLogged>1</mShouldCustomScriptExceptionsBeLogged> <!-- 0 = false, anything else = true.  Int64 -->
+	<mCustomScriptExceptionErrorReportLevel>1</mCustomScriptExceptionErrorReportLevel> <!-- 0 = ignore, 1 = advisory (logged), 2 = warning, 3 = error, 4 = critical -->
+	<mMaxCountOfAStarObjects>0xFFFFF</mMaxCountOfAStarObjects>
+	<mSpeedIncreaseOfRoadBridgeCanal>1.5</mSpeedIncreaseOfRoadBridgeCanal>
+	<mBoxSelectorMinimumRadius>4.0</mBoxSelectorMinimumRadius>
+	<mActionMenuSoldierSkillFilterProportionToMove>0.1</mActionMenuSoldierSkillFilterProportionToMove>
+	<mActionMenuSoldierAvgEquipmentQualityProportionToMove>0.1</mActionMenuSoldierAvgEquipmentQualityProportionToMove>
+	
+	<mCountOfDivisionsOfHistoryCostBenefit>3</mCountOfDivisionsOfHistoryCostBenefit> <!-- translation strings should exist for all of them or things will work weird -->
+	<mCountOfDaysToRememberDailyHistory>60</mCountOfDaysToRememberDailyHistory> <!-- these are for the charts in info views, not history log -->
+	<mCountOfMonthsToRememberMonthlyHistory>4</mCountOfMonthsToRememberMonthlyHistory> <!-- these are for the charts in info views, not history log -->
+	<mCountOfSeasonsToRememberSeasonalHistory>4</mCountOfSeasonsToRememberSeasonalHistory> <!-- these are for the charts in info views, not history log -->
+	<mCountOfYearsToRememberYearlyHistory>3</mCountOfYearsToRememberYearlyHistory> <!-- these are for the charts in info views, not history log -->
+	
+  </gameconsts>
+</core_data>

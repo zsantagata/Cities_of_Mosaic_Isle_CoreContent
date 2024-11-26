@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>determineDefenderCampAttackResults goods_destroy base</a> <b>double</b> <c>7.5</c></i1> <!-- each pop will destroy this amount of goods -->
+	  
+	  <!-- based on a pop's military equipment and military skill, it could destroy less or more goods -->
+	  <i1><a>determineDefenderCampAttackResults goods_destroy mil_equip_factor min</a> <b>double</b> <c>0.9</c></i1> <!-- military equipment hardly changes how many goods a pop can destroy -->
+	  <i1><a>determineDefenderCampAttackResults goods_destroy mil_equip_factor max</a> <b>double</b> <c>1.1</c></i1> <!-- military equipment hardly changes how many goods a pop can destroy -->
+	  <i1><a>determineDefenderCampAttackResults goods_destroy soldier_skill_factor min</a> <b>double</b> <c>0.75</c></i1> <!-- soldier skill slightly changes how many goods a pop can destroy -->
+	  <i1><a>determineDefenderCampAttackResults goods_destroy soldier_skill_factor max</a> <b>double</b> <c>1.25</c></i1> <!-- soldier skill slightly changes how many goods a pop can destroy -->
+	  
+	  <i1><a>determineDefenderCampAttackResults goods_destroy total_rand_multiplier min</a> <b>double</b> <c>0.70</c></i1> <!-- circumstance can significantly change how many goods pops destroy -->
+	  <i1><a>determineDefenderCampAttackResults goods_destroy total_rand_multiplier max</a> <b>double</b> <c>1.40</c></i1> <!-- circumstance can significantly change how many goods pops destroy -->
+	  
+	  <!-- based on the community's military strength, it will be able to take 2-on-1 fights or it may blunder and be forced to take a 1-on-2 fight.  If neither, the fight will be 1-on-1. -->
+	  <i1><a>determineDefenderCampAttackResults combat advantage prob min</a> <b>double</b> <c>0.1</c></i1> <!-- at minimum military strength this is the probability -->
+	  <i1><a>determineDefenderCampAttackResults combat advantage prob max</a> <b>double</b> <c>0.6</c></i1> <!-- at maximum military strength this is the probability -->
+	  <i1><a>determineDefenderCampAttackResults combat disadvantage prob min</a> <b>double</b> <c>0.1</c></i1> <!-- at maximum military strength this is the probability -->
+	  <i1><a>determineDefenderCampAttackResults combat disadvantage prob max</a> <b>double</b> <c>0.6</c></i1> <!-- at minimum military strength this is the probability -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script determinedefendercampattackresults</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which determines the result of enemy-community-defender pops attacking the player-sourced-delegation war/raiding camp -->
+  <!-- Defenders will first try to damage or destroy food, hstasis, medicine, and military equipment in order to drive away the delegation -->
+  <!-- Defenders will secondly try to fight pops which are remaining in the camp (i.e. wounded and non-attackers) -->
+  <!-- Defenders will lastly try to damage other resources held in the camp -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation,
+	List<IFPop> inDelegationAttackers, //can be empty but should not be null.  These pops will not be in the camp to be attacked.
+	List<IFPop> inEnemyDefenders, //can be empty but should not be null
+	bool inRaiding //if false it means war
+	
+	There is one output: double outTotalCountOfResourcesDestroyed.  Any defenders which are unable to take one of the described actions get ignored. -->
+	<i1><a>determineDefenderCampAttackResults</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation), typeof(List&lt;IFPop&gt;), typeof(List&lt;IFPop&gt;), typeof(bool)}
+	  }, out _))
+	{
+		throw new ArgumentException("determineDefenderCampAttackResults custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	List&lt;IFPop&gt; inDelegationAttackers = (List&lt;IFPop&gt;)inArguments[1];
+	List&lt;IFPop&gt; inEnemyDefenders = (List&lt;IFPop&gt;)inArguments[2]; 
+	bool inRaiding = (bool)inArguments[3];
+	
+	IFCommunity inEnemyCommunity = inDelegation.getTargetCommunity();
+	
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	//if inEnemyDefenders is empty, there is nothing to process:
+	if(inEnemyDefenders == null || inEnemyDefenders.Count == 0)
+	{
+		addDebugMessage(inScriptInstance, "There are no defenders, so no processing needs to happen");
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { 0.0d };
+		return toReturn;
+	}
+	inEnemyDefenders = new List&lt;IFPop&gt;(inEnemyDefenders);//create a copy because we will modify this
+	
+	double resQualMin = consts.getResourceQualityMin();
+	double resQualMax = consts.getResourceQualityMax();
+	double soldierSkillMin = consts.getSoldierSkillMin();
+	double soldierSkillMax = consts.getSoldierSkillMax();
+	
+	//get all the custom consts:
+	double goodsDestroyBase = customConsts.getDoubleConst("determineDefenderCampAttackResults goods_destroy base", out bool success);
+	if(!success) goodsDestroyBase = 7.5d;
+	
+	double milEquipFactorMin = customConsts.getDoubleConst("determineDefenderCampAttackResults goods_destroy mil_equip_factor min", out success);
+	if(!success) milEquipFactorMin = 0.9d;
+	double milEquipFactorMax = customConsts.getDoubleConst("determineDefenderCampAttackResults goods_destroy mil_equip_factor max", out success);
+	if(!success) milEquipFactorMax = 1.1d;
+	
+	double soldierSkillFactorMin = customConsts.getDoubleConst("determineDefenderCampAttackResults goods_destroy soldier_skill_factor min", out success);
+	if(!success) soldierSkillFactorMin = 0.75d;
+	double soldierSkillFactorMax = customConsts.getDoubleConst("determineDefenderCampAttackResults goods_destroy soldier_skill_factor max", out success);
+	if(!success) soldierSkillFactorMax = 1.25d;
+	
+	double randFactorMin = customConsts.getDoubleConst("determineDefenderCampAttackResults goods_destroy total_rand_multiplier min", out success);
+	if(!success) randFactorMin = 0.7d;
+	double randFactorMax = customConsts.getDoubleConst("determineDefenderCampAttackResults goods_destroy total_rand_multiplier max", out success);
+	if(!success) randFactorMax = 1.4d;
+	
+	double combatAdvantageProbMin = customConsts.getDoubleConst("determineDefenderCampAttackResults combat advantage prob min", out success);
+	if(!success) combatAdvantageProbMin = 0.0d;
+	double combatAdvantageProbMax = customConsts.getDoubleConst("determineDefenderCampAttackResults combat advantage prob max", out success);
+	if(!success) combatAdvantageProbMax = 0.5d;
+	double combatDisadvantageProbMin = customConsts.getDoubleConst("determineDefenderCampAttackResults combat disadvantage prob min", out success);
+	if(!success) combatDisadvantageProbMin = 0.0d;
+	double combatDisadvantageProbMax = customConsts.getDoubleConst("determineDefenderCampAttackResults combat disadvantage prob max", out success);
+	if(!success) combatDisadvantageProbMax = 0.5d;
+	
+	//first, count up the resources that the delegation is holding:
+	Dictionary&lt;IFResource, double&gt; resourcesHeldByDelegationPriority = new Dictionary&lt;IFResource, double&gt;();
+	Dictionary&lt;IFResource, double&gt; resourcesHeldByDelegationNonPriority = new Dictionary&lt;IFResource, double&gt;();
+	IFResourcePool resPool = inDelegation.getResourcePool();
+	double totalPriorityResources = 0.0d;
+	double totalNonPriorityResources = 0.0d;
+	double outTotalCountOfResourcesDestroyed = 0.0d;
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		double quantity = resPool.getResourceQuantity(res);
+		if(quantity != 0.0d)
+		{
+			if(res.isFood() || res.isHStasis() || res.isWoundHeal() || res.isDiseaseHeal() || res.isMilEquip())
+			{
+				resourcesHeldByDelegationPriority.Add(res, quantity);
+				totalPriorityResources += quantity;
+			}
+			else
+			{
+				resourcesHeldByDelegationNonPriority.Add(res, quantity);
+				totalNonPriorityResources += quantity;
+			}
+		}
+	}
+	
+	//next, count up the total priority resources destroyed and destroy them:
+	double countPriorityResourcesDestroyed = 0.0d;
+	while(inEnemyDefenders.Count != 0)
+	{
+		if(countPriorityResourcesDestroyed &gt;= totalPriorityResources)
+		{
+			break;
+		}
+		double milEquipFactor = milEquipFactorMin + (milEquipFactorMax - milEquipFactorMin) * ((inEnemyDefenders[0].getAverageEquipmentQuality() - resQualMin) / (resQualMax - resQualMin));
+		double soldierSkillFactor = soldierSkillFactorMin + (soldierSkillFactorMax - soldierSkillFactorMin) * ((inEnemyDefenders[0].getSoldierSkill() - soldierSkillMin) / (soldierSkillMax - soldierSkillMin));
+		double randFactor = randFactorMin + (randFactorMax - randFactorMin) * getAPI().calcRand();
+		double popResourcesDestroyed = goodsDestroyBase * milEquipFactor * soldierSkillFactor * randFactor;
+		
+		addDebugMessage(inScriptInstance, "pop " + inEnemyDefenders[0].getDebugName() + " will destroy " + popResourcesDestroyed + " priority resources");
+		countPriorityResourcesDestroyed += popResourcesDestroyed;
+		inEnemyDefenders.RemoveAt(0);
+	}
+	while((countPriorityResourcesDestroyed &gt; 0.0d) &amp;&amp; (resourcesHeldByDelegationPriority.Count != 0))
+	{
+		//first: choose a random resource:
+		IFResource res = resourcesHeldByDelegationPriority.Keys.ElementAt((int)getAPI().calcRandIntUnder(resourcesHeldByDelegationPriority.Count));
+		//then: decrease the resources by the appropriate amount:
+		if(countPriorityResourcesDestroyed &lt; resourcesHeldByDelegationPriority[res])
+		{
+			resPool.subtractResource(res, countPriorityResourcesDestroyed);
+			resourcesHeldByDelegationPriority[res] -= countPriorityResourcesDestroyed;
+			outTotalCountOfResourcesDestroyed += countPriorityResourcesDestroyed;
+			countPriorityResourcesDestroyed = 0.0d;
+		}
+		else
+		{
+			resPool.subtractResource(res, resourcesHeldByDelegationPriority[res]); //should be all of it
+			countPriorityResourcesDestroyed -= resourcesHeldByDelegationPriority[res];
+			outTotalCountOfResourcesDestroyed += resourcesHeldByDelegationPriority[res];
+			resourcesHeldByDelegationPriority.Remove(res);
+		}
+	}
+	
+	//second, if there are any defenders left over, collect the non-attacking player-community-loyal non-dead pops and have them fight against the defenders
+	if(inEnemyDefenders.Count != 0)
+	{
+		double combatAdvantageProb = combatAdvantageProbMin + (combatAdvantageProbMax - combatAdvantageProbMin) * (inEnemyCommunity.getMilStrength() / consts.getMilStrengthMax());
+		double combatDisadvantageProb = combatDisadvantageProbMax - (combatDisadvantageProbMax - combatDisadvantageProbMin) * (inEnemyCommunity.getMilStrength() / consts.getMilStrengthMax());
+		//assemble the list of possible attack targets:
+		List&lt;IFPop&gt; fightTargets = new List&lt;IFPop&gt;();
+		foreach(IFPop pop in inDelegation.getPopsInDelegation())
+		{
+			if(pop.isDead())
+				continue;
+			if(pop.getCommunity() != inDelegation.getSourceCommunity())
+				continue;
+			if(inDelegationAttackers.Contains(pop))
+				continue;
+			fightTargets.Add(pop);
+		}
+		while((fightTargets.Count != 0) &amp;&amp; (inEnemyDefenders.Count != 0))
+		{
+			bool twoDefenders = false;
+			bool twoAttackers = false;
+			IFPop firstPop = fightTargets[0];
+			IFPop secondPop = inEnemyDefenders[0];
+			IFPop thirdPop = null;
+			if((inEnemyDefenders.Count &gt;= 2) &amp;&amp; (getAPI().calcProb(combatAdvantageProb)))
+			{
+				twoDefenders = true;
+				thirdPop = inEnemyDefenders[1];
+			}
+			else if((fightTargets.Count &gt;= 2) &amp;&amp; (getAPI().calcProb(combatDisadvantageProb)))
+			{
+				twoAttackers = true;
+				thirdPop = fightTargets[1];
+			}
+			
+			//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
+			customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { firstPop, secondPop, thirdPop, twoAttackers, 0.0d, 0.0d }, out _);
+			
+			inEnemyDefenders.RemoveAt(0);
+			fightTargets.RemoveAt(0);
+			if(twoDefenders) inEnemyDefenders.RemoveAt(0); //RemoveAt(0) because the old 1 will be the new 0
+			if(twoAttackers) fightTargets.RemoveAt(0); //RemoveAt(0) because the old 1 will be the new 0
+		}
+	}
+	
+	//lastly, if there are any defenders left over, count up the total non-priority resources destroyed and destroy them:
+	if(inEnemyDefenders.Count != 0)
+	{
+		double countNonPriorityResourcesDestroyed = 0.0d;
+		while(inEnemyDefenders.Count != 0)
+		{
+			if(countNonPriorityResourcesDestroyed &gt;= totalNonPriorityResources)
+			{
+				break;
+			}
+			double milEquipFactor = milEquipFactorMin + (milEquipFactorMax - milEquipFactorMin) * ((inEnemyDefenders[0].getAverageEquipmentQuality() - resQualMin) / (resQualMax - resQualMin));
+			double soldierSkillFactor = soldierSkillFactorMin + (soldierSkillFactorMax - soldierSkillFactorMin) * ((inEnemyDefenders[0].getSoldierSkill() - soldierSkillMin) / (soldierSkillMax - soldierSkillMin));
+			double randFactor = randFactorMin + (randFactorMax - randFactorMin) * getAPI().calcRand();
+			double popResourcesDestroyed = goodsDestroyBase * milEquipFactor * soldierSkillFactor * randFactor;
+			
+			addDebugMessage(inScriptInstance, "pop " + inEnemyDefenders[0].getDebugName() + " will destroy " + popResourcesDestroyed + " non-priority resources");
+			countNonPriorityResourcesDestroyed += popResourcesDestroyed;
+			inEnemyDefenders.RemoveAt(0);
+		}
+		while((countNonPriorityResourcesDestroyed &gt; 0.0d) &amp;&amp; (resourcesHeldByDelegationNonPriority.Count != 0))
+		{
+			//first: choose a random resource:
+			IFResource res = resourcesHeldByDelegationNonPriority.Keys.ElementAt((int)getAPI().calcRandIntUnder(resourcesHeldByDelegationNonPriority.Count));
+			//then: decrease the resources by the appropriate amount:
+			if(countNonPriorityResourcesDestroyed &lt; resourcesHeldByDelegationNonPriority[res])
+			{
+				resPool.subtractResource(res, countNonPriorityResourcesDestroyed);
+				resourcesHeldByDelegationNonPriority[res] -= countNonPriorityResourcesDestroyed;
+				outTotalCountOfResourcesDestroyed += countNonPriorityResourcesDestroyed;
+				countNonPriorityResourcesDestroyed = 0.0d;
+			}
+			else
+			{
+				resPool.subtractResource(res, resourcesHeldByDelegationNonPriority[res]); //should be all of it
+				countNonPriorityResourcesDestroyed -= resourcesHeldByDelegationNonPriority[res];
+				outTotalCountOfResourcesDestroyed += resourcesHeldByDelegationNonPriority[res];
+				resourcesHeldByDelegationNonPriority.Remove(res);
+			}
+		}
+	}
+	
+	return new List&lt;object&gt;() { outTotalCountOfResourcesDestroyed };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

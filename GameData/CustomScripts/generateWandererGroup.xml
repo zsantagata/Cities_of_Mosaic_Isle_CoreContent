@@ -1,0 +1,446 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>generateWandererGroup alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>generateWandererGroup alert before_replace_text</a> <b>string</b>
+	  <c>A group of [0] Wanderers is visiting the community.</c></i1>
+			
+	  <i1><a>wanderer generate race lady probability</a> <b>double</b> <c>0.0</c></i1>
+	  
+	  <!-- note that these are proportions of the full range -->
+	  <i1><a>wanderer generate health mcal min</a> <b>double</b> <c>0.6</c></i1>
+	  <i1><a>wanderer generate health mcal max</a> <b>double</b> <c>1.0</c></i1>
+	  <i1><a>wanderer generate health protein min</a> <b>double</b> <c>0.2</c></i1>
+	  <i1><a>wanderer generate health protein max</a> <b>double</b> <c>1.0</c></i1>
+	  <i1><a>wanderer generate health water min</a> <b>double</b> <c>1.0</c></i1>
+	  <i1><a>wanderer generate health water max</a> <b>double</b> <c>1.0</c></i1>
+	  <i1><a>wanderer generate health hstasis min</a> <b>double</b> <c>0.4</c></i1>
+	  <i1><a>wanderer generate health hstasis max</a> <b>double</b> <c>0.9</c></i1>
+	  
+	  <i1><a>wanderer generate soldier_skill min</a> <b>double</b> <c>0.0</c></i1>
+	  <i1><a>wanderer generate soldier_skill max</a> <b>double</b> <c>0.25</c></i1>
+	  <i1><a>wanderer generate equipment chance</a> <b>double</b> <c>0.35</c></i1>
+	  <i1><a>wanderer generate equipment percentage min</a> <b>double</b> <c>0.2</c></i1> <!-- as a percentage of how many military equipment resources there are -->
+	  <i1><a>wanderer generate equipment percentage max</a> <b>double</b> <c>0.6</c></i1> <!-- as a percentage of how many military equipment resources there are -->
+	  <i1><a>wanderer generate equipment quality min</a> <b>double</b> <c>0.1</c></i1>
+	  <i1><a>wanderer generate equipment quality max</a> <b>double</b> <c>0.6</c></i1>
+	  
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script generatewanderergroup</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which generates a group of wanderers given inputs.  These wanderers are placed on the map if desired. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	List<IFRace> inRacesForced, //the values should not be null
+	List<IFPop.ePopSex> inSexesForced, //note that these will be corrected by the generate pop function in comiAPISpace if invalid for the associated race
+	List<Int64> inWoundedDaysOver,
+	List<Int64> inIllDaysOver,
+	List<Int64> inPregnantDaysOver, //note that if this list is longer than inSexesForced, then for those inPregnantDaysOver that do not have a matching inSexesForced, cMale is not chosen as a sex the pop can be (it will be cUnisexNone, cFemale, or cUnisexBoth depending on the race).
+	List<double> inMCalHealths, //note that values in this list should NOT be from 0.0d to 1.0d, and should instead be the real value desired
+	List<double> inProteinHealths, //note that values in this list should NOT be from 0.0d to 1.0d, and should instead be the real value desired
+	List<double> inWaterHealths, //note that values in this list should NOT be from 0.0d to 1.0d, and should instead be the real value desired
+	List<double> inHStasisHealths, //note that values in this list should NOT be from 0.0d to 1.0d, and should instead be the real value desired
+	List<double> inSoldierSkills, //note that values in this list should NOT be from 0.0d to 1.0d, and should instead be the real value desired
+	List<Int64> inTotalEquipmentCounts, //exact counts
+	List<double> inEquipmentQualities, //note that values in this list should NOT be from 0.0d to 1.0d, and should instead be the real value desired
+	Int64 inTotalWandererCount,
+	bool inPlaceWanderersOnMap
+	
+	//any input list can be null and will be considered as an empty list
+	
+	The output is a List of IFPop generated -->
+	<!-- this script is useful to events which want Wanderers to generate.  It is a common enough thing (just like "generate enemy group") that it should have its own dedicated script.
+		Note that it is the calling script's responsibility to add the variables to variableHandler which indicate that the Wanderer should not be deleted at midnight and is staying in the community (if those things are true) -->
+	<!-- comment on inputs: wanderer count generated is equal to inTotalWandererCount (min 1).  Any of the input lists can be null, or sized differently than inTotalWandererCount.  If longer, extra entries are ignored.  If shorter, default values are used/calculated, recalculated per pop generated:
+		race: same race as a random existing Wanderer, or if this is the first one, a random race.  Zero chance to be The Lady or hidden races however.
+		sex: random as allowed by race
+		wounded: no
+		ill: no
+		pregnant: no
+		mcal health: between 60% and 100%
+		protein health: between 20% and 100%
+		water health: 100%
+		hstasis health: between 40% and 90%
+		soldier skills: below 25%
+		total equipment: 35% chance of between 20% and 60% of total military equipment count, otherwise 0
+		equipment average quality: between 10% and 60%
+	-->
+	<i1><a>generateWandererGroup</a>
+	<b>
+			//input count and type check:
+			var customScripts = getAPI().getCustomScripts();
+			if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+				{typeof(List&lt;IFRace&gt;), typeof(List&lt;IFPop.ePopSex&gt;), typeof(List&lt;Int64&gt;), typeof(List&lt;Int64&gt;), typeof(List&lt;Int64&gt;),
+					typeof(List&lt;double&gt;), typeof(List&lt;double&gt;), typeof(List&lt;double&gt;), typeof(List&lt;double&gt;), typeof(List&lt;double&gt;),
+					typeof(List&lt;Int64&gt;), typeof(List&lt;double&gt;), typeof(Int64), typeof(bool)}
+			  }, out _))
+			{
+				throw new ArgumentException("generateWandererGroup custom script received invalid arguments");
+				return null;
+			}
+	  
+			List&lt;IFRace&gt; inRacesForced = (List&lt;IFRace&gt;)inArguments[0];
+			List&lt;IFPop.ePopSex&gt; inSexesForced = (List&lt;IFPop.ePopSex&gt;)inArguments[1];
+			List&lt;Int64&gt; inWoundedDaysOver = (List&lt;Int64&gt;)inArguments[2];
+			List&lt;Int64&gt; inIllDaysOver = (List&lt;Int64&gt;)inArguments[3];
+			List&lt;Int64&gt; inPregnantDaysOver = (List&lt;Int64&gt;)inArguments[4];
+			List&lt;double&gt; inMCalHealths = (List&lt;double&gt;)inArguments[5];
+			List&lt;double&gt; inProteinHealths = (List&lt;double&gt;)inArguments[6];
+			List&lt;double&gt; inWaterHealths = (List&lt;double&gt;)inArguments[7];
+			List&lt;double&gt; inHStasisHealths = (List&lt;double&gt;)inArguments[8];
+			List&lt;double&gt; inSoldierSkills = (List&lt;double&gt;)inArguments[9];
+			List&lt;Int64&gt; inTotalEquipmentCounts = (List&lt;Int64&gt;)inArguments[10];
+			List&lt;double&gt; inEquipmentQualities = (List&lt;double&gt;)inArguments[11];
+			Int64 inTotalWandererCount = (Int64)inArguments[12];
+			bool inPlaceWanderersOnMap = (bool)inArguments[13];
+			
+			if(inRacesForced == null)
+				inRacesForced = new List&lt;IFRace&gt;();
+			if(inSexesForced == null)
+				inSexesForced = new List&lt;IFPop.ePopSex&gt;();
+			if(inWoundedDaysOver == null)
+				inWoundedDaysOver = new List&lt;Int64&gt;();
+			if(inIllDaysOver == null)
+				inIllDaysOver = new List&lt;Int64&gt;();
+			if(inPregnantDaysOver == null)
+				inPregnantDaysOver = new List&lt;Int64&gt;();
+			if(inMCalHealths == null)
+				inMCalHealths = new List&lt;double&gt;();
+			if(inProteinHealths == null)
+				inProteinHealths = new List&lt;double&gt;();
+			if(inWaterHealths == null)
+				inWaterHealths = new List&lt;double&gt;();
+			if(inHStasisHealths == null)
+				inHStasisHealths = new List&lt;double&gt;();
+			if(inSoldierSkills == null)
+				inSoldierSkills = new List&lt;double&gt;();
+			if(inTotalEquipmentCounts == null)
+				inTotalEquipmentCounts = new List&lt;Int64&gt;();
+			if(inEquipmentQualities == null)
+				inEquipmentQualities = new List&lt;double&gt;();
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			
+			List&lt;IFPop&gt; listPopsCreated = new List&lt;IFPop&gt;(); //the generated pops will be held here
+			
+			//fetch necessary consts:
+			double healthMin = consts.getHealthMin();
+			double healthMax = consts.getHealthMax();
+			double soldierSkillMin = consts.getSoldierSkillMin();
+			double soldierSkillMax = consts.getSoldierSkillMax();
+			double qualityMin = consts.getResourceQualityMin();
+			double qualityMax = consts.getResourceQualityMax();
+			
+			//fetch necessary custom consts:
+			bool success = false;
+			double mcalRandomMin = customConsts.getDoubleConst("wanderer generate health mcal min", out success);
+			if(!success) mcalRandomMin = 0.6d;
+			double mcalRandomMax = customConsts.getDoubleConst("wanderer generate health mcal max", out success);
+			if(!success) mcalRandomMax = 1.0d;
+			double proteinRandomMin = customConsts.getDoubleConst("wanderer generate health protein min", out success);
+			if(!success) proteinRandomMin = 0.2d;
+			double proteinRandomMax = customConsts.getDoubleConst("wanderer generate health protein max", out success);
+			if(!success) proteinRandomMax = 1.0d;
+			double waterRandomMin = customConsts.getDoubleConst("wanderer generate health water min", out success);
+			if(!success) waterRandomMin = 1.0d;
+			double waterRandomMax = customConsts.getDoubleConst("wanderer generate health water max", out success);
+			if(!success) waterRandomMax = 1.0d;
+			double hstasisRandomMin = customConsts.getDoubleConst("wanderer generate health hstasis min", out success);
+			if(!success) hstasisRandomMin = 0.4d;
+			double hstasisRandomMax = customConsts.getDoubleConst("wanderer generate health hstasis max", out success);
+			if(!success) hstasisRandomMax = 0.9d;
+			
+			double soldierRandomMin = customConsts.getDoubleConst("wanderer generate soldier_skill min", out success);
+			if(!success) soldierRandomMin = 0.0d;
+			double soldierRandomMax = customConsts.getDoubleConst("wanderer generate soldier_skill max", out success);
+			if(!success) soldierRandomMax = 0.25d;
+			double equipmentChance = customConsts.getDoubleConst("wanderer generate equipment chance", out success);
+			if(!success) equipmentChance = 0.25d;
+			double equipmentCountMin = customConsts.getDoubleConst("wanderer generate equipment percentage min", out success);
+			if(!success) equipmentCountMin = 0.2d;
+			double equipmentCountMax = customConsts.getDoubleConst("wanderer generate equipment percentage max", out success);
+			if(!success) equipmentCountMax = 0.6d;
+			double equipmentQualityMin = customConsts.getDoubleConst("wanderer generate equipment quality min", out success);
+			if(!success) equipmentQualityMin = 0.1d;
+			double equipmentQualityMax = customConsts.getDoubleConst("wanderer generate equipment quality max", out success);
+			if(!success) equipmentQualityMax = 0.6d;
+			
+			//to not repeat the task, collect a list of military resources here:
+			List&lt;IFResource&gt; milResources = new List&lt;IFResource&gt;();
+			int countOfResources = getAPI().getTotalCountOfMO("resources");
+			for(int i = 1; i &lt; countOfResources; i++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+				if(res.isMilEquip())
+				{
+					milResources.Add(res);
+				}
+			}
+			
+			//calculate where all wanderers will appear:
+			IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+			Int64 maxX = map.getMapDimensions().Item1;
+			Int64 maxY = map.getMapDimensions().Item2;
+			double appearanceLocXValue = 0.0d;
+			double appearanceLocYValue = 0.0d;
+			Int64 randVal = getAPI().calcRandIntUnder(4);
+			if(randVal == 0)
+			{
+				appearanceLocXValue = 0;
+				appearanceLocYValue = getAPI().calcRand() * maxY;
+			}
+			else if(randVal == 1)
+			{
+				appearanceLocXValue = maxX;
+				appearanceLocYValue = getAPI().calcRand() * maxY;
+			}
+			else if(randVal == 2)
+			{
+				appearanceLocXValue = getAPI().calcRand() * maxX;
+				appearanceLocYValue = 0;
+			}
+			else
+			{
+				appearanceLocXValue = getAPI().calcRand() * maxX;
+				appearanceLocYValue = maxY;
+			}
+			
+			//TODO: this script should implement check for, and use, connected variables which change the above values away from their defaults
+			
+			//actually generate Wanderers:
+			for(int i = 0; i &lt; inTotalWandererCount; i++)
+			{
+				string toLog = "Generating Wanderer";
+				
+				IFRace race = null;
+				if(inRacesForced.Count &gt; i)
+				{
+					race = inRacesForced[i];
+				}
+				else if(listPopsCreated.Count == 0)
+				{
+					//choose a random race among those that are available:
+					int attemptsLeft = 5;
+					int totalCount = getAPI().getTotalCountOfMO("races");
+					while(attemptsLeft &gt; 0)
+					{
+						int index = (int)(getAPI().calcRandIntUnder(totalCount - 1) + 1); //skip over MOID of 0, which is a default race that should not appear anywhere
+						race = (IFRace)getAPI().getMOFromMOID("races", index);
+						if(!race.isHiddenFromPlayerSight())
+						{
+							break;
+						}
+						race = null;
+						attemptsLeft--;
+					}
+				}
+				else //there are existing Wanderers generated; randomly choose of them and have an identical race
+				{
+					race = listPopsCreated[(int)getAPI().calcRandIntUnder(listPopsCreated.Count)].getRace();
+				}
+				if(race == null) //if we didn't find a valid race, don't generate this Wanderer
+					continue;
+				toLog += " of " + race.getAdjective() + " race";
+				
+				IFPop.ePopSex sex = IFPop.ePopSex.cUnisexNone;
+				if(inSexesForced.Count &gt; i)
+				{
+					sex = inSexesForced[i];
+					toLog += " of forced sex " + sex.ToString();
+				}
+				else
+				{
+					toLog += " of randomly chosen sex";
+				}
+				
+				
+				Int64 woundDayOver = 0;
+				if(inWoundedDaysOver.Count &gt; i)
+				{
+					woundDayOver = inWoundedDaysOver[i];
+				}
+				toLog += woundDayOver == 0 ? "" : ", wounded,";
+				
+				Int64 illDayOver = 0;
+				if(inIllDaysOver.Count &gt; i)
+				{
+					illDayOver = inIllDaysOver[i];
+				}
+				toLog += illDayOver == 0 ? "" : ", ill,";
+				
+				Int64 pregDayOver = 0;
+				if(inPregnantDaysOver.Count &gt; i)
+				{
+					pregDayOver = inPregnantDaysOver[i];
+					//if pregnant day is forced, and pop's sex is not forced, and race is not unisex, make the pop female:
+					if(!race.isUnisex() &amp;&amp; !(inSexesForced.Count &gt; i))
+					{
+						sex = IFPop.ePopSex.cFemale;
+						toLog += ", setting sex to female due to pregnancy";
+					}
+				}
+				toLog += pregDayOver == 0 ? "" : ", pregnant,";
+				
+				
+				double mcalHealth = 0;
+				if(inMCalHealths.Count &gt; i)
+				{
+					mcalHealth = inMCalHealths[i];
+				}
+				else
+				{
+					mcalHealth = healthMin + ((mcalRandomMin + ((mcalRandomMax - mcalRandomMin) * getAPI().calcRand())) * (healthMax - healthMin));
+				}
+				toLog += " mcalHealth=" + mcalHealth;
+				
+				double protHealth = 0;
+				if(inProteinHealths.Count &gt; i)
+				{
+					protHealth = inProteinHealths[i];
+				}
+				else
+				{
+					protHealth = healthMin + ((proteinRandomMin + ((proteinRandomMax - proteinRandomMin) * getAPI().calcRand())) * (healthMax - healthMin));
+				}
+				toLog += " protHealth=" + protHealth;
+				
+				double waterHealth = 0;
+				if(inWaterHealths.Count &gt; i)
+				{
+					waterHealth = inWaterHealths[i];
+				}
+				else
+				{
+					waterHealth = healthMin + ((waterRandomMin + ((waterRandomMax - waterRandomMin) * getAPI().calcRand())) * (healthMax - healthMin));
+				}
+				toLog += " waterHealth=" + waterHealth;
+				
+				double hstasisHealth = 0;
+				if(inHStasisHealths.Count &gt; i)
+				{
+					hstasisHealth = inHStasisHealths[i];
+				}
+				else
+				{
+					hstasisHealth = healthMin + ((hstasisRandomMin + ((hstasisRandomMax - hstasisRandomMin) * getAPI().calcRand())) * (healthMax - healthMin));
+				}
+				toLog += " hstasisHealth=" + hstasisHealth;
+				
+				
+				double soldierSkill = 0;
+				if(inSoldierSkills.Count &gt; i)
+				{
+					soldierSkill = inSoldierSkills[i];
+				}
+				else
+				{
+					soldierSkill = soldierSkillMin + ((soldierRandomMin + ((soldierRandomMax - soldierRandomMin) * getAPI().calcRand())) * (soldierSkillMax - soldierSkillMin));
+				}
+				toLog += " soldierSkill=" + soldierSkill;
+				
+				Dictionary&lt;IFResource, double&gt; equipment = new Dictionary&lt;IFResource, double&gt;();
+				Int64 equipCount = 0;
+				if(inTotalEquipmentCounts.Count &gt; i)
+				{
+					equipCount = inTotalEquipmentCounts[i];
+				}
+				else
+				{
+					equipCount = (Int64)(milResources.Count * (getAPI().calcRand() &lt; equipmentChance ? equipmentCountMin + (getAPI().calcRand() * (equipmentCountMax - equipmentCountMin)) : 0));
+				}
+				
+				if(equipCount &gt; 0)
+				{
+					//choose equipCount unique indeces:
+					HashSet&lt;int&gt; indeces = new HashSet&lt;int&gt;();
+					if(equipCount &gt;= milResources.Count)
+					{
+						//all of them:
+						for(int j = 0; j &lt; milResources.Count; j++)
+						{
+							indeces.Add(j);
+						}
+					}
+					else
+					{
+						for(int j = 0; (j &lt; milResources.Count) &amp;&amp; (indeces.Count &lt; equipCount); j++)
+						{
+							int totalLeftToChoose = (int)(equipCount - indeces.Count);
+							int totalLeftToSelectFrom = milResources.Count - j;
+							if(getAPI().calcProb(totalLeftToChoose, totalLeftToSelectFrom))
+							{
+								indeces.Add(j);
+							}
+						}
+					}
+					
+					//calculate quality:
+					double quality = 0;
+					if(inEquipmentQualities.Count &gt; i)
+					{
+						quality = inEquipmentQualities[i];
+					}
+					else
+					{
+						quality = qualityMin + ((qualityMax - qualityMin) * (equipmentQualityMin + ((equipmentQualityMax - equipmentQualityMin) * getAPI().calcRand())));
+					}
+					
+					foreach(int index in indeces)
+					{
+						toLog += ", holding " + milResources[index].getDebugName() + " of quality " + quality;
+						equipment.Add(milResources[index], quality);
+					}
+				}
+				
+				
+				addDebugMessage(inScriptInstance, toLog);
+				IFPop popGenerated = 
+					getAPI().generateNewPop(
+						race, getAPI().getWandererCommunity(), 
+						"" /*name blank*/, Int64.MinValue /*DOB blank*/,
+						soldierSkill, sex, equipment,
+						null /*no delegation*/,
+						inPlaceWanderersOnMap /*place on map*/, appearanceLocXValue, appearanceLocYValue,
+						woundDayOver, illDayOver, pregDayOver,
+						mcalHealth, protHealth, waterHealth, hstasisHealth, (mcalHealth + protHealth + waterHealth + hstasisHealth) / 4 /*make overall health the average of the others*/
+					);
+				if(popGenerated != null) //this shouldn't happen unless the race we provided was null, but check just in case :)
+				{
+					listPopsCreated.Add(popGenerated);
+				}
+			}
+			
+			if(inPlaceWanderersOnMap)
+			{
+				//alert the player that there are now pops on the map:
+				Int64 enable_if_not_zero = customConsts.getIntConst("generateWandererGroup alert enable_if_not_zero", out success);
+				if(!success) enable_if_not_zero = 0;
+				if((listPopsCreated.Count != 0) &amp;&amp; (enable_if_not_zero != 0))
+				{
+					string text = customConsts.getStringConst("generateWandererGroup alert before_replace_text", out success);
+					if(!success) text = "A group of [0] Wanderers is visiting the community.";
+					text = text.Replace("[0]", listPopsCreated.Count.ToString());
+				
+					getAPI().createAlert(text, 255, 255, 255, false, listPopsCreated[0]); //the numbers are r/g/b, and false is for not pausing
+				}
+			}
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;() { listPopsCreated };
+			return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

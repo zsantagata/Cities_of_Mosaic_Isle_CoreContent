@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script attemptpathfindstatetransition</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which resolves an attempt by pathfinding scripts to transition a given pop into a given pathfinding state -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- attempt to pathfind state transition has four arguments: string inStateName, IFPop inPop, IFMap inLocalMap, bool inBattleOngoing.  It has six outputs: bool outSuccess, IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget, if and only if outSuccess is true. -->
+	<!-- this script is a convenience for pathfinding scripts: instead of manually calling two different pathfinding scripts, this script bundles the two calls together. -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* a pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* a pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<i1><a>attemptPathfindStateTransition</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(string), typeof(IFPop), typeof(IFMap), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("attemptPathfindStateTransition custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  string inStateName = (string)inArguments[0];
+	  IFPop inPop = (IFPop)inArguments[1];
+	  IFMap inLocalMap = (IFMap)inArguments[2];
+	  bool inBattleOngoing = (bool)inArguments[3];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity checking: a null input pop is an invalid input:
+	  if(inPop == null)
+	  {
+		  throw new ArgumentException("attemptPathfindStateTransition custom script received invalid argument inPop: null");
+		  return null;
+	  }
+	  //sanity checking: the state name should be a valid pathfinding state:
+	  //note that pathfinding states are held internally as lower case but the custom script call should use the state name with its regular capitalization
+	  if(!getAPI().getAllPathfindingStates().Contains(inStateName.ToLower()))
+	  {
+		  throw new ArgumentException("attemptPathfindStateTransition custom script received invalid argument inStateName: " + (inStateName.ToLower()) + " is not an existing pathfinding state");
+		  return null;
+	  }
+	  
+	  bool scriptCallFailure = false;
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	  if(customScripts.runCustomScriptCheckTypes("pathfinding_state_" + inStateName + "_hasValidTargetForTransitionIn", new List&lt;object&gt;() {inPop, inLocalMap, inBattleOngoing},
+		out List&lt;object&gt; validTgt, false, typeof(bool)))
+	  {
+		  if((bool)validTgt[0])
+		  {
+			  if(customScripts.runCustomScriptCheckTypes("pathfinding_state_" + inStateName + "_findTargetForTransitionIn", new List&lt;object&gt;() {inPop, inLocalMap, inBattleOngoing},
+				out List&lt;object&gt; targets, true, typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the " + inStateName + " state");
+					toReturn.Add(true);
+					toReturn.Add((IFBuilding)targets[0]);
+					toReturn.Add((IFPop)targets[1]);
+					toReturn.Add((bool)targets[2]);
+					toReturn.Add((double)targets[3]);
+					toReturn.Add((double)targets[4]);
+					return toReturn;
+				}
+				else
+				{
+					scriptCallFailure = true;
+				}
+		  }
+	  }
+	  else
+	  {
+		  scriptCallFailure = true;
+	  }
+	  
+	  //if a script did not exist or we called it incorrectly, we should throw; that way an advisory message will be sent and the pathfinding script can immediately assign the pop as Idle instead of continuing
+	  if(scriptCallFailure)
+	  {
+		  throw new ArgumentException("attemptPathfindStateTransition custom script failed to call scripts for pathfinding state " + inStateName + " correctly");
+		  return null;
+	  }
+	  
+	  //if a script indicated that we should not transition to the indicated state, we are here.  Return false and parameters for the Idle state:
+	  addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the " + inStateName + " state");
+	  toReturn.Add(false);
+	  toReturn.Add(null);
+	  toReturn.Add(null);
+	  toReturn.Add(false);
+	  toReturn.Add(-1.0d);
+	  toReturn.Add(-1.0d);
+	  return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop list_of_options</a> <b>list</b> <c>soldier_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase skill value_selection_count</a> <b>int</b> <c>3</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase skill value_sel0 before_replace_text</a> <b>string</b> <c>amateur,untrained,untested</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase skill value_sel1 before_replace_text</a> <b>string</b> <c>militial,trained,competent</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase skill value_sel2 before_replace_text</a> <b>string</b> <c>hardened,battle-ready,soldiering</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase equipment value_selection_count</a> <b>int</b> <c>2</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase equipment value_sel0 before_replace_text</a> <b>string</b> <c>unarmed,unprepared,unequipped</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase equipment value_sel1 before_replace_text</a> <b>string</b> <c>armed,armored,well-equipped,prepared</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase dead before_replace_text</a> <b>string</b> <c>dead</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase wounded before_replace_text</a> <b>string</b> <c>hurt,injured,bandaged,bloodied,maimed</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a pop and from it, returns a string that is an adjective phrase indicating the soldier state (skill, equipment) of the pop -->
+  <!-- this will choose from dead adjectives if the pop is dead, wounded if the pop is wounded, and otherwise it will choose randomly from all valid adjectives -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFPop inPop, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inPop == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase custom script received invalid arguments: inPop cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	
+	//determine soldier status:
+	//skill:
+	double maxSkill = consts.getSoldierSkillMax();
+	double minSkill = consts.getSoldierSkillMin();
+	double skill = inPop.getSoldierSkill();
+	Int64 maxSkillVal = customConsts.getIntConst("replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase skill value_selection_count", out success);
+	if(!success) maxSkillVal = 3;
+	skill -= minSkill;
+	skill /= (maxSkill - minSkill);
+	int skillVal = (int)(skill * maxSkillVal);
+	if(skillVal == maxSkillVal)
+		skillVal--;
+		
+	//equipment:
+	double maxQual = consts.getResourceQualityMax();
+	double minQual = consts.getResourceQualityMin();
+	double qual = inPop.getAverageEquipmentQuality();
+	Int64 maxQualVal = customConsts.getIntConst("replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase equipment value_selection_count", out success);
+	if(!success) maxQualVal = 2;
+	qual -= minQual;
+	qual /= (maxQual - minQual);
+	int qualVal = (int)(qual * maxQualVal);
+	if(qualVal == maxQualVal)
+		qualVal--;
+	
+	//determine health:
+	bool dead = inPop.isDead();
+	bool wounded = inPop.isWounded();
+	
+	List&lt;string&gt; possibleAdjs = new List&lt;string&gt;();
+	
+	//if the pop is dead, that's the only important thing:
+	if(dead)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase dead before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	//if the pop is wounded, that's the only other important thing:
+	else if(wounded)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase wounded before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase skill value_sel" + skillVal + " before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+		
+		adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase equipment value_sel" + qualVal + " before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	
+	if(possibleAdjs.Count &gt; 0)
+	{
+		outDescription = possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)];
+	}
+	
+	if(outDescription == "")
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_soldier_adj_phrase default before_replace_text", out success);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

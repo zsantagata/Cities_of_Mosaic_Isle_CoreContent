@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the ViolentIntent state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: A pop is in ViolentIntent when it is a neutral or loyal pop during peacetime, but it has the intent of getting to a target and performing some sort of hostile action.  This hostile action may always, or may depending on the presence of nearby friendlies, turn them into GenericEnemy, Rebels, or another hostile community after it is performed -->
+		<i1><a>ViolentIntent</a> 
+		<b>2.5</b><c>2.51</c></i1>
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to ViolentIntent: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_ViolentIntent -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>pathfinding_state_ViolentIntent violence radius</a> <b>double</b> <c>0.25</c></i1> <!-- a pop in ViolentIntent will only be able to do violence against a target within this radius -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_violentintent_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_violentintent_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_violentintent</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to ViolentIntent: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_ViolentIntent -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_ViolentIntent_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_ViolentIntent_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_ViolentIntent_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//two considerations:
+				//the first consideration is if the pop is not an enemy, and battle is not ongoing:
+				bool first_consideration = !(getAPI().isHostileCommunity(inPop.getCommunity())) &amp;&amp; !inBattleOngoing;
+				
+				//the second consideration is if there is a stored target for this pop that is accessible:
+				bool second_consideration = false;
+				Int64 uidOfPopTarget = variableHandler.getInt("battleAI_violentIntentPopTarget_pop" + inPop.getUID(), out bool success);
+				if(success)
+				{
+					IFPop popTarget = (IFPop)getAPI().getSO("pops", uidOfPopTarget);
+					if(popTarget != null)
+					{
+						second_consideration = getAPI().isPopAccessibleByPop(inPop, popTarget);
+						if(!second_consideration)
+						{
+							//check if the pop is in an accessible building:
+							if((popTarget.getPopLocation() == IFPop.ePopLocation.cInHome) &amp;&amp; popTarget.hasHomeBuilding())
+							{
+								second_consideration = getAPI().isBuildingAccessibleByPop(inPop, popTarget.getHomeBuilding());
+							}
+							else if((popTarget.getPopLocation() == IFPop.ePopLocation.cInWorkplace) &amp;&amp; popTarget.hasWorkplaceBuilding())
+							{
+								second_consideration = getAPI().isBuildingAccessibleByPop(inPop, popTarget.getWorkplaceBuilding());
+							}
+						}
+					}
+				}
+				if(!second_consideration)
+				{
+					Int64 uidOfBuildingTarget = variableHandler.getInt("battleAI_violentIntentBuildingTarget_pop" + inPop.getUID(), out success);
+					if(success)
+					{
+						IFBuilding buildingTarget = (IFBuilding)getAPI().getSO("buildings", uidOfBuildingTarget);
+						if(buildingTarget != null)
+						{
+							second_consideration = getAPI().isBuildingAccessibleByPop(inPop, buildingTarget);
+						}
+					}
+				}
+				
+				toReturn.Add(first_consideration &amp;&amp; second_consideration);
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_ViolentIntent_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_ViolentIntent_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_ViolentIntent_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				Int64 uidOfPopTarget = variableHandler.getInt("battleAI_violentIntentPopTarget_pop" + inPop.getUID(), out bool success);
+				if(success)
+				{
+					IFPop popTarget = (IFPop)getAPI().getSO("pops", uidOfPopTarget);
+					if(popTarget != null)
+					{
+						if(getAPI().isPopAccessibleByPop(inPop, popTarget))
+						{
+							toReturn.Add(null);
+							toReturn.Add(popTarget);
+							toReturn.Add(false);
+							toReturn.Add(-1.0d);
+							toReturn.Add(-1.0d);
+							return toReturn;
+						}
+						//check if the pop is in an accessible building:
+						else if((popTarget.getPopLocation() == IFPop.ePopLocation.cInHome) &amp;&amp; popTarget.hasHomeBuilding())
+						{
+							if(getAPI().isBuildingAccessibleByPop(inPop, popTarget.getHomeBuilding()))
+							{
+								toReturn.Add(popTarget.getHomeBuilding());
+								toReturn.Add(null);
+								toReturn.Add(false);
+								toReturn.Add(-1.0d);
+								toReturn.Add(-1.0d);
+								return toReturn;
+							}
+						}
+						else if((popTarget.getPopLocation() == IFPop.ePopLocation.cInWorkplace) &amp;&amp; popTarget.hasWorkplaceBuilding())
+						{
+							if(getAPI().isBuildingAccessibleByPop(inPop, popTarget.getWorkplaceBuilding()))
+							{
+								toReturn.Add(popTarget.getWorkplaceBuilding());
+								toReturn.Add(null);
+								toReturn.Add(false);
+								toReturn.Add(-1.0d);
+								toReturn.Add(-1.0d);
+								return toReturn;
+							}
+						}
+					}
+				}
+				Int64 uidOfBuildingTarget = variableHandler.getInt("battleAI_violentIntentBuildingTarget_pop" + inPop.getUID(), out success);
+				if(success)
+				{
+					IFBuilding buildingTarget = (IFBuilding)getAPI().getSO("buildings", uidOfBuildingTarget);
+					if((buildingTarget != null) &amp;&amp; getAPI().isBuildingAccessibleByPop(inPop, buildingTarget))
+					{
+						toReturn.Add(buildingTarget);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+				}
+				
+				//because there was not a valid target, just Idle:
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_ViolentIntent" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+
+				addDebugMessage(inScriptInstance, "default state_ViolentIntent script is finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//first: this pop is in ViolentIntent because it wants to do violence.  Because we are here, the pop may have "waited" near a target long enough to do damage to it/start a fight with it.  If so, handle that:
+				double violenceRadius = customConsts.getDoubleConst("pathfinding_state_ViolentIntent violence radius", out bool success);
+				if(!success) violenceRadius = 0.25d;
+				Int64 uidOfPopTarget = variableHandler.getInt("battleAI_violentIntentPopTarget_pop" + inPop.getUID(), out success);
+				IFPop violenceTargetPop = null;
+				IFBuilding violenceTargetBuilding = null;
+				if(success)
+				{
+					IFPop popTarget = (IFPop)getAPI().getSO("pops", uidOfPopTarget);
+					if(popTarget != null)
+					{
+						if(getAPI().isPopAccessibleByPop(inPop, popTarget))
+						{
+							double dist = getAPI().calcDistanceBetweenPoints(inPop.getMapLocationTuple(), popTarget.getMapLocationTuple());
+							if(dist &lt; violenceRadius)
+							{
+								violenceTargetPop = popTarget;
+							}
+						}
+						//check if the pop is in an accessible building:
+						else if((popTarget.getPopLocation() == IFPop.ePopLocation.cInHome) &amp;&amp; popTarget.hasHomeBuilding())
+						{
+							double dist = getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, popTarget.getHomeBuilding(), inLocalMap);
+							if((dist &lt; violenceRadius) &amp;&amp; getAPI().isBuildingAccessibleByPop(inPop, popTarget.getHomeBuilding()))
+							{
+								violenceTargetBuilding = popTarget.getHomeBuilding();
+							}
+						}
+						else if((popTarget.getPopLocation() == IFPop.ePopLocation.cInWorkplace) &amp;&amp; popTarget.hasWorkplaceBuilding())
+						{
+							double dist = getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, popTarget.getWorkplaceBuilding(), inLocalMap);
+							if((dist &lt; violenceRadius) &amp;&amp; getAPI().isBuildingAccessibleByPop(inPop, popTarget.getWorkplaceBuilding()))
+							{
+								violenceTargetBuilding = popTarget.getWorkplaceBuilding();
+							}
+						}
+					}
+				}
+				if((violenceTargetPop == null) &amp;&amp; (violenceTargetBuilding == null))
+				{
+					Int64 uidOfBuildingTarget = variableHandler.getInt("battleAI_violentIntentBuildingTarget_pop" + inPop.getUID(), out success);
+					if(success)
+					{
+						IFBuilding buildingTarget = (IFBuilding)getAPI().getSO("buildings", uidOfBuildingTarget);
+						if(buildingTarget != null)
+						{
+							if(getAPI().isBuildingAccessibleByPop(inPop, buildingTarget))
+							{
+								violenceTargetBuilding = buildingTarget;
+							}
+						}
+					}
+				}
+				if((violenceTargetPop != null) || (violenceTargetBuilding != null))
+				{
+					if(customScripts.runCustomScript("battleAIPerformViolentIntent", new List&lt;object&gt;() { inPop, violenceTargetPop, violenceTargetBuilding }, out _))
+					{
+						//we successfully performed violence, transition to Idle directly:
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop completed ViolentIntent state so pop is transitioning directly to Idle state");
+						toReturn.Add("Idle");
+						toReturn.Add(null);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+				}
+				
+				//otherwise, try to keep focusing on the target:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"ViolentIntent", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should stay in the ViolentIntent state due to: " + " still hold violent intent towards target");
+						toReturn.Add("ViolentIntent");
+						toReturn.Add((IFBuilding)validTgt[1]);
+						toReturn.Add((IFPop)validTgt[2]);
+						toReturn.Add((bool)validTgt[3]);
+						toReturn.Add((double)validTgt[4]);
+						toReturn.Add((double)validTgt[5]);
+						return toReturn;
+					}
+				}
+				//we failed to call a script correctly somehow.  Transition to Idle instead:
+				addDebugMessage(inScriptInstance, "custom scripts indicated pop could not stay in the ViolentIntent state so pop is transitioning directly to Idle state");
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_ViolentIntent</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

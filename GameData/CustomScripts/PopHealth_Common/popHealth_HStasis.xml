@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+		<i1><a>popHealth_HStasis hstasis death_days value</a> <b>double</b> <c>21.0</c></i1> <!-- how many days without hstasis will cause hstasis health to drop from max to min.  Because pops consume an hstasis item (clothes) to replenish their hstasis, assume that the clothes decay over time, rather than only lasting a day -->
+		<i1><a>popHealth_HStasis hstasis recovery_days value</a> <b>double</b> <c>1.0</c></i1> <!-- how many days of full hstasis need med will cause hstasis health to rise from min to max -->
+		
+		<!-- if the pop has housing, the housing's quality causes HStasis needs to decrease more slowly -->
+		<i1><a>popHealth_HStasis hstasis housing_quality decrease_slow max</a> <b>double</b> <c>0.9</c></i1> <!-- at full quality, hstasis decrease is multiplied by 1 - this -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script pophealth_hstasis</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which handles pop hstasis health from whatever situation the pop is in -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop,
+	IFResource inResourceToConsume,
+	IFResourcePool inResourcePoolToConsumeFrom,
+	double inBiomeHStasisMin, //TODO this can vary over time.  Proportion of the whole range of health.
+	double inHStasisItemQual,
+	bool inRoughingIt
+	
+	There is no output -->
+	<i1><a>popHealth_HStasis</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop), typeof(IFResource), typeof(IFResourcePool), typeof(double), typeof(double), typeof(bool)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popHealth_HStasis custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	IFResource inResourceToConsume = (IFResource)inArguments[1];
+	IFResourcePool inResourcePoolToConsumeFrom = (IFResourcePool)inArguments[2];
+	double inBiomeHStasisMin = (double)inArguments[3];
+	double inHStasisItemQual = (double)inArguments[4];
+	bool inRoughingIt = (bool)inArguments[5];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	double resourceMaxQual = consts.getResourceQualityMax();
+	double resourceMinQual = consts.getResourceQualityMin();
+	double minHealth = consts.getHealthMin();
+	double maxHealth = consts.getHealthMax();
+	
+	//TODO any race or other non-standard considerations
+	  
+	double daily_hstasis_need_met = 0;
+	bool success = false;
+	if(!inRoughingIt &amp;&amp; (inResourceToConsume != null) &amp;&amp; (inResourcePoolToConsumeFrom != null))
+	{
+		Int64 exposure_threshold = customConsts.getIntConst("popWoundFromExposure hstasis threshold", out success);
+		if(!success) exposure_threshold = 0x7FFF;
+	    if((inPop.getHStasisHealth() &lt; exposure_threshold) &amp;&amp; (inHStasisItemQual &gt; resourceMinQual) &amp;&amp; (inResourcePoolToConsumeFrom.getResourceQuantity(inResourceToConsume) &gt;= 1.0d))
+		{
+			List&lt;double&gt; quantity = new List&lt;double&gt;();
+			List&lt;double&gt; quality = new List&lt;double&gt;();
+			quantity.Add(1.0d);
+			quality.Add(inHStasisItemQual);
+			daily_hstasis_need_met = getAPI().calcOutputFromInputs(quantity, quality, false, true) / consts.getAverageInputFactor();
+			inResourcePoolToConsumeFrom.subtractResource(inResourceToConsume, 1.0d, inPop.getHomeBuilding(), inPop);
+		}
+	}
+
+    //hstasis needs decay slowly and recover quickly
+    //hstasis has 21 days to death at 0.0 need met and 1 days to recovery at 1.5* need met
+	//but hstasis decay more slowly if the pop has good housing
+	//and hstasis has a minimum depending on the biome
+
+    double deathDays = customConsts.getDoubleConst("popHealth_HStasis hstasis death_days value", out success);
+    if(!success) deathDays = 21.0d;
+    double recoveryDays = customConsts.getDoubleConst("popHealth_HStasis hstasis recovery_days value", out success);
+    if(!success) recoveryDays = 1.0d;
+	
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("pop health decay");
+	if(difficulty &gt; 0.0d)
+	{
+		recoveryDays *= difficulty;
+		deathDays /= difficulty;
+	}
+
+    double shift_from_current_hstasis_health = 1 / (1.5d * deathDays);
+    shift_from_current_hstasis_health = shift_from_current_hstasis_health + ( 1 / (1.5d * recoveryDays));
+    shift_from_current_hstasis_health = shift_from_current_hstasis_health * daily_hstasis_need_met;
+    shift_from_current_hstasis_health = shift_from_current_hstasis_health - ( 1.0d / deathDays );
+    shift_from_current_hstasis_health = shift_from_current_hstasis_health * (maxHealth - minHealth);
+	
+	double housingFactor = 1.0d;
+	if(inPop.hasHomeBuilding())
+	{
+		double homeQuality = inPop.getHomeBuilding().getHousingComponent().getHousingQuality();
+		double housingFactorMax = customConsts.getDoubleConst("popHealth_HStasis hstasis housing_quality decrease_slow max", out success);
+		if(!success) housingFactorMax = 0.9d;
+		housingFactor = housingFactorMax * (homeQuality - resourceMinQual) * (homeQuality - resourceMinQual) / ((resourceMaxQual - resourceMinQual) * (resourceMaxQual - resourceMinQual));
+	}
+	if(shift_from_current_hstasis_health &lt; 0) shift_from_current_hstasis_health *= housingFactor;
+	
+    addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " increasing hstasis health by " + shift_from_current_hstasis_health.ToString() + " as a result of daily hstasis need met at ratio "
+		+ daily_hstasis_need_met.ToString() + ", housing factor of " + housingFactor + ", to minimum of " + inBiomeHStasisMin + " of whole health range");
+
+	double minHStasisHealthFromBiome = inBiomeHStasisMin * (maxHealth - minHealth) + minHealth;
+
+    inPop.setHStasisHealth(Math.Max(inPop.getHStasisHealth() + shift_from_current_hstasis_health, minHStasisHealthFromBiome));
+	return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

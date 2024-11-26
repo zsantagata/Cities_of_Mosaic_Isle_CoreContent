@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources:
+	TODO implement these custom consts: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igRace name="Scorpioform">
+    <Encyclopedia_Entry>
+	  <full_path>Races/Scorpioform</full_path>
+	  <body_text>Scorpioform.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSingleNoun>Scorpioform</mSingleNoun>
+	<mPluralNoun>Scorpioform</mPluralNoun>
+	<mCollectiveNoun>Scorpioform</mCollectiveNoun>
+	<mAdjective>Scorpioform</mAdjective>
+	<mSpecialAttributes>0x480</mSpecialAttributes><!-- 0x80 = can breathe overwater, 0x400 = can father children -->
+	
+	<mIndustryProductivities>
+	  <i1>
+	    <a>Jewelry</a>
+		<b>1.1</b>
+		<c>0x0</c>
+	  </i1>
+	  <i2>
+	    <a>Mining</a>
+		<b>1.0</b>
+		<c>0x4000</c> <!-- 0x4000 = disliked industry -->
+	  </i2>
+	  <i3>
+	    <a>*</a>
+		<b>1.0</b>
+		<c>0x0</c>
+	  </i3>
+	</mIndustryProductivities>
+	
+	<mSSIDs>
+		<i>Shifter neutral ss</i>
+		<i>Shifter local ss</i>
+		<i>Shifter thelady ss</i>
+		<i>Shifter rebels ss</i>
+		<i>Shifter genericenemies ss</i>
+		<i>Shifter wanderers ss</i>
+	</mSSIDs>
+    <mLandSpeed>1.05</mLandSpeed>
+    <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+    <mWaterSpeed>0.35</mWaterSpeed>
+    <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+
+    <mTagList>
+	  <i1>six limbs</i1>
+	  <i1>tail</i1>
+	  <i1>insectoid</i1>
+	  <i1>powerful combatants</i1>
+	  <i1>creepy</i1>
+	  
+		<!-- description tags: -->
+		<i1>general_adj:chitinous</i1>
+		<i1>general_adj:skittering</i1>
+		<i1>bodypart_vision:irises</i1>
+		<i1>bodypart_hearing:earholes</i1>
+		<i1>bodypart_smelling:nosehole</i1>
+		<i1>bodypart_taste:maw</i1>
+		<i1>bodypart_outer:chitin</i1>
+		<i1>bodypart_graspsingle:claw</i1>
+		<i1>bodypart_landtravel:legs</i1>
+		<i1>bodypart_watertravel:legs</i1>
+		<i1>bodypart_expression:eye</i1>
+		<i1>bodypart_decorative:plates</i1>
+	</mTagList>
+  </igRace>
+  
+</core_data>

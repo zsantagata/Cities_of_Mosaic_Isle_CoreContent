@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_common_resourcedictionary last_item_prepend before_replace_text</a> <b>string</b> <c>, and</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_common_resourcedictionary</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a dictionary of resources and from it, returns a string that is a list detailing all of the resources within, possibly including qualities -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	Dictionary<IFResource, Tuple<double, double>>, //cannot be null
+	bool inUseQualities
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_common_resourcedictionary</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(bool) }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_common_resourcedictionary custom script received invalid arguments");
+		return null;
+	}
+	  
+	Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inResources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)inArguments[0];
+	bool inUseQualities = (bool)inArguments[1];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	if(inResources == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_common_resourcedictionary custom script received invalid arguments: inResources cannot be null");
+		return null;
+	}
+	
+	List&lt;string&gt; resourceStrings = new List&lt;string&gt;();
+	//quantity space name space quality:
+	
+	if(inUseQualities)
+	{
+		foreach(var kvpair in inResources)
+		{
+			resourceStrings.Add(consts.getResourceFormattedString(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2));
+		}
+	}
+	else
+	{
+		foreach(var kvpair in inResources)
+		{
+			resourceStrings.Add(consts.getQuantityFormattedString(kvpair.Value.Item1) + " " + kvpair.Key.getDisplayName());
+		}
+	}
+	
+	for(int i = 0; i &lt; resourceStrings.Count; i++)
+	{
+		if(i != 0)
+		{
+			if(i == (resourceStrings.Count - 1))
+			{
+				string last_item_prepend = customConsts.getStringConst("replaceDescriptionMarkupKind_common_resourcedictionary last_item_prepend before_replace_text", out success);
+				if(!success) last_item_prepend = ", and";
+				outDescription += last_item_prepend + " ";
+			}
+			else
+			{
+				outDescription += ", ";
+			}
+		}
+		outDescription += resourceStrings[i];
+	}
+	
+	return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

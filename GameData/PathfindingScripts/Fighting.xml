@@ -1,0 +1,399 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the Fighting state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: A pop is fighting if it is in combat with at least one hostile pop -->
+		<!-- <i1><a>Fighting</a> 
+		<b>4.0</b><c>4.01</c></i1> -->
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to Fighting: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_Fighting -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>pathfinding_state_Fighting start_fight radius</a> <b>double</b> <c>1.25</c></i1> <!-- if a pop is closer than this to a hostile pop and it desires to start a fight, it can do so. Note that other pathfinding states use this const; this class doesn't -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_fighting_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_fighting_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_fighting</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to Fighting: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_Fighting -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_Fighting_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_Fighting_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_Fighting_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//the Fighting state should not be entered as a result of normal pathfinding.  Instead, the startNearbyFightIfAble or joinNearbyFightIfAble custom scripts should be used, and then directly transition a pop to the Fighting state
+				toReturn.Add(false);
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_Fighting_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_Fighting_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_Fighting_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//this is simple: just tell the pop to idle; it's fighting
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_Fighting" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+
+				addDebugMessage(inScriptInstance, "default state_Fighting script is finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//when this script is called, the fight is resolved:
+				//(note that we can be here without finding the fight to resolve; that means the fight was resolved by a previous fighter (all timers should be sync'd, so all fighters should resolve on the same frame; no need to worry)
+				IFConnectedVariable listOfAllFights = variableHandler.getConnectedVariable("battleAI_listOfAllFights");
+				if(listOfAllFights != null)
+				{
+					//iterate over all fights and find inPop:
+					IFConnectedVariable correctFightCV = null;
+					foreach(IFConnectedVariable possibleFightCV in listOfAllFights.getLowers())
+					{
+						if(possibleFightCV.getCombinationType() != IFConnectedVariable.eCombinationType.cLIST)
+						{
+							continue; //something is wrong
+						}
+					
+						if(possibleFightCV.getVariableAsInt() == 4) //two fighters
+						{
+							IFConnectedVariable fighter1 = possibleFightCV.getLowers()[2];
+							IFConnectedVariable fighter2 = possibleFightCV.getLowers()[3];
+							if((fighter1.getVariableAsInt() == (Int64)inPop.getUID()) || (fighter2.getVariableAsInt() == (Int64)inPop.getUID()))
+							{
+								correctFightCV = possibleFightCV;
+								break;
+							}
+						}
+						else if(possibleFightCV.getVariableAsInt() == 5) //three fighters
+						{
+							IFConnectedVariable fighter1 = possibleFightCV.getLowers()[2];
+							IFConnectedVariable fighter2 = possibleFightCV.getLowers()[3];
+							IFConnectedVariable fighter3 = possibleFightCV.getLowers()[4];
+							if((fighter1.getVariableAsInt() == (Int64)inPop.getUID()) || (fighter2.getVariableAsInt() == (Int64)inPop.getUID()) || (fighter3.getVariableAsInt() == (Int64)inPop.getUID()))
+							{
+								correctFightCV = possibleFightCV;
+								break;
+							}
+						}
+					}
+					if(correctFightCV != null)
+					{
+						Int64 x_loc = correctFightCV.getLowers()[0].getVariableAsInt();
+						Int64 y_loc = correctFightCV.getLowers()[1].getVariableAsInt();
+						addDebugMessage(inScriptInstance, "found fight at x=" + x_loc + ",y=" + y_loc + " involving pop " + inPop.getDebugName() + ", resolving it");
+						IFConnectedVariable fighter1CV = correctFightCV.getLowers()[2];
+						IFPop fighter1 = (IFPop)getAPI().getSO("pops", fighter1CV.getVariableAsInt());
+						IFConnectedVariable fighter2CV = correctFightCV.getLowers()[3];
+						IFPop fighter2 = (IFPop)getAPI().getSO("pops", fighter2CV.getVariableAsInt());
+						IFConnectedVariable fighter3CV = null;
+						IFPop fighter3 = null;
+						if(correctFightCV.getVariableAsInt() == 5)
+						{
+							fighter3CV = correctFightCV.getLowers()[4];
+							fighter3 = (IFPop)getAPI().getSO("pops", fighter3CV.getVariableAsInt());
+						}
+						
+						bool third_fighter_on_first_side = (fighter3 == null ? false : (getAPI().isHostileCommunity(fighter1.getCommunity()) == getAPI().isHostileCommunity(fighter3.getCommunity())));
+						
+						//call combat resolve:
+						customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { fighter1, fighter2, fighter3, third_fighter_on_first_side, (double)x_loc, (double)y_loc }, out _);
+						
+						//combat resolve will set wounds/deaths and place all combatants at exactly x_loc,y_loc, but it does not manage the connectedVariables.  Do that here.
+						List&lt;IFConnectedVariable&gt; vblsToCleanUp = new List&lt;IFConnectedVariable&gt;(correctFightCV.getLowers()); //make a copy because we cannot iterate over getLowers() while changing it
+						foreach(var vbl in vblsToCleanUp)
+						{
+							variableHandler.clearConnectedVariable(vbl);
+						}
+						variableHandler.clearConnectedVariable(correctFightCV);
+						
+						//all pops in the fight: if they are wounded or dead now, set their pathfinding:
+						if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Dead", fighter1, inLocalMap, inBattleOngoing},
+							out List&lt;object&gt; fightEnd1, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+						{
+							if((bool)fightEnd1[0])
+							{
+								addDebugMessage(inScriptInstance, "custom scripts indicated fighting pop " + fighter1.getDebugName() + " can and should transition to the Dead state due to: " + " pop is Dead after fight");
+								fighter1.forcePathfindingState("Dead", true);
+							}
+						}
+						if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Wounded", fighter1, inLocalMap, inBattleOngoing},
+							out List&lt;object&gt; fightEnd2, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+						{
+							if((bool)fightEnd2[0])
+							{
+								addDebugMessage(inScriptInstance, "custom scripts indicated fighting pop " + fighter1.getDebugName() + " can and should transition to the Wounded state due to: " + " pop is Wounded after fight");
+								fighter1.forcePathfindingState("Wounded", true);
+							}
+						}
+						if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Dead", fighter2, inLocalMap, inBattleOngoing},
+							out List&lt;object&gt; fightEnd3, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+						{
+							if((bool)fightEnd3[0])
+							{
+								addDebugMessage(inScriptInstance, "custom scripts indicated fighting pop " + fighter2.getDebugName() + " can and should transition to the Dead state due to: " + " pop is Dead after fight");
+								fighter2.forcePathfindingState("Dead", true);
+							}
+						}
+						if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Wounded", fighter2, inLocalMap, inBattleOngoing},
+							out List&lt;object&gt; fightEnd4, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+						{
+							if((bool)fightEnd4[0])
+							{
+								addDebugMessage(inScriptInstance, "custom scripts indicated fighting pop " + fighter2.getDebugName() + " can and should transition to the Wounded state due to: " + " pop is Wounded after fight");
+								fighter2.forcePathfindingState("Wounded", true);
+							}
+						}
+						if(fighter3 != null)
+						{						
+							if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Dead", fighter3, inLocalMap, inBattleOngoing},
+								out List&lt;object&gt; fightEnd5, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+							{
+								if((bool)fightEnd5[0])
+								{
+									addDebugMessage(inScriptInstance, "custom scripts indicated fighting pop " + fighter3.getDebugName() + " can and should transition to the Dead state due to: " + " pop is Dead after fight");
+									fighter3.forcePathfindingState("Dead", true);
+								}
+							}
+							if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Wounded", fighter3, inLocalMap, inBattleOngoing},
+								out List&lt;object&gt; fightEnd6, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+							{
+								if((bool)fightEnd6[0])
+								{
+									addDebugMessage(inScriptInstance, "custom scripts indicated fighting pop " + fighter3.getDebugName() + " can and should transition to the Wounded state due to: " + " pop is Wounded after fight");
+									fighter3.forcePathfindingState("Wounded", true);
+								}
+							}
+						}
+					}
+					else
+					{
+						addDebugMessage(inScriptInstance, "did not find fight involving pop " + inPop.getDebugName() + ", possibly was already resolved");
+					}
+				}
+				else
+				{
+					addDebugMessage(inScriptInstance, "did not find list of fights!");
+				}
+				
+				//this pop may have been wounded or killed by the fight.  If so, their pathfinding has been directly set to Wounded/Dead already, so quickly return here:
+				if(inPop.isDead())
+				{
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop should transition to the Dead state");
+					toReturn.Add("Dead");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				else if(inPop.isWounded())
+				{
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop should transition to the Wounded state");
+					toReturn.Add("Wounded");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if we should move to muster, do so:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"MoveToMuster", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the MoveToMuster state due to: " + " finished fighting and has mustering point");
+						toReturn.Add("MoveToMuster");
+						toReturn.Add((IFBuilding)validTgt[1]);
+						toReturn.Add((IFPop)validTgt[2]);
+						toReturn.Add((bool)validTgt[3]);
+						toReturn.Add((double)validTgt[4]);
+						toReturn.Add((double)validTgt[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the MoveToMuster state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if this pop is unmustered in battle, it should quickly decide what to do after a fight is finished:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"UnmusteredInBattle", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt2, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt2[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the UnmusteredInBattle state due to: " + " finished fighting and is not mustered or mustering");
+						toReturn.Add("UnmusteredInBattle");
+						toReturn.Add((IFBuilding)validTgt2[1]);
+						toReturn.Add((IFPop)validTgt2[2]);
+						toReturn.Add((bool)validTgt2[3]);
+						toReturn.Add((double)validTgt2[4]);
+						toReturn.Add((double)validTgt2[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the UnmusteredInBattle state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if this pop was Ordered and has a preserved target, continue on the way to the target:
+				bool hasStoredTarget = inPop.isMustered() &amp;&amp; (inPop.getCommunity() == getAPI().getLocalCommunity());
+				double xTgt = variableHandler.getDouble("battleAI_orderedPopSavedTargetX_pop" + inPop.getUID(), out bool success);
+				hasStoredTarget = hasStoredTarget &amp;&amp; success;
+				double yTgt = variableHandler.getDouble("battleAI_orderedPopSavedTargetY_pop" + inPop.getUID(), out success);
+				hasStoredTarget = hasStoredTarget &amp;&amp; success &amp;&amp; (xTgt &gt;= 0.0d) &amp;&amp; (yTgt &gt;= 0.0d) &amp;&amp; (xTgt &lt;= inLocalMap.getMapDimensions().Item1) &amp;&amp; (yTgt &lt;= inLocalMap.getMapDimensions().Item2);
+				if(hasStoredTarget)
+				{
+					//clear stored target:
+					variableHandler.storeDoubleVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_orderedPopSavedTargetX_pop" + inPop.getUID(), -1.0d);
+					variableHandler.storeDoubleVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_orderedPopSavedTargetY_pop" + inPop.getUID(), -1.0d);
+				
+					addDebugMessage(inScriptInstance, "pop has stored target for the Ordered state; transitioning back to Ordered state with same target");
+					toReturn.Add("Ordered");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(xTgt);
+					toReturn.Add(yTgt);
+					return toReturn;
+				}
+				
+				//chase a nearby enemy if possible:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"ChasingEnemy", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt3, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt3[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the ChasingEnemy state due to: " + " finished fighting and there is another enemy nearby");
+						toReturn.Add("ChasingEnemy");
+						toReturn.Add((IFBuilding)validTgt3[1]);
+						toReturn.Add((IFPop)validTgt3[2]);
+						toReturn.Add((bool)validTgt3[3]);
+						toReturn.Add((double)validTgt3[4]);
+						toReturn.Add((double)validTgt3[5]);
+						return toReturn;
+					}
+				}
+				
+				addDebugMessage(inScriptInstance, "pop " + inPop.getDisplayName() + " transitioning to Idle state after a fight");
+				//all other pops, whether loyal/neutral/enemy, should probably stand around a bit after a fight, getting their bearings:
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_Fighting</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

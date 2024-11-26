@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script seize_goods_valid_neutral</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which checks if goods can be seized from any neutral pops in delegations within -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has one input: IFBuilding inBuilding.  It has one output: bool outCanGoodsBeSeized. -->
+	<!-- this script is called by Delegation Hall and Inn custom button validAndName scripts (through other custom scripts) -->
+	<i1><a>seize_goods_valid_neutral</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("seize_goods_valid_neutral custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("seize_goods_valid_neutral custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  
+	  bool outCanGoodsBeSeized = false;
+	  
+	  IFCommunity localCommunity = getAPI().getLocalCommunity();
+	  
+	  //if any housed pop is neutral, has a delegation, and that delegation has non-zero resources, the output is true:
+	  if(inBuilding.isHousing())
+	  {
+		foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+		{
+			if(           (pop.getCommunity() != localCommunity)
+			   &amp;&amp; (!getAPI().isHostileCommunity(pop.getCommunity()))
+			   &amp;&amp; (pop.hasDelegation())
+			  )
+			{
+				//fetch the resource pool and check it for resources:
+				IFResourcePool pool = pop.getDelegation().getResourcePool();
+				for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+				{
+					IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+					if(res != null)
+					{
+						if(!res.isNotInResourcePool())
+						{
+							if(pool.getResourceQuantity(res) != 0.0d)
+							{
+								outCanGoodsBeSeized = true;
+								break;
+							}
+						}
+					}
+				}
+				
+				if(outCanGoodsBeSeized)
+				{
+					break;
+				}
+			}
+		}
+	  }
+	  
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;() { outCanGoodsBeSeized };
+	  return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

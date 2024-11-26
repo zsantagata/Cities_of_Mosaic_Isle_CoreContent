@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script clearResourcesStoredVariablesForEvent</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which clears variables related to resources associated with an instance of an event, using the variableHandler -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus,
+	Int64 inEventReportUID,
+	string inAdditionalLabel, //some events have multiple groups of resources they want to store/fetch
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>clearResourcesStoredVariablesForEvent</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(string)}
+	      }, out _))
+	    {
+			throw new ArgumentException("clearResourcesStoredVariablesForEvent custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		string inAdditionalLabel = (string)inArguments[2];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("clearResourcesStoredVariablesForEvent custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReportUID &lt; 0)
+		{
+			throw new ArgumentException("clearResourcesStoredVariablesForEvent custom script received invalid arguments: inEventReportUID cannot be negative");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//obv: fetch count of resources before clearing it
+		Int64 countOfResourcesStored = variableHandler.getInt("evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceTypeCount_report" + inEventReportUID, out bool success);
+		if(!success) countOfResourcesStored = 0;
+		variableHandler.storeIntVariable(0, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceTypeCount_report" + inEventReportUID, 0);
+		
+		for(int index = 0; index &lt; countOfResourcesStored; index++)
+		{
+			variableHandler.storeIntVariable(0, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceMOID" + index + "_report" + inEventReportUID, 0);
+			variableHandler.storeDoubleVariable(0, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceQuan" + index + "_report" + inEventReportUID, 0);
+			variableHandler.storeDoubleVariable(0, "evt" + inEventStatus.getUID() + inAdditionalLabel + "_storedResourceQual" + index + "_report" + inEventReportUID, 0);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

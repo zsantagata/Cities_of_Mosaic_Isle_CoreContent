@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script request_trade_proposal_valid</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which checks if a trade proposal can be requested from the pops within the building -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has one input: IFBuilding inBuilding.  It has one output: bool outCanProposalBeRequested. -->
+	<!-- this script is called by Delegation Hall custom button validAndName scripts -->
+	<i1><a>request_trade_proposal_valid</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("request_trade_proposal_valid custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("request_trade_proposal_valid custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  
+	  bool outCanProposalBeRequested = false;
+	  
+	  //conditions:
+	  //at least one of the pops in the building must be in a trade delegation:
+	  bool tradeDelegationExists = false;
+	  foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+	  {
+		if(pop.hasDelegation() &amp;&amp; pop.getDelegation().getDelegationType() == IFDelegation.eDelegationType.cTrade)
+		{
+			tradeDelegationExists = true;
+			break;
+		}
+	  }
+	  
+	  //this building must not have been requested for a trade today:
+	  Int64 dateOfLastTradeProposalRequest = variableHandler.getInt("request_trade_proposal_building" + inBuilding.getUID() + "_lastdate", out bool success);
+	  if(!success) dateOfLastTradeProposalRequest = 0L;
+	  bool noTradeRequestedToday = (dateOfLastTradeProposalRequest != getAPI().getCalendar().getCurrentDate());
+	  
+	  //we must not be during military time:
+	  bool battleNotOngoing = !getAPI().isBattleOngoing();
+	  
+	  outCanProposalBeRequested = tradeDelegationExists &amp;&amp; noTradeRequestedToday &amp;&amp; battleNotOngoing;
+	  
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;() { outCanProposalBeRequested };
+	  return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

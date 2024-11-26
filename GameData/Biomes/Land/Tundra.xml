@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to this biome:
+	TODO implement these custom consts: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+		<i1><a>biome Tundra hstasis need factor</a> <b>double</b> <c>1.5</c></i1> <!-- should be non-negative -->
+		<i1><a>biome Tundra hstasis min proportion</a> <b>double</b> <c>0.0</c></i1> <!-- should be between 0.0 and 1.0 inclusive -->
+		<i1><a>biome Tundra disease frequency factor</a> <b>double</b> <c>0.4</c></i1> <!-- should be non-negative -->
+		<i1><a>biome Tundra disease strength factor</a> <b>double</b> <c>1.0</c></i1> <!-- should be non-negative -->
+		<i1><a>biome Tundra hunting danger factor</a> <b>double</b> <c>0.8</c></i1> <!-- should be non-negative -->
+		<i1><a>biome Tundra people hostility factor</a> <b>double</b> <c>0.3</c></i1> <!-- should be non-negative -->
+		<i1><a>biome Tundra travel trouble factor</a> <b>double</b> <c>0.9</c></i1> <!-- should be non-negative -->
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igTerrainBiome name="Tundra">
+    <Encyclopedia_Entry>
+	  <full_path>Biomes/Tundra</full_path>
+	  <body_text>Tundra.  Put encyclopedia description here.</body_text>
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mBiomeQualityDecayStrength>0.2</mBiomeQualityDecayStrength>
+	<mLocalMoveSpeedFactor>1.0</mLocalMoveSpeedFactor>
+	<mWorldMapMoveSpeedFactor>0.9</mWorldMapMoveSpeedFactor>
+	<mWaterAvailability>0.1</mWaterAvailability> <!-- water need of pops without a water source will tend to this proportion of the whole range, before modifiers -->
+	
+	<mTerrainSourceProbabilityAndRichness><!-- this is a list of: reference to land source, probability a resource will be present on a sandbox map, richness if the resource does exist (0 = none, 1->9 increases) -->
+	  <i1>
+	    <a>Fertile Soil</a>
+		<b>0.8</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Woods</a>
+		<b>0.5</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Grazeland</a>
+		<b>0.35</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Hunting Grounds Tundra</a>
+		<b>0.35</b>
+		<c>7</c>
+	  </i1>
+	  <i1>
+	    <a>Marble Outcropping</a>
+		<b>0.35</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Granite Outcropping</a>
+		<b>0.35</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Obsidian Outcropping</a>
+		<b>0.35</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Limestone Outcropping</a>
+		<b>0.35</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Galena Ore Vein</a>
+		<b>0.25</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Nickel Ore Vein</a>
+		<b>0.25</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Antimony Ore Vein</a>
+		<b>0.25</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Iron Ore Vein</a>
+		<b>0.25</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Tin Ore Vein</a>
+		<b>0.25</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Zinc Ore Vein</a>
+		<b>0.25</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Copper Ore Vein</a>
+		<b>0.25</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Gold Ore Vein</a>
+		<b>0.25</b>
+		<c>5</c>
+	  </i1>
+	</mTerrainSourceProbabilityAndRichness>
+	
+	<mWorldMapRVal>100</mWorldMapRVal> <!-- the world map has a hidden color map to implement the biome map.  The RGB values attached to biomes must correspond to the colors used in the hidden_map texture -->
+	<mWorldMapGVal>148</mWorldMapGVal> <!-- the world map has a hidden color map to implement the biome map.  The RGB values attached to biomes must correspond to the colors used in the hidden_map texture -->
+	<mWorldMapBVal>255</mWorldMapBVal> <!-- the world map has a hidden color map to implement the biome map.  The RGB values attached to biomes must correspond to the colors used in the hidden_map texture -->
+	
+	<mTagList>
+	  <!-- description tags: -->
+	  <i>weather_noun:storm</i>
+	  <i>weather_noun:snowstorm</i>
+	  <i>weather_noun:blizzard</i>
+	  <i>weather_noun:freezing rain</i>
+	  <i>weather_noun:chill</i>
+	  <i>weather_noun:clear day</i>
+	  <i>weather_adj:overcast</i>
+	  <i>weather_adj:clear</i>
+	  <i>weather_adj:snowy</i>
+	  <i>weather_adj:windy</i>
+	  <i>weather_adj:cold</i>
+	  <i>weather_adj:freezing</i>
+	  <i>weather_adj:icy</i>
+	  <i>resourcedegradesource_noun:wind</i>
+	  <i>resourcedegradesource_noun:snow</i>
+	  <i>resourcedegradesource_noun:cold</i>
+	  <i>resourcedegradesource_adj:windy</i>
+	  <i>resourcedegradesource_adj:snowy</i>
+	  <i>resourcedegradesource_adj:cold</i>
+	  <i>landscape_adj:frozen</i>
+	  <i>landscape_adj:flat</i>
+	  <i>landscape_adj:open</i>
+	  <i>landscape_adj:wide</i>
+	  <i>ground_noun:earth</i>
+	  <i>ground_noun:dirt</i>
+	  <i>ground_noun:permafrost</i>
+	  <i>ground_noun:land</i>
+	  <i>ground_noun:moss</i>
+	  <i>fluid_noun:wind</i>
+	  <i>fluid_noun:gust</i>
+	  <i>fluid_noun:air</i>
+	  <i>fauna_noun:deer</i>
+	  <i>fauna_noun:sheep</i>
+	  <i>fauna_noun:hares</i>
+	  <i>fauna_noun:foxes</i>
+	  <i>fauna_noun:wolves</i>
+	  <i>fauna_noun:geese</i>
+	  <i>flora_noun:lichens</i>
+	  <i>flora_noun:bushes</i>
+	  <i>flora_noun:shrubs</i>
+	  <i>flora_noun:sparse evergreens</i>
+	  <i>flora_noun:mosses</i>
+	  <i>flora_noun:shortgrasses</i>
+	  <i>farabove_noun:sky</i>
+	  <i>farabove_noun:heavens</i>
+	  <i>exposurerisk_noun:wind</i>
+	  <i>exposurerisk_noun:snow</i>
+	  <i>exposurerisk_noun:cold</i>
+	  <i>exposurerisk_adj:windy</i>
+	  <i>exposurerisk_adj:snowy</i>
+	  <i>exposurerisk_adj:freezing</i>
+	</mTagList>
+  </igTerrainBiome>
+  
+  
+</core_data>

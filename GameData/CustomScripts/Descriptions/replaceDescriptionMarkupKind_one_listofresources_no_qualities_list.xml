@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_one_listofresources list_of_options</a> <b>list</b> <c>no_qualities_list</c></i1> <!-- add this entry -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_listofresources_no_qualities_list</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a resource list and from it, returns a string that is a list detailing all of the resources within, not including qualities -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inResourceList, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_listofresources_no_qualities_list</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_listofresources_no_qualities_list custom script received invalid arguments");
+		return null;
+	}
+	  
+	Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inResourceList = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	if(inResourceList == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_listofresources_no_qualities_list custom script received invalid arguments: inResourceList cannot be null");
+		return null;
+	}
+	
+	if(customScripts.runCustomScriptCheckTypes("replaceDescriptionMarkupKind_common_resourcedictionary", new List&lt;object&gt;() { inResourceList, false }, out List&lt;object&gt; outList, false, typeof(string)))
+	{
+		outDescription = (string)outList[0];
+	}
+	else
+	{
+		addDebugMessage(inScriptInstance, "replaceDescriptionMarkupKind_common_resourcedictionary failed to execute; resource list will not be displayed");
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop list_of_options</a> <b>list</b> <c>randflavor_sentence</c></i1> <!-- add this entry -->
+	  
+	  <!-- if a replacement is blank it is unusable -->
+	  <!-- [0] = pop noun phrase -->
+	  <!-- [1] = race bodypartexpression noun phrase -->
+	  <!-- [2] = race bodypartgraspsingle noun phrase -->
+	  <!-- [3] = one_pop_possessive_3ppronoun_adj_phrase -->
+	  <!-- [4] = one_race_bodypartvision_noun_phrase -->
+	  <!-- [5] = one_pop_personal_3ppronoun_phrase -->
+	  <!-- [6] = one_pop_self_3ppronoun_phrase -->
+	  
+	  <!-- [8] = race bodypartouter noun phrase -->
+	  <!-- [9] = race bodypartdecorative noun phrase -->
+	  <!-- [10] = race bodypartsmelling noun phrase -->
+	  <!-- [11] = race bodyparthearing noun phrase -->
+	  <!-- [12] = race bodyparttaste noun phrase -->
+	  
+	  <!-- a pop is always a member of their race -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence rand_selection_count</a> <b>int</b> <c>7</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence rand_sel0 before_replace_text</a> <b>string</b> <c>The [9] of [0] has clearly been taken care of.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence rand_sel1 before_replace_text</a> <b>string</b> <c>[0] twists [3] [10] for a moment.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence rand_sel2 before_replace_text</a> <b>string</b> <c>The [8] near [0]'s [4] shows a lack of good sleep.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence rand_sel3 before_replace_text</a> <b>string</b> <c>A small cut marks one of [0]'s [11].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence rand_sel4 before_replace_text</a> <b>string</b> <c>[0] idly scratches [6] with a [2].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence rand_sel5 before_replace_text</a> <b>string</b> <c>[0] picks something off [3] [12] with a [2].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence rand_sel6 before_replace_text</a> <b>string</b> <c>It is clear The Lady granted [0] a unique [1] and [9].</c></i1>
+	  
+	  <!-- these sentences are enabled if the pop has any milequip -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence equip rand_selection_count</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence equip rand_sel0 before_replace_text</a> <b>string</b> <c>[0] carries military equipment with [5].</c></i1>
+	  
+	  <!-- these sentences are enabled if the pop has no milequip -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence noequip rand_selection_count</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence noequip rand_sel0 before_replace_text</a> <b>string</b> <c>[0] carries no military equipment with [5].</c></i1>
+	  
+	  <!-- one set of these sentences is enabled depending on pop's soldier skill -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value_selection_count</a> <b>int</b> <c>3</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value0 rand_selection_count</a> <b>int</b> <c>2</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value0 rand_sel0 before_replace_text</a> <b>string</b> <c>[0]'s stance makes clear [3] lack of recent combat training.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value0 rand_sel1 before_replace_text</a> <b>string</b> <c>There is a lack of discipline in the way [0] carries [6].</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value1 rand_selection_count</a> <b>int</b> <c>2</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value1 rand_sel0 before_replace_text</a> <b>string</b> <c>The [8] of [0] shows marks from combat training.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value1 rand_sel1 before_replace_text</a> <b>string</b> <c>The roughness of [0]'s [2] reveals both toil and training in [3] recent past.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value2 rand_selection_count</a> <b>int</b> <c>2</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value2 rand_sel0 before_replace_text</a> <b>string</b> <c>Long hours of combat training have honed [0]'s body.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value2 rand_sel1 before_replace_text</a> <b>string</b> <c>In [0]'s [4] are the tells of a disciplined warrior.</c></i1>
+	  
+	  <!-- health condition sentences.  Dead takes priority over everything. -->
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence dead before_replace_text</a> <b>string</b> <c>[0]'s corpse is unremarkable.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence wounded rand_selection_count</a> <b>int</b> <c>3</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence wounded rand_sel0 before_replace_text</a> <b>string</b> <c>[0] is too wounded to work or fight.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence wounded rand_sel1 before_replace_text</a> <b>string</b> <c>[0]'s wound drains [3] strength.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence wounded rand_sel2 before_replace_text</a> <b>string</b> <c>With time, [0] will recover from [3] wound.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence illness rand_selection_count</a> <b>int</b> <c>3</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence illness rand_sel0 before_replace_text</a> <b>string</b> <c>[0] is ill, and likely contagious.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence illness rand_sel1 before_replace_text</a> <b>string</b> <c>[0]'s illness reduces [3] strength.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence illness rand_sel2 before_replace_text</a> <b>string</b> <c>With time, [0] will recover from [3] illness.</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence pregnant rand_selection_count</a> <b>int</b> <c>3</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence pregnant rand_sel0 before_replace_text</a> <b>string</b> <c>[0] is visibly pregnant.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence pregnant rand_sel1 before_replace_text</a> <b>string</b> <c>[0] cannot work due to advanced pregnancy.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence pregnant rand_sel2 before_replace_text</a> <b>string</b> <c>In [0]'s [4] are concern not just for [6], but [3] unborn as well.</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_pop_randflavor_sentence</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a pop and from it, returns a string that is a sentence describing the pop. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFPop inPop, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_pop_randflavor_sentence</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_pop_randflavor_sentence custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inPop == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_pop_randflavor_sentence custom script received invalid arguments: inPop cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	int countOfReplacers = 7; //max replacer index + 1
+	List&lt;string&gt; replacers = new List&lt;string&gt;();
+	for(int i = 0; i &lt; countOfReplacers; i++)
+	{
+		replacers.Add("");
+	}
+	
+	//[0] = pop name noun phrase
+	replacers[0] = "[one_pop|name_noun_phrase:" + inPop.getUID() + "]";
+	
+	//[1] = race bodypartexpression noun phrase
+	replacers[1] = "[one_race|bodypartexpression_noun_phrase:" + inPop.getRace().getMOID() + "]";
+	
+	//[2] = race bodypartgraspsingle noun phrase
+	replacers[2] = "[one_race|bodypartgraspsingle_noun_phrase:" + inPop.getRace().getMOID() + "]";
+	
+	//[3] = one_pop_possessive_3ppronoun_adj_phrase
+	replacers[3] = "[one_pop|possessive_3ppronoun_adj_phrase:" + inPop.getUID() + "]";
+	
+	//[4] = race bodypartvision noun phrase
+	replacers[4] = "[one_race|bodypartvision_noun_phrase:" + inPop.getRace().getMOID() + "]";
+	
+	//[5] = one_pop_personal_3ppronoun_phrase
+	replacers[5] = "[one_pop|personal_3ppronoun_phrase:" + inPop.getUID() + "]";
+	
+	//[6] = one_pop_self_3ppronoun_phrase
+	replacers[6] = "[one_pop|self_3ppronoun_phrase:" + inPop.getUID() + "]";
+	
+	//[7] = unused
+	
+	//[8] = race bodypartouter noun phrase
+	replacers[8] = "[one_race|bodypartouter_noun_phrase:" + inPop.getRace().getMOID() + "]";
+	
+	//[9] = race bodypartdecorative noun phrase
+	replacers[9] = "[one_race|bodypartdecorative_noun_phrase:" + inPop.getRace().getMOID() + "]";
+	
+	//[10] = race bodypartsmelling noun phrase
+	replacers[10] = "[one_race|bodypartsmelling_noun_phrase:" + inPop.getRace().getMOID() + "]";
+	
+	//[11] = race bodyparthearing noun phrase
+	replacers[11] = "[one_race|bodyparthearing_noun_phrase:" + inPop.getRace().getMOID() + "]";
+	
+	//[12] = race bodyparttaste noun phrase
+	replacers[12] = "[one_race|bodyparttaste_noun_phrase:" + inPop.getRace().getMOID() + "]";
+	
+	List&lt;string&gt; possibleSentences = new List&lt;string&gt;();
+	
+	//if the pop is dead, that's the only important thing:
+	if(inPop.isDead())
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence dead before_replace_text", out success);
+		if(!success) outDescription = "[0]'s corpse is unremarkable.";
+	}
+	else
+	{
+		Int64 randCountMax = customConsts.getIntConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence rand_selection_count", out success);
+		if(!success) randCountMax = 7;
+	
+		Int64 rand_sel = getAPI().calcRandIntUnder(randCountMax);
+		
+		string randToAdd = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence rand_sel" + rand_sel + " before_replace_text", out success);
+		if(success)
+		{
+			possibleSentences.Add(randToAdd);
+		}
+		
+		if(inPop.isWounded())
+		{
+			randCountMax = customConsts.getIntConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence wounded rand_selection_count", out success);
+			if(!success) randCountMax = 3;
+		
+			rand_sel = getAPI().calcRandIntUnder(randCountMax);
+			
+			randToAdd = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence wounded rand_sel" + rand_sel + " before_replace_text", out success);
+			if(success)
+			{
+				possibleSentences.Add(randToAdd);
+			}
+		}
+		if(inPop.isIll())
+		{
+			randCountMax = customConsts.getIntConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence illness rand_selection_count", out success);
+			if(!success) randCountMax = 3;
+		
+			rand_sel = getAPI().calcRandIntUnder(randCountMax);
+			
+			randToAdd = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence illness rand_sel" + rand_sel + " before_replace_text", out success);
+			if(success)
+			{
+				possibleSentences.Add(randToAdd);
+			}
+		}
+		if(inPop.isPregnantImmobile())
+		{
+			randCountMax = customConsts.getIntConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence pregnant rand_selection_count", out success);
+			if(!success) randCountMax = 3;
+		
+			rand_sel = getAPI().calcRandIntUnder(randCountMax);
+			
+			randToAdd = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence pregnant rand_sel" + rand_sel + " before_replace_text", out success);
+			if(success)
+			{
+				possibleSentences.Add(randToAdd);
+			}
+		}
+		
+		if(inPop.getAverageEquipmentQuality() == consts.getResourceQualityMin())
+		{
+			randCountMax = customConsts.getIntConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence noequip rand_selection_count", out success);
+			if(!success) randCountMax = 1;
+		
+			rand_sel = getAPI().calcRandIntUnder(randCountMax);
+			
+			randToAdd = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence noequip rand_sel" + rand_sel + " before_replace_text", out success);
+			if(success)
+			{
+				possibleSentences.Add(randToAdd);
+			}
+		}
+		else
+		{
+			randCountMax = customConsts.getIntConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence equip rand_selection_count", out success);
+			if(!success) randCountMax = 1;
+		
+			rand_sel = getAPI().calcRandIntUnder(randCountMax);
+			
+			randToAdd = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence equip rand_sel" + rand_sel + " before_replace_text", out success);
+			if(success)
+			{
+				possibleSentences.Add(randToAdd);
+			}
+		}
+		
+		//get value of soldier skill (in thirds):
+		double soldierSkillRatio = (inPop.getSoldierSkill() - consts.getSoldierSkillMin()) / (consts.getSoldierSkillMax() - consts.getSoldierSkillMin());
+		Int64 soldierSkillValueMax = customConsts.getIntConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value_selection_count", out success);
+		if(!success) soldierSkillValueMax = 3;
+		Int64 soldierSkillValue = (Int64)(soldierSkillValueMax * soldierSkillRatio);
+		if(soldierSkillValue == soldierSkillValueMax)
+			soldierSkillValue--;
+			
+		randCountMax = customConsts.getIntConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value" + soldierSkillValue + " rand_selection_count", out success);
+		if(!success) randCountMax = 2;
+	
+		rand_sel = getAPI().calcRandIntUnder(randCountMax);
+		
+		randToAdd = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence soldierskill value" + soldierSkillValue + " rand_sel" + rand_sel + " before_replace_text", out success);
+		if(success)
+		{
+			possibleSentences.Add(randToAdd);
+		}
+		
+		if(possibleSentences.Count != 0)
+		{
+			outDescription = possibleSentences[(int)getAPI().calcRandIntUnder(possibleSentences.Count)];
+		}
+	}
+	
+	for(int i = 0; i &lt; replacers.Count; i++)
+	{
+		outDescription = outDescription.Replace("[" + i + "]", replacers[i]);
+	}
+	
+	if(outDescription == "")
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_randflavor_sentence default before_replace_text", out success);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

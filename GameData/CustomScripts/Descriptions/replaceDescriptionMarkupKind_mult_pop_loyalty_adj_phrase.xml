@@ -1,0 +1,239 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop list_of_options</a> <b>list</b> <c>loyalty_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase loyal before_replace_text</a> <b>string</b> <c>loyal,local</c></i1> <!-- all are loyal to the player community -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase rebel before_replace_text</a> <b>string</b> <c>rebel,traitor,treasonous,revolting</c></i1> <!-- all are rebels to the player community -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase enemy before_replace_text</a> <b>string</b> <c>foe,enemy,hostile,threatening,dangerous</c></i1> <!-- all are enemies to the player community -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase foes before_replace_text</a> <b>string</b> <c>foe,enemy,hostile,threatening,dangerous</c></i1> <!-- all are hostile to the player community -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase theLady before_replace_text</a> <b>string</b> <c>divine,holy,ancient,mysterious,unknowable</c></i1> <!-- all are from the lady's community -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase wanderer before_replace_text</a> <b>string</b> <c>wandering,nomadic,independent</c></i1> <!-- all are wanderers and not hostile -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase single_foreign before_replace_text</a> <b>string</b> <c>foreign,outsider,[0]</c></i1> <!-- all are from a specific foreign community. [0] = the community's name -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase mixed_foreign before_replace_text</a> <b>string</b> <c>foreign,outsider</c></i1> <!-- all are from foreign communities but not all the same -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase other_foreign before_replace_text</a> <b>string</b> <c>strange</c></i1> <!-- none are from the local community -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase mixed before_replace_text</a> <b>string</b> <c>mixed-loyalty</c></i1> <!-- none of the above -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a list of pops and from it, returns a string that is an adjective phrase indicating the loyalty of the pops (but usually not explicitly including the community's name) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFPop inPop, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(List&lt;IFPop&gt;)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	List&lt;IFPop&gt; inPops = (List&lt;IFPop&gt;)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	if(inPops == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase custom script received invalid arguments: inPops cannot be null");
+		return null;
+	}
+	
+	if(inPops.Count == 0)
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase default before_replace_text", out success);
+		if(!success) outDescription = "";
+		return new List&lt;object&gt;() { outDescription };
+	}
+	
+	//determine loyalty:
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+	
+	bool loyalValid = true;
+	bool rebelValid = true;
+	bool enemyValid = true;
+	bool foeValid = true;
+	bool theLadyValid = true;
+	bool wandererValid = true;
+	bool singleForeignValid = true;
+	IFCommunity singleForeignCommunity = null;
+	bool mixedForeignValid = true;
+	bool otherForeignValid = true;
+	foreach(IFPop pop in inPops)
+	{
+		if(pop.getCommunity() != localCommunity)
+		{
+			loyalValid = false;
+		}
+		else
+		{
+			otherForeignValid = false;
+		}
+		if(pop.getCommunity() != getAPI().getRebelsCommunity())
+		{
+			rebelValid = false;
+		}
+		if(pop.getCommunity() != getAPI().getGenericEnemyCommunity())
+		{
+			enemyValid = false;
+		}
+		if(!getAPI().isHostileCommunity(pop.getCommunity()))
+		{
+			foeValid = false;
+		}
+		if(pop.getCommunity() != getAPI().getTheLadyCommunity())
+		{
+			theLadyValid = false;
+		}
+		if(pop.getCommunity() != getAPI().getWandererCommunity())
+		{
+			wandererValid = false;
+		}
+		if((singleForeignCommunity != null) &amp;&amp; singleForeignValid &amp;&amp; (pop.getCommunity() != singleForeignCommunity))
+		{
+			singleForeignValid = false;
+			singleForeignCommunity = null;
+		}
+		if((pop.getCommunity() != localCommunity) &amp;&amp; !pop.getCommunity().isNormalCommunity())
+		{
+			mixedForeignValid = false;
+		}
+		
+		//take care of single foreign valid:
+		if((singleForeignCommunity == null) &amp;&amp; singleForeignValid)
+		{
+			if((pop.getCommunity() != localCommunity) &amp;&amp; (pop.getCommunity().isNormalCommunity() || pop.getCommunity().isAbstractCommunity()))
+			{
+				singleForeignCommunity = pop.getCommunity();
+			}
+			else
+			{
+				singleForeignValid = false;
+			}
+		}
+	}
+	
+	List&lt;string&gt; possibleAdjs = new List&lt;string&gt;();
+	if(loyalValid)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase loyal before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(rebelValid)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase rebel before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(enemyValid)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase enemy before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(foeValid)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase foes before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(theLadyValid)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase theLady before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(wandererValid)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase wanderer before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(singleForeignValid &amp;&amp; (singleForeignCommunity != null))
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase single_foreign before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+			for(int i = 0; i &lt; possibleAdjs.Count; i++)
+			{
+				possibleAdjs[i] = possibleAdjs[i].Replace("[0]", singleForeignCommunity.getDisplayName());
+			}
+		}
+	}
+	else if(mixedForeignValid)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase mixed_foreign before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else if(otherForeignValid)
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase other_foreign before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	else
+	{
+		string adjByCommas = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase mixed before_replace_text", out success);
+		if(success)
+		{
+			possibleAdjs.AddRange(adjByCommas.Split(','));
+		}
+	}
+	
+	if(possibleAdjs.Count &gt; 0)
+	{
+		outDescription = possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)];
+	}
+	
+	if(outDescription == "")
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_pop_loyalty_adj_phrase default before_replace_text", out success);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

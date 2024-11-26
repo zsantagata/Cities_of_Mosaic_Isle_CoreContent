@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building list_of_options</a> <b>list</b> <c>shape_sentence</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence default before_replace_text</a> <b>string</b> <c>A building is clearly visible from nearby, standing out from its surroundings.</c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  
+	  <!-- if a replacement is blank it is unusable -->
+	  <!-- [0] = building name noun phrase -->
+	  <!-- [1] = buildingkind name -->
+	  <!-- [2] = construction material name --> <!-- blank if no construction material -->
+	  <!-- [3] = durability adjective -->
+	  <!-- [4] = biome far above noun phrase (depending on water status) --> <!-- blank if not on local map -->
+	  <!-- [5] = biome fluid noun phrase (depending on water status) --> <!-- blank if not on local map -->
+	  <!-- [6] = biome ground noun phrase (depending on water status) --> <!-- blank if not on local map -->
+	  <!-- [7] = buildingkind shape top noun phrase -->
+	  <!-- [8] = buildingkind shape side noun phrase -->
+	  <!-- [9] = buildingkind shape middle noun phrase -->
+	  <!-- [10] = buildingkind shape bottom noun phrase -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_selection_count</a> <b>int</b> <c>25</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel0 before_replace_text</a> <b>string</b> <c>[0] is clearly visible from nearby, standing out from its surroundings.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel1 before_replace_text</a> <b>string</b> <c>[0] is a [1] built recently.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel2 before_replace_text</a> <b>string</b> <c>[0]'s [2] features show the builders' skill in construction.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel3 before_replace_text</a> <b>string</b> <c>[2] was used extensively in the construction of this [1], [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel4 before_replace_text</a> <b>string</b> <c>The [2] of [0]'s make is [3].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel5 before_replace_text</a> <b>string</b> <c>[2] features of the [1] show how [3] [0] is.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel6 before_replace_text</a> <b>string</b> <c>[0] is a [3] [1].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel7 before_replace_text</a> <b>string</b> <c>[0] stands out against the backing colors of the [4].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel8 before_replace_text</a> <b>string</b> <c>Light from the [4] illuminates [0]'s [2] construction.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel9 before_replace_text</a> <b>string</b> <c>The [4] over [0] swirls, far above the [1]'s [2].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel10 before_replace_text</a> <b>string</b> <c>The [4] over [0] swirls, far above the [1].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel11 before_replace_text</a> <b>string</b> <c>One can listen to the sounds of [5] moving around [0] and hear how [3] the [1] is.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel12 before_replace_text</a> <b>string</b> <c>Against the constant tide of [5] and time, [0]'s [2] is [3].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel13 before_replace_text</a> <b>string</b> <c>[0]'s features rise through the [5] towards the [4].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel14 before_replace_text</a> <b>string</b> <c>The [3] [2] of [0] is visible over the common [6] of the area.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel15 before_replace_text</a> <b>string</b> <c>[6] around [0] bears telltale signs of a [1]'s presence.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel16 before_replace_text</a> <b>string</b> <c>The [3] [7] of [0] can be seen rising towards the [4].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel17 before_replace_text</a> <b>string</b> <c>Sounds of [5] rushing above [2] [7], the highest of [0]'s features, tell of the [1]'s presence.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel18 before_replace_text</a> <b>string</b> <c>From [7] in the [5] to [10] upon the [6], [0]'s presence stands out from far away.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel19 before_replace_text</a> <b>string</b> <c>[5] wraps and whips around the [3] [2] [8] of [0]'s sides.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel20 before_replace_text</a> <b>string</b> <c>[5] around the [2] [8] sounds out an echo of [0]'s presence.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel21 before_replace_text</a> <b>string</b> <c>From [9] within to [8] outside, [0] is clearly a [3] [1].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel22 before_replace_text</a> <b>string</b> <c>[5] rushes past the [9] of [0], one part of a constant flow of [4] against [2].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel23 before_replace_text</a> <b>string</b> <c>The [10] of [0], extending into the [6], keep the [1] in its place.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel24 before_replace_text</a> <b>string</b> <c>[3] [2] [10] bear the weight of [0].</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence durability selection_count</a> <b>int</b> <c>3</c></i1> <!-- durability is split this many ways -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence durability value_sel0 before_replace_text</a> <b>string</b> <c>damaged,decaying,hole-riddled</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence durability value_sel1 before_replace_text</a> <b>string</b> <c>weathered,enduring,undecorated</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence durability value_sel2 before_replace_text</a> <b>string</b> <c>well-maintained,solid,strong</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_building_shape_sentence</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- BIOME tag: description_far_above_noun -->
+  <!-- BIOME tag: description_fluid_noun -->
+  <!-- BIOME tag: description_ground_noun -->
+  <!-- BUILDINGKIND tag: description_shape_top_noun -->
+  <!-- BUILDINGKIND tag: description_shape_side_noun -->
+  <!-- BUILDINGKIND tag: description_shape_middle_noun -->
+  <!-- BUILDINGKIND tag: description_shape_bottom_noun -->
+  
+  <!-- this file holds the implementation of a custom script which takes a building and from it, returns a string that is a full sentence describing the building's shape. -->
+  <!-- shape can include construction material, durability, building water status, and buildingkind-defined shapes (top/side/middle/bottom) -->
+  <!-- note that not all of these can or will be included at once -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFBuilding inBuilding, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_building_shape_sentence</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFBuilding)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_building_shape_sentence custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inBuilding == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_building_shape_sentence custom script received invalid arguments: inBuilding cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	int countOfReplacers = 11; //max replacer index + 1
+	List&lt;string&gt; replacers = new List&lt;string&gt;();
+	for(int i = 0; i &lt; countOfReplacers; i++)
+	{
+		replacers.Add("");
+	}
+	
+	//[0] = building name noun phrase
+	replacers[0] = "[one_building|name_noun_phrase:" + inBuilding.getUID() + "]";
+	
+	//[1] = buildingkind's name
+	replacers[1] = inBuilding.getBuildingKind().getDisplayName().ToLower();
+	
+	//[2] = construction material resource name, if it exists
+	if(inBuilding.getMadeOfResource() != null)
+	{
+		replacers[2] = inBuilding.getMadeOfResource().getDisplayName().ToLower();
+	}
+	
+	//[3] = durability adjective
+	Int64 maxDurability = inBuilding.getMaxBuildingDurability();
+	Int64 currentDurability = inBuilding.getCurrentBuildingDurability();
+	double durabilityRatio = (currentDurability) / ((double)maxDurability);
+	Int64 durabilityCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_shape_sentence durability selection_count", out success);
+	if(!success) durabilityCount = 3;
+	int durabilityIndex = (int)(durabilityCount * durabilityRatio);
+	if(durabilityIndex == durabilityCount) durabilityIndex--;
+	string durabilityAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_shape_sentence durability value_sel" + durabilityIndex + " before_replace_text", out success);
+	if(success)
+	{
+		//the possible adjectives are separated by commas:
+		List&lt;string&gt; possibleDurabAdjs = new List&lt;string&gt;(durabilityAdj.Split(','));
+		if(possibleDurabAdjs.Count != 0)
+		{
+			replacers[3] = possibleDurabAdjs[(int)getAPI().calcRandIntUnder(possibleDurabAdjs.Count)];
+		}
+	}
+	
+	IFTerrainBiome biomeToUse = null; //if the building is not on the local map this will stay true
+	IFBuilding.eBuildingWaterStatus waterStatus = inBuilding.getBuildingWaterStatus();
+	IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+	if(map.isBuildingOnThisMap(inBuilding))
+	{
+		if((waterStatus == IFBuilding.eBuildingWaterStatus.cOverwaterEntirely) &amp;&amp; (map.getLandBiome() != null))
+		{
+			biomeToUse = map.getLandBiome();
+		}
+		else if((waterStatus == IFBuilding.eBuildingWaterStatus.cUnderwaterEntirely) &amp;&amp; (map.getWaterBiome() != null))
+		{
+			biomeToUse = map.getWaterBiome();
+		}
+		else if(waterStatus == IFBuilding.eBuildingWaterStatus.cMixed)
+		{
+			if((map.getLandBiome() != null) &amp;&amp; (map.getWaterBiome() != null))
+			{
+				biomeToUse = getAPI().calcRandIntUnder(2) == 0 ? map.getWaterBiome() : map.getLandBiome();
+			}
+			else if(map.getWaterBiome() != null)
+			{
+				biomeToUse = map.getWaterBiome();
+			}
+			else if(map.getLandBiome() != null)
+			{
+				biomeToUse = map.getLandBiome();
+			}
+		}
+	}
+	
+	if(biomeToUse != null)
+	{
+		//[4] = biome far above noun phrase
+		replacers[4] = "[one_biome|farabove_noun_phrase:" + biomeToUse.getMOID() + "]";
+		
+		//[5] = biome fluid noun phrase
+		replacers[5] = "[one_biome|fluid_noun_phrase:" + biomeToUse.getMOID() + "]";
+		
+		//[6] = biome ground noun phrase
+		replacers[6] = "[one_biome|ground_noun_phrase:" + biomeToUse.getMOID() + "]";
+	}
+	
+	//[7] = buildingkind shape top noun phrase
+	replacers[7] = "[one_buildingkind|shapetop_noun_phrase:" + inBuilding.getBuildingKind().getMOID() + "]";
+	
+	//[8] = buildingkind shape side noun phrase
+	replacers[8] = "[one_buildingkind|shapeside_noun_phrase:" + inBuilding.getBuildingKind().getMOID() + "]";
+	
+	//[9] = buildingkind shape middle noun phrase
+	replacers[9] = "[one_buildingkind|shapemiddle_noun_phrase:" + inBuilding.getBuildingKind().getMOID() + "]";
+	
+	//[10] = buildingkind shape bottom noun phrase
+	replacers[10] = "[one_buildingkind|shapebottom_noun_phrase:" + inBuilding.getBuildingKind().getMOID() + "]";
+	
+	//now that all replacers are assembled, iterate over all possible sentences and only include the ones that have all replacers:
+	Int64 sentenceCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_shape_sentence rand_selection_count", out success);
+	if(!success) sentenceCount = 25;
+	List&lt;string&gt; possibleSentences = new List&lt;string&gt;();
+	for(int i = 0; i &lt; sentenceCount; i++)
+	{
+		string sentence = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_shape_sentence rand_sel" + i + " before_replace_text", out success);
+		if(success)
+		{
+			//iterate over all replacers and if they are present in the sentence, check that they can be replaced:
+			bool validSentence = true;
+			for(int j = 0; (j &lt; countOfReplacers) &amp;&amp; validSentence; j++)
+			{
+				if(sentence.Contains("[" + j + "]") &amp;&amp; (replacers[j] == ""))
+				{
+					validSentence = false;
+				}
+			}
+			
+			if(validSentence)
+			{
+				possibleSentences.Add(sentence);
+			}
+		}
+	}
+	
+	if(possibleSentences.Count &gt; 0)
+	{
+		outDescription = possibleSentences[(int)getAPI().calcRandIntUnder(possibleSentences.Count)];
+	}
+	else
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_shape_sentence default before_replace_text", out success);
+		if(!success) outDescription = "A building is clearly visible from nearby, standing out from its surroundings.";
+	}
+	
+	for(int i = 0; i &lt; countOfReplacers; i++)
+	{
+		outDescription = outDescription.Replace("[" + i + "]", replacers[i]);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  
+  <igBuildingKind name="Pit">
+    <Encyclopedia_Entry>
+	  <full_path>Buildings/Pit</full_path>
+	  <body_text>Pit.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mBuildingKindQualities>0x402</mBuildingKindQualities><!-- 0x2 = overwater enable, 0x400 = displays no menu -->
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+
+	<mPopDaysToBuild>5</mPopDaysToBuild>
+	<mBaseDurability>10000</mBaseDurability>
+	
+	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive).  If nothing exists, this building does not require any resources to build -->
+	</mResourcesToBuild>
+	
+	<mOutputMultBasedOnConstructionResources>
+	</mOutputMultBasedOnConstructionResources>
+	
+	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value.  If nothing exists, this building does not shift durability based on construction resources.  Names here that do not appear in mResourcesToBuild will have no effect -->
+	</mDurabilityMultBasedOnConstructionResources>
+	
+	<mBeautyValue>-5</mBeautyValue>
+	<mBeautyRadius>6</mBeautyRadius>
+	
+    <mSSIDs>
+		<i>Pit</i>
+	</mSSIDs>
+	<mTagList>
+	  <i1>disable repair</i1>
+	  <i1>hostile low priority target</i1>
+	  <!-- description tags: -->
+	  <i1>description_shape_top_noun:edges</i1>
+	  <i1>description_shape_side_noun:steep walls</i1>
+	  <i1>description_shape_middle_noun:spikes</i1>
+	  <i1>description_shape_bottom_noun:depths</i1>
+	</mTagList>
+  </igBuildingKind>
+  
+</core_data>

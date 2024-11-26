@@ -1,0 +1,437 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- in the future X days (or now), if Y or more trade delegations are due to arrive, send no more: -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block trade_delegations_future days count</a> <b>int</b> <c>21</c></i1> <!-- X -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block trade_delegations_future delegation count</a> <b>int</b> <c>5</c></i1> <!-- Y -->
+			
+			<!-- in the future X days (or now), if Y or more diplomacy delegations are due to arrive, send no more: -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block diplomacy_delegations_future days count</a> <b>int</b> <c>21</c></i1> <!-- X -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block diplomacy_delegations_future delegation count</a> <b>int</b> <c>4</c></i1> <!-- Y -->
+			
+			<!-- in the future X days (or now), if Y or more emigration delegations are due to arrive, send no more: -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block emigration_delegations_future days count</a> <b>int</b> <c>30</c></i1> <!-- X -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block emigration_delegations_future delegation count</a> <b>int</b> <c>5</c></i1> <!-- Y -->
+			
+			<!-- in the future X days (or now), if Y or more violent (war/raiding) delegations are due to arrive, send no more: -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block violent_delegations_future days count</a> <b>int</b> <c>30</c></i1> <!-- X -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block violent_delegations_future delegation count</a> <b>int</b> <c>4</c></i1> <!-- Y -->
+			
+			<!-- if a trade or diplomacy delegation has arrived or is due to arrive at the player community in the last or next X days (or now), don't send a violent (war/raiding) delegation: -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block nonviolent_delegations_future_and_past days count</a> <b>int</b> <c>30</c></i1>
+			<!-- the same will apply for sending a trade/diplomacy delegation before/after a violent delegation -->
+			
+			<!-- if a trade or diplomacy delegation would have very few resources (because the source community has few resources), don't bother sending it: -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block nonviolent_delegations_goods min count</a> <b>double</b> <c>1000.0</c></i1>
+			
+			<!-- if the game has just started, don't send any violent (war/raiding) delegations: -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block violent_delegations_start days count</a> <b>int</b> <c>21</c></i1>
+			
+			<!-- if the player military and economic strength is low, don't send any violent (war/raiding) delegations: -->
+			<i1><a>dailystartf2pdelegation_deltypeblocker player_oriented_block violent_delegations_econ_mil_strength min</a> <b>double</b> <c>7.5</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script dailystartf2pdelegation_deltypeblocker</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which handles (some of, not all) checks to see if a foreign community's foreign-to-player delegations of a provided type are blocked from being created -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunity
+	IFDelegation.eDelegationType inDelegationType
+	bool inUsePlayerOrientedBlocks
+	-->
+	
+	<!-- output:
+	bool outBlockersPreventCreation //if this is false, the caller will continue trying to create a foreign-to-player delegation
+	-->
+	<i1><a>dailyStartF2PDelegation_delTypeBlocker</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity), typeof(IFDelegation.eDelegationType), typeof(bool)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("dailyStartF2PDelegation_delTypeBlocker custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		if(inCommunity == null)
+		{
+		  throw new ArgumentException("dailyStartF2PDelegation_delTypeBlocker custom script received invalid arguments: inCommunity cannot be null");
+		  return null;
+		}
+		IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[1];
+		bool inUsePlayerOrientedBlocks = (bool)inArguments[2];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		//first, check any direct blockers:
+		//the variables are list variables, and blockers should add to these list variables
+		//if any reason/blocker exists, the block will be considered true
+		
+		string typeName = (inDelegationType == IFDelegation.eDelegationType.cWar) ? "war" :
+						  (inDelegationType == IFDelegation.eDelegationType.cRaiding) ? "raiding" :
+						  (inDelegationType == IFDelegation.eDelegationType.cDiplomacy) ? "diplomacy" :
+						  (inDelegationType == IFDelegation.eDelegationType.cTrade) ? "trade" :
+						  (inDelegationType == IFDelegation.eDelegationType.cEmigration) ? "emigration" :
+						  (inDelegationType == IFDelegation.eDelegationType.cSettlement) ? "settlement" :
+						  "none";
+						  
+		//the names of the variables are the same as in canForeignDelegationBeSent
+		List&lt;string&gt; blockersToCheck = new List&lt;string&gt;();
+		blockersToCheck.Add("disableForeignDelegationsVariable_all_all_all");
+		blockersToCheck.Add("disableForeignDelegationsVariable_uid" + inCommunity.getUID() + "_all_all");
+		blockersToCheck.Add("disableForeignDelegationsVariable_all_player_all");
+		blockersToCheck.Add("disableForeignDelegationsVariable_uid" + inCommunity.getUID() + "_player_all");
+		blockersToCheck.Add("disableForeignDelegationsVariable_all_all_" + typeName);
+		blockersToCheck.Add("disableForeignDelegationsVariable_uid" + inCommunity.getUID() + "_all_" + typeName);
+		blockersToCheck.Add("disableForeignDelegationsVariable_all_player_" + typeName);
+		blockersToCheck.Add("disableForeignDelegationsVariable_uid" + inCommunity.getUID() + "_player_" + typeName);
+		
+		bool success = false;
+		bool outBlockersPreventCreation = false;
+		foreach(string str in blockersToCheck)
+		{
+			Int64 blocker = variableHandler.getConnectedInt(str, out success);
+			if(!success) blocker = 0;
+			if(blocker != 0)
+			{
+				outBlockersPreventCreation = true;
+			}
+		}
+		
+		if(inUsePlayerOrientedBlocks &amp;&amp; !outBlockersPreventCreation)
+		{
+			//second, check player-oriented conditions for blocking new delegations from forming:
+			//delegations to the player community are treated differently than foreign-foreign delegations because the player has to deal with them and we want to avoid certain things:
+			//-swamping the player with too many trade/diplomacy delegations (eventually it gets tiresome/bothersome)
+			//-swamping the player with too many emigration delegations (since there can be a penalty for turning pops away or letting them join and eventually the player would have to start turning pops away), except if specific events bring about circumstances that would allow this
+			//-swamping the player with too many war/raiding delegations (if the player loses a lot it's bad; if the player wins a lot it's unrealistic; if it's mixed it's tiresome)
+			//-a player getting trade/diplomacy delegations when the previous war/raiding delegation from the community was recent (unrealistic)
+			//-a player getting trade/diplomacy delegations when few goods are on offer (useless)
+			//-a player getting war/raiding delegations when they are woefully unprepared:
+			//--the game has started recently
+			//--the player has very low military and economic strength
+			
+			Int64 tradeTooMuchDays = customConsts.getIntConst("dailystartf2pdelegation_deltypeblocker player_oriented_block trade_delegations_future days count", out success);
+			if(!success) tradeTooMuchDays = 21;
+			Int64 tradeTooMuchCount = customConsts.getIntConst("dailystartf2pdelegation_deltypeblocker player_oriented_block trade_delegations_future delegation count", out success);
+			if(!success) tradeTooMuchCount = 5;
+			
+			Int64 diplomacyTooMuchDays = customConsts.getIntConst("dailystartf2pdelegation_deltypeblocker player_oriented_block diplomacy_delegations_future days count", out success);
+			if(!success) diplomacyTooMuchDays = 21;
+			Int64 diplomacyTooMuchCount = customConsts.getIntConst("dailystartf2pdelegation_deltypeblocker player_oriented_block diplomacy_delegations_future delegation count", out success);
+			if(!success) diplomacyTooMuchCount = 4;
+			
+			Int64 emigrationTooMuchDays = customConsts.getIntConst("dailystartf2pdelegation_deltypeblocker player_oriented_block emigration_delegations_future days count", out success);
+			if(!success) emigrationTooMuchDays = 30;
+			Int64 emigrationTooMuchCount = customConsts.getIntConst("dailystartf2pdelegation_deltypeblocker player_oriented_block emigration_delegations_future delegation count", out success);
+			if(!success) emigrationTooMuchCount = 5;
+			
+			Int64 violentTooMuchDays = customConsts.getIntConst("dailystartf2pdelegation_deltypeblocker player_oriented_block violent_delegations_future days count", out success);
+			if(!success) violentTooMuchDays = 30;
+			Int64 violentTooMuchCount = customConsts.getIntConst("dailystartf2pdelegation_deltypeblocker player_oriented_block violent_delegations_future delegation count", out success);
+			if(!success) violentTooMuchCount = 4;
+			
+			Int64 nonviolentBlockViolentDays = customConsts.getIntConst("dailystartf2pdelegation_deltypeblocker player_oriented_block nonviolent_delegations_future_and_past days count", out success);
+			if(!success) nonviolentBlockViolentDays = 30;
+			
+			double tradeFewResourcesBlockCount = customConsts.getDoubleConst("dailystartf2pdelegation_deltypeblocker player_oriented_block nonviolent_delegations_goods min count", out success);
+			if(!success) tradeFewResourcesBlockCount = 1000.0d;
+			
+			Int64 gameStartBlockViolentDays = customConsts.getIntConst("dailystartf2pdelegation_deltypeblocker player_oriented_block violent_delegations_start days count", out success);
+			if(!success) gameStartBlockViolentDays = 21;
+			
+			double lowStrengthBlock = customConsts.getDoubleConst("dailystartf2pdelegation_deltypeblocker player_oriented_block violent_delegations_econ_mil_strength min", out success);
+			if(!success) lowStrengthBlock = 7.5d;
+			
+			Dictionary&lt;IFDelegation.eDelegationType, List&lt;IFDelegation&gt;&gt; delegationsByType = new Dictionary&lt;IFDelegation.eDelegationType, List&lt;IFDelegation&gt;&gt;();
+			delegationsByType.Add(IFDelegation.eDelegationType.cWar, new List&lt;IFDelegation&gt;());
+			delegationsByType.Add(IFDelegation.eDelegationType.cRaiding, new List&lt;IFDelegation&gt;());
+			delegationsByType.Add(IFDelegation.eDelegationType.cDiplomacy, new List&lt;IFDelegation&gt;());
+			delegationsByType.Add(IFDelegation.eDelegationType.cTrade, new List&lt;IFDelegation&gt;());
+			delegationsByType.Add(IFDelegation.eDelegationType.cEmigration, new List&lt;IFDelegation&gt;());
+			delegationsByType.Add(IFDelegation.eDelegationType.cSettlement, new List&lt;IFDelegation&gt;());
+			//fetch delegations heading towards the player:
+			if(customScripts.runCustomScriptCheckTypes("getForeignDelegations", new List&lt;object&gt;() { true, true, null, null, IFDelegation.eDelegationType.cNone, IFDelegation.eDelegationState.cHasReturnedHome, 
+				null, false, false, (Int64)0, false, false, 0.0d, false, false, 0.0d, false}, out List&lt;object&gt; delegationOutputs, false, typeof(List&lt;IFDelegation&gt;)))
+			{
+				foreach(IFDelegation del in (List&lt;IFDelegation&gt;)delegationOutputs[0])
+				{
+					delegationsByType[del.getDelegationType()].Add(del);
+				}
+			}
+			
+			Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+			bool nonViolent = true;
+			if(inDelegationType == IFDelegation.eDelegationType.cTrade)
+			{
+				Int64 targetDate = currentDate + tradeTooMuchDays;
+				Int64 countOfTradeDelegationsArrivingBetweenNowAndTargetDate = 0;
+				foreach(IFDelegation del in delegationsByType[inDelegationType])
+				{
+					if((del.getExpectedArrivalDate() &gt;= currentDate &amp;&amp; del.getExpectedArrivalDate() &lt;= targetDate) || (del.getState() == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap))
+						countOfTradeDelegationsArrivingBetweenNowAndTargetDate++;
+				}
+				if(countOfTradeDelegationsArrivingBetweenNowAndTargetDate &gt;= tradeTooMuchCount)
+				{
+					addDebugMessage(inScriptInstance, "foreign community cannot send trade delegation because player-oriented blocker indicates too many trade delegations are being sent to player in close future; count=" + countOfTradeDelegationsArrivingBetweenNowAndTargetDate);
+					outBlockersPreventCreation = true;
+				}
+				
+				//tradeFewResourcesBlockCount
+				double totalResources = 0.0d;
+				IFResourcePool resPool = inCommunity.getResourcePool();
+				for(int moid = 1; (moid &lt; getAPI().getTotalCountOfMO("resources")) &amp;&amp; (totalResources &lt; tradeFewResourcesBlockCount); moid++)
+				{
+					IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+					if(res != null)
+					{
+						totalResources += resPool.getResourceQuantity(res);
+					}
+				}
+				if(totalResources &lt; tradeFewResourcesBlockCount)
+				{
+					addDebugMessage(inScriptInstance, "foreign community cannot send trade delegation because player-oriented blocker indicates total count of resources is too low, count=" + totalResources);
+					outBlockersPreventCreation = true;
+				}
+			}
+			else if(inDelegationType == IFDelegation.eDelegationType.cDiplomacy)
+			{
+				Int64 targetDate = currentDate + diplomacyTooMuchDays;
+				Int64 countOfDiplomacyDelegationsArrivingBetweenNowAndTargetDate = 0;
+				foreach(IFDelegation del in delegationsByType[inDelegationType])
+				{
+					if((del.getExpectedArrivalDate() &gt;= currentDate &amp;&amp; del.getExpectedArrivalDate() &lt;= targetDate) || (del.getState() == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap))
+						countOfDiplomacyDelegationsArrivingBetweenNowAndTargetDate++;
+				}
+				if(countOfDiplomacyDelegationsArrivingBetweenNowAndTargetDate &gt;= diplomacyTooMuchCount)
+				{
+					addDebugMessage(inScriptInstance, "foreign community cannot send diplomacy delegation because player-oriented blocker indicates too many diplomacy delegations are being sent to player in close future; count=" + countOfDiplomacyDelegationsArrivingBetweenNowAndTargetDate);
+					outBlockersPreventCreation = true;
+				}
+			}
+			else if(inDelegationType == IFDelegation.eDelegationType.cEmigration)
+			{
+				Int64 targetDate = currentDate + emigrationTooMuchDays;
+				Int64 countOfEmigrationDelegationsArrivingBetweenNowAndTargetDate = 0;
+				foreach(IFDelegation del in delegationsByType[inDelegationType])
+				{
+					if((del.getExpectedArrivalDate() &gt;= currentDate &amp;&amp; del.getExpectedArrivalDate() &lt;= targetDate) || (del.getState() == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap))
+						countOfEmigrationDelegationsArrivingBetweenNowAndTargetDate++;
+				}
+				if(countOfEmigrationDelegationsArrivingBetweenNowAndTargetDate &gt;= emigrationTooMuchCount)
+				{
+					addDebugMessage(inScriptInstance, "foreign community cannot send emigration delegation because player-oriented blocker indicates too many emigration delegations are being sent to player in close future; count=" + countOfEmigrationDelegationsArrivingBetweenNowAndTargetDate);
+					outBlockersPreventCreation = true;
+				}
+			}
+			else if((inDelegationType == IFDelegation.eDelegationType.cWar) || (inDelegationType == IFDelegation.eDelegationType.cRaiding))
+			{
+				nonViolent = false;
+				Int64 targetDate = currentDate + violentTooMuchDays;
+				Int64 countOfViolentDelegationsArrivingBetweenNowAndTargetDate = 0;
+				foreach(IFDelegation del in delegationsByType[IFDelegation.eDelegationType.cWar])
+				{
+					if((del.getExpectedArrivalDate() &gt;= currentDate &amp;&amp; del.getExpectedArrivalDate() &lt;= targetDate) || (del.getState() == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap))
+						countOfViolentDelegationsArrivingBetweenNowAndTargetDate++;
+				}
+				foreach(IFDelegation del in delegationsByType[IFDelegation.eDelegationType.cRaiding])
+				{
+					if((del.getExpectedArrivalDate() &gt;= currentDate &amp;&amp; del.getExpectedArrivalDate() &lt;= targetDate) || (del.getState() == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap))
+						countOfViolentDelegationsArrivingBetweenNowAndTargetDate++;
+				}
+				if(countOfViolentDelegationsArrivingBetweenNowAndTargetDate &gt;= violentTooMuchCount)
+				{
+					addDebugMessage(inScriptInstance, "foreign community cannot send violent delegation because player-oriented blocker indicates too many violent delegations are being sent to player in close future; count=" + countOfViolentDelegationsArrivingBetweenNowAndTargetDate);
+					outBlockersPreventCreation = true;
+				}
+				
+				bool nonviolentBlocksViolent = false;
+				
+				//HERE: check history for delegations that arrived in the last nonviolentBlockViolentDays days (because they may have fully resolved and been cleared out)
+				string commaStringList = customConsts.getStringConst("mHardcodedHistory delegation_arrived_at_community minoradjlist before_replace_text", out success);
+				if(!success) commaStringList = "delegation arrival,[0]";
+				List&lt;string&gt; stringList = new List&lt;string&gt;(commaStringList.Split(','));
+				for(int i = 0; i &lt; stringList.Count; i++)
+				{
+					if(stringList[i].Contains("[") &amp;&amp; stringList[i].Contains("]"))
+					{
+						stringList.RemoveAt(i);
+						i--;
+					}
+				}
+				foreach(IFHistoricalOccurrence histOccur in getAPI().getLocalCommunity().getHistory().getAllHistoryBetweenDates(currentDate - nonviolentBlockViolentDays, currentDate))
+				{
+					bool has_all_needed_minoradj = true;
+					ReadOnlyCollection&lt;string&gt; actualMinorAdj = histOccur.getAction().getMinorAdjectives();
+					foreach(string neededMinorAdj in stringList)
+					{
+						if(!actualMinorAdj.Contains(neededMinorAdj))
+						{
+							has_all_needed_minoradj = false;
+							break;
+						}
+					}
+					if(has_all_needed_minoradj)
+					{
+						//it was a delegation arrival event at the player community, now check if it was a nonviolent delegation:
+						if(actualMinorAdj.Contains(getAPI().getTranslatedStrings().getDisplayStringOfName(IFDelegation.cDelegationTypeNames[(int)IFDelegation.eDelegationType.cTrade])))
+						{
+							nonviolentBlocksViolent = true;
+							break;
+						}
+						if(actualMinorAdj.Contains(getAPI().getTranslatedStrings().getDisplayStringOfName(IFDelegation.cDelegationTypeNames[(int)IFDelegation.eDelegationType.cDiplomacy])))
+						{
+							nonviolentBlocksViolent = true;
+							break;
+						}
+						if(actualMinorAdj.Contains(getAPI().getTranslatedStrings().getDisplayStringOfName(IFDelegation.cDelegationTypeNames[(int)IFDelegation.eDelegationType.cEmigration])))
+						{
+							nonviolentBlocksViolent = true;
+							break;
+						}
+					}
+				}
+				
+				double beforeDate = currentDate - nonviolentBlockViolentDays;
+				double afterDate = currentDate + nonviolentBlockViolentDays;
+				if(!nonviolentBlocksViolent)
+				{
+					foreach(IFDelegation del in delegationsByType[IFDelegation.eDelegationType.cDiplomacy])
+					{
+						if((del.getExpectedArrivalDate() &gt;= beforeDate &amp;&amp; del.getExpectedArrivalDate() &lt;= afterDate) || (del.getState() == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap))
+						{
+							nonviolentBlocksViolent = true;
+							break;
+						}
+					}
+				}
+				if(!nonviolentBlocksViolent)
+				{
+					foreach(IFDelegation del in delegationsByType[IFDelegation.eDelegationType.cTrade])
+					{
+						if((del.getExpectedArrivalDate() &gt;= beforeDate &amp;&amp; del.getExpectedArrivalDate() &lt;= afterDate) || (del.getState() == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap))
+						{
+							nonviolentBlocksViolent = true;
+							break;
+						}
+					}
+				}
+				if(nonviolentBlocksViolent)
+				{
+					addDebugMessage(inScriptInstance, "foreign community cannot send violent delegation because player-oriented blocker indicates a nonviolent delegation has arrived or is due to arrive shortly");
+					outBlockersPreventCreation = true;
+				}
+				
+				if(currentDate &lt;= gameStartBlockViolentDays)
+				{
+					addDebugMessage(inScriptInstance, "foreign community cannot send violent delegation because player-oriented blocker indicates the game has started recently");
+					outBlockersPreventCreation = true;
+				}
+				double econStrength = inCommunity.getEconStrength();
+				double milStrength = inCommunity.getMilStrength();
+				if((lowStrengthBlock &gt; econStrength) &amp;&amp; (lowStrengthBlock &gt; milStrength))
+				{
+					addDebugMessage(inScriptInstance, "foreign community cannot send violent delegation because player-oriented blocker indicates the player community has too low econ and mil strength");
+					outBlockersPreventCreation = true;
+				}
+			}
+			
+			if(nonViolent &amp;&amp; !outBlockersPreventCreation)
+			{
+				bool nonviolentBlocksViolent = false;
+				
+				//HERE: check history for delegations that arrived in the last nonviolentBlockViolentDays days (because they may have fully resolved and been cleared out)
+				string commaStringList = customConsts.getStringConst("mHardcodedHistory delegation_arrived_at_community minoradjlist before_replace_text", out success);
+				if(!success) commaStringList = "delegation arrival,[0]";
+				List&lt;string&gt; stringList = new List&lt;string&gt;(commaStringList.Split(','));
+				for(int i = 0; i &lt; stringList.Count; i++)
+				{
+					if(stringList[i].Contains("[") &amp;&amp; stringList[i].Contains("]"))
+					{
+						stringList.RemoveAt(i);
+						i--;
+					}
+				}
+				foreach(IFHistoricalOccurrence histOccur in getAPI().getLocalCommunity().getHistory().getAllHistoryBetweenDates(currentDate - nonviolentBlockViolentDays, currentDate))
+				{
+					bool has_all_needed_minoradj = true;
+					ReadOnlyCollection&lt;string&gt; actualMinorAdj = histOccur.getAction().getMinorAdjectives();
+					foreach(string neededMinorAdj in stringList)
+					{
+						if(!actualMinorAdj.Contains(neededMinorAdj))
+						{
+							has_all_needed_minoradj = false;
+							break;
+						}
+					}
+					if(has_all_needed_minoradj)
+					{
+						//it was a delegation arrival event at the player community, now check if it was a violent delegation:
+						if(actualMinorAdj.Contains(getAPI().getTranslatedStrings().getDisplayStringOfName(IFDelegation.cDelegationTypeNames[(int)IFDelegation.eDelegationType.cWar])))
+						{
+							nonviolentBlocksViolent = true;
+							break;
+						}
+						if(actualMinorAdj.Contains(getAPI().getTranslatedStrings().getDisplayStringOfName(IFDelegation.cDelegationTypeNames[(int)IFDelegation.eDelegationType.cRaiding])))
+						{
+							nonviolentBlocksViolent = true;
+							break;
+						}
+					}
+				}
+				
+				double beforeDate = currentDate - nonviolentBlockViolentDays;
+				double afterDate = currentDate + nonviolentBlockViolentDays;
+				if(!nonviolentBlocksViolent)
+				{
+					foreach(IFDelegation del in delegationsByType[IFDelegation.eDelegationType.cWar])
+					{
+						if((del.getExpectedArrivalDate() &gt;= beforeDate &amp;&amp; del.getExpectedArrivalDate() &lt;= afterDate) || (del.getState() == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap))
+						{
+							nonviolentBlocksViolent = true;
+							break;
+						}
+					}
+				}
+				if(!nonviolentBlocksViolent)
+				{
+					foreach(IFDelegation del in delegationsByType[IFDelegation.eDelegationType.cRaiding])
+					{
+						if((del.getExpectedArrivalDate() &gt;= beforeDate &amp;&amp; del.getExpectedArrivalDate() &lt;= afterDate) || (del.getState() == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap))
+						{
+							nonviolentBlocksViolent = true;
+							break;
+						}
+					}
+				}
+				if(nonviolentBlocksViolent)
+				{
+					addDebugMessage(inScriptInstance, "foreign community cannot send nonviolent delegation because player-oriented blocker indicates a violent delegation has arrived or is due to arrive shortly");
+					outBlockersPreventCreation = true;
+				}
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outBlockersPreventCreation };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

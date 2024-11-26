@@ -1,0 +1,3022 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igEvent name="Basic Foreign War Delegation Arrival Event" display_name="Foreign Warriors Attack">
+    <mTagList>
+      <i>Foundational</i>
+      <i>Foreign</i>
+    </mTagList>
+
+    <mTypeOfEvent>3</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0x80</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>1</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultWeight>10</mDefaultWeight>
+
+    <mScriptWhichGatesHappening>
+return new List&lt;object&gt;() { true };
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+            IFDelegation inDelegation = getAPI().getDelegationCurrentlyAssociatedWithEvent();
+            if (inDelegation == null)
+                return null;
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            double minSuccessThreshold = customConsts.getDoubleConst(&quot;Basic Foreign War Delegation Arrival Event success_threshold min&quot;, out bool success);
+            if (!success) minSuccessThreshold = 0.2d;
+            double maxSuccessThreshold = customConsts.getDoubleConst(&quot;Basic Foreign War Delegation Arrival Event success_threshold max&quot;, out success);
+            if (!success) maxSuccessThreshold = 0.45d;
+            double minAbandonThreshold = customConsts.getDoubleConst(&quot;Basic Foreign War Delegation Arrival Event abandon_threshold min&quot;, out success);
+            if (!success) minAbandonThreshold = 0.25d;
+            double maxAbandonThreshold = customConsts.getDoubleConst(&quot;Basic Foreign War Delegation Arrival Event abandon_threshold max&quot;, out success);
+            if (!success) maxAbandonThreshold = 0.5d;
+
+            ReadOnlyCollection&lt;string&gt; wargoals = customConsts.getListConst(&quot;Basic Foreign War Delegation Arrival Event wargoals&quot;, out success);
+            if (!success) wargoals = (new List&lt;string&gt;() { &quot;hurt_loyal_all&quot;, &quot;hurt_loyal_leaders&quot;, &quot;destroy_buildings_all&quot;, &quot;destroy_buildings_housing_all&quot; }).AsReadOnly();
+            string wargoal = wargoals.Count != 0 ? wargoals[(int)getAPI().calcRandIntUnder(wargoals.Count)] : &quot;hurt_loyal_all&quot;;
+
+            double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName(&quot;hostile delegation danger&quot;);
+
+            //fetching information complete.  Calculations:
+            double successThreshold = minSuccessThreshold + (maxSuccessThreshold - minSuccessThreshold) * getAPI().calcRand();
+            double abandonThreshold = minAbandonThreshold + (maxAbandonThreshold - minAbandonThreshold) * getAPI().calcRand();
+            if (difficulty != 0.0d)
+            {
+                successThreshold /= Math.Sqrt(difficulty);
+                successThreshold = Math.Max(0.0d, Math.Min(1.0d, successThreshold));
+            }
+            abandonThreshold *= difficulty;
+            abandonThreshold = Math.Max(0.0d, Math.Min(1.0d, abandonThreshold));
+
+            getAPI().makePopsOnLocalMapHostile(inDelegation.getSourceCommunity());
+            customScripts.runCustomScript(&quot;battleAIInitializeWargoal&quot;, new List&lt;object&gt;() { inDelegation.getSourceCommunity(), wargoal, abandonThreshold, successThreshold, null }, out _);
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+            //because this is a war arrival event, we don&apos;t need to store variables forever:
+            string wargoalVariableName = &quot;evt_Basic Foreign War Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_wargoal&quot;;
+            variableHandler.storeStringVariable(currentDate, wargoalVariableName, wargoal);
+
+            //internal logic complete.  Assemble the report text the player will see:
+            string markupText = &quot;&quot;;
+
+            string listOfAllDelegationPopUIDs = &quot;&quot;;
+            foreach(IFPop pop in inDelegation.getPopsInDelegation())
+            {
+                listOfAllDelegationPopUIDs += pop.getUID() + &quot;,&quot;;
+            }
+            if (listOfAllDelegationPopUIDs != &quot;&quot;) listOfAllDelegationPopUIDs = listOfAllDelegationPopUIDs.Remove(listOfAllDelegationPopUIDs.Length - 1);
+
+            markupText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event report_text before_replace_text&quot;, out success);
+            if (!success) markupText = &quot;[mult_pop|rand_adj_phrase:[0]] warriors from [one_community|name_noun_phrase:[1]] have come to attack our community!  They have no interest in negotiation and voice only a loud war cry: [2]&quot;;
+
+            string hurtLoyalAllText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event hurt_loyal_all_warcry before_replace_text&quot;, out success);
+            if (!success) hurtLoyalAllText = &quot;death to them all!&quot;;
+            string hurtLoyalLeadersText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event hurt_loyal_leaders_warcry before_replace_text&quot;, out success);
+            if (!success) hurtLoyalLeadersText = &quot;death to their rulers!&quot;;
+            string destroyBuildingsAllText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event destroy_buildings_all_warcry before_replace_text&quot;, out success);
+            if (!success) destroyBuildingsAllText = &quot;turn all to rubble!&quot;;
+            string destroyBuildingsHousingAllText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event destroy_buildings_housing_all_warcry before_replace_text&quot;, out success);
+            if (!success) destroyBuildingsHousingAllText = &quot;turn their homes to rubble!&quot;;
+
+            string backupWargoalText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event backup_warcry before_replace_text&quot;, out success);
+            if (!success) backupWargoalText = &quot;death and destruction!&quot;;
+
+            string warcry = (wargoal == &quot;hurt_loyal_all&quot; ? hurtLoyalAllText :
+                wargoal == &quot;hurt_loyal_leaders&quot; ? hurtLoyalLeadersText :
+                wargoal == &quot;destroy_buildings_all&quot; ? destroyBuildingsAllText :
+                wargoal == &quot;destroy_buildings_housing_all&quot; ? destroyBuildingsHousingAllText :
+                backupWargoalText);
+
+            markupText = markupText.Replace(&quot;[0]&quot;, listOfAllDelegationPopUIDs);
+            markupText = markupText.Replace(&quot;[1]&quot;, inDelegation.getSourceCommunity().getUID().ToString());
+            markupText = markupText.Replace(&quot;[2]&quot;, warcry);
+
+            string reportText = markupText;
+            if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                out List&lt;object&gt; returnText, false, typeof(string)))
+            {
+                reportText = (string)returnText[0];
+            }
+            else
+            {
+                addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+            }
+
+            inEventReport.setReportTextOverride(reportText);
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+Warriors from a foreign community have come to attack our community!  They have no interest in negotiation!
+    </mDefaultMenuText>
+    <mInvisible>0</mInvisible>
+    <mStopTimeAndForceEvaluate>1</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+      <i>
+        <name>Dismiss</name>
+        <appears_script>
+return new List&lt;object&gt;() { true };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+            IFDelegation inDelegation = getAPI().getDelegationCurrentlyAssociatedWithEvent();
+            if (inDelegation == null)
+                return null;
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+
+            //fetching information complete.  Calculations:
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+
+            //internal logic complete.  Assemble the report text the player will see:
+            string markupText = &quot;&quot;;
+
+            markupText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event resolution_text before_replace_text&quot;, out bool success);
+            if (!success) markupText = &quot;[0]&quot;;
+
+            string hurtLoyalAllText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event hurt_loyal_all_resolution before_replace_text&quot;, out success);
+            if (!success) hurtLoyalAllText = &quot;We must defend our people!&quot;;
+            string hurtLoyalLeadersText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event hurt_loyal_leaders_resolution before_replace_text&quot;, out success);
+            if (!success) hurtLoyalLeadersText = &quot;We must defend our leaders!&quot;;
+            string destroyBuildingsAllText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event destroy_buildings_all_resolution before_replace_text&quot;, out success);
+            if (!success) destroyBuildingsAllText = &quot;We must defend our buildings!&quot;;
+            string destroyBuildingsHousingAllText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event destroy_buildings_housing_all_resolution before_replace_text&quot;, out success);
+            if (!success) destroyBuildingsHousingAllText = &quot;We must defend our homes!&quot;;
+
+            string backupWargoalText = customConsts.getStringConst(&quot;Basic Foreign War Delegation Arrival Event backup_resolution before_replace_text&quot;, out success);
+            if (!success) backupWargoalText = &quot;We must defend our community!&quot;;
+
+            string wargoal = variableHandler.getString(&quot;evt_Basic Foreign War Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_wargoal&quot;, out success);
+            if (!success) wargoal = &quot;&quot;;
+
+            string rallycry = (wargoal == &quot;hurt_loyal_all&quot; ? hurtLoyalAllText :
+                wargoal == &quot;hurt_loyal_leaders&quot; ? hurtLoyalLeadersText :
+                wargoal == &quot;destroy_buildings_all&quot; ? destroyBuildingsAllText :
+                wargoal == &quot;destroy_buildings_housing_all&quot; ? destroyBuildingsHousingAllText :
+                backupWargoalText);
+
+            markupText = markupText.Replace(&quot;[0]&quot;, rallycry);
+
+            string reportText = markupText;
+            if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                out List&lt;object&gt; returnText, false, typeof(string)))
+            {
+                reportText = (string)returnText[0];
+            }
+            else
+            {
+                addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+            }
+
+            inEventReport.setResolutionTextOverride(reportText);
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+We must defend our community!
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  </igEvent>
+
+  <igEvent name="Basic Foreign Raiding Delegation Arrival Event" display_name="Foreign Raiders Attack">
+    <mTagList>
+      <i>Foundational</i>
+      <i>Foreign</i>
+    </mTagList>
+
+    <mTypeOfEvent>3</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0x100</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>1</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultWeight>10</mDefaultWeight>
+
+    <mScriptWhichGatesHappening>
+return new List&lt;object&gt;() { true };
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+            IFDelegation inDelegation = getAPI().getDelegationCurrentlyAssociatedWithEvent();
+            if (inDelegation == null)
+                return null;
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            double minSuccessThreshold = customConsts.getDoubleConst(&quot;Basic Foreign Raiding Delegation Arrival Event success_threshold min&quot;, out bool success);
+            if (!success) minSuccessThreshold = 0.2d;
+            double maxSuccessThreshold = customConsts.getDoubleConst(&quot;Basic Foreign Raiding Delegation Arrival Event success_threshold max&quot;, out success);
+            if (!success) maxSuccessThreshold = 0.45d;
+            double minAbandonThreshold = customConsts.getDoubleConst(&quot;Basic Foreign Raiding Delegation Arrival Event abandon_threshold min&quot;, out success);
+            if (!success) minAbandonThreshold = 0.25d;
+            double maxAbandonThreshold = customConsts.getDoubleConst(&quot;Basic Foreign Raiding Delegation Arrival Event abandon_threshold max&quot;, out success);
+            if (!success) maxAbandonThreshold = 0.5d;
+
+            List&lt;string&gt; wargoals = customConsts.getListConst(&quot;Basic Foreign Raiding Delegation Arrival Event wargoals&quot;, out success).ToList();
+            if (!success) wargoals = new List&lt;string&gt;() { &quot;steal_resources_all&quot; };
+
+            //for abducting pops to be a possible war goal, the race desire of some target pops must be above a threshold:
+            double raceCareThreshold = customConsts.getDoubleConst(&quot;Basic Foreign Raiding Delegation Arrival Event race_care threshold&quot;, out success);
+            if (!success) raceCareThreshold = 0.75d;
+            List&lt;double&gt; raceCareValues = new List&lt;double&gt;();
+            if (customScripts.runCustomScriptCheckTypes(&quot;getRaceCareValues&quot;, new List&lt;object&gt;() { inDelegation.getSourceCommunity(), null }, out List&lt;object&gt; raceCareOutputs, false, typeof(List&lt;double&gt;)))
+            {
+                raceCareValues = (List&lt;double&gt;)raceCareOutputs[0];
+            }
+
+            double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName(&quot;hostile delegation danger&quot;);
+
+            //fetching information complete.  Calculations:
+            double successThreshold = minSuccessThreshold + (maxSuccessThreshold - minSuccessThreshold) * getAPI().calcRand();
+            double abandonThreshold = minAbandonThreshold + (maxAbandonThreshold - minAbandonThreshold) * getAPI().calcRand();
+            if (difficulty != 0.0d)
+            {
+                successThreshold /= Math.Sqrt(difficulty);
+                successThreshold = Math.Max(0.0d, Math.Min(1.0d, successThreshold));
+            }
+            abandonThreshold *= difficulty;
+            abandonThreshold = Math.Max(0.0d, Math.Min(1.0d, abandonThreshold));
+
+            getAPI().makePopsOnLocalMapHostile(inDelegation.getSourceCommunity()); //this should be before the wargoal calculation
+
+            List&lt;Int64&gt; moidsOfRacesToTarget = new List&lt;long&gt;();
+            for (int moid = 1; moid &lt; raceCareValues.Count; moid++)
+            {
+                if (raceCareValues[moid] &gt; raceCareThreshold)
+                {
+                    //as of now, enemies of the community (rebels/generic enemies/foreign enemies) do not target each other, so don&apos;t include them here
+                    foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+                    {
+                        if(!pop.isDead() &amp;&amp; (pop.getRace().getMOID() == moid) &amp;&amp; !getAPI().isHostileCommunity(pop.getCommunity()))
+                        {
+                            moidsOfRacesToTarget.Add(moid);
+                            break;
+                        }
+                    }
+                }
+            }
+            if (moidsOfRacesToTarget.Count &gt; 0)
+            {
+                wargoals.Add(&quot;abduct_pops_races&quot;);
+            }
+            string wargoal = wargoals.Count != 0 ? wargoals[(int)getAPI().calcRandIntUnder(wargoals.Count)] : &quot;steal_resources_all&quot;;
+
+            customScripts.runCustomScript(&quot;battleAIInitializeWargoal&quot;, new List&lt;object&gt;() { inDelegation.getSourceCommunity(), wargoal, abandonThreshold, successThreshold, moidsOfRacesToTarget }, out _);
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+            //because this is a war arrival event, we don&apos;t need to store variables forever:
+            string wargoalVariableName = &quot;evt_Basic Foreign Raiding Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_wargoal&quot;;
+            variableHandler.storeStringVariable(currentDate, wargoalVariableName, wargoal);
+
+            //internal logic complete.  Assemble the report text the player will see:
+            string markupText = &quot;&quot;;
+
+            string listOfAllDelegationPopUIDs = &quot;&quot;;
+            foreach (IFPop pop in inDelegation.getPopsInDelegation())
+            {
+                listOfAllDelegationPopUIDs += pop.getUID() + &quot;,&quot;;
+            }
+            if (listOfAllDelegationPopUIDs != &quot;&quot;) listOfAllDelegationPopUIDs = listOfAllDelegationPopUIDs.Remove(listOfAllDelegationPopUIDs.Length - 1);
+
+            markupText = customConsts.getStringConst(&quot;Basic Foreign Raiding Delegation Arrival Event report_text before_replace_text&quot;, out success);
+            if (!success) markupText = &quot;[mult_pop|rand_adj_phrase:[0]] raiders from [one_community|name_noun_phrase:[1]] have come to pillage our community!  They have no interest in negotation and on their voices is a singular desire: [2]&quot;;
+
+            string stealResourcesAllText = customConsts.getStringConst(&quot;Basic Foreign Raiding Delegation Arrival Event steal_resources_all_warcry before_replace_text&quot;, out success);
+            if (!success) stealResourcesAllText = &quot;plunder!&quot;;
+            string abductPopsRacesText = customConsts.getStringConst(&quot;Basic Foreign Raiding Delegation Arrival Event abduct_pops_races_warcry before_replace_text&quot;, out success);
+            if (!success) abductPopsRacesText = &quot;slaves!&quot;;
+
+            string backupWargoalText = customConsts.getStringConst(&quot;Basic Foreign Raiding Delegation Arrival Event backup_warcry before_replace_text&quot;, out success);
+            if (!success) backupWargoalText = &quot;plunder!&quot;;
+
+            string warcry = (wargoal == &quot;steal_resources_all&quot; ? stealResourcesAllText :
+                wargoal == &quot;abduct_pops_races&quot; ? abductPopsRacesText :
+                backupWargoalText);
+
+            markupText = markupText.Replace(&quot;[0]&quot;, listOfAllDelegationPopUIDs);
+            markupText = markupText.Replace(&quot;[1]&quot;, inDelegation.getSourceCommunity().getUID().ToString());
+            markupText = markupText.Replace(&quot;[2]&quot;, warcry);
+
+            string reportText = markupText;
+            if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                out List&lt;object&gt; returnText, false, typeof(string)))
+            {
+                reportText = (string)returnText[0];
+            }
+            else
+            {
+                addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+            }
+
+            inEventReport.setReportTextOverride(reportText);
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+Raiders from a foreign community have come to pillage our community!  They have no interest in negotiation!
+    </mDefaultMenuText>
+    <mInvisible>0</mInvisible>
+    <mStopTimeAndForceEvaluate>1</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+      <i>
+        <name>Dismiss</name>
+        <appears_script>
+return new List&lt;object&gt;() { true };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+            IFDelegation inDelegation = getAPI().getDelegationCurrentlyAssociatedWithEvent();
+            if (inDelegation == null)
+                return null;
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+
+            //fetching information complete.  Calculations:
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+
+            //internal logic complete.  Assemble the report text the player will see:
+            string markupText = &quot;&quot;;
+
+            markupText = customConsts.getStringConst(&quot;Basic Foreign Raiding Delegation Arrival Event resolution_text before_replace_text&quot;, out bool success);
+            if (!success) markupText = &quot;[0]&quot;;
+
+            string abductPopsRacesText = customConsts.getStringConst(&quot;Basic Foreign Raiding Delegation Arrival Event abduct_pops_races_resolution before_replace_text&quot;, out success);
+            if (!success) abductPopsRacesText = &quot;We must defend our people!&quot;;
+            string stealResourcesAllText = customConsts.getStringConst(&quot;Basic Foreign Raiding Delegation Arrival Event steal_resources_all_resolution before_replace_text&quot;, out success);
+            if (!success) stealResourcesAllText = &quot;We must defend our supplies!&quot;;
+
+            string backupWargoalText = customConsts.getStringConst(&quot;Basic Foreign Raiding Delegation Arrival Event backup_resolution before_replace_text&quot;, out success);
+            if (!success) backupWargoalText = &quot;We must defend our community!&quot;;
+
+            string wargoal = variableHandler.getString(&quot;evt_Basic Foreign Raiding Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_wargoal&quot;, out success);
+            if (!success) wargoal = &quot;&quot;;
+
+            string rallycry = (wargoal == &quot;abduct_pops_races&quot; ? abductPopsRacesText :
+                wargoal == &quot;steal_resources_all&quot; ? stealResourcesAllText :
+                backupWargoalText);
+
+            markupText = markupText.Replace(&quot;[0]&quot;, rallycry);
+
+            string reportText = markupText;
+            if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                out List&lt;object&gt; returnText, false, typeof(string)))
+            {
+                reportText = (string)returnText[0];
+            }
+            else
+            {
+                addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+            }
+
+            inEventReport.setResolutionTextOverride(reportText);
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+We must defend our community!
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  </igEvent>
+
+  <igEvent name="Basic Foreign Diplomacy Delegation Arrival Event" display_name="Foreign Diplomats Visit">
+    <mTagList>
+      <i>Foundational</i>
+      <i>Foreign</i>
+      <i>Chance</i>
+      <i>Possible Battle</i>
+      <i>can EXPIRE</i>
+    </mTagList>
+
+    <mTypeOfEvent>3</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0x200</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>1</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultWeight>10</mDefaultWeight>
+
+    <mScriptWhichGatesHappening>
+return new List&lt;object&gt;() { true };
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+            IFDelegation inDelegation = getAPI().getDelegationCurrentlyAssociatedWithEvent();
+            if (inDelegation == null)
+                return null;
+
+            bool success = false;
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            double chanceToCheatPlayer = customConsts.getDoubleConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event chance_to_cheat_player&quot;, out success);
+            if (!success) chanceToCheatPlayer = 0.3d;
+
+            Int64 daysToStayMin = customConsts.getIntConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event days_to_stay min&quot;, out success);
+            if (!success) daysToStayMin = 4;
+            Int64 daysToStayMax = customConsts.getIntConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event days_to_stay max&quot;, out success);
+            if (!success) daysToStayMax = 9;
+
+            double desireToStay = customConsts.getDoubleConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event desire_to_stay&quot;, out success);
+            if (!success) desireToStay = 3.5d;
+
+            double predictionStrengthDetectCheating = customConsts.getDoubleConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event detect_cheating threshold&quot;, out success);
+            if (!success) predictionStrengthDetectCheating = 60.0d;
+
+            double cheatingSuspiciousTextProb = customConsts.getDoubleConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event cheating_suspicious_text prob&quot;, out success);
+            if (!success) cheatingSuspiciousTextProb = 0.6d;
+            double notCheatingTextProb = customConsts.getDoubleConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event not_cheating_text prob&quot;, out success);
+            if (!success) notCheatingTextProb = 0.3d;
+
+            //fetching information complete.  Calculations:
+            //first, we need to calculate if this diplomacy delegation has the intent of cheating the player:
+            bool cheatingPlayer = getAPI().calcProb(chanceToCheatPlayer);
+
+            //secondly, we need to calculate the three gifts:
+            string smallGiftText = &quot;&quot;;
+            string mediumGiftText = &quot;&quot;;
+            string largeGiftText = &quot;&quot;;
+            if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Diplomacy Delegation Arrival Event gift_request_generate&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, inDelegation }, out List&lt;object&gt; giftTexts,
+                false, typeof(string), typeof(string), typeof(string)))
+            {
+                smallGiftText = (string)giftTexts[0];
+                mediumGiftText = (string)giftTexts[1];
+                largeGiftText = (string)giftTexts[2];
+            }
+
+            //thirdly, we need to enable and force-for-tomorrow the EXPIRE event:
+            customScripts.runCustomScript(&quot;setupFetchOrClearVariablesForEventForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, false, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()) }, out _);
+
+            //fourthly, calculate until when the pops will stay and how strongly they care to:
+            Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+            Int64 daysToStay = daysToStayMin + (getAPI().calcRandIntUnder(daysToStayMax + 1 - daysToStayMin));
+
+            double suspiciousTextProb = cheatingPlayer ? cheatingSuspiciousTextProb : notCheatingTextProb;
+            suspiciousTextProb = Math.Max(0.0d, Math.Min(1.0d, suspiciousTextProb));
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            //store intent to cheat player:
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_Basic Foreign Diplomacy Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_cheating&quot;, cheatingPlayer ? 1 : 0);
+
+            //gifts are stored by the helper function that generates them
+
+            //store information that the expireEvt will need in order to work correctly: setupFetchOrClearVariablesForEventForEXPIRE does this
+
+            //store the pops associated with this delegation (this also stores their intent to stay on the map):
+            customScripts.runCustomScript(&quot;storeOrFetchPopsForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), &quot;&quot;, Int64.MaxValue, currentDate + daysToStay, desireToStay }, out _);
+
+            //store the delegation itself:
+            variableHandler.storeIntVariable(currentDate + daysToStay + 30, &quot;evt_Basic Foreign Diplomacy Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, (Int64)inDelegation.getUID());
+
+            //internal logic complete.  Assemble the report text the player will see:
+            string markupText = &quot;&quot;;
+
+            string listOfAllDelegationPopUIDs = &quot;&quot;;
+            IFPop randomlyChosenLeader = null;
+            foreach (IFPop pop in inDelegation.getPopsInDelegation())
+            {
+                listOfAllDelegationPopUIDs += pop.getUID() + &quot;,&quot;;
+                randomlyChosenLeader = pop;
+            }
+            if (listOfAllDelegationPopUIDs != &quot;&quot;) listOfAllDelegationPopUIDs = listOfAllDelegationPopUIDs.Remove(listOfAllDelegationPopUIDs.Length - 1);
+
+            markupText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event report_text before_replace_text&quot;, out success);
+            if (!success)
+            {
+                markupText = &quot;[mult_pop|rand_adj_phrase:[0]] pops from [one_community|name_noun_phrase:[1]] have arrived on the edge of our [one_community|strengths_adj_phrase:[2]] community.  They call themselves diplomats, and [one_pop|name_noun_phrase:[3]] represents them as leader.&quot;
+                    + &quot;  [one_pop|name_noun_phrase:[3]] claims if we grant the requested resources from our stockpiles, [one_pop|personal_3ppronoun_phrase:[3]] will spread these resources among the people of [one_community|name_noun_phrase:[1]] to improve the community&apos;s opinion of us.  [4]&quot;
+                    + &quot;\n\n[5]&quot;
+                    + &quot;These resources from our stockpile would make a small gift:\n[7]\n&quot;
+                    + &quot;These resources from our stockpile would make a medium gift:\n[8]\n&quot;
+                    + &quot;These resources from our stockpile would make a large gift:\n[9]\n&quot;;
+            }
+
+            string suspiciousText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event suspicious before_replace_text&quot;, out success);
+            if (!success) suspiciousText = &quot;[one_pop|emotion_tricky_sentence:[3]]&quot;;
+            string pleadingText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event pleading before_replace_text&quot;, out success);
+            if (!success) pleadingText = &quot;[one_pop|emotion_pleading_sentence:[3]]&quot;;
+
+            string leaderMannerText = getAPI().calcProb(suspiciousTextProb) ? suspiciousText : pleadingText;
+
+            string cheatingText = &quot;&quot;;
+            if (cheatingPlayer &amp;&amp; (getAPI().getLocalCommunity().getDomesticComponent().getPredictionStrength() &gt;= predictionStrengthDetectCheating))
+            {
+                cheatingText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event cheating_text before_replace_text&quot;, out success);
+                if (!success) cheatingText = &quot;City Leader, the greed in this cheat&apos;s [one_race|bodypartexpression_noun_phrase:[6]] is clear to spot: these self-serving visitors have no intent to share anything we give them!\n\n&quot;;
+            }
+
+            //put these first, as they may have other elements to be replaced
+            markupText = markupText.Replace(&quot;[4]&quot;, leaderMannerText);
+            markupText = markupText.Replace(&quot;[5]&quot;, cheatingText);
+            //rest:
+            markupText = markupText.Replace(&quot;[0]&quot;, listOfAllDelegationPopUIDs);
+            markupText = markupText.Replace(&quot;[1]&quot;, inDelegation.getSourceCommunity().getUID().ToString());
+            markupText = markupText.Replace(&quot;[2]&quot;, inDelegation.getTargetCommunity().getUID().ToString());
+            markupText = markupText.Replace(&quot;[3]&quot;, (randomlyChosenLeader != null) ? randomlyChosenLeader.getUID().ToString() : &quot;&quot;);
+            markupText = markupText.Replace(&quot;[6]&quot;, (randomlyChosenLeader != null) ? randomlyChosenLeader.getRace().getMOID().ToString() : &quot;&quot;);
+            markupText = markupText.Replace(&quot;[7]&quot;, smallGiftText);
+            markupText = markupText.Replace(&quot;[8]&quot;, mediumGiftText);
+            markupText = markupText.Replace(&quot;[9]&quot;, largeGiftText);
+
+            string reportText = markupText;
+            if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                out List&lt;object&gt; returnText, false, typeof(string)))
+            {
+                reportText = (string)returnText[0];
+            }
+            else
+            {
+                addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+            }
+
+            inEventReport.setReportTextOverride(reportText);
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+Pops calling themselves diplomats have arrived on the edge of our community.  They promise to improve the opinion of our community if we grant them resources.
+    </mDefaultMenuText>
+    <mInvisible>0</mInvisible>
+    <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+      <i>
+        <name>Reject the offer</name>
+        <appears_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //there must be pops on the map from this event for this option to be chosen, and those pops must not be hostile.  The checkAnyEventPopWantsToStay script also checks that the pops are neutral, so that&apos;s done already:
+            if (customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputs, false, typeof(bool)))
+            {
+                outCanChooseOption = ((bool)outputs[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Diplomacy Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            if (allNecessaryVariablesFetched)
+            {
+                customScripts.runCustomScript(&quot;Basic Foreign Diplomacy Delegation Arrival Event rejection_common&quot;, new List&lt;object&gt;() { inEventReport.getUID(), inDelegation.getSourceCommunity() }, out _);
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //rejection_common stores a historical event
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text reject_offer before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;The visiting delegation insults our community and pops as they leave with no gift of resources.  Their journey here and home has been a great waste of time.\n\n&quot;
+                        + &quot;[0]&quot;;
+
+                Int64 offendedIfNotZero = variableHandler.getInt(&quot;evt_Basic Foreign Diplomacy Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_offense&quot;, out success);
+                if (!success) offendedIfNotZero = 0;
+                string offendedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text reject_offer offended before_replace_text&quot;, out success);
+                if (!success) offendedText = &quot;Oaths and promises of retribution are all that the visitors left behind.  It is likely they will degrade opinion of our community in [one_community|name_noun_phrase:[1]].&quot;;
+                string notOffendedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text reject_offer not_offended before_replace_text&quot;, out success);
+                if (!success) notOffendedText = &quot;Hollow oaths from the visitors don&apos;t scare us, City Leader.  These visitors have no sway over the opinions of [one_community|name_noun_phrase:[1]], and you were right to send them away.&quot;;
+
+                markupText = markupText.Replace(&quot;[0]&quot;, offendedIfNotZero != 0 ? offendedText : notOffendedText);
+                markupText = markupText.Replace(&quot;[1]&quot;, inDelegation.getSourceCommunity().getUID().ToString());
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //lastly, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Diplomacy Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Sending the pops away without granting them resources has a small chance to cause offense.
+        </prechoice>
+        <resolution>
+The visiting delegation has left our community with no gift of resources.
+        </resolution>
+      </i>
+      <i>
+        <name>Grant a small gift</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //there must be pops on the map from this event for this option to be chosen, and those pops must not be hostile.  The checkAnyEventPopWantsToStay script also checks that the pops are neutral, so that&apos;s done already:
+            if (customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputsPopsOnMap, false, typeof(bool)))
+            {
+                outCanChooseOption = ((bool)outputsPopsOnMap[0]);
+            }
+
+            //furthermore, the player must have the resources associated with the gift:
+            if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Diplomacy Delegation Arrival Event player_has_resources_for_gift&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, &quot;small&quot; }, out List&lt;object&gt; outputsHasTheResources, false, typeof(bool)))
+            {
+                outCanChooseOption = outCanChooseOption &amp;&amp; ((bool)outputsHasTheResources[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Diplomacy Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            bool offended = false;
+            bool cheated = false;
+            if (allNecessaryVariablesFetched)
+            {
+                customScripts.runCustomScript(&quot;Basic Foreign Diplomacy Delegation Arrival Event transfer_resources_for_gift&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, &quot;small&quot; }, out _);
+                if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Diplomacy Delegation Arrival Event calculate_result_of_gift&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, &quot;small&quot; }, out List&lt;object&gt; boolsOut, false, typeof(bool), typeof(bool)))
+                {
+                    offended = (bool)boolsOut[0];
+                    cheated = (bool)boolsOut[1];
+                }
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //calculate_result_of_gift event stores a historical event
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text small_gift before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;The visiting delegation offers words of thankfulness for our small gift.  It is unlikely their journey here has been worth the effort, but we did not insult them by offering them nothing.\n\n&quot;
+                        + &quot;[0]&quot;;
+
+                string offendedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text small_gift offended before_replace_text&quot;, out success);
+                if (!success) offendedText = &quot;It seems the visiting delegation represented the opposition to the leaders of [one_community|name_noun_phrase:[1]].  The leaders will take offense to our gift.  It is good we did not offer more.&quot;;
+                string cheatedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text small_gift cheated before_replace_text&quot;, out success);
+                if (!success) cheatedText = &quot;These self-claimed diplomats left quickly after it was clear we would offer no more.  It is doubtful they will make any effort to change opinion of us in [one_community|name_noun_phrase:[1]], City Leader.&quot;;
+                string notOffendedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text small_gift not_offended before_replace_text&quot;, out success);
+                if (!success) notOffendedText = &quot;Despite the smallness of our gift, the diplomats seem truthful.  City Leader, I believe opinion of us in [one_community|name_noun_phrase:[1]] will improve.&quot;;
+
+                markupText = markupText.Replace(&quot;[0]&quot;, offended ? offendedText : (cheated ? cheatedText : notOffendedText));
+                markupText = markupText.Replace(&quot;[1]&quot;, inDelegation.getSourceCommunity().getUID().ToString());
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //lastly, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Diplomacy Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Give the diplomats resources representing a small gift.
+        </prechoice>
+        <resolution>
+The visiting delegation has left our community with a small gift of resources.
+        </resolution>
+      </i>
+      <i>
+        <name>Grant a medium gift</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //there must be pops on the map from this event for this option to be chosen, and those pops must not be hostile.  The checkAnyEventPopWantsToStay script also checks that the pops are neutral, so that&apos;s done already:
+            if (customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputsPopsOnMap, false, typeof(bool)))
+            {
+                outCanChooseOption = ((bool)outputsPopsOnMap[0]);
+            }
+
+            //furthermore, the player must have the resources associated with the gift:
+            if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Diplomacy Delegation Arrival Event player_has_resources_for_gift&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, &quot;medium&quot; }, out List&lt;object&gt; outputsHasTheResources, false, typeof(bool)))
+            {
+                outCanChooseOption = outCanChooseOption &amp;&amp; ((bool)outputsHasTheResources[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Diplomacy Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            bool offended = false;
+            bool cheated = false;
+            if (allNecessaryVariablesFetched)
+            {
+                customScripts.runCustomScript(&quot;Basic Foreign Diplomacy Delegation Arrival Event transfer_resources_for_gift&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, &quot;medium&quot; }, out _);
+                if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Diplomacy Delegation Arrival Event calculate_result_of_gift&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, &quot;medium&quot; }, out List&lt;object&gt; boolsOut, false, typeof(bool), typeof(bool)))
+                {
+                    offended = (bool)boolsOut[0];
+                    cheated = (bool)boolsOut[1];
+                }
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //calculate_result_of_gift event stores a historical event
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text medium_gift before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;The visiting delegation offers words of thankfulness for our medium gift.  Our community has sent them away with resources, but no assurance of their promises has been left behind.\n\n&quot;
+                        + &quot;[0]&quot;;
+
+                string offendedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text medium_gift offended before_replace_text&quot;, out success);
+                if (!success) offendedText = &quot;It seems the visiting delegation represented the opposition to the leaders of [one_community|name_noun_phrase:[1]].  The leaders will take offense to our gift.&quot;;
+                string cheatedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text medium_gift cheated before_replace_text&quot;, out success);
+                if (!success) cheatedText = &quot;Perhaps it would have been better to send a diplomatic delegation ourselves with such resources.  We now know these self-claimed diplomats made different promises to our pops in separate conversations.  It is unlikely they will make any effort to change [one_community|name_noun_phrase:[1]]&apos;s opinion of us at all.&quot;;
+                string notOffendedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text medium_gift not_offended before_replace_text&quot;, out success);
+                if (!success) notOffendedText = &quot;Keener minds in our community spotted reasons to trust these visitors.  City Leader, I believe opinion of us in [one_community|name_noun_phrase:[1]] will improve.&quot;;
+
+                markupText = markupText.Replace(&quot;[0]&quot;, offended ? offendedText : (cheated ? cheatedText : notOffendedText));
+                markupText = markupText.Replace(&quot;[1]&quot;, inDelegation.getSourceCommunity().getUID().ToString());
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //lastly, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Diplomacy Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Give the diplomats resources representing a medium gift.
+        </prechoice>
+        <resolution>
+The visiting delegation has left our community with a medium gift of resources.
+        </resolution>
+      </i>
+      <i>
+        <name>Grant a large gift</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //there must be pops on the map from this event for this option to be chosen, and those pops must not be hostile.  The checkAnyEventPopWantsToStay script also checks that the pops are neutral, so that&apos;s done already:
+            if (customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputsPopsOnMap, false, typeof(bool)))
+            {
+                outCanChooseOption = ((bool)outputsPopsOnMap[0]);
+            }
+
+            //furthermore, the player must have the resources associated with the gift:
+            if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Diplomacy Delegation Arrival Event player_has_resources_for_gift&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, &quot;large&quot; }, out List&lt;object&gt; outputsHasTheResources, false, typeof(bool)))
+            {
+                outCanChooseOption = outCanChooseOption &amp;&amp; ((bool)outputsHasTheResources[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Diplomacy Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            bool offended = false;
+            bool cheated = false;
+            if (allNecessaryVariablesFetched)
+            {
+                customScripts.runCustomScript(&quot;Basic Foreign Diplomacy Delegation Arrival Event transfer_resources_for_gift&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, &quot;large&quot; }, out _);
+                if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Diplomacy Delegation Arrival Event calculate_result_of_gift&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, &quot;large&quot; }, out List&lt;object&gt; boolsOut, false, typeof(bool), typeof(bool)))
+                {
+                    offended = (bool)boolsOut[0];
+                    cheated = (bool)boolsOut[1];
+                }
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //calculate_result_of_gift event stores a historical event
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text large_gift before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;The visiting delegation is greatly surprised by our decision to grant them a large gift.  Perhaps they only proposed such a thing to make their other requests seem more reasonable.  In any case, our generosity, and desire for better relations between our communities, has been made clear.\n\n&quot;
+                        + &quot;[0]&quot;;
+
+                string offendedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text large_gift offended before_replace_text&quot;, out success);
+                if (!success) offendedText = &quot;It seems the visiting delegation represented the opposition to the leaders of [one_community|name_noun_phrase:[1]].  The leaders will take offense to our gift.  Our gift is large enough to greatly threaten their position.&quot;;
+                string cheatedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text large_gift cheated before_replace_text&quot;, out success);
+                if (!success) cheatedText = &quot;Doubtful voices in our community are much louder now that the decision has been made to grant such a large gift.  Why these voices did not arise sooner is clear: some pops wanted you to look like a fool by trusting these deceitful so-called diplomats, City Leader.  Pops in [one_community|name_noun_phrase:[2]] have lost some faith in your leadership, and the opinion of [one_community|name_noun_phrase:[1]] will likely not change.&quot;;
+                string notOffendedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text large_gift not_offended before_replace_text&quot;, out success);
+                if (!success) notOffendedText = &quot;Their sincerity has been obvious since the diplomats arrived, if you&apos;d listen to some of our pops.  City Leader, we can look forward to better relations between [one_community|name_noun_phrase:[1]] and our community.  Let us hope the cost was worth it.&quot;;
+
+                markupText = markupText.Replace(&quot;[0]&quot;, offended ? offendedText : (cheated ? cheatedText : notOffendedText));
+                markupText = markupText.Replace(&quot;[1]&quot;, inDelegation.getSourceCommunity().getUID().ToString());
+                markupText = markupText.Replace(&quot;[2]&quot;, inDelegation.getTargetCommunity().getUID().ToString());
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //lastly, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Diplomacy Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Give the diplomats resources representing a large gift.
+        </prechoice>
+        <resolution>
+The visiting delegation has left our community with a large gift of resources.
+        </resolution>
+      </i>
+      <i>
+        <name>This is an offer of the past.  No action can be taken now.</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //if any event pop wants to stay, this option cannot be chosen (it is the fallback for when the player has waited too long):
+            if(customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputs, false, typeof(bool)))
+            {
+                outCanChooseOption = !((bool)outputs[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Diplomacy Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            if (allNecessaryVariablesFetched)
+            {
+                //this is the expiry choice, so no direct effects -- the EXPIRE event takes care of that
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //EXPIRE event stores a historical event
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text expire before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;The visiting delegation is no longer in our community.  Their journey has been a great waste, to which we further contributed by not making a decision until they grew impatient.\n\n&quot;
+                        + &quot;[0]&quot;;
+
+                Int64 offendedIfNotZero = variableHandler.getInt(&quot;evt_Basic Foreign Diplomacy Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_offense&quot;, out success);
+                if (!success) offendedIfNotZero = 0;
+                string offendedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text expire offended before_replace_text&quot;, out success);
+                if (!success) offendedText = &quot;Oaths and promises of retribution are all that the visitors left behind.  It is likely they will degrade opinion of our community in [one_community|name_noun_phrase:[1]].&quot;;
+                string notOffendedText = customConsts.getStringConst(&quot;Basic Foreign Diplomacy Delegation Arrival Event resolution_text expire not_offended before_replace_text&quot;, out success);
+                if (!success) notOffendedText = &quot;Hollow oaths from the visitors don&apos;t scare us, City Leader.  These visitors have no sway over the opinions of [one_community|name_noun_phrase:[1]], and you were right to ignore them.&quot;;
+
+                markupText = markupText.Replace(&quot;[0]&quot;, offendedIfNotZero != 0 ? offendedText : notOffendedText);
+                markupText = markupText.Replace(&quot;[1]&quot;, inDelegation.getSourceCommunity().getUID().ToString());
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //fourth, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Diplomacy Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus , inEventReport }, out _);
+            
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+The visiting delegation has already left. Their journey here and home has been a great waste of time, to which we further contributed by not making a decision until they grew impatient.
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  </igEvent>
+
+  <igEvent name="Basic Foreign Diplomacy Delegation Arrival Event EXPIRE" display_name="">
+    <mTagList>
+      <i>Connected</i>
+      <i>Foundational</i>
+      <i>Foreign</i>
+      <i>Chance</i>
+      <i>Possible Battle</i>
+      <i>EXPIRE</i>
+    </mTagList>
+
+    <mTypeOfEvent>0</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>0</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultMTTH>1</mDefaultMTTH>
+
+    <mScriptWhichGatesHappening>
+return new List&lt;object&gt;() { true };
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+
+            //fetching information complete.  Calculations:
+            if (customScripts.runCustomScriptCheckTypes(&quot;commonUponHappeningScriptForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue }, out List&lt;object&gt; outputEventReportUIDsExpired, false, typeof(List&lt;Int64&gt;)))
+            {
+                List&lt;Int64&gt; eventReportUIDsExpired = (List&lt;Int64&gt;)outputEventReportUIDsExpired[0];
+
+                foreach (Int64 uid in eventReportUIDsExpired)
+                {
+                    //need to fetch the source community (through the delegation) for the event report UID:
+                    Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Diplomacy Delegation Arrival Event&quot; + uid + &quot;_delegationUID&quot;, out bool success);
+                    if (!success)
+                        continue;
+                    IFDelegation del = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                    if (del == null)
+                        continue;
+
+                    customScripts.runCustomScript(&quot;Basic Foreign Diplomacy Delegation Arrival Event rejection_common&quot;, new List&lt;object&gt;() { uid, del.getSourceCommunity() }, out _);
+                }
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            //commonUponHappeningScriptForEXPIRE and rejection_common does that
+
+            //internal logic complete.  Assemble the report text the player will see:
+            //invisible event, so no report text
+
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+N/A
+    </mDefaultMenuText>
+    <mInvisible>1</mInvisible>
+    <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+    </mChoiceCombo>
+  </igEvent>
+
+  <igEvent name="Basic Foreign Trade Delegation Arrival Event" display_name="Foreign Traders Visit">
+    <mTagList>
+      <i>Foundational</i>
+      <i>Foreign</i>
+      <i>Trade</i>
+      <i>can EXPIRE</i>
+    </mTagList>
+
+    <mTypeOfEvent>3</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0x20</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>1</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultWeight>10</mDefaultWeight>
+
+    <mScriptWhichGatesHappening>
+return new List&lt;object&gt;() { true };
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+            IFDelegation inDelegation = getAPI().getDelegationCurrentlyAssociatedWithEvent();
+            if (inDelegation == null)
+                return null;
+            bool success = false;
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            Int64 daysToStayMin = customConsts.getIntConst(&quot;Basic Foreign Trade Delegation Arrival Event days_to_stay min&quot;, out success);
+            if (!success) daysToStayMin = 2;
+            Int64 daysToStayMax = customConsts.getIntConst(&quot;Basic Foreign Trade Delegation Arrival Event days_to_stay max&quot;, out success);
+            if (!success) daysToStayMax = 5;
+
+            double desireToStay = customConsts.getDoubleConst(&quot;Basic Foreign Trade Delegation Arrival Event desire_to_stay&quot;, out success);
+            if (!success) desireToStay = 2.0d;
+
+            //fetching information complete.  Calculations:
+            //first, we need to calculate the trade offer:
+            string resourcesRequestedText = &quot;&quot;;
+            string resourcesGivenText = &quot;&quot;;
+
+            if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Trade Delegation Arrival Event trade_generate&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, inDelegation }, out List&lt;object&gt; giftTexts,
+                false, typeof(string), typeof(string)))
+            {
+                resourcesRequestedText = (string)giftTexts[0];
+                resourcesGivenText = (string)giftTexts[1];
+            }
+
+            //secondly, we need to enable and force-for-tomorrow the EXPIRE event:
+            customScripts.runCustomScript(&quot;setupFetchOrClearVariablesForEventForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, false, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()) }, out _);
+
+            //thirdly, calculate until when the pops will stay and how strongly they care to:
+            Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+            Int64 daysToStay = daysToStayMin + (getAPI().calcRandIntUnder(daysToStayMax + 1 - daysToStayMin));
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            //trade resources (and the strings to describe them) are stored by the helper function that generates them
+
+            //store information that the expireEvt will need in order to work correctly: setupFetchOrClearVariablesForEventForEXPIRE does this
+
+            //store the pops associated with this delegation (this also stores their intent to stay on the map):
+            customScripts.runCustomScript(&quot;storeOrFetchPopsForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), &quot;&quot;, Int64.MaxValue, currentDate + daysToStay, desireToStay }, out _);
+
+            //store the delegation itself:
+            variableHandler.storeIntVariable(currentDate + daysToStay + 5, &quot;evt_Basic Foreign Trade Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, (Int64)inDelegation.getUID());
+
+            //internal logic complete.  Assemble the report text the player will see:
+            string markupText = &quot;&quot;;
+
+            string listOfAllDelegationPopUIDs = &quot;&quot;;
+            foreach (IFPop pop in inDelegation.getPopsInDelegation())
+            {
+                listOfAllDelegationPopUIDs += pop.getUID() + &quot;,&quot;;
+            }
+            if (listOfAllDelegationPopUIDs != &quot;&quot;) listOfAllDelegationPopUIDs = listOfAllDelegationPopUIDs.Remove(listOfAllDelegationPopUIDs.Length - 1);
+
+            markupText = customConsts.getStringConst(&quot;Basic Foreign Trade Delegation Arrival Event report_text before_replace_text&quot;, out success);
+            if (!success)
+            {
+                markupText = &quot;[mult_pop|rand_adj_phrase:[0]] pops from [one_community|name_noun_phrase:[1]] have arrived on the edge of our [one_community|strengths_adj_phrase:[2]] community.  They carry resources with them and have prepared a trade offer for us.  These pops claim they will wait [3] days to hear our response, but may leave without warning after that time has passed.&quot;
+                    + &quot;\n\nIf we have housing for these [mult_pop|rand_adj_phrase:[0]] visitors to occupy, they may stay for longer, and we may be able to ask them to make a different trade proposal.&quot;
+                    + &quot;\n\nResources requested from our storage:&quot;
+                    + &quot;\n[4]&quot;
+                    + &quot;\n\nResources offered by the traders:&quot;
+                    + &quot;\n[5]&quot;;
+            }
+
+            markupText = markupText.Replace(&quot;[0]&quot;, listOfAllDelegationPopUIDs);
+            markupText = markupText.Replace(&quot;[1]&quot;, inDelegation.getSourceCommunity().getUID().ToString());
+            markupText = markupText.Replace(&quot;[2]&quot;, inDelegation.getTargetCommunity().getUID().ToString());
+            markupText = markupText.Replace(&quot;[3]&quot;, daysToStay.ToString());
+            markupText = markupText.Replace(&quot;[4]&quot;, resourcesRequestedText);
+            markupText = markupText.Replace(&quot;[5]&quot;, resourcesGivenText);
+
+            string reportText = markupText;
+            if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                out List&lt;object&gt; returnText, false, typeof(string)))
+            {
+                reportText = (string)returnText[0];
+            }
+            else
+            {
+                addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+            }
+
+            inEventReport.setReportTextOverride(reportText);
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+Pops have arrived on the edge of our community.  They carry resources with them and have proposed a trade.  These pops claim they will wait a short time to hear our response, but may leave without warning after that time has passed.
+    </mDefaultMenuText>
+    <mInvisible>0</mInvisible>
+    <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+      <i>
+        <name>Accept the trade offer.</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //there must be pops on the map from this event for this option to be chosen, and those pops must not be hostile.  The checkAnyEventPopWantsToStay script also checks that the pops are neutral, so that&apos;s done already:
+            if (customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputsPopsOnMap, false, typeof(bool)))
+            {
+                outCanChooseOption = ((bool)outputsPopsOnMap[0]);
+            }
+
+            //furthermore, the player must have the resources associated with the gift:
+            if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Trade Delegation Arrival Event player_has_resources_for_trade&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out List&lt;object&gt; outputsHasTheResourcesP, false, typeof(bool)))
+            {
+                outCanChooseOption = outCanChooseOption &amp;&amp; ((bool)outputsHasTheResourcesP[0]);
+            }
+
+            //furthermore, the delegation must have the resources associated with the gift:
+            if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Trade Delegation Arrival Event delegation_has_resources_for_trade&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out List&lt;object&gt; outputsHasTheResourcesD, false, typeof(bool)))
+            {
+                outCanChooseOption = outCanChooseOption &amp;&amp; ((bool)outputsHasTheResourcesD[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Trade Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; playerResourcesTraded = null;
+            string playerResourcesText = &quot;&quot;;
+            Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; delegationResourcesTraded = null;
+            string delegationResourcesText = &quot;&quot;;
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List &lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;playerSide&quot;, 0L, false },
+                                                                out List&lt;object&gt; fetchedResources1, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+            {
+                playerResourcesTraded = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchedResources1[0];
+                playerResourcesText = (string)fetchedResources1[1];
+            }
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;delegationSide&quot;, 0L, true },
+                                out List&lt;object&gt; fetchedResources2, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+            {
+                delegationResourcesTraded = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchedResources2[0];
+                delegationResourcesText = (string)fetchedResources2[1];
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null) &amp;&amp; (playerResourcesTraded != null) &amp;&amp; (delegationResourcesTraded != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            if (allNecessaryVariablesFetched)
+            {
+                customScripts.runCustomScript(&quot;executeTradeBetweenTwoResourcePools&quot;, new List&lt;object&gt;() { inDelegation.getTargetCommunity().getResourcePool(), inDelegation.getResourcePool(), playerResourcesTraded, delegationResourcesTraded }, out _);
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //small historical impact from a successful trade:
+                Int64 tradeAppreciationStrength = customConsts.getIntConst(&quot;Basic Foreign Trade Delegation Arrival Event appreciation strength&quot;, out success);
+                if (!success) tradeAppreciationStrength = 1L;
+                string tradeActionText = customConsts.getStringConst(&quot;Basic Foreign Trade Delegation Arrival Event history_action_text before_replace_text&quot;, out success);
+                if (!success) tradeActionText = &quot;traded goods with a delegation from&quot;;
+                string tradeAdjective = customConsts.getStringConst(&quot;Basic Foreign Trade Delegation Arrival Event history_adjective before_replace_text&quot;, out success);
+                if (!success) tradeAdjective = &quot;trade&quot;;
+
+                IFHistoricalOccurrence histToAdd = getAPI().createNewHistoricalOccurrenceToday(
+                    IFHistoryActor.eActorKind.cCommunity, getAPI().getLocalCommunity().getUID(),
+                    tradeActionText, tradeAdjective, (List&lt;string&gt;)null,
+                    IFHistoryTarget.eTargetKind.cCommunity, inDelegation.getSourceCommunity().getUID(),
+                    tradeAppreciationStrength, null
+                    );
+
+                inDelegation.getSourceCommunity().getHistory().add(histToAdd);
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Trade Delegation Arrival Event resolution_text accept_offer before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;We have accepted the proposed offer.  The visiting pops may leave immediately, or stay for a time to prepare for the journey home, if they consider us gracious hosts.&quot;
+                        + &quot;\n\nResources lost from our storage:\n[0]&quot;
+                        + &quot;\n\nResources gained:\n[1]&quot;;
+
+                markupText = markupText.Replace(&quot;[0]&quot;, playerResourcesText);
+                markupText = markupText.Replace(&quot;[1]&quot;, delegationResourcesText);
+                                
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //fourth, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Trade Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+The offered goods will be exchanged.
+        </prechoice>
+        <resolution>
+We have accepted the proposed offer. The visiting pops may leave immediately, or stay for a time to prepare for the journey home, if they consider us gracious hosts.
+        </resolution>
+      </i>
+      <i>
+        <name>Reject the trade offer.</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //there must be pops on the map from this event for this option to be chosen, and those pops must not be hostile.  The checkAnyEventPopWantsToStay script also checks that the pops are neutral, so that&apos;s done already:
+            if (customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputs, false, typeof(bool)))
+            {
+                outCanChooseOption = ((bool)outputs[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Trade Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            if (allNecessaryVariablesFetched)
+            {
+                customScripts.runCustomScript(&quot;Basic Foreign Trade Delegation Arrival Event rejection_common&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID(), inDelegation.getSourceCommunity() }, out _);
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //nothing here; rejection_common stores history
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Trade Delegation Arrival Event resolution_text reject_offer before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;We have rejected the proposed offer. The visiting pops may leave immediately, or stay for a time to prepare for the journey home, if they consider us gracious hosts.&quot;;
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //fourth, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Trade Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Inform the traders we do not accept their offer.
+        </prechoice>
+        <resolution>
+We have rejected the proposed offer. The visiting pops may leave immediately, or stay for a time to prepare for the journey home, if they consider us gracious hosts.
+        </resolution>
+      </i>
+      <i>
+        <name>This is an offer of the past. No action can be taken now.</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //if any event pop wants to stay, this option cannot be chosen (it is the fallback for when the player has waited too long):
+            if(customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputs, false, typeof(bool)))
+            {
+                outCanChooseOption = !((bool)outputs[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Trade Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            if (allNecessaryVariablesFetched)
+            {
+                //this is the expiry choice, so no direct effects -- the EXPIRE event takes care of that
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //no long term effects
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Trade Delegation Arrival Event resolution_text expire before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;The visiting delegation is no longer in our community.  Their trade offer merited no response, City Leader.&quot;;
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //fourth, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Trade Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+The visiting delegation is no longer in our community.  Their trade offer merited no response, City Leader.
+        </resolution>
+      </i>
+      <i>
+        <name>The delegation no longer has the resources to make this trade.</name>
+        <appears_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //an event pop needs to want to stay for this option to be chosen:
+            if(customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputs, false, typeof(bool)))
+            {
+                                if((bool)outputs[0])
+                                {
+                                        //the delegation needs to lack the resources for this option to be chosen
+                                        if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Trade Delegation Arrival Event delegation_has_resources_for_trade&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out List&lt;object&gt; outputsHasTheResourcesD, false, typeof(bool)))
+                                        {
+                                                outCanChooseOption = !((bool)outputsHasTheResourcesD[0]);
+                                        }
+                                }
+            }
+                        
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Trade Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            if (allNecessaryVariablesFetched)
+            {
+                customScripts.runCustomScript(&quot;Basic Foreign Trade Delegation Arrival Event rejection_common&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID(), inDelegation.getSourceCommunity() }, out _);
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //nothing here; rejection_common stores history
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Trade Delegation Arrival Event resolution_text delfail_offer before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;The visiting pops offer their apologies and nothing more. The visiting pops may leave immediately, or stay for a time to prepare for the journey home, if they consider us gracious hosts.&quot;;
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //fourth, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Trade Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+The visiting pops offer their apologies and nothing more. The visiting pops may leave immediately, or stay for a time to prepare for the journey home, if they consider us gracious hosts.
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  </igEvent>
+
+  <igEvent name="Basic Foreign Trade Delegation Arrival Event EXPIRE" display_name="">
+    <mTagList>
+      <i>Connected</i>
+      <i>Foundational</i>
+      <i>Foreign</i>
+      <i>Trade</i>
+      <i>EXPIRE</i>
+    </mTagList>
+
+    <mTypeOfEvent>0</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>0</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultMTTH>1</mDefaultMTTH>
+
+    <mScriptWhichGatesHappening>
+return new List&lt;object&gt;() { true };
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+
+            //fetching information complete.  Calculations:
+            if (customScripts.runCustomScriptCheckTypes(&quot;commonUponHappeningScriptForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue }, out List&lt;object&gt; outputEventReportUIDsExpired, false, typeof(List&lt;Int64&gt;)))
+            {
+                List&lt;Int64&gt; eventReportUIDsExpired = (List&lt;Int64&gt;)outputEventReportUIDsExpired[0];
+
+                foreach (Int64 uid in eventReportUIDsExpired)
+                {
+                    //need to fetch the source community (through the delegation) for the event report UID:
+                    Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Trade Delegation Arrival Event&quot; + uid + &quot;_delegationUID&quot;, out bool success);
+                    if (!success)
+                        continue;
+                    IFDelegation del = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                    if (del == null)
+                        continue;
+
+                    customScripts.runCustomScript(&quot;Basic Foreign Trade Delegation Arrival Event rejection_common&quot;, new List&lt;object&gt;() { uid, del.getSourceCommunity() }, out _);
+                }
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            //commonUponHappeningScriptForEXPIRE and rejection_common does that
+
+            //internal logic complete.  Assemble the report text the player will see:
+            //invisible event, so no report text
+
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+N/A
+    </mDefaultMenuText>
+    <mInvisible>1</mInvisible>
+    <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+    </mChoiceCombo>
+  </igEvent>
+
+  <igEvent name="Basic Foreign Emigration Delegation Arrival Event" display_name="Migrants Reach Our Community">
+    <mTagList>
+      <i>Foundational</i>
+      <i>Foreign</i>
+      <i>Emigration</i>
+      <i>Chance</i>
+      <i>Deception</i>
+      <i>can EXPIRE</i>
+    </mTagList>
+
+    <mTypeOfEvent>3</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0x40</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>1</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultWeight>10</mDefaultWeight>
+
+    <mScriptWhichGatesHappening>
+return new List&lt;object&gt;() { true };
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+            IFDelegation inDelegation = getAPI().getDelegationCurrentlyAssociatedWithEvent();
+            if (inDelegation == null)
+                return null;
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            double chanceToLieResources = customConsts.getDoubleConst(&quot;Basic Foreign Emigration Delegation Arrival Event chance_to_lie_resources&quot;, out bool success);
+            if (!success) chanceToLieResources = 0.35d;
+            double chanceToLieHealthConditions = customConsts.getDoubleConst(&quot;Basic Foreign Emigration Delegation Arrival Event chance_to_lie_health_conditions&quot;, out success);
+            if (!success) chanceToLieHealthConditions = 0.55d;
+            double chanceToLiePopCounts = customConsts.getDoubleConst(&quot;Basic Foreign Emigration Delegation Arrival Event chance_to_lie_pop_counts&quot;, out success);
+            if (!success) chanceToLiePopCounts = 0.2d;
+
+            Int64 daysToStayMin = customConsts.getIntConst(&quot;Basic Foreign Emigration Delegation Arrival Event days_to_stay min&quot;, out success);
+            if (!success) daysToStayMin = 5;
+            Int64 daysToStayMax = customConsts.getIntConst(&quot;Basic Foreign Emigration Delegation Arrival Event days_to_stay max&quot;, out success);
+            if (!success) daysToStayMax = 12;
+            double desireToStay = customConsts.getDoubleConst(&quot;Basic Foreign Emigration Delegation Arrival Event desire_to_stay&quot;, out success);
+            if (!success) desireToStay = 3.0d;
+
+            double predictionStrengthDetectResourceLyingStrong = customConsts.getDoubleConst(&quot;Basic Foreign Emigration Delegation Arrival Event detect_lie_strong resource pred_strength&quot;, out success);
+            if (!success) predictionStrengthDetectResourceLyingStrong = 80.0d;
+            double predictionStrengthDetectResourceLyingWeak = customConsts.getDoubleConst(&quot;Basic Foreign Emigration Delegation Arrival Event detect_lie_weak resource pred_strength&quot;, out success);
+            if (!success) predictionStrengthDetectResourceLyingWeak = 40.0d;
+            double predictionStrengthDetectHealthLyingStrong = customConsts.getDoubleConst(&quot;Basic Foreign Emigration Delegation Arrival Event detect_lie_strong health pred_strength&quot;, out success);
+            if (!success) predictionStrengthDetectHealthLyingStrong = 80.0d;
+            double predictionStrengthDetectHealthLyingWeak = customConsts.getDoubleConst(&quot;Basic Foreign Emigration Delegation Arrival Event detect_lie_weak health pred_strength&quot;, out success);
+            if (!success) predictionStrengthDetectHealthLyingWeak = 40.0d;
+            double predictionStrengthDetectPopCountLyingStrong = customConsts.getDoubleConst(&quot;Basic Foreign Emigration Delegation Arrival Event detect_lie_strong popcount pred_strength&quot;, out success);
+            if (!success) predictionStrengthDetectPopCountLyingStrong = 60.0d;
+            double predictionStrengthDetectPopCountLyingWeak = customConsts.getDoubleConst(&quot;Basic Foreign Emigration Delegation Arrival Event detect_lie_weak popcount pred_strength&quot;, out success);
+            if (!success) predictionStrengthDetectPopCountLyingWeak = 30.0d;
+
+            double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName(&quot;non-hostile delegation danger&quot;);
+
+            //fetching information complete.  Calculations:
+            //first, as for any wanderers or emigrants, apply health conditions because these travelers may have had a rough journey:
+            customScripts.runCustomScript(&quot;setupHealthOfWanderersOrEmigrants&quot;, new List&lt;object&gt;() { new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), inDelegation.getSourceCommunity(), -1.0d }, out _);
+
+            //secondly, we need to calculate if this diplomacy delegation has the intent of lying to the player about resources, health conditions, or pop counts:
+            bool lyingResources = getAPI().calcProb(chanceToLieResources * difficulty);
+            bool lyingHealthConditions = getAPI().calcProb(chanceToLieHealthConditions * difficulty);
+            bool lyingPopCounts = getAPI().calcProb(chanceToLiePopCounts * difficulty);
+
+            //third, we need to calculate the resources/health conditions/pop count lies (if each is a lie):
+            string lyingResourcesClaimedText = &quot;&quot;;
+            if (lyingResources)
+            {
+                if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Emigration Delegation Arrival Event lie_resources_generate&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, inDelegation }, out List&lt;object&gt; lieResourceTexts,
+                    false, typeof(string)))
+                {
+                    lyingResourcesClaimedText = (string)lieResourceTexts[0];
+                }
+            }
+
+            Int64 hiddenWoundCount = 0;
+            Int64 hiddenIllnessCount = 0;
+            Int64 hiddenPregnancyCount = 0;
+            if (lyingHealthConditions)
+            {
+                if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Emigration Delegation Arrival Event lie_health_conditions_generate&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, inDelegation }, out List&lt;object&gt; lieHealthConditions,
+                    false, typeof(Int64), typeof(Int64), typeof(Int64)))
+                {
+                    hiddenWoundCount = (Int64)lieHealthConditions[0];
+                    hiddenIllnessCount = (Int64)lieHealthConditions[1];
+                    hiddenPregnancyCount = (Int64)lieHealthConditions[2];
+                }
+            }
+    
+            //some other custom scripts (such as &quot;does neutral wish to stay on map&quot;) will not know which additional labels are associated with the pops of an event and will assume an empty string label, so store all pops without a label (even if this event&apos;s scripts never use the empty string label):
+            Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+            Int64 daysToStay = daysToStayMin + (getAPI().calcRandIntUnder(daysToStayMax + 1 - daysToStayMin));
+            customScripts.runCustomScript(&quot;storeOrFetchPopsForEvent&quot;, new List&lt;object&gt; () {
+                inEventStatus, (Int64)inEventReport.getUID(), true, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), &quot;&quot;,
+                            Int64.MaxValue, currentDate + daysToStay, desireToStay }, out _);
+            Int64 popCountHiding = 0;
+            string popsHidingByRaceDescriptions = &quot;&quot;;
+            //this script must run after pops have been stored:
+            if (lyingPopCounts)
+            {
+                if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Emigration Delegation Arrival Event lie_pop_counts&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport, inDelegation }, out List&lt;object&gt; liePopCounts,
+                    false, typeof(Int64), typeof(string)))
+                {
+                    popCountHiding = (Int64)liePopCounts[0];
+                    popsHidingByRaceDescriptions = (string)liePopCounts[1];
+                }
+            }
+
+            //fourth, we need to enable and force-for-tomorrow the EXPIRE event:
+            customScripts.runCustomScript(&quot;setupFetchOrClearVariablesForEventForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, false, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()) }, out _);
+
+            //fifth, in order to calculate the real count of resources for display by text, store the actual resources of the delegation:
+            Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesActuallyHeld = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+            string realResourcesText = &quot;&quot;;
+            for (int moid = 1; moid &lt; getAPI().getTotalCountOfMO(&quot;resources&quot;); moid++)
+            {
+                IFResource res = (IFResource)getAPI().getMOFromMOID(&quot;resources&quot;, moid);
+                if (res == null)
+                    continue;
+                if (res.isNotInResourcePool())
+                    continue;
+
+                double quan = inDelegation.getResourcePool().getResourceQuantity(res);
+                if (quan &gt; 0.0d)
+                {
+                    double qual = inDelegation.getResourcePool().getResourceQuality(res);
+                    resourcesActuallyHeld.Add(res, Tuple.Create(quan, qual));
+                }
+            }
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, resourcesActuallyHeld, &quot;actualResources&quot;, Int64.MaxValue, true },
+                                        out List&lt;object&gt; storedResources, true, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+            {
+                realResourcesText = (string)storedResources[1];
+            }
+
+            //sixth, calculate whether lying is detected:
+            bool lyingResourcesDetectedStrong = lyingResources &amp;&amp; (getAPI().getLocalCommunity().getDomesticComponent().getPredictionStrength() &gt;= predictionStrengthDetectResourceLyingStrong);
+            bool lyingResourcesDetectedWeak = lyingResources &amp;&amp; (getAPI().getLocalCommunity().getDomesticComponent().getPredictionStrength() &gt;= predictionStrengthDetectResourceLyingWeak);
+
+            bool lyingHealthConditionsDetectedStrong = lyingHealthConditions &amp;&amp; (getAPI().getLocalCommunity().getDomesticComponent().getPredictionStrength() &gt;= predictionStrengthDetectHealthLyingStrong);
+            bool lyingHealthConditionsDetectedWeak = lyingHealthConditions &amp;&amp; (getAPI().getLocalCommunity().getDomesticComponent().getPredictionStrength() &gt;= predictionStrengthDetectHealthLyingWeak);
+
+            bool lyingPopCountsDetectedStrong = lyingPopCounts &amp;&amp; (getAPI().getLocalCommunity().getDomesticComponent().getPredictionStrength() &gt;= predictionStrengthDetectPopCountLyingStrong);
+            bool lyingPopCountsDetectedWeak = lyingPopCounts &amp;&amp; (getAPI().getLocalCommunity().getDomesticComponent().getPredictionStrength() &gt;= predictionStrengthDetectPopCountLyingWeak);
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            //store lies:
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingResources&quot;, lyingResources ? 1 : 0);
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingHealthConditions&quot;, lyingHealthConditions ? 1 : 0);
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingPopCounts&quot;, lyingPopCounts ? 1 : 0);
+
+            //store whether lying is detected:
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingResourcesDetectedStrong&quot;, lyingResourcesDetectedStrong ? 1 : 0);
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingHealthConditionsDetectedStrong&quot;, lyingHealthConditionsDetectedStrong ? 1 : 0);
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingPopCountsDetectedStrong&quot;, lyingPopCountsDetectedStrong ? 1 : 0);
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingResourcesDetectedWeak&quot;, lyingResourcesDetectedWeak ? 1 : 0);
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingHealthConditionsDetectedWeak&quot;, lyingHealthConditionsDetectedWeak ? 1 : 0);
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingPopCountsDetectedWeak&quot;, lyingPopCountsDetectedWeak ? 1 : 0);
+
+            //the resources, health conditions, and hidden pops that are lied about will be stored by those sub-functions
+
+            //store information that the expireEvt will need in order to work correctly: setupFetchOrClearVariablesForEventForEXPIRE does this
+
+            //store the pops associated with this delegation (this also stores their intent to stay on the map): this is done before now
+
+            //store the delegation itself:
+            variableHandler.storeIntVariable(currentDate + daysToStay + 5, &quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, (Int64)inDelegation.getUID());
+
+            //internal logic complete.  Assemble the report text the player will see:
+            string markupText = &quot;&quot;;
+
+            string listOfAppearingDelegationPopUIDs = &quot;&quot;;
+            Dictionary&lt;IFRace, Int64&gt; countOfPopsInDelegationAppearing = new Dictionary&lt;IFRace, long&gt;();
+            ReadOnlyCollection&lt;IFPop&gt; popsOnLocalMap = getAPI().getPopsWithinLocalCommunityMap();
+            foreach (IFPop pop in inDelegation.getPopsInDelegation())
+            {
+                if (popsOnLocalMap.Contains(pop))
+                {
+                    listOfAppearingDelegationPopUIDs += pop.getUID() + &quot;,&quot;;
+                    if (!countOfPopsInDelegationAppearing.ContainsKey(pop.getRace()))
+                    {
+                        countOfPopsInDelegationAppearing.Add(pop.getRace(), 0);
+                    }
+                    countOfPopsInDelegationAppearing[pop.getRace()]++;
+                }
+            }
+            if (listOfAppearingDelegationPopUIDs != &quot;&quot;) listOfAppearingDelegationPopUIDs = listOfAppearingDelegationPopUIDs.Remove(listOfAppearingDelegationPopUIDs.Length - 1);
+            IFRace mostPopulousRace = null;
+            Int64 mostPopulousRaceCount = 0L;
+            foreach (var kvpair in countOfPopsInDelegationAppearing)
+            {
+                if (kvpair.Value &gt; mostPopulousRaceCount)
+                {
+                    mostPopulousRace = kvpair.Key;
+                    mostPopulousRaceCount = kvpair.Value;
+                }
+            }
+            string listOfAllMostPopulousRaceUIDs = &quot;&quot;;
+            foreach (IFPop pop in inDelegation.getPopsInDelegation())
+            {
+                if (popsOnLocalMap.Contains(pop))
+                {
+                    if (pop.getRace() == mostPopulousRace)
+                    {
+                        listOfAllMostPopulousRaceUIDs += pop.getUID() + &quot;,&quot;;
+                    }
+                }
+            }
+            if (listOfAllMostPopulousRaceUIDs != &quot;&quot;) listOfAllMostPopulousRaceUIDs = listOfAllMostPopulousRaceUIDs.Remove(listOfAllMostPopulousRaceUIDs.Length - 1);
+
+            markupText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event report_text before_replace_text&quot;, out success);
+            if (!success)
+            {
+                markupText = &quot;Desperate [mult_pop|rand_adj_phrase:[0]] pops from [one_community|name_noun_phrase:[1]] have arrived on the edge of our community.&quot;
+                    + &quot;\n\n[2] [3] have approached us, City Leader.  [mult_pop|emotion_pleading_sentence:[7]]  They are unable to return to their old, [one_community|rand_adj_phrase:[1]] community, and are now [one_delegation|name_noun_phrase:[4]].  Perhaps they were cast out of their homes and exiled, chose to leave before far worse happened to them, or simply believed life would be better elsewhere; we have no way to know and they have no reason to tell the truth.  Whatever the case, the [3]&apos;s unattended [one_race|bodypartdecorative_noun_phrase:[5]] and weary [one_race|bodypartlandtravel_noun_phrase:[5]] show the difficulty of their longer-than-expected journey.  They have chosen to come here to our [one_community|name_noun_phrase:[6]] in the hopes we will allow them to join us.&quot;
+                    + &quot;\n\nThese pops claim they will wait [8] days to hear our response, but may leave without warning after that time has passed.&quot;
+                    + &quot;\n\nThese pops claim they carry the following resources:\n[9]&quot;
+                    + &quot;[10]&quot; //will have \n\n prepended
+                    + &quot;\n\nThe pops before us are made up of:\n[11]&quot;
+                    + &quot;[12]&quot; //will have \n\n prepended
+                    + &quot;[13]&quot; //will have \n\n prepended
+                    + &quot;\n\nIf we do not allow all these pops to join our community, they will choose to become Wanderers together.  [one_community|name_noun_phrase:[1]] will not care about our decision, but the pops of our community likely will.  What is your decision, City Leader?&quot;;
+            }
+
+            string lyingAndScoutsFindResourcesText = &quot;&quot;;
+            if (lyingPopCountsDetectedStrong)
+            {
+                string strongPredictionSeeLyingResources = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event strong_lying_resources_text before_replace_text&quot;, out success);
+                if (!success)
+                    strongPredictionSeeLyingResources = &quot;They are lying.  Our scouts&apos; tally of the resources is as follows:\n[0]&quot;;
+                strongPredictionSeeLyingResources = &quot;\n\n&quot; + strongPredictionSeeLyingResources;
+                strongPredictionSeeLyingResources = strongPredictionSeeLyingResources.Replace(&quot;[0]&quot;, realResourcesText);
+                lyingAndScoutsFindResourcesText = strongPredictionSeeLyingResources;
+            }
+            else if (lyingPopCountsDetectedWeak)
+            {
+                string weakPredictionSeeLyingResources = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event weak_lying_resources_text before_replace_text&quot;, out success);
+                if (!success)
+                    weakPredictionSeeLyingResources = &quot;Our perceptive pops have spotted that the resources the refugees carry are of fewer number and worse quality than they claim.&quot;;
+                weakPredictionSeeLyingResources = &quot;\n\n&quot; + weakPredictionSeeLyingResources;
+                lyingAndScoutsFindResourcesText = weakPredictionSeeLyingResources;
+            }
+
+            Dictionary&lt;IFRace, Int64&gt; popCountsByRace = new Dictionary&lt;IFRace, long&gt;();
+            string popsDisplayedOnMapText = &quot;&quot;;
+            foreach (IFPop pop in inDelegation.getPopsInDelegation())
+            {
+                if (pop.isDead())
+                    continue;
+                if (pop.getPopLocation() != IFPop.ePopLocation.cOnCommunityMap)
+                    continue;
+
+                if (!popCountsByRace.ContainsKey(pop.getRace()))
+                    popCountsByRace.Add(pop.getRace(), 0);
+                popCountsByRace[pop.getRace()]++;
+            }
+            foreach (var kvpair in popCountsByRace)
+            {
+                popsDisplayedOnMapText += kvpair.Value + &quot; &quot; + (kvpair.Value == 1 ? kvpair.Key.getSingleNoun() : kvpair.Key.getPluralNoun()) + &quot;, &quot;;
+            }
+            if (popsDisplayedOnMapText != &quot;&quot;)
+            {
+                popsDisplayedOnMapText = popsDisplayedOnMapText.Remove(popsDisplayedOnMapText.Length - 2, 2);
+            }
+
+            string lyingAndScoutsSeeConditionsText = &quot;&quot;;
+            if (lyingHealthConditionsDetectedStrong)
+            {
+                string strongPredictionSeeLyingConditions = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event strong_lying_conditions_text before_replace_text&quot;, out success);
+                if (!success)
+                    strongPredictionSeeLyingConditions = &quot;Our scouts have tallied that the refugees seem to be hiding [0] wounds, [1] illnesses, and [2] pregnancies among them, in addition to the health problems we can see openly.&quot;;
+                strongPredictionSeeLyingConditions = &quot;\n\n&quot; + strongPredictionSeeLyingConditions;
+                strongPredictionSeeLyingConditions = strongPredictionSeeLyingConditions.Replace(&quot;[0]&quot;, hiddenWoundCount.ToString());
+                strongPredictionSeeLyingConditions = strongPredictionSeeLyingConditions.Replace(&quot;[1]&quot;, hiddenIllnessCount.ToString());
+                strongPredictionSeeLyingConditions = strongPredictionSeeLyingConditions.Replace(&quot;[2]&quot;, hiddenPregnancyCount.ToString());
+                lyingAndScoutsSeeConditionsText = strongPredictionSeeLyingConditions;
+            }
+            else if (lyingHealthConditionsDetectedWeak)
+            {
+                string weakPredictionSeeLyingConditions = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event weak_lying_conditions_text before_replace_text&quot;, out success);
+                if (!success)
+                    weakPredictionSeeLyingConditions = &quot;Our perceptive pops have noticed that the refugees seem to be hiding wounds, illnesses, or pregnancies among them.&quot;;
+                weakPredictionSeeLyingConditions = &quot;\n\n&quot; + weakPredictionSeeLyingConditions;
+                lyingAndScoutsSeeConditionsText = weakPredictionSeeLyingConditions;
+            }
+
+            string lyingAndScoutsSeeHidingPopsText = &quot;&quot;;
+            if (lyingPopCountsDetectedStrong)
+            {
+                string strongPredictionSeeHidingPops = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event strong_lying_popcount_text before_replace_text&quot;, out success);
+                if (!success)
+                    strongPredictionSeeHidingPops = &quot;The pops which spoke to us are not the only pops that would join us.  More are unsuccessfully hiding outside our community, though it is clear all of them traveled here together.  If we accept these exiled pops, a further count of [0] will join us, likely hoping to go unnoticed.&quot;;
+                strongPredictionSeeHidingPops = &quot;\n\n&quot; + strongPredictionSeeHidingPops;
+                strongPredictionSeeHidingPops = strongPredictionSeeHidingPops.Replace(&quot;[0]&quot;, popsHidingByRaceDescriptions);
+                lyingAndScoutsSeeHidingPopsText = strongPredictionSeeHidingPops;
+            }
+            else if (lyingPopCountsDetectedWeak)
+            {
+                string weakPredictionSeeLyingHidingPops = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event weak_lying_popcount_text before_replace_text&quot;, out success);
+                if (!success)
+                    weakPredictionSeeLyingHidingPops = &quot;The pops which spoke to us are not the only pops that would join us.  More are unsuccessfully hiding outside our community, though it is clear all of them traveled here together.  If we accept these exiled pops, a further count of [0] will join us, likely hoping to go unnoticed.&quot;;
+                weakPredictionSeeLyingHidingPops = &quot;\n\n&quot; + weakPredictionSeeLyingHidingPops;
+                weakPredictionSeeLyingHidingPops = weakPredictionSeeLyingHidingPops.Replace(&quot;[0]&quot;, popCountHiding.ToString());
+                lyingAndScoutsSeeHidingPopsText = weakPredictionSeeLyingHidingPops;
+            }
+
+            markupText = markupText.Replace(&quot;[0]&quot;, listOfAppearingDelegationPopUIDs);
+            markupText = markupText.Replace(&quot;[1]&quot;, inDelegation.getSourceCommunity().getUID().ToString());
+            markupText = markupText.Replace(&quot;[2]&quot;, mostPopulousRaceCount.ToString());
+            markupText = markupText.Replace(&quot;[3]&quot;, mostPopulousRace == null ? &quot;&quot; : mostPopulousRace.getPluralNoun());
+            markupText = markupText.Replace(&quot;[4]&quot;, inDelegation.getUID().ToString());
+            markupText = markupText.Replace(&quot;[5]&quot;, mostPopulousRace == null ? &quot;&quot; : mostPopulousRace.getMOID().ToString());
+            markupText = markupText.Replace(&quot;[6]&quot;, inDelegation.getTargetCommunity().getUID().ToString());
+            markupText = markupText.Replace(&quot;[7]&quot;, listOfAllMostPopulousRaceUIDs);
+            markupText = markupText.Replace(&quot;[8]&quot;, daysToStay.ToString());
+            markupText = markupText.Replace(&quot;[9]&quot;, lyingResources ? lyingResourcesClaimedText : realResourcesText);
+            markupText = markupText.Replace(&quot;[10]&quot;, lyingAndScoutsFindResourcesText);
+            markupText = markupText.Replace(&quot;[11]&quot;, popsDisplayedOnMapText);
+            markupText = markupText.Replace(&quot;[12]&quot;, lyingAndScoutsSeeConditionsText);
+            markupText = markupText.Replace(&quot;[13]&quot;, lyingAndScoutsSeeHidingPopsText);
+
+            string reportText = markupText;
+            if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                out List&lt;object&gt; returnText, false, typeof(string)))
+            {
+                reportText = (string)returnText[0];
+            }
+            else
+            {
+                addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+            }
+
+            inEventReport.setReportTextOverride(reportText);
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+Desperate pops from another community have arrived on the edge of our community.  They may have been cast out of their homes and exiled, chosen to leave before far worse happened to them, or simply believe life would be better here; we have no way to know and they have no reason to tell the truth.  Whatever the case, they have chosen to come to our community in the hopes we will allow them to join us.  These pops claim they will wait a short time to hear our response, but may leave without warning after that time has passed.
+    </mDefaultMenuText>
+    <mInvisible>0</mInvisible>
+    <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+      <i>
+        <name>Welcome the refugees into our community.</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //if any event pop wants to stay, this option cannot be chosen (it is the fallback for when the player has waited too long):
+            if(customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputs, false, typeof(bool)))
+            {
+                outCanChooseOption = ((bool)outputs[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            Int64 nonZeroIfLyingResources = variableHandler.getInt(&quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingResources&quot;, out success);
+            if (!success) nonZeroIfLyingResources = 0;
+            Int64 nonZeroIfLyingConditions = variableHandler.getInt(&quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingHealthConditions&quot;, out success);
+            if (!success) nonZeroIfLyingConditions = 0;
+            Int64 nonZeroIfLyingPopCount = variableHandler.getInt(&quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_lyingPopCounts&quot;, out success);
+            if (!success) nonZeroIfLyingPopCount = 0;
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            IFRace raceMostDisappointed = null;
+            IFRace raceMostHappy = null;
+            Int64 countOfHiddenWounds = 0;
+            Int64 countOfHiddenIllnesses = 0;
+            Int64 countOfHiddenPregnancies = 0;
+            Dictionary&lt;IFRace, int&gt; countsOfHiddenRaces = new Dictionary&lt;IFRace, int&gt;();
+            if (allNecessaryVariablesFetched)
+            {
+                if (customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Emigration Delegation Arrival Event acceptance_common&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), inDelegation }, out List&lt;object&gt; resultsOfAcceptance,
+                    true, typeof(IFRace), typeof(IFRace), typeof(Int64), typeof(Int64), typeof(Int64), typeof(Dictionary&lt;IFRace, int&gt;)))
+                {
+                    raceMostDisappointed = (IFRace)resultsOfAcceptance[0];
+                    raceMostHappy = (IFRace)resultsOfAcceptance[1];
+                    countOfHiddenWounds = (Int64)resultsOfAcceptance[2];
+                    countOfHiddenIllnesses = (Int64)resultsOfAcceptance[3];
+                    countOfHiddenPregnancies = (Int64)resultsOfAcceptance[4];
+                    countsOfHiddenRaces = (Dictionary&lt;IFRace, int&gt;)resultsOfAcceptance[5];
+                }
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //acceptance_common stores a historical event and happiness
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;Our new community members send you their gratitude, City Leader.  This gratitude may fade in time, but these pops are less likely to cause trouble for now.&quot; +
+                    &quot;[0]&quot; +
+                    &quot;[1]&quot; +
+                    &quot;[2]&quot; +
+                    &quot;[3]&quot; +
+                    &quot;[4]&quot;;
+
+                string mostHappyText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer race_happy before_replace_text&quot;, out success);
+                if (!success) mostHappyText = &quot;[0] support for your leadership has grown based on this decision.&quot;;
+                if (raceMostHappy == null)
+                {
+                    mostHappyText = &quot;&quot;;
+                }
+                else
+                {
+                    mostHappyText = &quot;\n\n&quot; + mostHappyText.Replace(&quot;[0]&quot;, raceMostHappy.getAdjective());
+                }
+
+
+                string leastHappyText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer race_offended before_replace_text&quot;, out success);
+                if (!success) leastHappyText = &quot;The [0], in contrast, are disappointed by your decision to allow the refugees to stay.&quot;;
+                if (raceMostDisappointed == null)
+                {
+                    leastHappyText = &quot;&quot;;
+                }
+                else
+                {
+                    if (mostHappyText == &quot;&quot;)
+                        leastHappyText = &quot;\n\n&quot; + leastHappyText;
+                    else
+                        leastHappyText = &quot;\n&quot; + leastHappyText;
+
+                    leastHappyText = leastHappyText.Replace(&quot;[0]&quot;, raceMostDisappointed.getCollectiveNoun());
+                }
+
+                bool lyingResources = (nonZeroIfLyingResources != 0);
+                string lyingResourcesText = &quot;&quot;;
+                if(lyingResources)
+                {
+                    if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;actualResources&quot;, 0L, true }, 
+                            out List&lt;object&gt; resourcesActualFetched, false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+                    {
+                        lyingResourcesText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer lying_resources before_replace_text&quot;, out success);
+                        if (!success) lyingResourcesText = &quot;The lying refugees had fewer resources with them than they claimed!  Only these resources have been added to our stockpiles:\n[0]&quot;;
+
+                        lyingResourcesText = &quot;\n\n&quot; + lyingResourcesText.Replace(&quot;[0]&quot;, (string)resourcesActualFetched[1]);
+                    }
+                }
+
+                bool lyingHealthConditions = (nonZeroIfLyingConditions != 0) &amp;&amp; ((countOfHiddenWounds + countOfHiddenIllnesses + countOfHiddenPregnancies) != 0);
+                string lyingHealthText = &quot;&quot;;
+                if(lyingHealthConditions)
+                {
+                    lyingHealthText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer lying_conditions before_replace_text&quot;, out success);
+                    if (!success) lyingHealthText = &quot;The deceitful refugees hid some health conditions from us!  Now dependent on our community and its resources, the new joiners burden us with caring for:\n[0] wounds, [1] illnesses, and [2] pregnancies.&quot;;
+
+                    lyingHealthText = &quot;\n\n&quot; + lyingHealthText.Replace(&quot;[0]&quot;, countOfHiddenWounds.ToString());
+                    lyingHealthText = lyingHealthText.Replace(&quot;[1]&quot;, countOfHiddenIllnesses.ToString());
+                    lyingHealthText = lyingHealthText.Replace(&quot;[2]&quot;, countOfHiddenPregnancies.ToString());
+                }
+
+                bool lyingPopCount = (nonZeroIfLyingPopCount != 0) &amp;&amp; (countsOfHiddenRaces.Count != 0);
+                string lyingPopCountText = &quot;&quot;;
+                if(lyingPopCount)
+                {
+                    lyingPopCountText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event resolution_text accept_offer lying_popcount before_replace_text&quot;, out success);
+                    if (!success) lyingPopCountText = &quot;The sneaky refugees did not reveal their total number!  After your promise to take them in, more pops have silently appeared in our community:\n[0].&quot;;
+
+                    string popDescriptions = &quot;&quot;;
+                    foreach(var kvpair in countsOfHiddenRaces)
+                    {
+                        popDescriptions += kvpair.Value + &quot; &quot; + (kvpair.Value == 1 ? kvpair.Key.getSingleNoun() : kvpair.Key.getPluralNoun()) + &quot;, &quot;;
+                    }
+                    popDescriptions = popDescriptions.Remove(popDescriptions.Length - 2, 2);
+
+                    lyingPopCountText = &quot;\n\n&quot; + lyingPopCountText.Replace(&quot;[0]&quot;, popDescriptions);
+                }
+
+                markupText = markupText.Replace(&quot;[0]&quot;, mostHappyText);
+                markupText = markupText.Replace(&quot;[1]&quot;, leastHappyText);
+                markupText = markupText.Replace(&quot;[2]&quot;, lyingResourcesText);
+                markupText = markupText.Replace(&quot;[3]&quot;, lyingHealthText);
+                markupText = markupText.Replace(&quot;[4]&quot;, lyingPopCountText);
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //fourth, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Emigration Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+The refugees will join the community, bringing whatever they carry with them.  They will appreciate it greatly, though our existing community members may have a different opinion.
+        </prechoice>
+        <resolution>
+Our new community members send you their gratitude, City Leader. This gratitude may fade in time, but these pops are less likely to cause trouble for now.
+        </resolution>
+      </i>
+      <i>
+        <name>Inform the refugees they have no home here.</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //if any event pop wants to stay, this option cannot be chosen (it is the fallback for when the player has waited too long):
+            if(customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputs, false, typeof(bool)))
+            {
+                outCanChooseOption = ((bool)outputs[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            IFRace raceMostDisappointed = null;
+            IFRace raceMostHappy = null;
+            if (allNecessaryVariablesFetched)
+            {
+                if(customScripts.runCustomScriptCheckTypes(&quot;Basic Foreign Emigration Delegation Arrival Event rejection_common&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), inDelegation }, out List&lt;object&gt; racesLeastAndMostHappy,
+                    true, typeof(IFRace), typeof(IFRace)))
+                {
+                    raceMostDisappointed = (IFRace)racesLeastAndMostHappy[0];
+                    raceMostHappy = (IFRace)racesLeastAndMostHappy[1];
+                }
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //rejection_common stores a historical event and happiness
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event resolution_text reject_offer before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;The visiting emigrants have been informed of your decision, City Leader.  They will leave and become Wanderers.&quot; + 
+                    &quot;[0]&quot; + 
+                    &quot;[1]&quot;;
+
+                string leastHappyText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event resolution_text reject_offer race_offended before_replace_text&quot;, out success);
+                if (!success) leastHappyText = &quot;The [0] are disappointed by your decision, and the refugees leave with their sympathies.&quot;;
+                if(raceMostDisappointed == null)
+                {
+                    leastHappyText = &quot;&quot;;
+                }
+                else
+                {
+                    leastHappyText = &quot;\n\n&quot; + leastHappyText.Replace(&quot;[0]&quot;, raceMostDisappointed.getCollectiveNoun());
+                }
+
+                string mostHappyText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event resolution_text reject_offer race_happy before_replace_text&quot;, out success);
+                if (!success) mostHappyText = &quot;[0] support for your leadership has grown based on this decision.&quot;;
+                if(raceMostHappy == null)
+                {
+                    mostHappyText = &quot;&quot;;
+                }
+                else
+                {
+                    if (leastHappyText == &quot;&quot;)
+                        mostHappyText = &quot;\n\n&quot; + mostHappyText;
+                    else
+                        mostHappyText = &quot;\n&quot; + mostHappyText;
+
+                    mostHappyText = mostHappyText.Replace(&quot;[0]&quot;, raceMostHappy.getAdjective());
+                }
+
+                markupText = markupText.Replace(&quot;[0]&quot;, leastHappyText);
+                markupText = markupText.Replace(&quot;[1]&quot;, mostHappyText);
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //fourth, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Emigration Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+The refugees will leave and become Wanderers.  Our existing community members may sympathize with them, or be glad the refugees are gone.
+        </prechoice>
+        <resolution>
+The visiting emigrants have been informed of your decision, City Leader.  They will leave and become Wanderers.
+        </resolution>
+      </i>
+      <i>
+        <name>This is an offer of the past. No action can be taken now.</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+            //this is a reminder list of common conditions that could impact whether this event can fire/choice be made:
+            //(remember to filter possible selections by these in the upon-happening and/or choice-selection scripts if the gating script checks them):
+            //pops: community / race / location (ex. on map or not) / dead / health / leadership
+            //buildings: built / destroyed / on map / staffed / housed / assigned as mustering point / no access to resources / marked for destruction
+            //delegation: state(not yet resolved, being resolved, already resolved, lost) / foreign or player / prisoners / any pops left on map or not
+            //community: servant-master relation / opinion / alive pop count / active delegations / resources held / type
+
+            //calculate if the option can be chosen:
+            //if any event pop wants to stay, this option cannot be chosen (it is the fallback for when the player has waited too long):
+            if(customScripts.runCustomScriptCheckTypes(&quot;checkAnyEventPopWantsToStay&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out List&lt;object&gt; outputs, false, typeof(bool)))
+            {
+                outCanChooseOption = !((bool)outputs[0]);
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+            IFDelegation inDelegation = null;
+            Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool success);
+            if (!success)
+            {
+                addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+            }
+            else
+            {
+                inDelegation = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                if (inDelegation == null)
+                {
+                    addDebugMessage(inScriptInstance, &quot;could not find associated delegation for event report UID &quot; + inEventReport.getUID());
+                }
+            }
+            bool allNecessaryVariablesFetched = (inDelegation != null);
+
+            //fetching information complete.  Calculations (aka make changes based on this choice):
+            if (allNecessaryVariablesFetched)
+            {
+                //this is the expiry choice, so no direct effects -- the EXPIRE event takes care of that
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            if (allNecessaryVariablesFetched)
+            {
+                //no long term effects -- those happened when the EXPIRE event fired
+            }
+
+            //internal logic complete.  Assemble the resolution text the player will see:
+            if (allNecessaryVariablesFetched)
+            {
+                string markupText = &quot;&quot;;
+
+                markupText = customConsts.getStringConst(&quot;Basic Foreign Emigration Delegation Arrival Event resolution_text expire before_replace_text&quot;, out success);
+                if (!success) markupText = &quot;The visiting emigrants are no longer in our community.  Whatever problems they had left with them, as did whatever they could have offered us.&quot;;
+
+                string resolution_text = markupText;
+                if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { markupText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { /* any manual list of resources go here */ } },
+                    out List&lt;object&gt; returnText, false, typeof(string)))
+                {
+                    resolution_text = (string)returnText[0];
+                }
+                else
+                {
+                    addDebugMessage(inScriptInstance, &quot;markup failed for markup text: &quot; + markupText);
+                }
+
+                inEventReport.setResolutionTextOverride(resolution_text);
+            }
+
+            //fourth, cleanup (if any):
+            customScripts.runCustomScript(&quot;Basic Foreign Emigration Delegation Arrival Event cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+The visiting emigrants are no longer in our community.  Whatever problems they had left with them, as did whatever they could have offered us.
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  </igEvent>
+
+  <igEvent name="Basic Foreign Emigration Delegation Arrival Event EXPIRE" display_name="">
+    <mTagList>
+      <i>Connected</i>
+      <i>Foundational</i>
+      <i>Foreign</i>
+      <i>Emigration</i>
+      <i>Chance</i>
+      <i>Deception</i>
+      <i>EXPIRE</i>
+    </mTagList>
+
+    <mTypeOfEvent>0</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>0</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultMTTH>1</mDefaultMTTH>
+
+    <mScriptWhichGatesHappening>
+return new List&lt;object&gt;() { true };
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
+            //(remember source conditions from gating scripts)
+
+            //fetching information complete.  Calculations:
+            if (customScripts.runCustomScriptCheckTypes(&quot;commonUponHappeningScriptForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue, double.MaxValue }, out List&lt;object&gt; outputEventReportUIDsExpired, false, typeof(List&lt;Int64&gt;)))
+            {
+                List&lt;Int64&gt; eventReportUIDsExpired = (List&lt;Int64&gt;)outputEventReportUIDsExpired[0];
+
+                foreach (Int64 uid in eventReportUIDsExpired)
+                {
+                    //need to fetch the delegation for the event report UID:
+                    Int64 delUID = variableHandler.getInt(&quot;evt_Basic Foreign Emigration Delegation Arrival Event&quot; + uid + &quot;_delegationUID&quot;, out bool success);
+                    if (!success)
+                        continue;
+                    IFDelegation del = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delUID);
+                    if (del == null)
+                        continue;
+
+                    customScripts.runCustomScript(&quot;Basic Foreign Emigration Delegation Arrival Event rejection_common&quot;, new List&lt;object&gt;() { inEventStatus, uid, del }, out _);
+                }
+            }
+
+            //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
+            //commonUponHappeningScriptForEXPIRE and rejection_common does that
+
+            //internal logic complete.  Assemble the report text the player will see:
+            //invisible event, so no report text
+
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+N/A
+    </mDefaultMenuText>
+    <mInvisible>1</mInvisible>
+    <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+    </mChoiceCombo>
+  </igEvent>
+
+</core_data>

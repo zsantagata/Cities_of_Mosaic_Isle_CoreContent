@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+		<i1><a>popgivebirth alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>popgivebirth alert before_replace_text 1</a> <b>string</b>
+		<c>A pregnant [0] has given birth to a healthy child.</c></i1>
+		<i1><a>popgivebirth alert before_replace_text 2</a> <b>string</b>
+		<c>A pregnant [0] has given birth, but the child was lost.</c></i1>
+		<i1><a>popgivebirth alert before_replace_text 3</a> <b>string</b>
+		<c>A pregnant [0] has given birth to a healthy child, but died in childbirth.</c></i1>
+		<i1><a>popgivebirth alert before_replace_text 4</a> <b>string</b>
+		<c>A pregnant [0] has died in childbirth.  The child was lost.</c></i1>
+		
+		<!-- there are two factors at play here: A) prehistorical medical practice does not greatly improve childbirth outcomes compared to no assistance at all, but B) humans are particularly badly built to have easy/deathless childbirth so presumably non-human races would be better at it on average -->
+		
+		<i1><a>childbirth stillborn prob mother_survived min</a> <b>double</b> <c>0.0057</c></i1> <!-- this is the min chance that a child is lost during labor/sometime before, given the mother survived childbirth.  This applies at max health -->
+		<i1><a>childbirth stillborn prob mother_survived max</a> <b>double</b> <c>0.0228</c></i1> <!-- this is the max chance that a child is lost during labor/sometime before, given the mother survived childbirth at health_low_threshold or below -->
+		<i1><a>childbirth stillborn prob mother_died min</a> <b>double</b> <c>0.25</c></i1> <!-- this is the min chance that a child is lost during labor/sometime before, given the mother died in childbirth -->
+		<i1><a>childbirth stillborn prob mother_died max</a> <b>double</b> <c>0.80</c></i1> <!-- this is the max chance that a child is lost during labor/sometime before, given the mother died in childbirth at health_low_threshold -->
+		
+		<i1><a>childbirth wound prob min</a> <b>double</b> <c>0.05</c></i1> <!-- this is the min chance that the mother suffers (the equivalent of) a wound during childbirth and must recover.  This applies at max_health -->
+		<i1><a>childbirth wound prob max</a> <b>double</b> <c>0.2</c></i1> <!-- this is the max chance that the mother suffers (the equivalent of) a wound during childbirth and must recover.  This applies at health_low_threshold or below -->
+		<i1><a>childbirth death prob min</a> <b>double</b> <c>0.01</c></i1> <!-- this is the min chance that the mother dies during childbirth.  This applies at max_health -->
+		<i1><a>childbirth death prob max</a> <b>double</b> <c>0.05</c></i1> <!-- this is the max chance that the mother dies during childbirth.  This applies at health_low_threshold or below -->
+		
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script popgivebirth</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which handles pops giving birth, including placing these pops in the correct location -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop
+	
+	The output is:
+	IFPop outNewbornPop
+	-->
+	<i1><a>popGiveBirth</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{typeof(IFPop)}
+	  }, out _))
+	{
+		throw new ArgumentException("popGiveBirth custom script received invalid arguments");
+		return null;
+	}
+	  
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	double health_low_threshold = consts.getHealthLowThreshold();
+	double health_max = consts.getHealthMax();
+
+	//this script can only be called on a pregnant pop past their due date so no need to check that here
+	//creating a new pop is easy (just like IRL) so do it first here and worry about details later (don't do that IRL):
+	IFRace newpoprace = inPop.getPregnantBabyRace();
+	inPop.setNoLongerPregnant();
+	IFPop.ePopSex sex = getAPI().calcProb(1, 2) ? IFPop.ePopSex.cFemale : IFPop.ePopSex.cMale;
+	if (newpoprace.isUnisex())
+	{
+		if (newpoprace.isCanFatherChildren() &amp;&amp; newpoprace.isCanMotherChildren())
+			sex = IFPop.ePopSex.cUnisexBoth;
+		else if (newpoprace.isCanFatherChildren())
+			sex = IFPop.ePopSex.cMale;
+		else if (newpoprace.isCanMotherChildren())
+			sex = IFPop.ePopSex.cFemale;
+		else
+			sex = IFPop.ePopSex.cUnisexNone;
+	}
+	
+	bool placeOnMap = inPop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap;
+	IFPop outNewbornPop = getAPI().generateNewPop(
+		newpoprace,
+		inPop.getCommunity(),
+		"", //random name
+		getAPI().getCalendar().getCurrentDate(), //born today
+		double.MinValue, //no soldier skill
+		sex,
+		null, //no equipment
+		inPop.getDelegation(), //will be null if no delegation, which is fine
+		placeOnMap,
+		inPop.getMapLocationX(), inPop.getMapLocationY()
+	);
+	
+	//get the custom consts:
+	double momDeadChanceMin = customConsts.getDoubleConst("childbirth death prob min", out bool success);
+	if(!success) momDeadChanceMin = 0.01d;
+	double momDeadChanceMax = customConsts.getDoubleConst("childbirth death prob max", out success);
+	if(!success) momDeadChanceMax = 0.05d;
+	
+	double overallHealth = Math.Max(inPop.getOverallHealth(), health_low_threshold);
+	double momDeadChance = momDeadChanceMin + (momDeadChanceMax - momDeadChanceMin) * (overallHealth - health_low_threshold) / (health_max - health_low_threshold);
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("birth risks");
+	momDeadChance *= difficulty;
+	bool momDead = getAPI().calcProb(momDeadChance);
+	
+	double childStillbirthChanceMin = 0.0d;
+	double childStillbirthChanceMax = 0.0d;
+	
+	if(momDead)
+	{
+		addDebugMessage(inScriptInstance, "based on probability of " + momDeadChance + " the pregnant pop " + inPop.getDebugName() + " has died in childbirth");
+		childStillbirthChanceMin = customConsts.getDoubleConst("childbirth stillborn prob mother_died min", out success);
+		if(!success) childStillbirthChanceMin = 0.25d;
+		childStillbirthChanceMax = customConsts.getDoubleConst("childbirth stillborn prob mother_died max", out success);
+		if(!success) childStillbirthChanceMax = 0.8d;
+	}
+	else
+	{
+		double momWoundChanceMin = customConsts.getDoubleConst("childbirth wound prob min", out success);
+		if(!success) momWoundChanceMin = 0.05d;
+		double momWoundChanceMax = customConsts.getDoubleConst("childbirth wound prob max", out success);
+		if(!success) momWoundChanceMax = 0.2d;
+		double momWoundChance = momWoundChanceMin + (momWoundChanceMax - momWoundChanceMin) * (overallHealth - health_low_threshold) / (health_max - health_low_threshold);
+		momWoundChance *= difficulty;
+		bool momWound = getAPI().calcProb(momWoundChance);
+		if(momWound)
+		{
+			addDebugMessage(inScriptInstance, "based on probability of " + momDeadChance + " the pregnant pop " + inPop.getDebugName() + " has been wounded during childbirth");
+			inPop.addWound(false, false, true); //like a wound from an illness
+		}
+	
+		childStillbirthChanceMin = customConsts.getDoubleConst("childbirth stillborn prob mother_survived min", out success);
+		if(!success) childStillbirthChanceMin = 0.0057d;
+		childStillbirthChanceMax = customConsts.getDoubleConst("childbirth stillborn prob mother_survived max", out success);
+		if(!success) childStillbirthChanceMax = 0.0228d;
+	}
+	
+	double childStillbirthChance = childStillbirthChanceMin + (childStillbirthChanceMax - childStillbirthChanceMin) * (overallHealth - health_low_threshold) / (health_max - health_low_threshold);
+	childStillbirthChance *= difficulty;
+	
+	bool childStillbirth = getAPI().calcProb(childStillbirthChance);
+	
+	if(childStillbirth)
+	{
+		addDebugMessage(inScriptInstance, "based on probability of " + childStillbirthChance + " the born child " + outNewbornPop.getDebugName() + " did not survive");
+		outNewbornPop.setIsDead(true, IFPop.ePopDeathReason.cUnspecified);
+	}
+	
+	if(placeOnMap)
+	{
+		//alert the player:
+		Int64 enable_if_not_zero = customConsts.getIntConst("popgivebirth alert enable_if_not_zero", out success);
+		if(!success) enable_if_not_zero = 0;
+		if(enable_if_not_zero != 0)
+		{
+			int messageNumber = momDead ? (childStillbirth ? 4 : 3) : (childStillbirth ? 2 : 1);
+		
+			string text = customConsts.getStringConst("popgivebirth alert before_replace_text " + messageNumber, out success);
+			if(!success) text = "A pregnant [0] has given birth.";
+			text = text.Replace("[0]", inPop.getRace().getSingleNoun());
+		
+			getAPI().createAlert(text, 200, 200, 255, false, inPop); //the numbers are r/g/b, and false is for not pausing
+		}
+	}
+	
+	return new List&lt;object&gt;() { outNewbornPop };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

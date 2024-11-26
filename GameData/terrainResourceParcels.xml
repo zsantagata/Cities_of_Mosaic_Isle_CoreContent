@@ -1,0 +1,949 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; %gt; %amp; %apos; %quot; with the semicolons -->
+<core_data>
+  <igTerrainResourceParcel name="Fertile Muck 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Fertile Muck</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Fertile Muck</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Fertile Muck 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Fertile Muck</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Fertile Muck</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Fertile Muck 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Fertile Muck</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Fertile Muck</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Fertile Soil 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Fertile Soil</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Fertile Soil</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Fertile Soil 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Fertile Soil</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Fertile Soil</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Fertile Soil 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Fertile Soil</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Fertile Soil</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Fishing Spot 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Fishing Spot</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Fishing Spot</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Fishing Spot 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Fishing Spot</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Fishing Spot</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Fishing Spot 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Fishing Spot</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Fishing Spot</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Granite Outcropping 1x1">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Granite Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Granite Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Granite Outcropping 1x2">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Granite Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Granite Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Granite Outcropping 2x2">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Granite Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Granite Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Grazeland 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Grazeland</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+		<i>3</i>
+		<i>6</i>
+	</mSpriteIDs>
+    <mTerrainSource>Grazeland</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Grazeland 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Grazeland</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+		<i>4</i>
+		<i>7</i>
+	</mSpriteIDs>
+    <mTerrainSource>Grazeland</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Grazeland 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Grazeland</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+		<i>5</i>
+		<i>8</i>
+	</mSpriteIDs>
+    <mTerrainSource>Grazeland</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Water 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Water</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Water 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Water</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Water 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Water</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Flatlands 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Flatlands</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Flatlands 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Flatlands</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Flatlands 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Flatlands</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Tundra 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Tundra</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Tundra 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Tundra</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Tundra 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Tundra</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Taiga 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Taiga</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Taiga 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Taiga</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Taiga 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Taiga</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Forest 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Forest</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Forest 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Forest</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Forest 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Forest</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Mountain 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Mountain</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Mountain 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Mountain</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Mountain 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Mountain</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Desert 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Desert</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Desert 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Desert</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Hunting Grounds Desert 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Hunting Grounds</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Hunting Grounds Desert</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Limestone Outcropping 1x1">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Limestone Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Limestone Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Limestone Outcropping 1x2">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Limestone Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Limestone Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Limestone Outcropping 2x2">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Limestone Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Limestone Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Marble Outcropping 1x1">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Marble Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Marble Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Marble Outcropping 1x2">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Marble Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Marble Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Marble Outcropping 2x2">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Marble Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Marble Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Obsidian Outcropping 1x1">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Obsidian Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Obsidian Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Obsidian Outcropping 1x2">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Obsidian Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Obsidian Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Obsidian Outcropping 2x2">
+    <mBaseParcelQualities>12</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Obsidian Outcropping</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Obsidian Outcropping</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Antimony Ore Vein 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Surface Antimony Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Antimony Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Antimony Ore Vein 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Antimony Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Antimony Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Antimony Ore Vein 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Antimony Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Antimony Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Copper Ore Vein 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Surface Copper Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Copper Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Copper Ore Vein 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Copper Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Copper Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Copper Ore Vein 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Copper Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Copper Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Galena Ore Vein 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Surface Galena Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Galena Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Galena Ore Vein 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Galena Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Galena Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Galena Ore Vein 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Galena Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Galena Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Gold Ore Vein 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Surface Gold Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Gold Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Gold Ore Vein 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Gold Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Gold Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Gold Ore Vein 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Gold Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Gold Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Iron Ore Vein 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Surface Iron Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Iron Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Iron Ore Vein 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Iron Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Iron Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Iron Ore Vein 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Iron Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Iron Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Nickel Ore Vein 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Surface Nickel Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Nickel Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Nickel Ore Vein 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Nickel Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Nickel Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Nickel Ore Vein 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Nickel Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Nickel Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Tin Ore Vein 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Surface Tin Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Tin Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Tin Ore Vein 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Tin Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Tin Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Tin Ore Vein 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Tin Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Tin Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Zinc Ore Vein 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Surface Zinc Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Zinc Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Zinc Ore Vein 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Zinc Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Zinc Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Surface Zinc Ore Vein 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Surface Zinc Ore Vein</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Surface Zinc Ore Vein</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Woods 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Woods</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Woods</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Woods 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Woods</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Woods</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Woods 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Woods</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Woods</mTerrainSource>
+  </igTerrainResourceParcel>
+  
+  <igTerrainResourceParcel name="Woods2 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Woods2</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Woods</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Woods2 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Woods2</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Woods</mTerrainSource>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Woods2 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Woods2</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Woods</mTerrainSource>
+  </igTerrainResourceParcel>
+  
+  <igTerrainResourceParcel name="Woods3 1x1">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>1</mHeight>
+    <mSSID>Woods3</mSSID>
+    <mSpriteIDs>
+		<i>0</i>
+	</mSpriteIDs>
+    <mTerrainSource>Woods</mTerrainSource>
+    <mTagList><i>do not choose randomly</i></mTagList>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Woods3 1x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>1</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Woods3</mSSID>
+    <mSpriteIDs>
+		<i>1</i>
+	</mSpriteIDs>
+    <mTerrainSource>Woods</mTerrainSource>
+    <mTagList><i>do not choose randomly</i></mTagList>
+  </igTerrainResourceParcel>
+
+  <igTerrainResourceParcel name="Woods3 2x2">
+    <mBaseParcelQualities>15</mBaseParcelQualities>
+    <mBiomes><i1>*</i1></mBiomes>
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+    <mSSID>Woods3</mSSID>
+    <mSpriteIDs>
+		<i>2</i>
+	</mSpriteIDs>
+    <mTerrainSource>Woods</mTerrainSource>
+    <mTagList><i>do not choose randomly</i></mTagList>
+  </igTerrainResourceParcel>
+
+</core_data>

@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- a caller may ask this script to determine how many, and which, pops of a delegation are sent on it -->
+			<!-- war and raiding delegations choose the most trained pops, and equip them before they go -->
+			<!-- trade delegations choose primarily pops of the most populous race, then random pops -->
+			<!-- emigration delegations choose pops with weighting towards those with low race care values -->
+			<i1><a>fetchpopsfordelegation trade_delegation most_populous_race proportion</a> <b>double</b> <c>0.7</c></i1> <!-- trade delegations will try to include a sizeable majority of the most populous race, due to suspicion towards other races -->
+			<i1><a>fetchpopsfordelegation emigration_delegation weight_per_1p0 value</a> <b>double</b> <c>10.0</c></i1> <!-- emigration delegations will try to include mostly those pops whose races are not cared for -->
+			
+			<i1><a>fetchpopsfordelegation delegation pop_count_min raw_value</a> <b>int</b> <c>6</c></i1> <!-- if inPopsOnDelegation and inTotalPops are both invalid, this is the minimum number of pops that this script will try to send -->
+			<i1><a>fetchpopsfordelegation delegation pop_count_max raw_value</a> <b>int</b> <c>100</c></i1> <!-- if inPopsOnDelegation and inTotalPops are both invalid, this is the minimum number of pops that this script will try to send -->
+			<i1><a>fetchpopsfordelegation delegation pop_count_max proportion</a> <b>double</b> <c>0.45</c></i1> <!-- if inPopsOnDelegation and inTotalPops are both invalid, this is the maximum ratio (of total population) of pops that this script will try to send -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script fetchpopsfordelegation</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which attempts to fetch or reify additional pops for a delegation -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunitySource, //may not be null
+	IFCommunity inCommunityTarget, //may not be null
+	IFDelegation.eDelegationType inDelegationType, //must be one of: war, raiding, trade, diplomacy, emigration
+	
+	//combination of inPopsOnDelegation and inTotalPops determines how pops are reified/chosen for the delegation:
+	//A) inPopsOnDelegation null/empty, inTotalPops 0/negative -> this script determines how many pops should be sent
+	//B) inPopsOnDelegation null/empty, inTotalPops positive -> this script will fetch/reify inTotalPops count of eligible pops (if possible)
+	//C) inPopsOnDelegation valid, inTotalPops 0/negative or equal to inPopsOnDelegation.Count -> this script will place the provided pops in the delegation (after checking they are valid to be in a delegation)
+	//D) inPopsOnDelegation valid, 0 < inTotalPops < inPopsOnDelegation.Count -> this script will randomly place inTotalPops of inPopsOnDelegation in the delegation
+	//E) inPopsOnDelegation valid, inPopsOnDelegation.Count < inTotalPops -> this script will fetch/reify pops until inTotalPops count of eligible pops (if possible)
+	List<IFPop> inPopsOnDelegation, //may be null or empty
+	Int64 inTotalPops, //may be 0 or negative
+	-->
+	
+	<!-- output:
+	List<IFPop> outPopsOnDelegation
+	-->
+	<i1><a>fetchPopsForDelegation</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity), typeof(IFCommunity), typeof(IFDelegation.eDelegationType),
+			 typeof(List&lt;IFPop&gt;), typeof(Int64)
+			}
+	      }, out _))
+	    {
+		  throw new ArgumentException("fetchPopsForDelegation custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFCommunity playerCommunity = getAPI().getLocalCommunity();
+	
+		IFCommunity inCommunitySource = (IFCommunity)inArguments[0];
+		if(inCommunitySource == null)
+		{
+		  throw new ArgumentException("fetchPopsForDelegation custom script received invalid arguments: inCommunitySource cannot be null");
+		  return null;
+		}
+		if(inCommunitySource == playerCommunity)
+		{
+		  throw new ArgumentException("fetchPopsForDelegation custom script received invalid arguments: inCommunitySource cannot be the player community");
+		  return null;
+		}
+		IFCommunity inCommunityTarget = (IFCommunity)inArguments[1];
+		if(inCommunityTarget == null)
+		{
+		  throw new ArgumentException("fetchPopsForDelegation custom script received invalid arguments: inCommunityTarget cannot be null");
+		  return null;
+		}
+		IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[2];
+		
+		if(inArguments[3] == null)
+		{
+			inArguments[3] = new List&lt;IFPop&gt;();
+		}
+		List&lt;IFPop&gt; inPopsOnDelegation = (List&lt;IFPop&gt;)inArguments[3];
+		if(inPopsOnDelegation == null)
+		{
+			inPopsOnDelegation = new List&lt;IFPop&gt;();
+		}
+		else
+		{
+			inPopsOnDelegation = new List&lt;IFPop&gt;(inPopsOnDelegation); //we may modify inPopsOnDelegation so make a copy
+		}
+		
+		Int64 inTotalPops = (Int64)inArguments[4];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		List&lt;IFPop&gt; outPopsOnDelegation = new List&lt;IFPop&gt;();
+		
+		Int64 popCount = inCommunitySource.getPopsLoyalToCommunity(true, false).Count;
+		foreach(var kvpair in inCommunitySource.getAdditionalUndeclaredPopCounts())
+		{
+			popCount += (Int64)kvpair.Value;
+		}
+
+		//determine how many and which pops should be sent on the delegation
+		string popDebug = "";
+		Int64 popsToGenerate = 0;
+		bool success = false;
+		if(inPopsOnDelegation.Count &gt; 0)
+		{
+			//C
+			if((inPopsOnDelegation.Count == inTotalPops) || (inTotalPops &lt;= 0))
+			{
+				//use inPopsOnDelegation and simply filter them (in a bit)
+				popDebug += "Using " + inPopsOnDelegation.Count + " pops in inPopsOnDelegation and no more";
+			}
+			//D
+			else if(inTotalPops &lt; inPopsOnDelegation.Count)
+			{
+				//select inTotalPops out of inPopsOnDelegation
+				popDebug += "Using " + inTotalPops + " pops selected out of " + inPopsOnDelegation.Count;
+				List&lt;IFPop&gt; popsChosen = new List&lt;IFPop&gt;();
+				while(inTotalPops &gt; 0)
+				{
+					int index = (int)getAPI().calcRandIntUnder(inPopsOnDelegation.Count);
+					IFPop popToAdd = inPopsOnDelegation[index];
+					inPopsOnDelegation.RemoveAt(index);
+					popsChosen.Add(popToAdd);
+				
+					inTotalPops--;
+				}
+				inPopsOnDelegation = popsChosen;
+			}
+			//E
+			else
+			{
+				//fetch or reify the remaining pops:
+				popDebug += "Using " + inPopsOnDelegation.Count + " and generating more for total of " + inTotalPops;
+				popsToGenerate = inTotalPops - inPopsOnDelegation.Count;
+			}
+			outPopsOnDelegation = new List&lt;IFPop&gt;(inPopsOnDelegation);
+		}
+		//B
+		else if(inTotalPops &gt; 0)
+		{
+			//fetch or reify the pops:
+			popDebug += "Reifying/fetching " + inTotalPops + " pops";
+			popsToGenerate = inTotalPops;
+		}
+		//A
+		else
+		{
+			//fetch or reify some number of pops based on this community and the delegation type
+			Int64 popCountRawMin = customConsts.getIntConst("startdelegation delegation pop_count_min raw_value", out success);
+			if(!success) popCountRawMin = 6;
+			Int64 popCountRawMax = customConsts.getIntConst("startdelegation delegation pop_count_max raw_value", out success);
+			if(!success) popCountRawMax = 100;
+			
+			double popCountRawMinProp = popCountRawMin / ((double)popCount);
+			double popCountRawMaxProp = popCountRawMax / ((double)popCount);
+			
+			double popCountPropMax = customConsts.getDoubleConst("startdelegation delegation pop_count_max proportion", out success);
+			if(!success) popCountPropMax = 0.45d;
+			
+			if((popCountRawMinProp &gt; 1.0d) || (popCountPropMax &lt; popCountRawMinProp))
+			{
+				addDebugMessage(inScriptInstance, "source community has less than the minimum number of alive pops for sending a delegation: pop count = " + popCount);
+				outPopsOnDelegation = new List&lt;IFPop&gt;();
+				toReturn.Add(outPopsOnDelegation);
+				return toReturn;
+			}
+			else //try to fetch the correct number of pops and leave the rest to be generated
+			{
+				double upper_bound_prop = Math.Min(popCountPropMax, popCountRawMaxProp);
+				double proportion_of_pops_to_select = getAPI().calcRand() * (upper_bound_prop - popCountRawMinProp) + popCountRawMinProp;
+				double variableModifier = 1.0d;
+				double difficultyModifier = 1.0d;
+				if((inDelegationType == IFDelegation.eDelegationType.cWar) || (inDelegationType == IFDelegation.eDelegationType.cRaiding))
+				{
+					variableModifier = variableHandler.getConnectedDouble("violentDelegationPopCountMult_community" + inCommunitySource.getUID(), out success);
+					if(!success) variableModifier = 1.0d;
+				
+				}
+				else if((inDelegationType == IFDelegation.eDelegationType.cTrade) || (inDelegationType == IFDelegation.eDelegationType.cDiplomacy))
+				{
+					variableModifier = variableHandler.getConnectedDouble("nonviolentDelegationPopCountMult_community" + inCommunitySource.getUID(), out success);
+					if(!success) variableModifier = 1.0d;
+				}
+				else
+				{
+					variableModifier = variableHandler.getConnectedDouble("emigrationDelegationPopCountMult_community" + inCommunitySource.getUID(), out success);
+					if(!success) variableModifier = 1.0d;
+				}
+				popsToGenerate = (Int64)(popCount * Math.Min(proportion_of_pops_to_select * variableModifier * difficultyModifier, popCountPropMax) + 1);
+				popDebug += "Reifying/fetching " + popsToGenerate + " pops based on startDelegation script parameters, random roll, variableModifier=" + variableModifier + ", difficultyModifier=" + difficultyModifier;
+			}
+		}
+		addDebugMessage(inScriptInstance, popDebug);
+		
+		//"generate" pops here is a misnomer; really it's fetch or reify but either way this is for pops who have not been specifically ordered onto this delegation
+		if(popsToGenerate &gt; 0)
+		{
+			List&lt;double&gt; raceWeights = new List&lt;double&gt;(); //index = moid
+			raceWeights.Add(0.0d);
+			double totalRaceWeight = 0.0d;
+			
+			Int64 totalRaceCount = getAPI().getTotalCountOfMO("races");
+			if(inDelegationType == IFDelegation.eDelegationType.cTrade)
+			{
+				//set the most populous race's chance to the same as the custom const, and multiply the rest by (1 - custom const)
+				double flatMostPopulousWeight = customConsts.getDoubleConst("startdelegation trade_delegation most_populous_race proportion", out success);
+				if(!success) flatMostPopulousWeight = 0.7d;
+				double restWholeWeight = 1.0d - flatMostPopulousWeight;
+				
+				for(int moid = 1; moid &lt; totalRaceCount; moid++)
+				{
+					UInt64 totalThisRaceCount = inCommunitySource.getPopCountOfRace((UInt64)moid);
+					double wt = totalThisRaceCount * restWholeWeight / popCount;
+					raceWeights.Add(wt);
+					totalRaceWeight += wt;
+				}
+				raceWeights[(int)inCommunitySource.getMostPopulousRace().getMOID()] = flatMostPopulousWeight;
+			}
+			else if(inDelegationType == IFDelegation.eDelegationType.cEmigration)
+			{
+				List&lt;double&gt; raceCareValues = new List&lt;double&gt;();
+				if(customScripts.runCustomScriptCheckTypes("getRaceCareValues", new List&lt;object&gt;() { inCommunitySource, null },
+										out List&lt;object&gt; outRaceCareValues, true, typeof(List&lt;double&gt;)))
+				{
+					raceCareValues = (List&lt;double&gt;)outRaceCareValues[0];
+				}
+				//race cares at 1.0 or above lead to a weight of 1.  For each race care value decrease of 1.0, weight increases by the custom const additively
+				double additiveForLowRaceCareValue = customConsts.getDoubleConst("startdelegation emigration_delegation weight_per_1p0 value", out success);
+				if(!success) additiveForLowRaceCareValue = 10.0d;
+				for(int moid = 1; moid &lt; totalRaceCount; moid++)
+				{
+					UInt64 totalThisRaceCount = inCommunitySource.getPopCountOfRace((UInt64)moid);
+					double wt = 1.0d + (raceCareValues[moid] &gt;= 1.0d ? 0.0d : (1.0d - raceCareValues[moid]) * additiveForLowRaceCareValue);
+					
+					//variable weight addition:
+					double variableAddition = 0.0d;
+					if((inDelegationType == IFDelegation.eDelegationType.cWar) || (inDelegationType == IFDelegation.eDelegationType.cRaiding))
+					{
+						variableAddition = variableHandler.getConnectedDouble("violentDelegationRaceWeightAddition_community" + inCommunitySource.getUID() + "race" + moid, out success);
+						if(!success) variableAddition = 0.0d;
+					}
+					else if((inDelegationType == IFDelegation.eDelegationType.cTrade) || (inDelegationType == IFDelegation.eDelegationType.cDiplomacy))
+					{
+						variableAddition = variableHandler.getConnectedDouble("nonviolentDelegationRaceWeightAddition_community" + inCommunitySource.getUID() + "race" + moid, out success);
+						if(!success) variableAddition = 0.0d;
+					}
+					else
+					{
+						variableAddition = variableHandler.getConnectedDouble("emigrationDelegationRaceWeightAddition_community" + inCommunitySource.getUID() + "race" + moid, out success);
+						if(!success) variableAddition = 0.0d;
+					}
+					
+					wt += variableAddition;
+					if((wt &lt; 0.0d) || (totalThisRaceCount == 0))
+						wt = 0.0d;
+					
+					raceWeights.Add(wt);
+					totalRaceWeight += wt;
+				}
+			}
+			else
+			{
+				//equal race weights
+				for(int moid = 1; moid &lt; totalRaceCount; moid++)
+				{
+					UInt64 totalThisRaceCount = inCommunitySource.getPopCountOfRace((UInt64)moid);
+					double wt = totalThisRaceCount &gt; 0 ? 1.0d : 0.0d;
+					raceWeights.Add(wt);
+					totalRaceWeight += wt;
+				}
+			}
+			
+			//based on the path between the two communities, choose one (prefer land-only/water-only based on the most populous race of the community, then choose between them randomly, then mixed last) and zero out race weights for races that can't breathe on that path
+			bool forbid_cannot_breathe_water = false;
+			bool forbid_cannot_breathe_land = false;
+			bool forbid_cannot_breathe_both = false;
+			if(getAPI().getRoundTripTimeAndKindBetweenCommunities(inCommunitySource, inCommunityTarget, (List&lt;IFPop&gt;)null, out IFCommunity.ePathTypes orOfAllValidPathTypes, out _))
+			{
+				bool water_only_available = (((Int64)orOfAllValidPathTypes &amp; (Int64)IFCommunity.ePathTypes.cWaterOnlyAvailable) == ((Int64)IFCommunity.ePathTypes.cWaterOnlyAvailable));
+				bool land_only_available = (((Int64)orOfAllValidPathTypes &amp; (Int64)IFCommunity.ePathTypes.cLandOnlyAvailable) == ((Int64)IFCommunity.ePathTypes.cLandOnlyAvailable));
+				bool mixed_available = (((Int64)orOfAllValidPathTypes &amp; (Int64)IFCommunity.ePathTypes.cMixedAvailable) == ((Int64)IFCommunity.ePathTypes.cMixedAvailable));
+				
+				bool use_land_only_path = (land_only_available &amp;&amp; !inCommunitySource.getMostPopulousRace().isCanBreatheUnderwater());
+				bool use_water_only_path = (water_only_available &amp;&amp; !inCommunitySource.getMostPopulousRace().isCanBreatheOverwater());
+				//if neither of the above are true, choose one randomly if both paths are available:
+				if(!use_land_only_path &amp;&amp; !use_water_only_path)
+				{
+					if(water_only_available &amp;&amp; land_only_available)
+					{
+						if(getAPI().calcRandIntUnder(2) == 0)
+						{
+							use_land_only_path = true;
+						}
+						else
+						{
+							use_water_only_path = true;
+						}
+					}
+					else if(water_only_available)
+					{
+						use_water_only_path = true;
+					}
+					else if(land_only_available)
+					{
+						use_land_only_path = true;
+					}
+				}
+				
+				bool use_mixed_path = !use_land_only_path &amp;&amp; !use_water_only_path &amp;&amp; mixed_available;
+				if(!use_mixed_path &amp;&amp; !use_land_only_path &amp;&amp; !use_water_only_path)
+				{
+					addDebugMessage(inScriptInstance, "land/water/mixed path between source and target community does not exist!");
+					outPopsOnDelegation = new List&lt;IFPop&gt;();
+					toReturn.Add(outPopsOnDelegation);
+					return toReturn;
+				}
+				
+				if(use_land_only_path)
+				{
+					//choose the overland path
+					forbid_cannot_breathe_water = false;
+					forbid_cannot_breathe_land = true;
+					forbid_cannot_breathe_both = false;
+				}
+				else if(use_water_only_path)
+				{
+					//choose the underwater path
+					forbid_cannot_breathe_water = true;
+					forbid_cannot_breathe_land = false;
+					forbid_cannot_breathe_both = false;
+				}
+				else if(use_mixed_path)
+				{
+					forbid_cannot_breathe_water = false;
+					forbid_cannot_breathe_land = false;
+					forbid_cannot_breathe_both = true;
+				}
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "path between source and target community does not exist");
+				outPopsOnDelegation = new List&lt;IFPop&gt;();
+				toReturn.Add(outPopsOnDelegation);
+				return toReturn;
+			}
+			
+			//while we're iterating over races, make sure to correct totalRaceWeight
+			for(int moid = 1; moid &lt; totalRaceCount; moid++)
+			{
+				IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+				if(race == null)
+					continue;
+					
+				bool cannot_breathe_water = !race.isCanBreatheUnderwater();
+				bool cannot_breathe_land = !race.isCanBreatheOverwater();
+				if((cannot_breathe_land &amp;&amp; forbid_cannot_breathe_land) || (cannot_breathe_water &amp;&amp; forbid_cannot_breathe_water) || ((cannot_breathe_land || cannot_breathe_water) &amp;&amp; forbid_cannot_breathe_both))
+				{
+					totalRaceWeight -= raceWeights[moid];
+					raceWeights[moid] = 0.0d;
+				}
+			}
+			
+			if(totalRaceWeight &lt;= 0.0d)
+			{
+				addDebugMessage(inScriptInstance, "additional pops cannot be fetched because all race weights are equal to 0");
+			}
+			else
+			{
+				Dictionary&lt;IFRace, int&gt; countsToGenerateByRace = new Dictionary&lt;IFRace, int&gt;();
+				while(popsToGenerate &gt; 0)
+				{
+					double randomWeight = getAPI().calcRand() * totalRaceWeight;
+					double weightSoFar = 0.0d;
+					int moid = 0;
+					while(moid &lt; raceWeights.Count)
+					{
+						weightSoFar += raceWeights[moid];
+						if(weightSoFar &gt; randomWeight)
+						{
+							break;
+						}
+					
+						moid++;
+					}
+					
+					if(moid &gt;= raceWeights.Count)
+					{
+						continue;
+					}
+					popsToGenerate--;
+					
+					IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+					if(race == null)
+						continue;
+						
+					if(!countsToGenerateByRace.ContainsKey(race))
+						countsToGenerateByRace.Add(race, 0);
+					countsToGenerateByRace[race]++;
+				}
+				
+				foreach(var kvpair in countsToGenerateByRace)
+				{
+					if(customScripts.runCustomScriptCheckTypes("fetchPopsFromForeignCommunity", new List&lt;object&gt;() { inCommunitySource, (Int64)kvpair.Value, kvpair.Key, IFPop.ePopSex.cUnisexNone, false, true, false, true, false, false, false, true,
+						true, false, true, false, true, false, true, true },
+						out List&lt;object&gt; gatheredPops, true, typeof(List&lt;IFPop&gt;)))
+					{
+						List&lt;IFPop&gt; gatheredPopsToAdd = (List&lt;IFPop&gt;)gatheredPops[0];
+						outPopsOnDelegation.AddRange(gatheredPopsToAdd);
+					}
+				}
+			}
+		}
+		
+		//if there are no pops that would remain in the community, remove a pop so at least one does:
+		bool anyPopInCommunity = false;
+		foreach(IFPop pop in inCommunitySource.getPopsLoyalToCommunity(true, false))
+		{
+			if(!outPopsOnDelegation.Contains(pop) &amp;&amp; !pop.hasDelegation() &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cInForeignCommunity))
+			{
+				anyPopInCommunity = true;
+				break;
+			}
+		}
+		if(!anyPopInCommunity)
+		{
+			if(outPopsOnDelegation.Count &gt; 0)
+				outPopsOnDelegation.RemoveAt(0);
+		}
+		
+		addDebugMessage(inScriptInstance, "total of " + outPopsOnDelegation.Count + " pops on delegation");
+		
+		toReturn.Add(outPopsOnDelegation);
+		return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

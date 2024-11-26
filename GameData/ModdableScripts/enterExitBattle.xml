@@ -1,0 +1,740 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	    <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+		<i1><a>battle recorded_info_pop dead flag</a> <b>int</b> <c>0x1</c></i1>
+		<i1><a>battle recorded_info_pop wounded flag</a> <b>int</b> <c>0x2</c></i1>
+		<i1><a>battle recorded_info_pop prisoner flag</a> <b>int</b> <c>0x4</c></i1>
+		
+		<i1><a>battle recorded_info_building destroyed flag</a> <b>int</b> <c>0x1</c></i1>
+		
+		<i1><a>addBattleHistory common history_major_adjective before_replace_text</a> <b>string</b>
+		<c>violent</c></i1>
+		<i1><a>addBattleHistory common history_minor_adjectives before_replace_text</a> <b>list</b>
+		<c>dangerous</c></i1>
+		
+		<!-- right now we ignore pops losing a condition (such as no longer being wounded); the information is stored and transfered by the scripts but not used -->
+		<i1><a>addBattleHistory local pop_losses_action_text before_replace_text</a> <b>string</b>
+		<c>commanded local forces to defend our community.  Enemies slew [0], wounded [1], and abducted [2] of the local pops of</c></i1>
+		<i1><a>addBattleHistory local building_losses_action_text before_replace_text</a> <b>string</b>
+		<c>commanded local forces to defend our community.  [0] buildings were destroyed in</c></i1>
+		<i1><a>addBattleHistory hostile_held_locally pop_losses_action_text before_replace_text</a> <b>string</b>
+		<c>commanded local forces to defend our community.  We slew [0], wounded [1], and abducted [2] of those from</c></i1>
+		<i1><a>addBattleHistory neutral_held_locally pop_losses_action_text before_replace_text</a> <b>string</b>
+		<c>commanded local forces to defend our community.  In the chaos, [0] died, [1] suffered wounds, [2] never returned home of the neutral visitors from</c></i1>
+		<i1><a>addBattleHistory hostile_held_foreign pop_losses_action_text before_replace_text</a> <b>string</b>
+		<c>defended its territory through battle.  It slew [0], wounded [1], and made prisoner [2] innocent pops from</c></i1>
+		<i1><a>addBattleHistory hostile_held_foreign pop_losses_action_text before_replace_text</a> <b>string</b>
+		<c>saw battle on its territory while hosting visitors.  Death found [0], wounds harmed [1], and slavers captured [2] visiting pops from</c></i1>
+		
+		<i1><a>addBattleHistory death_ratio cost_max vertex</a> <b>double</b> <c>0.5</c></i1>
+		<i1><a>addBattleHistory wounded_ratio cost_max vertex</a> <b>double</b> <c>0.9</c></i1>
+		<i1><a>addBattleHistory abducted_ratio cost_max vertex</a> <b>double</b> <c>0.8</c></i1>
+		<i1><a>addBattleHistory destroyed_ratio cost_max vertex</a> <b>double</b> <c>2.5</c></i1>
+		<i1><a>addBattleHistory attacked_by_player cost mult</a> <b>double</b> <c>2.0</c></i1>
+		
+		<i1><a>battle rebel_success happiness_name before_replace_text</a> <b>string</b>
+		<c>Rebel Success</c></i1>
+		<i1><a>battle rebel_failure happiness_name before_replace_text</a> <b>string</b>
+		<c>Rebel Failure</c></i1>
+		<i1><a>battle rebel_success happiness_text before_replace_text</a> <b>string</b>
+		<c>Opponents of the old City Leader have replaced the City Leader with their preferred leader through violence.  They are happy, and their foes are intimidated.</c></i1>
+		<i1><a>battle rebel_failure happiness_text before_replace_text</a> <b>string</b>
+		<c>Rebels have failed to enact their will on the community through violence.  Pops view the City Leader's position as strong, for now.</c></i1>
+		<i1><a>addBattleHistory death_ratio cost_max vertex</a> <b>double</b> <c>0.5</c></i1>
+		<i1><a>battle rebel_success happiness value</a> <b>double</b> <c>25.0</c></i1>
+		<i1><a>battle rebel_failure happiness value</a> <b>double</b> <c>35.0</c></i1>
+		
+		<i1><a>battle wounded_pops_die_after_battle chance</a> <b>double</b> <c>0.4</c></i1>
+	
+		<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	    <i1><a>log_script_custom script addRecordedInfoPreBattle</a> <b>int</b> <c>1</c></i1>
+	    <i1><a>log_script_custom script calcInfoPostBattle</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+  <!-- this file holds the implementation of battle entry and exit scripts -->
+  <gamescripts name="default">
+	<!-- battle entry script has no inputs.  There are no outputs. -->
+	<!-- this script is called whenever actual enemies appear on the local map.  it is called after pops with mustering points exit their buildings, but before pathfinding is reset and simultaneous events -->
+	<mEntryToActualBattle>
+	    var customScripts = getAPI().getCustomScripts();
+		
+		//tell pops with mustering points that are in buildings to exit the buildings and be on the map:
+		customScripts.runCustomScript("musterPopsInBuildingsPreBattle", new List&lt;object&gt;(), out _);
+		
+	    //if there are any pops with violent intent, and they haven't yet accomplished it, they will immediately expose themselves and become hostile:
+	    customScripts.runCustomScript("battleAITransitionViolentIntentPops", new List&lt;object&gt;(), out _);
+	
+		//record information that will be needed by the exit from battle script for history-storing purposes:
+		customScripts.runCustomScript("addRecordedInfoPreBattle", new List&lt;object&gt;(), out _);
+	
+	  return null;
+    </mEntryToActualBattle>
+  
+	<!-- battle exit script has no inputs.  There are no outputs. -->
+	<!-- this script is called whenever there are no longer combat-capable hostile pops on the local map, or all loyal pops on the local map are dead.  In the second situation, if none of the hostiles are Rebels (who are automatically converted back to loyal pops), the game will be lost. -->
+	<!-- this script is called right after transitioning out of military time, before any other cleanup/considerations by the C# code (such as de-mustering all pops, clearing all pathfinding, resetting hostile communities, and checking if the game is lost).
+		note that military time might start immediately again if, for example, something here adds hostiles to the local map, or Rebels are converted back to loyal pops while there are other hostiles on the map-->
+	<mExitFromActualBattle>
+	    var customScripts = getAPI().getCustomScripts();
+		
+		//calculate battle info so it can be stored in history:
+		if(customScripts.runCustomScriptCheckTypes("calcInfoPostBattle", new List&lt;object&gt;(), out List&lt;object&gt; returnVals, false,
+			typeof(Dictionary&lt;IFCommunity, List&lt;Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;&gt;&gt;)))
+		{
+			Dictionary&lt;IFCommunity, List&lt;Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;&gt;&gt; changesPerCommunity = 
+				(Dictionary&lt;IFCommunity, List&lt;Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;&gt;&gt;)returnVals[0];
+				
+			customScripts.runCustomScript("addBattleHistory", new List&lt;object&gt;() { changesPerCommunity }, out _);
+		}
+		
+		//handle rebels after the battle ("rebel" is not a long-term community loyalty; instead it is a short-term indicator that they are local pops opposing the current City Leader)
+		customScripts.runCustomScript("handleRebelsPostBattle", new List&lt;object&gt;(), out _);
+		
+		//handle wounded pops (clear off the map those that should not stick around)
+		customScripts.runCustomScript("handleWoundedPostBattle", new List&lt;object&gt;(), out _);
+		
+	  return null;
+    </mExitFromActualBattle>
+  
+  
+  </gamescripts>
+  
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	  <!-- no inputs or outputs from the function -->
+	  <!-- this script tells loyal pops with mustering points to exit their home/workplace and be on the local map.  This is done before pathfinding is recalculated, so they will start moving to their MP immediately -->
+	  <i1><a>musterPopsInBuildingsPreBattle</a>
+	  <b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		IFMap map = localCommunity.getDomesticComponent().getMap();
+		
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			if(!pop.isDead() &amp;&amp; pop.hasMusteringPoint() &amp;&amp; (pop.getCommunity() == localCommunity))
+			{
+				if((pop.getPopLocation() == IFPop.ePopLocation.cInHome) &amp;&amp; pop.hasHomeBuilding())
+				{
+					Tuple&lt;double, double&gt; loc = map.getRandomEdgeOfBuilding(pop.getHomeBuilding());
+					pop.placePopOnMapLocation(loc.Item1, loc.Item2);
+				}
+				else if((pop.getPopLocation() == IFPop.ePopLocation.cInWorkplace) &amp;&amp; pop.hasWorkplaceBuilding())
+				{
+					Tuple&lt;double, double&gt; loc = map.getRandomEdgeOfBuilding(pop.getWorkplaceBuilding());
+					pop.placePopOnMapLocation(loc.Item1, loc.Item2);
+				}
+			}
+		}
+		
+		return null;
+	  </b>
+	  </i1>
+	
+	  <!-- no inputs or outputs from the function; it does everything using variableHandler -->
+	  <!-- the variable names, and structure, stored by this script should be coordinated with calcInfoPostBattle -->
+	  <i1><a>addRecordedInfoPreBattle</a>
+	  <b>
+		var customConsts = getAPI().getCustomConsts();
+	    var variableHandler = getAPI().getVariableHandler();
+	  
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		ReadOnlyCollection&lt;IFCommunity&gt; hostileCommunities = getAPI().getHostileCommunities();
+		
+		//things to record:
+		//per pop on the map: community loyalty, is dead, is wounded, is prisoner in delegation
+		//per building on map: destroyed or not
+		
+		Int64 deadFlag = customConsts.getIntConst("battle recorded_info_pop dead flag", out bool success);
+		if(!success) deadFlag = 0x1;
+		Int64 woundedFlag = customConsts.getIntConst("battle recorded_info_pop wounded flag", out success);
+		if(!success) woundedFlag = 0x2;
+		Int64 prisonerFlag = customConsts.getIntConst("battle recorded_info_pop prisoner flag", out success);
+		if(!success) prisonerFlag = 0x4;
+		Int64 destroyedFlag = customConsts.getIntConst("battle recorded_info_building destroyed flag", out success);
+		if(!success) destroyedFlag = 0x1;
+		
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		string bigListOfAllPopUIDsName = "battleInfo_listOfPopUIDs";
+		variableHandler.clearConnectedVariable(bigListOfAllPopUIDsName); //clear any previous info
+		variableHandler.addConnectedInt(bigListOfAllPopUIDsName, 0L, out IFConnectedVariable bigPopListCV, currentDate, IFConnectedVariable.eCombinationType.cLIST);
+		
+		string bigListOfAllBuildingUIDsName = "battleInfo_listOfBuildingUIDs";
+		variableHandler.clearConnectedVariable(bigListOfAllBuildingUIDsName); //clear any previous info
+		variableHandler.addConnectedInt(bigListOfAllBuildingUIDsName, 0L, out IFConnectedVariable bigBuildingListCV, currentDate, IFConnectedVariable.eCombinationType.cLIST);
+		
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			string popUIDCVName = "battleInfo_pop" + pop.getUID();
+			string popCommunityUIDVarName = "battleInfo_pop" + pop.getUID() + "_community";
+			string popFlagsVarName = "battleInfo_pop" + pop.getUID() + "_flags";
+			
+			variableHandler.clearConnectedVariable(popUIDCVName); //clear any previous info
+			variableHandler.addConnectedInt(popUIDCVName, (Int64)pop.getUID(), out IFConnectedVariable popUIDCV, currentDate);
+			variableHandler.connectVariables(popUIDCV, bigPopListCV);
+			
+			variableHandler.storeIntVariable(currentDate, popCommunityUIDVarName, (Int64)pop.getCommunity().getUID());
+			
+			//calculate flags:
+			Int64 flagCollection = 0L;
+			if(pop.isDead())
+				flagCollection = flagCollection | deadFlag;
+			if(pop.isWounded())
+				flagCollection = flagCollection | woundedFlag;
+			if(pop.hasDelegation() &amp;&amp; (pop.getCommunity() != pop.getDelegation().getSourceCommunity()))
+				flagCollection = flagCollection | prisonerFlag;
+				
+			variableHandler.storeIntVariable(currentDate, popFlagsVarName, flagCollection);
+		}
+		
+		foreach(IFBuilding building in localCommunity.getDomesticComponent().getMap().getAllBuildingsOnMap())
+		{
+			string buildingUIDCVName = "battleInfo_building" + building.getUID();
+			string buildingFlagsVarName = "battleInfo_building" + building.getUID() + "_flags";
+		
+			variableHandler.clearConnectedVariable(buildingUIDCVName); //clear any previous info
+			variableHandler.addConnectedInt(buildingUIDCVName, (Int64)building.getUID(), out IFConnectedVariable buildingUIDCV, currentDate);
+			variableHandler.connectVariables(buildingUIDCV, bigBuildingListCV);
+			
+			//calculate flags:
+			Int64 flagCollection = 0L;
+			if(building.isBuildingDestroyed())
+				flagCollection = flagCollection | destroyedFlag;
+				
+			variableHandler.storeIntVariable(currentDate, buildingFlagsVarName, flagCollection);
+		}
+		
+		return null;
+	  </b>
+	  </i1>
+	  
+	  <!-- no inputs to the function.  Output is Dictionary<IFCommunity, List<Dictionary<Int64, Tuple<Int64, Int64>>>> outChangesPerCommunity -->
+	  <!-- the structure of outChangesPerCommunity is:
+		the innermost Tuple<Int64, Int64> is a pair of counts of gained-flagged-condition, lost-flagged-condition
+		the innermost Dictionary's key indicates which condition we are concerned about
+		the index of the List<> relates to which thing we are talking about: pop = 0, building = 1
+		the outermost Dictionary's key is the community in question that had pops/buildings changing
+		so (for example) outChangesPerCommunity[exampleCommunity][0][deadFlag].Item2 is how many pops of exampleCommunity are no longer dead but were dead before the battle.  That should be 0 but modders might do things
+		-->
+	  <!-- the variable names, and structure, retrieved by this script should be coordinated with addRecordedInfoPreBattle -->
+	  <!-- the structure of outChangesPerCommunity should be coordinated with addBattleHistory -->
+	  <i1><a>calcInfoPostBattle</a>
+	  <b>
+		var customConsts = getAPI().getCustomConsts();
+	    var variableHandler = getAPI().getVariableHandler();
+		Dictionary&lt;IFCommunity, List&lt;Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;&gt;&gt; outChangesPerCommunity = new Dictionary&lt;IFCommunity, List&lt;Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;&gt;&gt;();
+		
+		Int64 deadFlag = customConsts.getIntConst("battle recorded_info_pop dead flag", out bool success);
+		if(!success) deadFlag = 0x1;
+		Int64 woundedFlag = customConsts.getIntConst("battle recorded_info_pop wounded flag", out success);
+		if(!success) woundedFlag = 0x2;
+		Int64 prisonerFlag = customConsts.getIntConst("battle recorded_info_pop prisoner flag", out success);
+		if(!success) prisonerFlag = 0x4;
+		Int64 destroyedFlag = customConsts.getIntConst("battle recorded_info_building destroyed flag", out success);
+		if(!success) destroyedFlag = 0x1;
+		
+		//pops first:
+		string bigListOfAllPopUIDsName = "battleInfo_listOfPopUIDs";
+		IFConnectedVariable bigPopListCV = variableHandler.getConnectedVariable(bigListOfAllPopUIDsName);
+		if(bigPopListCV != null)
+		{
+			foreach(IFConnectedVariable popUIDCV in bigPopListCV.getLowers())
+			{
+				Int64 popUID = popUIDCV.getVariableAsInt();
+				IFPop pop = (IFPop)getAPI().getSO("pops", popUID);
+				if(pop != null)
+				{
+					Int64 oldCommunityUID = variableHandler.getInt("battleInfo_pop" + popUID + "_community", out success);
+					IFCommunity oldCommunity = (IFCommunity)getAPI().getSO("communities", oldCommunityUID);
+					if((oldCommunity != null) &amp;&amp; success)
+					{
+						Int64 oldFlags = variableHandler.getInt("battleInfo_pop" + pop.getUID() + "_flags", out success);
+						if(success)
+						{
+							//calculate current flags:
+							Int64 flagCollection = 0L;
+							if(pop.isDead())
+								flagCollection = flagCollection | deadFlag;
+							if(pop.isWounded())
+								flagCollection = flagCollection | woundedFlag;
+							if(pop.hasDelegation() &amp;&amp; (pop.getCommunity() != pop.getDelegation().getSourceCommunity()))
+								flagCollection = flagCollection | prisonerFlag;
+								
+							Int64 allFlagsMask = (deadFlag | woundedFlag | prisonerFlag);
+								
+							Int64 flagGains = (~oldFlags) &amp; (flagCollection);
+							Int64 flagLosses = (oldFlags) &amp; (~flagCollection);
+							
+							if((flagGains != 0L) || (flagLosses != 0L))
+							{
+								Int64 flagItr = 0x1;
+								while(flagItr &lt;= allFlagsMask)
+								{
+									bool gainedThisPop = (flagGains &amp; flagItr) == flagItr;
+									bool lostThisPop = (flagLosses &amp; flagItr) == flagItr;
+									
+									if(gainedThisPop || lostThisPop)
+									{
+										//only here do we mess with outChangesPerCommunity:
+										if(!outChangesPerCommunity.ContainsKey(oldCommunity))
+											outChangesPerCommunity.Add(oldCommunity, new List&lt;Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;&gt;());
+										if(outChangesPerCommunity[oldCommunity].Count &lt; 1)
+											outChangesPerCommunity[oldCommunity].Add(new Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;());
+										if(!outChangesPerCommunity[oldCommunity][0].ContainsKey(flagItr))
+											outChangesPerCommunity[oldCommunity][0].Add(flagItr, Tuple.Create(0L, 0L));
+										outChangesPerCommunity[oldCommunity][0][flagItr] = Tuple.Create((gainedThisPop ? 1 : 0) + outChangesPerCommunity[oldCommunity][0][flagItr].Item1,
+																										(lostThisPop ? 1 : 0) + outChangesPerCommunity[oldCommunity][0][flagItr].Item2);
+									}
+									
+									flagItr &lt;&lt;= 1; //shift left by one
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		//buildings next:
+		string bigListOfAllBuildingUIDsName = "battleInfo_listOfBuildingUIDs";
+		IFConnectedVariable bigBuildingListCV = variableHandler.getConnectedVariable(bigListOfAllBuildingUIDsName);
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		if(bigBuildingListCV != null)
+		{
+			foreach(IFConnectedVariable buildingUIDCV in bigBuildingListCV.getLowers())
+			{
+				Int64 buildingUID = buildingUIDCV.getVariableAsInt();
+				IFBuilding building = (IFBuilding)getAPI().getSO("buildings", buildingUID);
+				if(building != null)
+				{
+					//the local community owns all buildings on the map so no need to store/fetch community info for buildings
+					Int64 oldFlags = variableHandler.getInt("battleInfo_building" + building.getUID() + "_flags", out success);
+					if(success)
+					{
+						//calculate current flags:
+						Int64 flagCollection = 0L;
+						if(building.isBuildingDestroyed())
+							flagCollection = flagCollection | destroyedFlag;
+							
+						Int64 allFlagsMask = (destroyedFlag);
+							
+						Int64 flagGains = (~oldFlags) &amp; (flagCollection);
+						Int64 flagLosses = (oldFlags) &amp; (~flagCollection);
+						
+						if((flagGains != 0L) || (flagLosses != 0L))
+						{
+							Int64 flagItr = 0x1;
+							while(flagItr &lt;= allFlagsMask)
+							{
+								bool gainedThisBuilding = (flagGains &amp; flagItr) == flagItr;
+								bool lostThisBuilding = (flagLosses &amp; flagItr) == flagItr;
+								
+								if(gainedThisBuilding || lostThisBuilding)
+								{
+									//only here do we mess with outChangesPerCommunity:
+									if(!outChangesPerCommunity.ContainsKey(localCommunity))
+										outChangesPerCommunity.Add(localCommunity, new List&lt;Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;&gt;());
+									while(outChangesPerCommunity[localCommunity].Count &lt; 2)
+									{
+										outChangesPerCommunity[localCommunity].Add(new Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;());
+									}
+									if(!outChangesPerCommunity[localCommunity][1].ContainsKey(flagItr))
+										outChangesPerCommunity[localCommunity][1].Add(flagItr, Tuple.Create(0L, 0L));
+									outChangesPerCommunity[localCommunity][1][flagItr] = Tuple.Create((gainedThisBuilding ? 1 : 0) + outChangesPerCommunity[localCommunity][1][flagItr].Item1,
+																									  (lostThisBuilding ? 1 : 0) + outChangesPerCommunity[localCommunity][1][flagItr].Item2);
+								}
+								
+								flagItr &lt;&lt;= 1; //shift left by one
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outChangesPerCommunity };
+		return toReturn;
+	  </b>
+	  </i1>
+	  
+	  <!-- one input to the function: Dictionary<IFCommunity, List<Dictionary<Int64, Tuple<Int64, Int64>>>> inChangesPerCommunity.  This function has no outputs -->
+	  <!-- the structure of inChangesPerCommunity is as defined in calcInfoPostBattle -->
+	  <!-- this script assembles the history text to be stored by the local community, and possibly other communities -->
+	  <i1><a>addBattleHistory</a>
+	  <b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Dictionary&lt;IFCommunity, List&lt;Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;&gt;&gt;)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("addBattleHistory custom script received invalid arguments");
+		  return null;
+	    }
+		
+	    Dictionary&lt;IFCommunity, List&lt;Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;&gt;&gt; inChangesPerCommunity = (Dictionary&lt;IFCommunity, List&lt;Dictionary&lt;Int64, Tuple&lt;Int64, Int64&gt;&gt;&gt;&gt;)inArguments[0];
+	  
+	    var variableHandler = getAPI().getVariableHandler();
+	    var customConsts = getAPI().getCustomConsts();
+	  
+		Int64 deadFlag = customConsts.getIntConst("battle recorded_info_pop dead flag", out bool success);
+		if(!success) deadFlag = 0x1;
+		Int64 woundedFlag = customConsts.getIntConst("battle recorded_info_pop wounded flag", out success);
+		if(!success) woundedFlag = 0x2;
+		Int64 prisonerFlag = customConsts.getIntConst("battle recorded_info_pop prisoner flag", out success);
+		if(!success) prisonerFlag = 0x4;
+		Int64 destroyedFlag = customConsts.getIntConst("battle recorded_info_building destroyed flag", out success);
+		if(!success) destroyedFlag = 0x1;
+	  
+	    //Q: when should foreign communities be offended that their pops died, and when should they not?
+		//A: if the foreign community is a normal community, and it does not have a wargoal, it should be offended at the deaths/woundings/abduction of its pops
+		//if the foreign community is hostile (implying the player chose to attack the community's local pops), it should be more offended than otherwise (the community is a third party to some violence)
+	    //therefore, additional historical events are stored in foreign communities only under these conditions
+		//otherwise, all battle history is stored by the local community
+		
+		string commonMajorAdjective = customConsts.getStringConst("addBattleHistory common history_major_adjective before_replace_text", out success);
+		if(!success) commonMajorAdjective = "violent";
+		ReadOnlyCollection&lt;string&gt; commonMinorAdjectives = customConsts.getListConst("addBattleHistory common history_minor_adjectives before_replace_text", out success);
+		
+		//reminder of what historical events are displayed as:
+		//[DATE]: [ACTOR_text] [ACTION_text] [TARGET_text].  This was a [ACTION_major] occurence, and [CB], for [TARGET_text].
+		//[ACTOR_text] is the player (as City Leader)
+		//[TARGET_text] is the community suffering losses
+		//[ACTION_text] is:
+		//A) if the community suffering losses is the local community, a description of how the City Leader commanded the local forces and how many losses were suffered (for buildings this should be the only option)
+		//B) if the community suffering losses is a hostile community, a description of how the City Leader attacked the hostiles and how many losses were suffered
+		//C) otherwise, a description of how the City Leader failed to defend the visitors to the community and how many losses were suffered
+	  
+	    string localPopLossesString = customConsts.getStringConst("addBattleHistory local pop_losses_action_text before_replace_text", out success);
+		if(!success)
+		{
+			localPopLossesString = "commanded local forces to defend our community.  Enemies slew [0], wounded [1], and abducted [2] of the local pops of";
+		}
+		string localBuildingLossesString = customConsts.getStringConst("addBattleHistory local building_losses_action_text before_replace_text", out success);
+		if(!success)
+		{
+			localBuildingLossesString = "commanded local forces to defend our community.  [0] buildings were destroyed in";
+		}
+		string hostileHeldLocallyPopLossesString = customConsts.getStringConst("addBattleHistory hostile_held_locally pop_losses_action_text before_replace_text", out success);
+		if(!success)
+		{
+			hostileHeldLocallyPopLossesString = "commanded local forces to defend our community.  We slew [0], wounded [1], and abducted [2] of those from";
+		}
+		string neutralHeldLocallyPopLossesString = customConsts.getStringConst("addBattleHistory neutral_held_locally pop_losses_action_text before_replace_text", out success);
+		if(!success)
+		{
+			neutralHeldLocallyPopLossesString = "commanded local forces to defend our community.  In the chaos, [0] died, [1] suffered wounds, [2] never returned home of the neutral visitors from";
+		}
+		
+		//for foreign communities it is less ambiguous to store with ACTOR as the local community:
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		//these texts are stored by foreign communities:
+		string hostileHeldForeignPopLossesString = customConsts.getStringConst("addBattleHistory hostile_held_foreign pop_losses_action_text before_replace_text", out success);
+		if(!success)
+		{
+			hostileHeldForeignPopLossesString = "defended its territory through battle.  It slew [0], wounded [1], and made prisoner [2] innocent pops from";
+		}
+		string neutralHeldForeignPopLossesString = customConsts.getStringConst("addBattleHistory hostile_held_foreign pop_losses_action_text before_replace_text", out success);
+		if(!success)
+		{
+			neutralHeldForeignPopLossesString = "saw battle on its territory while hosting visitors.  Death found [0], wounds harmed [1], and slavers captured [2] visiting pops from";
+		}
+		
+		//cost-benefit for overall violence works like this:
+		//it's only cost.  Cost is dependent on the ratio of impacted:total alive pops for normal communities, and 0 otherwise (rebels/generic enemies/the Lady/Wanderers aren't coherent communities)
+		//the cost starts at zero for each category, and increases linearly towards max as the ratio increases towards the below thresholds.  At the thresholds, cost will be max.  lastly, the costs of each category are added up
+		double costDeathImpactedToAllAlive = customConsts.getDoubleConst("addBattleHistory death_ratio cost_max vertex", out success);
+		if(!success) costDeathImpactedToAllAlive = 0.5d;
+		double costWoundedImpactedToAllAlive = customConsts.getDoubleConst("addBattleHistory wounded_ratio cost_max vertex", out success);
+		if(!success) costWoundedImpactedToAllAlive = 0.9d;
+		double costAbductedImpactedToAllAlive = customConsts.getDoubleConst("addBattleHistory abducted_ratio cost_max vertex", out success);
+		if(!success) costAbductedImpactedToAllAlive = 0.8d;
+		double costDestroyedToAllBeforeBattle = customConsts.getDoubleConst("addBattleHistory destroyed_ratio cost_max vertex", out success);
+		if(!success) costDestroyedToAllBeforeBattle = 2.5d;
+		
+		double attackedByPlayerCostMult = customConsts.getDoubleConst("addBattleHistory attacked_by_player cost mult", out success);
+		if(!success) attackedByPlayerCostMult = 2.0d;
+		
+		foreach(var kvpairOutermost in inChangesPerCommunity)
+		{
+			bool isLocal = (kvpairOutermost.Key == localCommunity);
+			for(int index = 0; index &lt; kvpairOutermost.Value.Count; index++)
+			{
+				if(index == 0) //pops
+				{
+					double costDeath = 0.0d;
+					double costWounds = 0.0d;
+					double costAbductions = 0.0d;
+					double totalCost = 0.0d;
+					Int64 countDeaths = 0;
+					Int64 countWounds = 0;
+					Int64 countAbductions = 0;
+					if(kvpairOutermost.Value[index].ContainsKey(deadFlag))
+						countDeaths = kvpairOutermost.Value[index][deadFlag].Item1;
+					if(kvpairOutermost.Value[index].ContainsKey(woundedFlag))
+						countWounds = kvpairOutermost.Value[index][woundedFlag].Item1;
+					if(kvpairOutermost.Value[index].ContainsKey(prisonerFlag))
+						countAbductions = kvpairOutermost.Value[index][prisonerFlag].Item1;
+						
+					if((countDeaths == 0) &amp;&amp; (countWounds == 0) &amp;&amp; (countAbductions == 0) &amp;&amp; !isLocal)
+						continue;
+				
+					string wargoal = variableHandler.getString("battleAI_battleGoal_community" + kvpairOutermost.Key.getUID(), out bool hasWargoal);
+					hasWargoal = hasWargoal &amp;&amp; (wargoal != "");
+					bool heldForeign = kvpairOutermost.Key.isNormalCommunity() &amp;&amp; !hasWargoal &amp;&amp; !isLocal;
+				
+					//totalCost is only used if the community losing things is the community holding the history
+					if(isLocal || heldForeign)
+					{
+						//calculate total currently-alive pops:
+						Int64 currentlyAlivePopCount = kvpairOutermost.Key.getPopsLoyalToCommunity(true, false).Count;
+						foreach(var raceUndeclaredCountPair in kvpairOutermost.Key.getAdditionalUndeclaredPopCounts())
+						{
+							currentlyAlivePopCount += (Int64)raceUndeclaredCountPair.Value;
+						}
+						
+						Int64 divisor = currentlyAlivePopCount + countDeaths; //this makes the ratio "X to whoever was alive before battle", which is what it should be
+						
+						if(divisor != 0)
+						{
+							costDeath = countDeaths / (costDeathImpactedToAllAlive * divisor);
+							costWounds = countWounds / (costWoundedImpactedToAllAlive * divisor);
+							costAbductions = countAbductions / (costAbductedImpactedToAllAlive * divisor);
+						}
+						
+						totalCost = (costDeath + costWounds + costAbductions) * IFHistoryEffect.cMinImpact; //IFHistoryEffect will apply max/min
+					}
+					
+					string heldLocallyString = kvpairOutermost.Key == localCommunity ? localPopLossesString
+						: getAPI().isHostileCommunity(kvpairOutermost.Key) ? hostileHeldLocallyPopLossesString
+						: neutralHeldLocallyPopLossesString;
+					string heldForeignString = getAPI().isHostileCommunity(kvpairOutermost.Key) ? hostileHeldForeignPopLossesString
+						: neutralHeldForeignPopLossesString;
+						
+					heldLocallyString = heldLocallyString.Replace("[0]", countDeaths.ToString()).Replace("[1]", countWounds.ToString()).Replace("[2]", countAbductions.ToString());
+					heldForeignString = heldLocallyString.Replace("[0]", countDeaths.ToString()).Replace("[1]", countWounds.ToString()).Replace("[2]", countAbductions.ToString());
+					
+					localCommunity.getHistory().add(
+						getAPI().createNewHistoricalOccurrenceToday(IFHistoryActor.eActorKind.cPlayer, (UInt64)0, heldLocallyString, commonMajorAdjective, commonMinorAdjectives,
+							IFHistoryTarget.eTargetKind.cCommunity, kvpairOutermost.Key.getUID(), (Int64)totalCost, null)
+					);
+					
+					if(heldForeign)
+					{
+						if(getAPI().isHostileCommunity(kvpairOutermost.Key))
+							totalCost *= attackedByPlayerCostMult; //IFHistoryEffect will apply max/min
+						kvpairOutermost.Key.getHistory().add(
+							getAPI().createNewHistoricalOccurrenceToday(IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(), heldForeignString, commonMajorAdjective, commonMinorAdjectives,
+								IFHistoryTarget.eTargetKind.cCommunity, kvpairOutermost.Key.getUID(), (Int64)totalCost, null)
+						);
+					}
+				}
+				else //buildings
+				{
+					if(!isLocal)
+						continue;
+						
+					double costDestruction = 0.0d;
+					Int64 countDestroyed = 0;
+					if(kvpairOutermost.Value[index].ContainsKey(destroyedFlag))
+						countDestroyed = kvpairOutermost.Value[index][destroyedFlag].Item1;
+					
+					if(countDestroyed == 0)
+						continue;
+						
+					//calculate how many buildings are on the local map and not destroyed:
+					Int64 standingCount = 0;
+					foreach(IFBuilding building in localCommunity.getDomesticComponent().getMap().getAllBuildingsOnMap())
+					{
+						if(!building.isBuildingDestroyed())
+						{
+							standingCount++;
+						}
+					}
+					
+					costDestruction = IFHistoryEffect.cMinImpact * countDestroyed / (costDestroyedToAllBeforeBattle * (countDestroyed + standingCount)); //IFHistoryEffect will apply max/min
+					
+					string heldLocallyString = localBuildingLossesString.Replace("[0]", countDestroyed.ToString());
+					
+					localCommunity.getHistory().add(
+						getAPI().createNewHistoricalOccurrenceToday(IFHistoryActor.eActorKind.cPlayer, (UInt64)0, heldLocallyString, commonMajorAdjective, commonMinorAdjectives,
+							IFHistoryTarget.eTargetKind.cCommunity, kvpairOutermost.Key.getUID(), (Int64)costDestruction, null)
+					);
+				}
+			}
+		}
+	  
+		return null;
+	  </b>
+	  </i1>
+	  
+	  <!-- no inputs to the function.  No outputs -->
+	  <!-- this function takes care of the case that there were rebels, but now the battle is over (whether the rebels won or lost) -->
+	  <i1><a>handleRebelsPostBattle</a>
+	  <b>
+		var customConsts = getAPI().getCustomConsts();
+		var customScripts = getAPI().getCustomScripts();
+		bool success = false;
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		//first, determine whether the rebels won or lost:
+		bool rebelsWon = false;
+		Int64 totalRebelCount = 0;
+		Dictionary&lt;IFRace, int&gt; countsOfRebelsByRace = new Dictionary&lt;IFRace, int&gt;();
+		List&lt;IFPop&gt; aliveRebelsOnMap = new List&lt;IFPop&gt;();
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			if(pop.getCommunity().isRebels())
+			{
+				totalRebelCount++;
+				if(!countsOfRebelsByRace.ContainsKey(pop.getRace()))
+					countsOfRebelsByRace.Add(pop.getRace(), 0);
+				countsOfRebelsByRace[pop.getRace()]++;
+				if(!pop.isWounded() &amp;&amp; !pop.isDead())
+				{
+					rebelsWon = true;
+					aliveRebelsOnMap.Add(pop);
+				}
+			}
+		}
+		
+		//second, if the current City Leader of the local community is dead or not a rebel and the rebels were victorious,
+		//prepare to assign a random rebel as the new City Leader
+		bool needNewRebelLeader = rebelsWon;
+		if(needNewRebelLeader)
+		{
+			IFPop previousCityLeader = localCommunity.getLeaderCollection().getCityLeader();
+			if(previousCityLeader != null)
+			{
+				if(!previousCityLeader.isDead() &amp;&amp; previousCityLeader.getCommunity().isRebels())
+				{
+					needNewRebelLeader = false;
+				}
+			}
+		}
+		IFPop newRebelLeader = null;
+		if(needNewRebelLeader)
+		{
+			newRebelLeader = aliveRebelsOnMap[(int)getAPI().calcRandIntUnder(aliveRebelsOnMap.Count)];
+		}
+		
+		//third, add historical event and happiness from rebel loss/victory:
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		if(rebelsWon)
+		{
+			//hardcoded history has this:
+			customScripts.runCustomScript("hardcodedHistory_rebels_succeed", new List&lt;object&gt;() { localCommunity, currentDate, IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(), IFHistoryTarget.eTargetKind.cPop, (newRebelLeader ?? localCommunity.getLeaderCollection().getCityLeader()).getUID()}, out _);
+			
+			//now happiness:
+			string happinessName = customConsts.getStringConst("battle rebel_success happiness_name before_replace_text", out success);
+			if(!success) happinessName = "Rebel Success";
+			string happinessText = customConsts.getStringConst("battle rebel_success happiness_text before_replace_text", out success);
+			if(!success) happinessText = "Opponents of the old City Leader have replaced the City Leader with their preferred leader through violence.  They are happy, and their foes are intimidated.";
+			double happinessValue = customConsts.getDoubleConst("battle rebel_success happiness value", out success);
+			if(!success) happinessValue = 25.0d;
+			foreach(var kvpair in localCommunity.getLoyalPopsByRace(true, false))
+			{
+				if(kvpair.Value.Count &gt; 0)
+				{
+					localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(kvpair.Key, happinessName, happinessText,
+						happinessValue, false);
+				}
+			}
+		}
+		else if(totalRebelCount != 0) //only say the rebels failed if there were any rebels at all
+		{
+			//hardcoded history has this:
+			IFRace mostPopulousRace = null;
+			int mostPopulousCount = 0;
+			foreach(var kvpair in countsOfRebelsByRace)
+			{
+				if(kvpair.Value &gt; mostPopulousCount)
+				{
+					mostPopulousRace = kvpair.Key;
+					mostPopulousCount = kvpair.Value;
+				}
+			}
+			
+			if(mostPopulousRace != null)
+			{
+				customScripts.runCustomScript("hardcodedHistory_rebels_failure", new List&lt;object&gt;() { localCommunity, currentDate, IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(), IFHistoryTarget.eTargetKind.cRace, mostPopulousRace.getMOID()}, out _);
+			}
+			
+			//now happiness:
+			string happinessName = customConsts.getStringConst("battle rebel_failure happiness_name before_replace_text", out success);
+			if(!success) happinessName = "Rebel Failure";
+			string happinessText = customConsts.getStringConst("battle rebel_failure happiness_text before_replace_text", out success);
+			if(!success) happinessText = "Rebels have failed to enact their will on the community through violence.  Pops view the City Leader's position as strong, for now.";
+			double happinessValue = customConsts.getDoubleConst("battle rebel_failure happiness value", out success);
+			if(!success) happinessValue = 35.0d;
+			foreach(var kvpair in localCommunity.getLoyalPopsByRace(true, false))
+			{
+				if(kvpair.Value.Count &gt; 0)
+				{
+					localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(kvpair.Key, happinessName, happinessText,
+						happinessValue, false);
+				}
+			}
+		}
+		
+		//fourth, make all rebels loyal now (even those who were abducted, so don't reuse aliveRebelsOnMap):
+		foreach(IFPop pop in new List&lt;IFPop&gt;(getAPI().getRebelsCommunity().getPopsLoyalToCommunity(true, false))) //only the living change loyalty
+		{
+			pop.setCommunity(localCommunity);
+		}
+		
+		//fifth, assign the City Leader from step two if one exists:
+		if(needNewRebelLeader)
+		{
+			localCommunity.getLeaderCollection().setCityLeader(newRebelLeader);
+		}
+		
+		return null;
+	  </b>
+	  </i1>
+	  
+	  <!-- no inputs to the function.  No outputs -->
+	  <!-- this function takes care of all pops on the local map who are wounded and should not stick around -->
+	  <i1><a>handleWoundedPostBattle</a>
+	  <b>
+		var customConsts = getAPI().getCustomConsts();
+		var customScripts = getAPI().getCustomScripts();
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		IFMap map = localCommunity.getDomesticComponent().getMap();
+		
+		//loyal pops are handled by regular midnight processing considerations
+		//same as neutral pops that have home buildings on the local map
+		double chanceToDie = customConsts.getDoubleConst("battle wounded_pops_die_after_battle chance", out bool success);
+		if(!success) chanceToDie = 0.4d;
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+		{
+			if ((pop.getCommunity() != localCommunity) &amp;&amp; !(pop.hasHomeBuilding() &amp;&amp; map.isBuildingOnThisMap(pop.getHomeBuilding())))
+			{
+				if(getAPI().calcProb(chanceToDie))
+				{
+					pop.setIsDead(true, IFPop.ePopDeathReason.cWounds);
+				}
+				else if(pop.hasDelegation())
+				{
+					pop.removePopFromMap(IFPop.ePopLocation.cInDelegation);
+				}
+				else
+				{
+					pop.removePopFromMap(IFPop.ePopLocation.cUnspecifiedNowhere);
+				}
+			}
+		}
+		
+		return null;
+	  </b>
+	  </i1>
+	  
+	  
+	  
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

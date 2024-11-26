@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_building_statuscount_noun_list default before_replace_text</a> <b>string</b> <c>no buildings</c></i1> <!-- this is only used if there are no buildings in the input list -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_building list_of_options</a> <b>list</b> <c>statuscount_noun_list</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_mult_building_statuscount_noun_list singlenoun before_replace_text</a>   <b>string</b> <c>building</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_building_statuscount_noun_list pluralnoun before_replace_text</a>   <b>string</b> <c>buildings</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_mult_building_statuscount_noun_list destroyed before_replace_text</a> <b>string</b> <c>destroyed</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_building_statuscount_noun_list bothWandH before_replace_text</a> <b>string</b> <c>work-home</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_building_statuscount_noun_list workplace before_replace_text</a> <b>string</b> <c>workplace</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_building_statuscount_noun_list housing before_replace_text</a> <b>string</b> <c>housing</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_building_statuscount_noun_list noneoftheabove before_replace_text</a> <b>string</b> <c>utility</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_building_statuscount_noun_list</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a list of buildings and from it, returns a string that is a noun phrase relating to the count of buildings -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	List<IFBuilding> inBuildings, //cannot be null but can be empty
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_mult_building_statuscount_noun_list</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(List&lt;IFBuilding&gt;)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_building_statuscount_noun_list custom script received invalid arguments");
+		return null;
+	}
+	  
+	List&lt;IFBuilding&gt; inBuildings = (List&lt;IFBuilding&gt;)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	if(inBuildings == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_building_statuscount_noun_list custom script received invalid arguments: inBuildings cannot be null");
+		return null;
+	}
+	
+	int countDestroyed = 0;
+	int countWorkplaceAndHome = 0;
+	int countWorkplace = 0;
+	int countHome = 0;
+	int countUtility = 0;
+	
+	foreach(IFBuilding blding in inBuildings)
+	{
+		if(blding.isBuildingDestroyed())
+		{
+			countDestroyed++;
+		}
+		else if(blding.isWorkplace() &amp;&amp; blding.isHousing())
+		{
+			countWorkplaceAndHome++;
+		}
+		else if(blding.isWorkplace())
+		{
+			countWorkplace++;
+		}
+		else if(blding.isHousing())
+		{
+			countHome++;
+		}
+		else
+		{
+			countUtility++;
+		}
+	}
+	
+	if(inBuildings.Count == 0)
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_building_statuscount_noun_list default before_replace_text", out success);
+		if(!success) outDescription = "no buildings";
+	}
+	else
+	{
+		List&lt;string&gt; presentElements = new List&lt;string&gt;();
+		if(countDestroyed != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_building_statuscount_noun_list destroyed before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentElements.Add(countDestroyed.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+		if(countWorkplaceAndHome != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_building_statuscount_noun_list bothWandH before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentElements.Add(countWorkplaceAndHome.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+		if(countWorkplace != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_building_statuscount_noun_list workplace before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentElements.Add(countWorkplace.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+		if(countHome != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_building_statuscount_noun_list housing before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentElements.Add(countHome.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+		if(countUtility != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_building_statuscount_noun_list noneoftheabove before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentElements.Add(countUtility.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+	
+		string language = customConsts.getStringConst("replaceDescriptionMarkups language_of_grammar_enforcer_script", out success);
+		if(!success) language = "english";
+		
+		string lastSeparator = customConsts.getStringConst(language + " multiple_item_separator last before_replace_text", out success);
+		if(!success) lastSeparator = "and";
+		
+		string notLastSeparator = customConsts.getStringConst(language + " multiple_item_separator notlast before_replace_text", out success);
+		if(!success) notLastSeparator = ",";
+		
+		Int64 useSpaceBeforeLastInt = customConsts.getIntConst(language + " multiple_item_separator use_space_before_last", out success);
+		if(!success) useSpaceBeforeLastInt = 1;
+		
+		Int64 useSpaceBeforeNotLastInt = customConsts.getIntConst(language + " multiple_item_separator use_space_before_notlast", out success);
+		if(!success) useSpaceBeforeNotLastInt = 0;
+		
+		string between_notlast = (useSpaceBeforeNotLastInt != 0 ? " " : "") + notLastSeparator + " ";
+		string between_last = (useSpaceBeforeLastInt != 0 ? " " : "") + lastSeparator + " ";
+		
+		for(int i = 0; i &lt; presentElements.Count; i++)
+		{
+			bool last = (i == (presentElements.Count - 1));
+			bool first = (i == 0);
+			
+			if(first)
+			{
+				outDescription += presentElements[i];
+			}
+			else if(last)
+			{
+				outDescription += between_last + presentElements[i];
+			}
+			else
+			{
+				outDescription += between_notlast + presentElements[i];
+			}
+		}
+		
+		outDescription += " ";
+		if(inBuildings.Count == 1)
+		{
+			outDescription += customConsts.getStringConst("replaceDescriptionMarkupKind_mult_building_statuscount_noun_list singlenoun before_replace_text", out success);
+		}
+		else
+		{
+			outDescription += customConsts.getStringConst("replaceDescriptionMarkupKind_mult_building_statuscount_noun_list pluralnoun before_replace_text", out success);
+		}
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

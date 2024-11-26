@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- pops that are allowed to join will appreciate it -->
+			<i1><a>addRaceHappinessForAcceptingNewPops joiners appreciation max</a> <b>double</b> <c>75.0</c></i1> <!-- this is modified by the ratio of pops joining : (pops joining + pops existing) -->
+			<i1><a>addRaceHappinessForAcceptingNewPops joiners appreciation name before_replace_text</a> <b>string</b> <c>New Pops Appreciate Welcome</c></i1>
+			<i1><a>addRaceHappinessForAcceptingNewPops joiners appreciation description before_replace_text</a> <b>string</b>
+			<c>Our City Leader has accepted outside pops into our community.  These pops are unlikely to cause trouble for a time, either out of appreciation or fear of consequences.</c></i1>
+			
+			<!-- wounded and pregnant pop disappointment is based on the ratio of wounded+pregnant pops to total pops added.  This is because wounds and pregnancy do not spread, and simply represent a pop that can't work right now to contribute to the community. -->
+			<!-- there are three multiplications that modify the wound_or_pregnancy max value:
+				 A) (pops of race existing / (pops of race joining + pops of race existing)) //this is to model that the joining pops have already accepted the fact that some of them are wounded/pregnant and it's not an "additional burden" to them
+				 B) (pops wounded or pregnant joining / pops joining total) //this is to model that the disappointment only occurs for those who are unable to work
+				 C) (pops joining total / (pops joining total + pops already in community total)) //this is to model that the disappointment is in relation to how many unable-to-work pops must be supported
+				 B) and C) combine to make: (pops wounded or pregnant joining / (pops joining total + pops already in community total))
+			-->
+			<!-- in contrast, ill pop disappointment is based on absolute count.  This is because any illness can spread to others, including other races. -->
+			<i1><a>addRaceHappinessForAcceptingNewPops joiners wound_or_pregnancy disappointment max</a> <b>double</b> <c>-100.0</c></i1>
+			<i1><a>addRaceHappinessForAcceptingNewPops joiners illness disappointment per_pop</a> <b>double</b> <c>-4.0</c></i1> <!-- this is modified by the ratio of pops existing / (pops joining + pops existing) -->
+			
+			<!-- when the City Leader takes in wounded/pregnant immobile pops (who cannot work), races are disappointed -->
+			<i1><a>addRaceHappinessForAcceptingNewPops burdens disappointment name before_replace_text</a> <b>string</b> <c>Some New Pops Cannot Work</c></i1>
+			<i1><a>addRaceHappinessForAcceptingNewPops burdens disappointment description before_replace_text</a> <b>string</b>
+			<c>Our City Leader has accepted outside pops into our community that cannot work due to wounds or advanced pregnancy.  The rest of us are forced to shoulder the burden for a while.</c></i1>
+			
+			<!-- when the City Leader takes in ill pops, races are fearful -->
+			<i1><a>addRaceHappinessForAcceptingNewPops illness fear name before_replace_text</a> <b>string</b> <c>New Pops Bring Illness</c></i1>
+			<i1><a>addRaceHappinessForAcceptingNewPops illness fear description before_replace_text</a> <b>string</b>
+			<c>Our City Leader has accepted outside pops into our community who carry disease.  These pops could spread their illnesses to the rest of us!</c></i1>
+			
+			<!-- when the City Leader takes in pops, some resources are expected to come with them: -->
+			<i1><a>addRaceHappinessForAcceptingNewPops resources desire_value_per_pop vertex</a> <b>double</b> <c>10.0</c></i1> <!-- if resource desire / total number of pops joining is this, the happiness mod for resources is 0 -->
+			<i1><a>addRaceHappinessForAcceptingNewPops resources desire_value_per_pop vertex_value</a> <b>double</b> <c>20.0</c></i1> <!-- this value is also subtracted from the total at the end, making the function from -(this) to 0 at the vertex to (asymptote - this) at infinity -->
+			<i1><a>addRaceHappinessForAcceptingNewPops resources desire_value_per_pop asymptote</a> <b>double</b> <c>50.0</c></i1> <!-- as resource desire / total number of pops joining approaches infinity, the happiness mod for resources approaches (this - vertex value) -->
+			<i1><a>addRaceHappinessForAcceptingNewPops resources happiness name before_replace_text</a> <b>string</b> <c>New Pops' Goods</c></i1>
+			<i1><a>addRaceHappinessForAcceptingNewPops resources happiness description before_replace_text</a> <b>string</b>
+			<c>Our City Leader has accepted outside pops, and their carried resources, into our community.  Their surplus or deficit is now ours.</c></i1>
+			
+			<!-- when the City Leader takes in pops, races of the community judge the pops based on their own race care values: -->
+			<i1><a>addRaceHappinessForAcceptingNewPops happiness_per_1p0_racecare_per_pop default</a> <b>double</b> <c>1.5</c></i1> <!-- this is per pop joining -->
+			<i1><a>addRaceHappinessForAcceptingNewPops racecare_threshold_average default</a> <b>double</b> <c>0.65</c></i1> <!-- the real race care average subtracts this and is then multiplied by the above (and total pop count) to find the total happiness -->
+			<i1><a>addRaceHappinessForAcceptingNewPops race_mix happiness name before_replace_text</a> <b>string</b> <c>New Pops Affect Racial Balance</c></i1>
+			<i1><a>addRaceHappinessForAcceptingNewPops race_mix happiness description before_replace_text</a> <b>string</b>
+			<c>Our City Leader has accepted outside pops into our community.  This will impact the racial balance of the community.</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script addRaceHappinessForAcceptingNewPops</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines how happy each race in the player community is about the City Leader accepting new pops into the community.  This script then (possibly, depending on input) adds this happiness cause to the specified race -->
+  <!-- this script can be run either before or after the pops are added to the community; it will work either way. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+		List<IFPop> inPopsWelcomedToCommunity, //cannot be null.  Nothing will happen if empty.  Dead pops skipped.
+		IFRace inRaceUnderConsideration, //cannot be null.  If no pops of this race exist in the player community or in inPopsWelcomedToCommunity, this script has no impact
+		IFResourcePool inResourcePoolAddedToCommunity, //can be null
+		Dictionary<IFResource, Tuple<double, double>> inAdditionalResourcesAddedToCommunity, //can be null
+		bool inAddHappinessCauseToRace //if false, the value of happiness impact is returned but no happiness cause is added to the player community
+	-->
+	
+	<!-- output:
+		double outHappinessImpactStrengthTotal
+	-->
+	<i1><a>addRaceHappinessForAcceptingNewPops</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(List&lt;IFPop&gt;), typeof(IFRace), typeof(IFResourcePool), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(bool) }
+	      }, out _))
+	    {
+			throw new ArgumentException("addRaceHappinessForAcceptingNewPops custom script received invalid arguments");
+			return null;
+	    }
+		
+		List&lt;IFPop&gt; inPopsWelcomedToCommunity = (List&lt;IFPop&gt;)inArguments[0];
+		IFRace inRaceUnderConsideration = (IFRace)inArguments[1];
+		IFResourcePool inResourcePoolAddedToCommunity = (IFResourcePool)inArguments[2];
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inAdditionalResourcesAddedToCommunity = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)inArguments[3];
+		bool inAddHappinessCauseToRace = (bool)inArguments[4];
+		
+		if(inPopsWelcomedToCommunity == null)
+		{
+			throw new ArgumentException("addRaceHappinessForAcceptingNewPops custom script received invalid arguments: inPopsWelcomedToCommunity cannot be null");
+			return null;
+		}
+		if(inRaceUnderConsideration == null)
+		{
+			throw new ArgumentException("addRaceHappinessForAcceptingNewPops custom script received invalid arguments: inRaceUnderConsideration cannot be null");
+			return null;
+		}
+		if(inAdditionalResourcesAddedToCommunity == null)
+		{
+			inAdditionalResourcesAddedToCommunity = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		}
+		else
+		{
+			inAdditionalResourcesAddedToCommunity = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;(inAdditionalResourcesAddedToCommunity); //we modify this, so make a copy
+		}
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		//strip inPopsWelcomedToCommunity of dead pops:
+		Dictionary&lt;IFRace, List&lt;IFPop&gt;&gt; popsJoiningByRace = new Dictionary&lt;IFRace, List&lt;IFPop&gt;&gt;();
+		Int64 countUnableToWorkJoining = 0;
+		Int64 countOfIllPopsJoining = 0;
+		Int64 countOfPopsJoining = 0;
+		foreach(IFPop pop in inPopsWelcomedToCommunity)
+		{
+			if(pop.isDead())
+				continue;
+			if(pop.isWounded() || pop.isPregnantImmobile())
+				countUnableToWorkJoining++;
+			if(pop.isIll())
+				countOfIllPopsJoining++;
+			if(!popsJoiningByRace.ContainsKey(pop.getRace()))
+				popsJoiningByRace.Add(pop.getRace(), new List&lt;IFPop&gt;());
+			popsJoiningByRace[pop.getRace()].Add(pop);
+			countOfPopsJoining++;
+		}
+		
+		double outHappinessImpactStrengthTotal = 0.0d;
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		if(popsJoiningByRace.Count == 0)
+		{
+			addDebugMessage(inScriptInstance, "no live pops joining community; happiness result = 0");
+			toReturn.Add(outHappinessImpactStrengthTotal);
+			return toReturn;
+		}
+		
+		//fold resource pool resources into additional resources dictionary:
+		if(inResourcePoolAddedToCommunity != null)
+		{
+			for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res == null)
+					continue;
+				if(res.isNotInResourcePool())
+					continue;
+					
+				double quan = inResourcePoolAddedToCommunity.getResourceQuantity(res);
+				if(quan == 0.0d)
+					continue;
+				double qual = inResourcePoolAddedToCommunity.getResourceQuality(res);
+				
+				if(!inAdditionalResourcesAddedToCommunity.ContainsKey(res))
+					inAdditionalResourcesAddedToCommunity.Add(res, Tuple.Create(0.0d, 0.0d));
+				inAdditionalResourcesAddedToCommunity[res] = Tuple.Create(quan + inAdditionalResourcesAddedToCommunity[res].Item1, (quan * qual + inAdditionalResourcesAddedToCommunity[res].Item1 * inAdditionalResourcesAddedToCommunity[res].Item2) / (quan + inAdditionalResourcesAddedToCommunity[res].Item1));
+			}
+		}
+		
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		//count existing and new pops of this race:
+		Int64 newPopsOfRace = 0;
+		Int64 existingPopsOfRace = 0;
+		Int64 totalPreExistingPops = 0;
+		if(popsJoiningByRace.ContainsKey(inRaceUnderConsideration))
+		{
+			newPopsOfRace = popsJoiningByRace[inRaceUnderConsideration].Count;
+		}
+		foreach(IFPop pop in localCommunity.getPopsLoyalToCommunity(true, false))
+		{
+			if(popsJoiningByRace.ContainsKey(inRaceUnderConsideration))
+			{
+				if(popsJoiningByRace[inRaceUnderConsideration].Contains(pop))
+					continue;
+			}
+			totalPreExistingPops++;
+			if(pop.getRace() != inRaceUnderConsideration)
+				continue;
+			existingPopsOfRace++;
+		}
+		
+		//sanity check:
+		if((newPopsOfRace + existingPopsOfRace) == 0)
+		{
+			addDebugMessage(inScriptInstance, "no live pops of race in community; happiness result = 0");
+			toReturn.Add(outHappinessImpactStrengthTotal);
+			return toReturn;
+		}
+		
+		//the new pops of the race are unlikely to immediately cause trouble.  That effect is scaled by the ratio of new pops to new + existing pops.  Calculate that here:
+		if(newPopsOfRace != 0)
+		{
+			double appreciationMax = customConsts.getDoubleConst("addRaceHappinessForAcceptingNewPops joiners appreciation max", out success);
+			if(!success) appreciationMax = 75.0d;
+			
+			double appreciation = (appreciationMax * newPopsOfRace) / (newPopsOfRace + existingPopsOfRace);
+			addDebugMessage(inScriptInstance, "from appreciationMax=" + appreciationMax + " newPopsOfRace=" + newPopsOfRace + " existingPopsOfRace=" + existingPopsOfRace + ", pops joining of race " + inRaceUnderConsideration.getInternalName() + " have happiness bonus of " + appreciation);
+			outHappinessImpactStrengthTotal += appreciation;
+			
+			if(inAddHappinessCauseToRace)
+			{
+				string appreciationName = customConsts.getStringConst("addRaceHappinessForAcceptingNewPops joiners appreciation name before_replace_text", out success);
+				if(!success) appreciationName = "New Pops Appreciate Welcome";
+				string appreciationText = customConsts.getStringConst("addRaceHappinessForAcceptingNewPops joiners appreciation description before_replace_text", out success);
+				if(!success) appreciationText = "Our City Leader has accepted outside pops into our community.  These pops are unlikely to cause trouble for a time, either out of appreciation or fear of consequences.";
+				
+				localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(inRaceUnderConsideration, appreciationName, appreciationText, appreciation, false);
+			}
+		}
+		
+		//the existing pops of the race have three considerations: wounds/illnesses/pregnancies of the pops joining, resources being added, and racial distribution of the pops joining
+		//wounds/illnesses/pregnancies are only negative (and zero if the count of them is zero), resources has a negative offset but as more resources are added it trends positive, and racial distribution is based on count * race care values
+		double unableToWorkDisappointmentMax = customConsts.getDoubleConst("addRaceHappinessForAcceptingNewPops joiners wound_or_pregnancy disappointment max", out success);
+		if(!success) unableToWorkDisappointmentMax = -100.0d;
+		double popsOfRaceExistingToTotal = (existingPopsOfRace) / ((double)(existingPopsOfRace + newPopsOfRace));
+		double popsNewlyUnableToWorkToTotal = (countUnableToWorkJoining) / ((double)(totalPreExistingPops + countOfPopsJoining));
+		double disappointmentInBurdens = unableToWorkDisappointmentMax * popsOfRaceExistingToTotal * popsNewlyUnableToWorkToTotal;
+		if(disappointmentInBurdens != 0.0d)
+		{
+			addDebugMessage(inScriptInstance, "wounded/pregnant immobile pop count of " + countUnableToWorkJoining + " causes racial disappointment of " + disappointmentInBurdens + " from popsOfRaceExistingToTotal ratio=" + popsOfRaceExistingToTotal + " and popsNewlyUnableToWorkToTotal ratio=" + popsNewlyUnableToWorkToTotal);
+			outHappinessImpactStrengthTotal += disappointmentInBurdens;
+			
+			if(inAddHappinessCauseToRace)
+			{
+				string disappointmentName = customConsts.getStringConst("addRaceHappinessForAcceptingNewPops burdens disappointment name before_replace_text", out success);
+				if(!success) disappointmentName = "Some New Pops Cannot Work";
+				string disappointmentDescription = customConsts.getStringConst("addRaceHappinessForAcceptingNewPops burdens disappointment description before_replace_text", out success);
+				if(!success) disappointmentDescription = "Our City Leader has accepted outside pops into our community that cannot work due to wounds or advanced pregnancy.  The rest of us are forced to shoulder the burden for a while.";
+				
+				localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(inRaceUnderConsideration, disappointmentName, disappointmentDescription, disappointmentInBurdens, false);
+			}
+		}
+		
+		double illnessPerPopDisappointment = customConsts.getDoubleConst("addRaceHappinessForAcceptingNewPops joiners illness disappointment per_pop", out success);
+		if(!success) illnessPerPopDisappointment = -4.0d;
+		double illnessFear = popsOfRaceExistingToTotal * illnessPerPopDisappointment * countOfIllPopsJoining;
+		if(illnessFear != 0.0d)
+		{
+			addDebugMessage(inScriptInstance, "ill pop count of " + countOfIllPopsJoining + " causes racial fear of " + illnessFear + " from popsOfRaceExistingToTotal ratio=" + popsOfRaceExistingToTotal);
+			outHappinessImpactStrengthTotal += illnessFear;
+			
+			if(inAddHappinessCauseToRace)
+			{
+				string illnessFearName = customConsts.getStringConst("addRaceHappinessForAcceptingNewPops illness fear name before_replace_text", out success);
+				if(!success) illnessFearName = "New Pops Bring Illness";
+				string illnessFearDescription = customConsts.getStringConst("addRaceHappinessForAcceptingNewPops illness fear description before_replace_text", out success);
+				if(!success) illnessFearDescription = "Our City Leader has accepted outside pops into our community who carry disease.  These pops could spread their illnesses to the rest of us!";
+				
+				localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(inRaceUnderConsideration, illnessFearName, illnessFearDescription, illnessFear, false);
+			}
+		}
+		
+		//calculate total resource desire value and happiness from it:
+		if(customScripts.runCustomScriptCheckTypes("getDesireTotalOfResourceCollection", new List&lt;object&gt;() { localCommunity, null, inAdditionalResourcesAddedToCommunity }, out List&lt;object&gt; resultDesireValue,
+			true, typeof(double)))
+		{
+			double totalResourceDesire = (double)resultDesireValue[0];
+			double resDesirePerPop = totalResourceDesire / countOfPopsJoining;
+			
+			double resourcesVertex = customConsts.getDoubleConst("addRaceHappinessForAcceptingNewPops resources desire_value_per_pop vertex", out success);
+			if(!success) resourcesVertex = 10.0d;
+			double resourcesVertexValue = customConsts.getDoubleConst("addRaceHappinessForAcceptingNewPops resources desire_value_per_pop vertex_value", out success);
+			if(!success) resourcesVertexValue = 20.0d;
+			double resourcesAsymptote = customConsts.getDoubleConst("addRaceHappinessForAcceptingNewPops resources desire_value_per_pop asymptote", out success);
+			if(!success) resourcesAsymptote = 50.0d;
+						
+			double happinessFromResources = resourcesAsymptote * resDesirePerPop / (resDesirePerPop + resourcesVertex * ((resourcesAsymptote / resourcesVertexValue) - 1));
+			happinessFromResources -= resourcesVertexValue;
+			
+			//modify happinessFromResources by (existing pops of this race) / (now total pops of this race)
+			happinessFromResources *= popsOfRaceExistingToTotal;
+			
+			if(happinessFromResources != 0.0d)
+			{
+				addDebugMessage(inScriptInstance, "resource desire per pop of " + resDesirePerPop + " causes racial happiness of " + happinessFromResources);
+				outHappinessImpactStrengthTotal += happinessFromResources;
+				
+				if(inAddHappinessCauseToRace)
+				{
+					string resourcesHappinessName = customConsts.getStringConst("addRaceHappinessForAcceptingNewPops resources happiness name before_replace_text", out success);
+					if(!success) resourcesHappinessName = "New Pops' Goods";
+					string resourcesHappinessDescription = customConsts.getStringConst("addRaceHappinessForAcceptingNewPops resources happiness description before_replace_text", out success);
+					if(!success) resourcesHappinessDescription = "Our City Leader has accepted outside pops, and their carried resources, into our community.  Their surplus or deficit is now ours.";
+					
+					localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(inRaceUnderConsideration, resourcesHappinessName, resourcesHappinessDescription, happinessFromResources, false);
+				}
+			}
+		}
+		
+		//fetch race care values:
+		if(customScripts.runCustomScriptCheckTypes("getRaceCareValues", new List&lt;object&gt;() { localCommunity, inRaceUnderConsideration }, out List&lt;object&gt; resultRaceCareValues, true, typeof(List&lt;double&gt;)))
+		{
+			List&lt;double&gt; raceCareValues = (List&lt;double&gt;)resultRaceCareValues[0];
+			
+			double raceCareThreshold = customConsts.getDoubleConst("addRaceHappinessForAcceptingNewPops racecare_threshold_average default", out success);
+			if(!success) raceCareThreshold = 0.65d;
+			double happinessPer1p0RaceCare = customConsts.getDoubleConst("addRaceHappinessForAcceptingNewPops happiness_per_1p0_racecare_per_pop default", out success);
+			if(!success) happinessPer1p0RaceCare = 1.5d;
+			
+			double raceCareSum = 0.0d;
+			foreach(var kvpair in popsJoiningByRace)
+			{
+				double raceCareValue = raceCareValues.Count &gt; kvpair.Key.getMOID() ? raceCareValues[(int)kvpair.Key.getMOID()] : raceCareThreshold;
+				raceCareSum += (raceCareValue - raceCareThreshold) * kvpair.Value.Count;
+			}
+			double happinessFromRacialMix = raceCareSum * happinessPer1p0RaceCare;
+			
+			//modify happinessFromRacialMix by (existing pops of this race) / (now total pops of this race)
+			happinessFromRacialMix *= popsOfRaceExistingToTotal;
+			
+			if(happinessFromRacialMix != 0.0d)
+			{
+				addDebugMessage(inScriptInstance, "race care sum of " + raceCareSum + " causes racial happiness of " + happinessFromRacialMix);
+				outHappinessImpactStrengthTotal += happinessFromRacialMix;
+				
+				if(inAddHappinessCauseToRace)
+				{
+					string raceHappinessName = customConsts.getStringConst("addRaceHappinessForAcceptingNewPops race_mix happiness name before_replace_text", out success);
+					if(!success) raceHappinessName = "New Pops Affect Racial Balance";
+					string raceHappinessDescription = customConsts.getStringConst("addRaceHappinessForAcceptingNewPops race_mix happiness description before_replace_text", out success);
+					if(!success) raceHappinessDescription = "Our City Leader has accepted outside pops into our community.  This will impact the racial balance of the community.";
+					
+					localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(inRaceUnderConsideration, raceHappinessName, raceHappinessDescription, happinessFromRacialMix, false);
+				}
+			}
+		}
+		
+		toReturn.Add(outHappinessImpactStrengthTotal);
+		return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

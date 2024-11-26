@@ -1,0 +1,255 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts used in Building_Helper_Events are declared here -->
+			<!-- consts related to this file's scripts can have any name, but should look like the other consts and should not override other consts -->
+			
+			<i1><a>Requested Trade Proposal Event player_quantity_quality_fuzzing mult</a> <b>double</b> <c>1.01</c></i1>
+			
+			
+			<i1><a>Seize Goods Success Event report_text before_replace_text</a> <b>string</b>
+			<c>On your order, all foreign goods stored in [0] have been seized.\n\nThe following goods have been added to our stockpiles:\n[1]</c></i1>
+			<i1><a>Seize Goods Success Event building_null before_replace_text</a> <b>string</b>
+			<c>a building</c></i1>
+			<i1><a>Seize Goods Success Event resolution_text before_replace_text</a> <b>string</b>
+			<c>[0]\n\n[1]</c></i1>
+			<i1><a>Seize Goods Success Event wanderers_offended before_replace_text</a> <b>string</b>
+			<c>We should expect that Wanderers may hear of this seizure and avoid our community in the future.</c></i1>
+			<i1><a>Seize Goods Success Event communities_offended before_replace_text</a> <b>string</b>
+			<c>The following communities have taken offence to the seizure of their delegations' goods:\n[0]\nFurthermore, we should expect other communities to learn of this and possibly send fewer delegations to our community.\n\n</c></i1>
+			
+			<i1><a>Seize Goods Failure Event report_text before_replace_text</a> <b>string</b>
+			<c>The foreign goods stored in [0] were to be seized, but the inhabitants of the building have chosen to resist!  They, and any of their fellow community members visiting us, are now hostile, and will attempt to fight their way out!</c></i1>
+			<i1><a>Seize Goods Failure Event building_null before_replace_text</a> <b>string</b>
+			<c>a building</c></i1>
+			
+			<i1><a>Hostiles Dropped Goods Event report_text before_replace_text</a> <b>string</b>
+			<c>After yesterday's combat, pops of our community gathered the following goods from fallen enemies:\n\n[one_listofresources|yes_qualities_list:0]</c></i1>
+			
+			<i1><a>Requested Trade Proposal Event report_text before_replace_text</a> <b>string</b>
+			<c>The pops of [one_delegation:[0]], housing in [one_building:[1]], have heard the City Leader's request for a trade proposal and offer the following exchange:\n\nPops from [one_community:[2]] will offer these goods:\n[one_listofresources|yes_qualities_list:0]\n\nWe will give the visiting pops these resources from our stockpiles:\n[one_listofresources|yes_qualities_list:1]</c></i1>
+
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script Requested Trade Proposal Event delegation_will_trade</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Requested Trade Proposal Event player_has_resources</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script Requested Trade Proposal Event delegation_has_resources</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- this script is the common script for when Requested Trade Proposal Event needs to check if the delegation is on the map and still willing and able to trade -->
+	<!-- inputs to the function:
+		IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+		bool outDelegationWillTrade
+	-->
+	<i1><a>Requested Trade Proposal Event delegation_will_trade</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFDelegation)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Requested Trade Proposal Event delegation_will_trade custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		
+		if(inDelegation == null)
+		{
+			throw new ArgumentException("Requested Trade Proposal Event delegation_will_trade custom script received invalid arguments: inDelegation cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		bool outDelegationWillTrade = true;
+		
+		//first, check that the pops are not hostile:
+		outDelegationWillTrade = outDelegationWillTrade &amp;&amp; !getAPI().isHostileCommunity(inDelegation.getSourceCommunity());
+		//second, check that there is any pop alive and on the local map:
+		bool anyPopAliveOnMap = false;
+		foreach(IFPop pop in inDelegation.getPopsInDelegation())
+		{
+			if(getAPI().getPopsWithinLocalCommunityMap().Contains(pop) &amp;&amp; !pop.isDead())
+			{
+				anyPopAliveOnMap = true;
+				break;
+			}
+		}
+		outDelegationWillTrade = outDelegationWillTrade &amp;&amp; anyPopAliveOnMap;
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outDelegationWillTrade };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	<!-- this script is the common script for when Requested Trade Proposal Event needs to check if the player still has the resources the delegation requested -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		Int64 inEventReportUID
+	-->
+	
+	<!-- output:
+		bool outPlayerHasResources
+	-->
+	<i1><a>Requested Trade Proposal Event player_has_resources</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Requested Trade Proposal Event player_has_resources custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Requested Trade Proposal Event player_has_resources custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		bool outPlayerHasResources = true;
+		
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; offeredResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		if(customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { inEventStatus, inEventReportUID, false, null, "requested", 0L, false }, out List&lt;object&gt; fetchedResources, false,
+			typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+		{
+			offeredResources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchedResources[0];
+			IFResourcePool playerPool = getAPI().getLocalCommunity().getResourcePool();
+			
+			double playerQuanQualFuzzingMult = customConsts.getDoubleConst("Requested Trade Proposal Event player_quantity_quality_fuzzing mult", out bool success);
+			if(!success) playerQuanQualFuzzingMult = 1.01d; //if the resources are only off by 1%, accept the trade
+			addDebugMessage(inScriptInstance, "player quan qual fuzzing multiplier = " + playerQuanQualFuzzingMult);
+			
+			double qualityMin = consts.getResourceQualityMin();
+			//make quality only 0->positive so a comparison works correctly with the fuzzing mult
+			
+			foreach(var kvpair in offeredResources)
+			{
+				//for the player to be able to accept the offer, the resources held by the player must be greater or equal in both quantity and quality
+				//there is a slight fuzzing on both though
+				if(kvpair.Value.Item1 &gt; (playerQuanQualFuzzingMult * playerPool.getResourceQuantity(kvpair.Key)))
+				{
+					outPlayerHasResources = false;
+					addDebugMessage(inScriptInstance, "player does not have the quantity of resource " + kvpair.Key.getDebugName() +
+						" requested: actual quantity = " + playerPool.getResourceQuantity(kvpair.Key) + " requested quantity = " + kvpair.Value.Item1);
+				}
+				else if((kvpair.Value.Item2 - qualityMin) &gt; (playerQuanQualFuzzingMult * (playerPool.getResourceQuality(kvpair.Key) - qualityMin)))
+				{
+					outPlayerHasResources = false;
+					addDebugMessage(inScriptInstance, "player does not have the quality of resource " + kvpair.Key.getDebugName() +
+						" requested: actual quality = " + playerPool.getResourceQuality(kvpair.Key) + " requested quality = " + kvpair.Value.Item2);
+				}
+				if(!outPlayerHasResources)
+				{
+					break;
+				}
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outPlayerHasResources };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	<!-- this script is the common script for when Requested Trade Proposal Event needs to check if the delegation in question still has the resources they proposed -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		Int64 inEventReportUID,
+		IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+		bool outDelegationHasResources
+	-->
+	<i1><a>Requested Trade Proposal Event delegation_has_resources</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(IFDelegation)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Requested Trade Proposal Event delegation_has_resources custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		IFDelegation inDelegation = (IFDelegation)inArguments[2];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Requested Trade Proposal Event delegation_has_resources custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inDelegation == null)
+		{
+			throw new ArgumentException("Requested Trade Proposal Event delegation_has_resources custom script received invalid arguments: inDelegation cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		bool outDelegationHasResources = true;
+		
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; offeredResources = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		if(customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { inEventStatus, inEventReportUID, false, null, "offered", 0L, false }, out List&lt;object&gt; fetchedResources, false,
+			typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+		{
+			offeredResources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchedResources[0];
+			IFResourcePool delPool = inDelegation.getResourcePool();
+			
+			foreach(var kvpair in offeredResources)
+			{
+				//for the delegation to be able to honor the offer, the resources held by the delegation must be greater or equal in both quantity and quality
+				if(kvpair.Value.Item1 &gt; delPool.getResourceQuantity(kvpair.Key))
+				{
+					outDelegationHasResources = false;
+					addDebugMessage(inScriptInstance, "delegation " + inDelegation.getDebugName() + " does not have the quantity of resource " + kvpair.Key.getDebugName() +
+						" offered: actual quantity = " + delPool.getResourceQuantity(kvpair.Key) + " offered quantity = " + kvpair.Value.Item1);
+				}
+				else if(kvpair.Value.Item2 &gt; delPool.getResourceQuality(kvpair.Key))
+				{
+					outDelegationHasResources = false;
+					addDebugMessage(inScriptInstance, "delegation " + inDelegation.getDebugName() + " does not have the quality of resource " + kvpair.Key.getDebugName() +
+						" offered: actual quality = " + delPool.getResourceQuality(kvpair.Key) + " offered quality = " + kvpair.Value.Item2);
+				}
+				if(!outDelegationHasResources)
+				{
+					break;
+				}
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outDelegationHasResources };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

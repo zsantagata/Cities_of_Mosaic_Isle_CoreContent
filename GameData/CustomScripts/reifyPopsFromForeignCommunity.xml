@@ -1,0 +1,325 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+	  <!-- a pop's health is calculated based on the community's econ strength.  Assume that a community wouldn't be a community if it didn't take care of basic health needs, so only weak/suffering communities have suffering pops -->
+	  <i1><a>reifyPops community_econ_strength pop_fully_healthy threshold</a> <b>double</b> <c>0.30</c></i1> <!-- proportion of full econ strength range above which pops will be fully healthy -->
+	  
+	  <!-- a pop's soldier skill is calculated based on the community's mil strength.  As the community's mil strength goes from min to max, the range that a pop's soldier skill can be changes linearly. -->
+	  <i1><a>reifyPops community_mil_strength pop_soldier_skill_when_mil_strength_min min</a> <b>double</b> <c>-0.25</c></i1> <!-- the minimum soldier skill (proportion of range) when a community's military strength is min.  Actual assigned skill will be clamped to 0.0 min. -->
+	  <i1><a>reifyPops community_mil_strength pop_soldier_skill_when_mil_strength_min max</a> <b>double</b> <c>0.15</c></i1> <!-- the maximum soldier skill (proportion of range) when a community's military strength is min -->
+	  
+	  <i1><a>reifyPops community_mil_strength pop_soldier_skill_when_mil_strength_max min</a> <b>double</b> <c>0.50</c></i1> <!-- the minimum soldier skill (proportion of range) when a community's military strength is max -->
+	  <i1><a>reifyPops community_mil_strength pop_soldier_skill_when_mil_strength_max max</a> <b>double</b> <c>1.50</c></i1> <!-- the maximum soldier skill (proportion of range) when a community's military strength is max.  Actual assigned skill will be clamped to 1.0 max. -->
+	  
+		<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script reifypopsfromforeigncommunity</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which declares actual pops (reify means "to make real") from a foreign community given a list of inputs -->
+  <!-- most foreign communities don't explicitly initialize all their pops; instead a variable is held saying "this many pops of this race exist in the community" (that is held in getAdditionalUndeclaredPopCounts() of an IFForeignCommunityComponent) -->
+  <!-- this script WILL NOT change the total count of pops in the foreign community; therefore the total list of pops returned might be fewer pops than requested -->
+  <!-- this script WILL NOT place these pops on the map but instead place them in the foreign community.  Callers will need to change this if they care. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFCommunity inForeignCommunity
+	List<IFRace> inRacesDesired, //the values should not be null
+	List<IFPop.ePopSex> inSexesForced, //note that these will be corrected by the generate pop function in comiAPISpace if invalid for the associated race
+	List<Int64> inWoundedDaysOver,
+	List<Int64> inIllDaysOver,
+	List<Int64> inPregnantDaysOver,
+	bool inGiveEquipment,
+	Int64 inTotalPopsReified
+	
+	//any input list can be null and will be considered as an empty list
+	
+	The output is a List of IFPop generated -->
+	<!-- this script is useful to events which want pops from a foreign community.  It is a common enough thing (just like "generate wanderers/generate generic enemies") that it should have its own dedicated script. -->
+	<!-- comment on inputs: pop count reified is equal to (or less than, if there is a problem) inTotalPopsReified (min 1).  Any of the input lists can be null, or sized differently than inTotalPopsReified.  If longer, extra entries are ignored.  If shorter, default values are used/calculated, recalculated per pop generated:
+		race: a random race that exists in the foreign community whose undeclared pop count is greater than zero.  Zero chance to be The Lady or hidden races however.
+		sex: random as allowed by race
+		wounded: no
+		ill: no
+		pregnant: no
+		
+		healths are determined by the economic strength of the community. if inGiveEquipment is false, no equipment is given; otherwise all pops attempt to gather all military equipment from the foreign community's resource pool
+	-->
+	<i1><a>reifyPopsFromForeignCommunity</a>
+	<b>
+			//input count and type check:
+			var customScripts = getAPI().getCustomScripts();
+			if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+				{   typeof(IFCommunity),
+				    typeof(List&lt;IFRace&gt;), typeof(List&lt;IFPop.ePopSex&gt;), typeof(List&lt;Int64&gt;), typeof(List&lt;Int64&gt;), typeof(List&lt;Int64&gt;),
+					typeof(bool), typeof(Int64)}
+			  }, out _))
+			{
+				throw new ArgumentException("reifyPopsFromForeignCommunity custom script received invalid arguments");
+				return null;
+			}
+	  
+			IFCommunity inForeignCommunity = (IFCommunity)inArguments[0];
+			List&lt;IFRace&gt; inRacesForced = (List&lt;IFRace&gt;)inArguments[1];
+			List&lt;IFPop.ePopSex&gt; inSexesForced = (List&lt;IFPop.ePopSex&gt;)inArguments[2];
+			List&lt;Int64&gt; inWoundedDaysOver = (List&lt;Int64&gt;)inArguments[3];
+			List&lt;Int64&gt; inIllDaysOver = (List&lt;Int64&gt;)inArguments[4];
+			List&lt;Int64&gt; inPregnantDaysOver = (List&lt;Int64&gt;)inArguments[5];
+			bool inGiveEquipment = (bool)inArguments[6];
+			Int64 inTotalPopsReified = (Int64)inArguments[7];
+			
+			if(inRacesForced == null)
+				inRacesForced = new List&lt;IFRace&gt;();
+			if(inSexesForced == null)
+				inSexesForced = new List&lt;IFPop.ePopSex&gt;();
+			if(inWoundedDaysOver == null)
+				inWoundedDaysOver = new List&lt;Int64&gt;();
+			if(inIllDaysOver == null)
+				inIllDaysOver = new List&lt;Int64&gt;();
+			if(inPregnantDaysOver == null)
+				inPregnantDaysOver = new List&lt;Int64&gt;();
+			
+			//further input checking:
+			if(inForeignCommunity == null)
+			{
+				throw new ArgumentException("reifyPopsFromForeignCommunity custom script received invalid arguments: inForeignCommunity cannot be null");
+				return null;
+			}
+			if(inForeignCommunity == getAPI().getLocalCommunity())
+			{
+				throw new ArgumentException("reifyPopsFromForeignCommunity custom script received invalid arguments: inForeignCommunity cannot be the local community");
+				return null;
+			}
+			if(!inForeignCommunity.isNormalCommunity())
+			{
+				throw new ArgumentException("reifyPopsFromForeignCommunity custom script received invalid arguments: inForeignCommunity must be a normal community (not Wanderers/Rebels/GenericEnemies/The Lady/Abstract/Invisible)");
+				return null;
+			}
+			
+      var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			
+			List&lt;IFPop&gt; listPopsCreated = new List&lt;IFPop&gt;(); //the generated pops will be held here
+			
+			//fetch necessary consts:
+			double healthMin = consts.getHealthMin();
+			double healthMax = consts.getHealthMax();
+			double healthLowThreshold = consts.getHealthLowThreshold();
+			double soldierSkillMin = consts.getSoldierSkillMin();
+			double soldierSkillMax = consts.getSoldierSkillMax();
+			double qualityMin = consts.getResourceQualityMin();
+			double qualityMax = consts.getResourceQualityMax();
+			double econStrengthMax = consts.getEconStrengthMax(); //min is 0
+			double milStrengthMax = consts.getMilStrengthMax(); //min is 0
+			
+			//fetch necessary custom consts:
+			bool success = false;
+			double econStrengthFullHealthThreshold = customConsts.getDoubleConst("reifyPops community_econ_strength pop_fully_healthy threshold", out success);
+			if(!success) econStrengthFullHealthThreshold = 0.3d;
+			double soldierSkillMinAtMSMin = customConsts.getDoubleConst("reifyPops community_mil_strength pop_soldier_skill_when_mil_strength_min min", out success);
+			if(!success) soldierSkillMinAtMSMin = -0.25d;
+			double soldierSkillMaxAtMSMin = customConsts.getDoubleConst("reifyPops community_mil_strength pop_soldier_skill_when_mil_strength_min max", out success);
+			if(!success) soldierSkillMaxAtMSMin = 0.15d;
+			double soldierSkillMinAtMSMax = customConsts.getDoubleConst("reifyPops community_mil_strength pop_soldier_skill_when_mil_strength_max min", out success);
+			if(!success) soldierSkillMinAtMSMax = 0.5d;
+			double soldierSkillMaxAtMSMax = customConsts.getDoubleConst("reifyPops community_mil_strength pop_soldier_skill_when_mil_strength_max max", out success);
+			if(!success) soldierSkillMaxAtMSMax = 1.50d;
+			
+			//to not repeat the task, collect a list of military resources here:
+			List&lt;IFResource&gt; milResources = new List&lt;IFResource&gt;();
+			int countOfResources = getAPI().getTotalCountOfMO("resources");
+			for(int i = 1; i &lt; countOfResources; i++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+				if(res.isMilEquip())
+				{
+					milResources.Add(res);
+				}
+			}
+			double econStrength = inForeignCommunity.getEconStrength() / econStrengthMax;
+			double milStrength = inForeignCommunity.getMilStrength() / milStrengthMax;
+			//min health possible goes quadratically from (0 econ strength, health low threshold) to (econ strength for full health, full health).  Actual health will randomly be chosen between this and max health
+			double minHealthPossibleForThisEconStrength = (econStrength &gt;= econStrengthFullHealthThreshold) ? healthMax : healthLowThreshold + (((healthMax - healthLowThreshold) / (econStrengthFullHealthThreshold * econStrengthFullHealthThreshold)) * (econStrength * econStrength));
+			IFResourcePool resPool = inForeignCommunity.getResourcePool();
+			
+			addDebugMessage(inScriptInstance, "attempting to reify " + inTotalPopsReified + " pops from foreign community " + inForeignCommunity.getDebugName());
+			Dictionary&lt;IFRace, UInt64&gt; undeclaredPopCounts = inForeignCommunity.getAdditionalUndeclaredPopCounts(); //make sure to decrement values in this when a pop is reified, and remove the entry if it is now 0
+			
+			
+			//actually reify pops:
+			for(int i = 0; i &lt; inTotalPopsReified; i++)
+			{
+				string toLog = "Reifying pop";
+				
+				IFRace race = null;
+				if(inRacesForced.Count &gt; i)
+				{
+					race = inRacesForced[i];
+					if(!undeclaredPopCounts.ContainsKey(race))
+					{
+						addDebugMessage(inScriptInstance, "no undeclared pop of race " + race.getDebugName() + " to reify; will skip this pop");
+						continue;
+					}
+				}
+				else
+				{
+					//choose a random race among those that are available:
+					List&lt;IFRace&gt; races = new List&lt;IFRace&gt;(undeclaredPopCounts.Keys);
+					if(races.Count == 0) //there are no more undeclared pops to reify!
+					{
+						continue;
+					}
+					int attemptsLeft = 5;
+					while(attemptsLeft &gt; 0)
+					{
+						int index = (int)(getAPI().calcRandIntUnder(races.Count));
+						race = races[index];
+						if(!race.isHiddenFromPlayerSight())
+						{
+							break;
+						}
+						race = null;
+						races.RemoveAt(index);
+						if(races.Count == 0)
+						{
+							attemptsLeft = 0;
+						}
+						else
+						{
+							attemptsLeft--;
+						}
+					}
+					if(race == null) //if we didn't find a valid race, don't generate this pop
+						continue;
+				}
+				toLog += " of " + race.getAdjective() + " race";
+				
+				IFPop.ePopSex sex = IFPop.ePopSex.cUnisexNone;
+				if(inSexesForced.Count &gt; i)
+				{
+					sex = inSexesForced[i];
+					toLog += " of forced sex " + sex.ToString();
+				}
+				else
+				{
+					toLog += " of randomly chosen sex";
+				}
+				
+				
+				Int64 woundDayOver = 0;
+				if(inWoundedDaysOver.Count &gt; i)
+				{
+					woundDayOver = inWoundedDaysOver[i];
+				}
+				toLog += woundDayOver == 0 ? "" : ", wounded,";
+				
+				Int64 illDayOver = 0;
+				if(inIllDaysOver.Count &gt; i)
+				{
+					illDayOver = inIllDaysOver[i];
+				}
+				toLog += illDayOver == 0 ? "" : ", ill,";
+				
+				Int64 pregDayOver = 0;
+				if(inPregnantDaysOver.Count &gt; i)
+				{
+					pregDayOver = inPregnantDaysOver[i];
+					//if pregnant day is forced, and pop's sex is not forced, and race is not unisex, make the pop female:
+					if(!race.isUnisex() &amp;&amp; !(inSexesForced.Count &gt; i))
+					{
+						sex = IFPop.ePopSex.cFemale;
+						toLog += ", setting sex to female due to pregnancy";
+					}
+				}
+				toLog += pregDayOver == 0 ? "" : ", pregnant,";
+				
+				//based on econ strength, the health of the pops is chosen on random ranges:
+				double mcalHealth = 0;
+				double protHealth = 0;
+				double waterHealth = 0;
+				double hstasisHealth = 0;
+				if(econStrengthFullHealthThreshold &lt; econStrength)
+				{
+					mcalHealth = healthMax;
+					protHealth = healthMax;
+					waterHealth = healthMax;
+					hstasisHealth = healthMax;
+				}
+				else
+				{
+					//the pop's healths should be somewhere randomly between minHealthPossibleForThisEconStrength and max health:
+					mcalHealth = minHealthPossibleForThisEconStrength + (getAPI().calcRand() * (healthMax - minHealthPossibleForThisEconStrength));
+					protHealth = minHealthPossibleForThisEconStrength + (getAPI().calcRand() * (healthMax - minHealthPossibleForThisEconStrength));
+					waterHealth = minHealthPossibleForThisEconStrength + (getAPI().calcRand() * (healthMax - minHealthPossibleForThisEconStrength));
+					hstasisHealth = minHealthPossibleForThisEconStrength + (getAPI().calcRand() * (healthMax - minHealthPossibleForThisEconStrength));
+				}
+				toLog += " mcalHealth=" + mcalHealth;
+				toLog += " protHealth=" + protHealth;
+				toLog += " waterHealth=" + waterHealth;
+				toLog += " hstasisHealth=" + hstasisHealth;
+				
+				//based on mil strength, the soldier skill of pops is chosen on random ranges:
+				double soldierSkill = 0;
+				double min_of_ss_range = (soldierSkillMinAtMSMin + (milStrength * (soldierSkillMinAtMSMax - soldierSkillMinAtMSMin)));
+				double max_of_ss_range = (soldierSkillMaxAtMSMin + (milStrength * (soldierSkillMaxAtMSMax - soldierSkillMaxAtMSMin)));
+				soldierSkill = min_of_ss_range + (getAPI().calcRand() * (max_of_ss_range - min_of_ss_range));
+				if(soldierSkill &lt; 0.0d)
+					soldierSkill = 0.0d;
+				if(soldierSkill &gt; 1.0d)
+					soldierSkill = 1.0d;
+				soldierSkill = (soldierSkill * (soldierSkillMax - soldierSkillMin)) + soldierSkillMin;
+				toLog += " soldierSkill=" + soldierSkill;
+				
+				//based on inGiveEquipment, try to equip all existing equipment:
+				Dictionary&lt;IFResource, double&gt; equipment = new Dictionary&lt;IFResource, double&gt;();
+				if(inGiveEquipment)
+				{
+					foreach(IFResource res in milResources)
+					{
+						if(resPool.getResourceQuantity(res) &gt;= 1.0d)
+						{
+							double quality = resPool.getResourceQuality(res);
+							toLog += ", holding " + res.getDebugName() + " of quality " + quality;
+							equipment.Add(res, quality);
+							resPool.subtractResource(res, 1.0d);
+						}
+					}
+				}
+				
+				addDebugMessage(inScriptInstance, toLog);
+				IFPop newPop = 
+					getAPI().generateNewPop(
+						race, inForeignCommunity,
+						"" /*name blank*/, Int64.MinValue /*DOB blank*/,
+						soldierSkill, sex, equipment,
+						null /*no delegation*/,
+						false /*do not place on map*/, 0.0d, 0.0d,
+						woundDayOver, illDayOver, pregDayOver,
+						mcalHealth, protHealth, waterHealth, hstasisHealth, (mcalHealth + protHealth + waterHealth + hstasisHealth) / 4 /*make overall health the average of the others*/
+					);
+					
+				newPop.removePopFromMap(IFPop.ePopLocation.cInForeignCommunity); //this works to set the pop's location even if the pop isn't currently on the map
+				undeclaredPopCounts[race]--;
+				if(undeclaredPopCounts[race] == 0)
+				{
+					undeclaredPopCounts.Remove(race);
+				}
+				listPopsCreated.Add(newPop);
+			}
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;() { listPopsCreated };
+			return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

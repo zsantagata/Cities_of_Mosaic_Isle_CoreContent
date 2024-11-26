@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>buildingDamageFlagAndEjectPops alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+			<i1><a>buildingDamageFlagAndEjectPops alert before_replace_text</a> <b>string</b>
+			<c>A building has been destroyed by hostile attackers!</c></i1>
+			
+			<i1><a>damaged_building_timeout ticks</a> <b>int</b> <c>50000000</c></i1> <!-- 10000000 ticks represent a second -->
+			
+			<i1><a>damaged_building damage min</a> <b>double</b> <c>6.5</c></i1> <!-- damage to a building's durability will never go below this -->
+			<i1><a>damaged_building damage max</a> <b>double</b> <c>25.0</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script buildingdamagecanhidehere</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script buildingdamageflagandejectpops</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines wounds and deaths in combat -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	<!-- building damage can hide here has one input argument: IFBuilding inBuilding.  There is one output: bool outTimeoutIsOver.  The output is true if the building can be hidden in, and false otherwise. -->
+	<!-- this script is called during battle, when a pop attempts to hide in a building.  Because enemy pops can damage buildings to force hiding pops out, we want to give them a time to chase and hurt those pops before they hide again, which the timeout does. -->
+	<!-- in addition, there is another consideration: a destroyed building cannot be used to hide in -->
+	<i1><a>buildingDamageCanHideHere</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("buildingDamageCanHideHere custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("buildingDamageCanHideHere custom script received invalid argument: inBuilding must not be null");
+		  return null;
+	  }
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	  if(inBuilding.isBuildingDestroyed())
+	  {
+		toReturn.Add(false);
+		return toReturn;
+	  }
+	  
+	  //check the current time:
+	  Int64 ticks_current = DateTime.Now.Ticks;
+	  string variableName = "pathfindingBattleDamage_hideTimeout_building" + inBuilding.getUID();
+	  Int64 ticks_stored = variableHandler.getInt(variableName, out bool success);
+	  if(!success) //this can happen if the building was never damaged in combat
+	  {
+		toReturn.Add(true);
+		return toReturn;
+	  }
+	  
+	  Int64 tick_timeout = customConsts.getIntConst("damaged_building_timeout ticks", out success);
+	  if(!success)
+	  {
+		tick_timeout = 50000000;
+	  }
+	  toReturn.Add((ticks_current - ticks_stored) &gt; tick_timeout);
+	  return toReturn;
+	</b>
+	</i1>
+	
+	<!-- building damage flag and eject pops has two input arguments: IFBuilding inBuilding, IFPop inPopDamagingBuilding.  There is no output. -->
+	<!-- this script is called during battle when a pop damages a building.  This script determines and applies the total damage to the building's durability, kicks out any hiding pops, and starts the hide timeout window. -->
+	<i1><a>buildingDamageFlagAndEjectPops</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("buildingDamageFlagAndEjectPops custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  IFPop inPopDamagingBuilding = (IFPop)inArguments[1];
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("buildingDamageFlagAndEjectPops custom script received invalid argument: inBuilding must not be null");
+		  return null;
+	  }
+	  if(inPopDamagingBuilding == null)
+	  {
+		  throw new ArgumentException("buildingDamageFlagAndEjectPops custom script received invalid argument: inPopDamagingBuilding must not be null");
+		  return null;
+	  }
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //first, kick out all hiding pops:
+	  //(do this before damaging the building because if the building is destroyed, it clears all its housed/worker pops)
+      IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+	  if(inBuilding.isHousing())
+	  {
+		foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+		{
+			if(pop.getPopLocation() == IFPop.ePopLocation.cInHome)
+			{
+				Tuple&lt;double, double&gt; loc = map.getRandomEdgeOfBuilding(inBuilding);
+				pop.placePopOnMapLocation(loc.Item1, loc.Item2);
+			}
+		}
+	  }
+	  if(inBuilding.isWorkplace())
+	  {
+		foreach(IFPop pop in inBuilding.getWorkplaceComponent().getWorkerPops())
+		{
+			if(pop.getPopLocation() == IFPop.ePopLocation.cInWorkplace)
+			{
+				Tuple&lt;double, double&gt; loc = map.getRandomEdgeOfBuilding(inBuilding);
+				pop.placePopOnMapLocation(loc.Item1, loc.Item2);
+			}
+		}
+	  }
+	  
+	  //second, calculate damage to building:
+	  //scale this using proportion of soldier skill and proportion of average equipment quality
+	  double min_qual = consts.getResourceQualityMin();
+	  double max_qual = consts.getResourceQualityMax();
+	  double qual_range = max_qual - min_qual;
+	  if(qual_range &lt;= 0.0d) qual_range = 1.0d;
+	  double soldier_skill_min = consts.getSoldierSkillMin();
+	  double soldier_skill_max = consts.getSoldierSkillMax();
+	  double skill_range = soldier_skill_max - soldier_skill_min;
+	  if(skill_range &lt;= 0.0d) skill_range = 1.0d;
+
+    double qual_mult = (inPopDamagingBuilding.getAverageEquipmentQuality() - min_qual) / qual_range;
+    double skill_mult = (inPopDamagingBuilding.getSoldierSkill() - soldier_skill_min) / skill_range;
+
+    double min_damage = customConsts.getDoubleConst("damaged_building damage min", out bool success);
+    if(!success) min_damage = 6.5d;
+    double max_damage = customConsts.getDoubleConst("damaged_building damage max", out success);
+    if(!success) max_damage = 25.0d;
+    double damage_total = ((max_damage - min_damage) * Math.Sqrt(qual_mult * skill_mult)) + min_damage;
+    addDebugMessage(inScriptInstance, "based on quality mult=" + qual_mult + " and skill mult=" + skill_mult + ", pop " + inPopDamagingBuilding.getDebugName() + " will deal " + damage_total + " damage (rounded down) to building " + inBuilding.getDebugName());
+    inBuilding.setCurrentBuildingDurability(inBuilding.getCurrentBuildingDurability() - (Int64)damage_total, inPopDamagingBuilding);
+
+    //third: start the hide timeout window
+    Int64 ticks_current = DateTime.Now.Ticks;
+    string variableName = "pathfindingBattleDamage_hideTimeout_building" + inBuilding.getUID();
+    variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), variableName, ticks_current);
+
+    //fourth: if the building has been destroyed by damage, alert the player:
+    Int64 enable_if_not_zero = customConsts.getIntConst("buildingDamageFlagAndEjectPops alert enable_if_not_zero", out success);
+    if(!success) enable_if_not_zero = 0;
+    if((inBuilding.getCurrentBuildingDurability() == 0) &amp;&amp; (enable_if_not_zero != 0))
+	  {
+	  	string text = customConsts.getStringConst("buildingDamageFlagAndEjectPops alert before_replace_text", out success);
+	  	if(!success) text = "A building has been destroyed by hostile attackers!";
+	  
+	  	getAPI().createAlert(text, 255, 255, 255, false, null, inBuilding); //the numbers are r/g/b, and false is for not pausing
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

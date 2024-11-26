@@ -1,0 +1,394 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>enforceLanguageGrammar_english enable_tab_replacement_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_carriage_return_culling_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_multiple_space_culling_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_double_spaces_after_period_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_quoteperiod_to_periodquote_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_quotecomma_to_commaquote_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_multiple_comma_culling_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_multiple_exclamation_culling_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_multiple_question_culling_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_mixed_exclamation_question_to_one_question_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_first_sentence_character_capitalization_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_more_than_two_newline_culling_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_double_period_culling_preserve_ellipses_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_period_comma_to_period_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_a_to_an_for_vowel_starts_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_possessive_remove_double_s_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_capitalize_first_char_if_letter_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  
+	  <!-- these are not used by this script but instead are a common separator for the mult_* descriptions: -->
+	  <i1><a>english multiple_item_separator notlast before_replace_text</a> <b>string</b> <c>,</c></i1>
+	  <i1><a>english multiple_item_separator last before_replace_text</a> <b>string</b> <c>and</c></i1>
+	  <i1><a>english multiple_item_separator use_space_before_notlast</a> <b>int</b> <c>0</c></i1>
+	  <i1><a>english multiple_item_separator use_space_before_last</a> <b>int</b> <c>1</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script enforceLanguageGrammar_english</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which delegates the replacement of markup text in a string that is to be displayed to the player -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	string inStringToEnforceGrammarUpon,
+	
+	There is one output: string outStringWithEnforcedGrammar -->
+	<i1><a>enforceLanguageGrammar_english</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(string)   }
+	  }, out _))
+	{
+		throw new ArgumentException("enforceLanguageGrammar_english custom script received invalid arguments");
+		return null;
+	}
+	  
+	string inStringToEnforceGrammarUpon = (string)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outStringWithEnforcedGrammar = inStringToEnforceGrammarUpon;
+	
+	//note to self: I could try implementing these using regex but regex is unintuitive to those who haven't worked with it a lot (i.e. me and probably most modders) and this script will probably only be called once in a single frame once in a while so the speedup isn't necessary
+	//it's better to be clear so do things the "low-tech" way
+	
+	//first, gather all options:
+	Int64 tabReplacementInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_tab_replacement_nonzero", out success);
+	if(!success) tabReplacementInt = 1;
+	
+	Int64 carriageReturnCullingInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_carriage_return_culling_nonzero", out success);
+	if(!success) carriageReturnCullingInt = 1;
+	
+	Int64 multipleSpaceCullingInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_multiple_space_culling_if_nonzero", out success);
+	if(!success) multipleSpaceCullingInt = 1;
+	
+	Int64 doubleSpacesPeriodInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_double_spaces_after_period_if_nonzero", out success);
+	if(!success) doubleSpacesPeriodInt = 1;
+	
+	Int64 quotePeriodReverseInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_quoteperiod_to_periodquote_if_nonzero", out success);
+	if(!success) quotePeriodReverseInt = 1;
+	
+	Int64 quoteCommaReverseInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_quotecomma_to_commaquote_if_nonzero", out success);
+	if(!success) quoteCommaReverseInt = 1;
+	
+	Int64 multipleCommaCullingInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_multiple_comma_culling_if_nonzero", out success);
+	if(!success) multipleCommaCullingInt = 1;
+	
+	Int64 multipleExclamationCullingInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_multiple_exclamation_culling_if_nonzero", out success);
+	if(!success) multipleExclamationCullingInt = 1;
+	
+	Int64 multipleQuestionCullingInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_multiple_question_culling_if_nonzero", out success);
+	if(!success) multipleQuestionCullingInt = 1;
+	
+	Int64 mixedExclamationQuestionToQuestionInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_mixed_exclamation_question_to_one_question_if_nonzero", out success);
+	if(!success) mixedExclamationQuestionToQuestionInt = 1;
+	
+	Int64 firstCharacterCapitalizationInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_first_sentence_character_capitalization_if_nonzero", out success);
+	if(!success) firstCharacterCapitalizationInt = 1;
+	
+	Int64 moreThanTwoNewlineCullingInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_more_than_two_newline_culling_if_nonzero", out success);
+	if(!success) moreThanTwoNewlineCullingInt = 1;
+	
+	Int64 doublePeriodCullingPreserveEllipsesInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_double_period_culling_preserve_ellipses_if_nonzero", out success);
+	if(!success) doublePeriodCullingPreserveEllipsesInt = 1;
+	
+	Int64 periodCommaToPeriodInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_period_comma_to_period_if_nonzero", out success);
+	if(!success) periodCommaToPeriodInt = 1;
+	
+	Int64 aToAnForVowelStartsInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_a_to_an_for_vowel_starts_if_nonzero", out success);
+	if(!success) aToAnForVowelStartsInt = 1;
+	
+	Int64 possessiveRemoveDoubleSInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_possessive_remove_double_s_if_nonzero", out success);
+	if(!success) possessiveRemoveDoubleSInt = 1;
+	
+	Int64 capitalizeFirstCharIfLetterInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_capitalize_first_char_if_letter_if_nonzero", out success);
+	if(!success) capitalizeFirstCharIfLetterInt = 1;
+	
+	//secondly, run through all options and enforce the rules:
+	if(tabReplacementInt != 0)
+	{
+		string searchForMe = "\t";
+		string replaceWithMe = "  ";
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe, replaceWithMe);
+	}
+	
+	if(carriageReturnCullingInt != 0)
+	{
+		string searchForMe = "\r";
+		string replaceWithMe = "";
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe, replaceWithMe);
+	}
+	
+	if(multipleSpaceCullingInt != 0)
+	{
+		//search for two spaces next to each other and replace them until there are none left:
+		string searchForMe = "  ";
+		string replaceWithMe = " ";
+		while(outStringWithEnforcedGrammar.IndexOf(searchForMe) != -1)
+		{
+			outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe, replaceWithMe);
+		}
+	}
+	
+	if(doubleSpacesPeriodInt != 0)
+	{
+		//search for period-space that is not at the same location as a period-double-space:
+		string searchForMe1 = ". ";
+		string searchForMe2 = ".  ";
+		string replaceWithMe = ".  ";
+		int lastCorrectLocation = 0;
+		while(true)
+		{
+			int loc1 = outStringWithEnforcedGrammar.IndexOf(searchForMe1, lastCorrectLocation);
+			int loc2 = outStringWithEnforcedGrammar.IndexOf(searchForMe2, lastCorrectLocation);
+			
+			if(loc1 == -1) //there are no more period-space to find in the string
+				break;
+				
+			if(loc1 == loc2)
+			{
+				//this place is correct, so move on:
+				lastCorrectLocation = loc1 + 2;
+			}
+			else
+			{
+				outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Substring(0, loc1) + replaceWithMe + (loc1 + 2 &gt;= outStringWithEnforcedGrammar.Length ? "" : outStringWithEnforcedGrammar.Substring(loc1 + 2));
+			}
+		}
+	}
+	
+	if(quotePeriodReverseInt != 0)
+	{
+		//search for "... and replace with ..."
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace("\"...", "...\"");
+		
+		//search for ".. and replace with .." (hopefully to be replaced later)
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace("\"..", "..\"");
+	
+		//search for ". and replace it with ."
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace("\".", ".\"");
+	}
+	
+	//do this before and after quote-comma reverse
+	if(multipleCommaCullingInt != 0)
+	{
+		//search for two commas next to each other and replace them until there are none left:
+		string searchForMe = ",,";
+		string replaceWithMe = ",";
+		while(outStringWithEnforcedGrammar.IndexOf(searchForMe) != -1)
+		{
+			outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe, replaceWithMe);
+		}
+	}
+	
+	if(quoteCommaReverseInt != 0)
+	{
+		//search for ". and replace it with ."
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace("\",", ",\"");
+	}
+	
+	//do this before and after quote-comma reverse
+	if(multipleCommaCullingInt != 0)
+	{
+		//search for two commas next to each other and replace them until there are none left:
+		string searchForMe = ",,";
+		string replaceWithMe = ",";
+		while(outStringWithEnforcedGrammar.IndexOf(searchForMe) != -1)
+		{
+			outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe, replaceWithMe);
+		}
+	}
+	
+	if(multipleExclamationCullingInt != 0)
+	{
+		//search for two ! next to each other and replace them until there are none left:
+		string searchForMe = "!!";
+		string replaceWithMe = "!";
+		while(outStringWithEnforcedGrammar.IndexOf(searchForMe) != -1)
+		{
+			outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe, replaceWithMe);
+		}
+	}
+	
+	//do this before and after mixed !? culling
+	if(multipleQuestionCullingInt != 0)
+	{
+		//search for two ? next to each other and replace them until there are none left:
+		string searchForMe = "??";
+		string replaceWithMe = "?";
+		while(outStringWithEnforcedGrammar.IndexOf(searchForMe) != -1)
+		{
+			outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe, replaceWithMe);
+		}
+	}
+	
+	if(mixedExclamationQuestionToQuestionInt != 0)
+	{
+		//search for ? and ! next to each other and replace them until there are none left:
+		string searchForMe1 = "!?";
+		string searchForMe2 = "?!";
+		string replaceWithMe = "?";
+		while((outStringWithEnforcedGrammar.IndexOf(searchForMe1) != -1) || (outStringWithEnforcedGrammar.IndexOf(searchForMe2) != -1))
+		{
+			outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe1, replaceWithMe);
+			outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe2, replaceWithMe);
+		}
+	}
+	
+	//do this before and after mixed !? culling
+	if(multipleQuestionCullingInt != 0)
+	{
+		//search for two ? next to each other and replace them until there are none left:
+		string searchForMe = "??";
+		string replaceWithMe = "?";
+		while(outStringWithEnforcedGrammar.IndexOf(searchForMe) != -1)
+		{
+			outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe, replaceWithMe);
+		}
+	}
+	
+	if(firstCharacterCapitalizationInt != 0)
+	{
+		//look at every character that is after a newline, a period-then-spaces, or either of those then a "
+		//if that character is an alphabetic letter, make sure it is capitalized
+		List&lt;string&gt; searchForMe = new List&lt;string&gt;() { "\n", "\n\"", ". ", ".  ", ". \"", ".  \"" };
+		
+		foreach(string sfm in searchForMe)
+		{
+			int lastIndexFound = 0;
+			while(true)
+			{
+				lastIndexFound = outStringWithEnforcedGrammar.IndexOf(sfm, lastIndexFound);
+				
+				if(lastIndexFound == -1)
+					break;
+					
+				int indexOfCharacterToUpper = lastIndexFound + sfm.Length;
+				
+				if(indexOfCharacterToUpper &gt;= outStringWithEnforcedGrammar.Length)
+					break;
+				
+				lastIndexFound = indexOfCharacterToUpper;
+				outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Substring(0, indexOfCharacterToUpper) + outStringWithEnforcedGrammar.Substring(indexOfCharacterToUpper, 1).ToUpper() + (indexOfCharacterToUpper + 1 &gt;= outStringWithEnforcedGrammar.Length ? "" : outStringWithEnforcedGrammar.Substring(indexOfCharacterToUpper + 1));
+			}
+		}
+	}
+	
+	if(moreThanTwoNewlineCullingInt != 0)
+	{
+		//search for three \n next to each other and replace them until there are none left:
+		string searchForMe = "\n\n\n";
+		string replaceWithMe = "\n\n";
+		while(outStringWithEnforcedGrammar.IndexOf(searchForMe) != -1)
+		{
+			outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(searchForMe, replaceWithMe);
+		}
+	}
+	
+	if(doublePeriodCullingPreserveEllipsesInt != 0)
+	{
+		//search for .. that is not at the same location as a ...:
+		string searchForMe1 = "..";
+		string searchForMe2 = "...";
+		string replaceWithMe = ".";
+		int lastCorrectLocation = 0;
+		while(true)
+		{
+			int loc1 = outStringWithEnforcedGrammar.IndexOf(searchForMe1, lastCorrectLocation);
+			int loc2 = outStringWithEnforcedGrammar.IndexOf(searchForMe2, lastCorrectLocation);
+			
+			if(loc1 == -1) //there are no more .. to find in the string
+				break;
+				
+			if(loc1 == loc2)
+			{
+				//this place is correct, so move on:
+				lastCorrectLocation = loc1 + 2;
+			}
+			else
+			{
+				outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Substring(0, loc1) + replaceWithMe + (loc1 + 2 &gt;= outStringWithEnforcedGrammar.Length ? "" : outStringWithEnforcedGrammar.Substring(loc1 + 2));
+			}
+		}
+	}
+	
+	if(periodCommaToPeriodInt != 0)
+	{
+		//search for ,. and replace it with .
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(",.", ".");
+		//search for ., and replace it with .
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(".,", ".");
+	}
+	
+	if(aToAnForVowelStartsInt != 0)
+	{
+		//search for " a a" and replace it with " an a", respecting capitalization
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" a a", " an a");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" A a", " An a");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" a A", " an A");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" A A", " An A");
+		//search for " a e" and replace it with " an e", respecting capitalization
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" a e", " an e");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" A e", " An e");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" a E", " an E");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" A E", " An E");
+		//search for " a i" and replace it with " an i", respecting capitalization
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" a i", " an i");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" A i", " An i");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" a I", " an I");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" A I", " An I");
+		//search for " a o" and replace it with " an o", respecting capitalization
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" a o", " an o");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" A o", " An o");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" a O", " an O");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" A O", " An O");
+		//search for " a u" and replace it with " an u", respecting capitalization
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" a u", " an u");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" A u", " An u");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" a U", " an U");
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" A U", " An U");
+	}
+	
+	if(possessiveRemoveDoubleSInt != 0)
+	{
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace("s's ", "s' ");
+	}
+	
+	if(capitalizeFirstCharIfLetterInt != 0)
+	{
+		//find first non-space char:
+		for(int index = 0; index &lt; outStringWithEnforcedGrammar.Length; index++)
+		{
+			if(Char.IsWhiteSpace(outStringWithEnforcedGrammar[index]))
+				continue;
+			if(Char.IsLetter(outStringWithEnforcedGrammar[index]))
+			{
+				outStringWithEnforcedGrammar = (index == 0 ? "" : outStringWithEnforcedGrammar.Substring(0, index)) + outStringWithEnforcedGrammar[index].ToString().ToUpper() + (index == (outStringWithEnforcedGrammar.Length - 1) ? "" : outStringWithEnforcedGrammar.Substring(index + 1));
+			}
+			break;
+		}
+	}
+	
+	addDebugMessage(inScriptInstance, "input string=" + inStringToEnforceGrammarUpon + "\noutput string=" + outStringWithEnforcedGrammar);
+	  
+    return new List&lt;object&gt;() { outStringWithEnforcedGrammar };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

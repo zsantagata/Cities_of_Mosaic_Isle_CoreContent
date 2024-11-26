@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to this biome:
+	TODO implement these custom consts: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+		<i1><a>biome Temperate Water hstasis need factor</a> <b>double</b> <c>1.1</c></i1> <!-- should be non-negative -->
+		<i1><a>biome Temperate Water hstasis min proportion</a> <b>double</b> <c>0.3</c></i1> <!-- should be between 0.0 and 1.0 inclusive -->
+		<i1><a>biome Temperate Water disease frequency factor</a> <b>double</b> <c>0.7</c></i1> <!-- should be non-negative -->
+		<i1><a>biome Temperate Water disease strength factor</a> <b>double</b> <c>1.0</c></i1> <!-- should be non-negative -->
+		<i1><a>biome Temperate Water hunting danger factor</a> <b>double</b> <c>1.3</c></i1> <!-- should be non-negative -->
+		<i1><a>biome Temperate Water people hostility factor</a> <b>double</b> <c>0.8</c></i1> <!-- should be non-negative -->
+		<i1><a>biome Temperate Water travel trouble factor</a> <b>double</b> <c>0.6</c></i1> <!-- should be non-negative -->
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igTerrainBiome name="Temperate Water">
+    <Encyclopedia_Entry>
+	  <full_path>Biomes/Temperate Water</full_path>
+	  <body_text>Temperate Water.  Put encyclopedia description here.</body_text>
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mBiomeQualityDecayStrength>1.2</mBiomeQualityDecayStrength>
+	<mLocalMoveSpeedFactor>1.0</mLocalMoveSpeedFactor>
+	<mWorldMapMoveSpeedFactor>1.0</mWorldMapMoveSpeedFactor>
+	<mWaterAvailability>1.0</mWaterAvailability>
+    <mIsWater>1</mIsWater><!-- this is a bool, 0 = false, anything else = true -->
+	
+	<mTerrainSourceProbabilityAndRichness><!-- this is a list of: reference to land source, probability a resource will be present on a sandbox map, richness if the resource does exist (0 = none, 1->9 increases) -->
+	  <i1>
+	    <a>Fertile Muck</a>
+		<b>0.95</b>
+		<c>6</c>
+	  </i1>
+	  <i1>
+	    <a>Fishing Spot</a>
+		<b>0.75</b>
+		<c>6</c>
+	  </i1>
+	  <i1>
+	    <a>Hunting Grounds Water</a>
+		<b>0.7</b>
+		<c>5</c>
+	  </i1>
+	  <i1>
+	    <a>Marble Outcropping</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Granite Outcropping</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Obsidian Outcropping</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Limestone Outcropping</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Galena Ore Vein</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Nickel Ore Vein</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Antimony Ore Vein</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Iron Ore Vein</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Tin Ore Vein</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Zinc Ore Vein</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Copper Ore Vein</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	  <i1>
+	    <a>Surface Gold Ore Vein</a>
+		<b>0.25</b>
+		<c>4</c>
+	  </i1>
+	</mTerrainSourceProbabilityAndRichness>
+	
+	<mWorldMapRVal>51</mWorldMapRVal> <!-- the world map has a hidden color map to implement the biome map.  The RGB values attached to biomes must correspond to the colors used in the hidden_map texture -->
+	<mWorldMapGVal>102</mWorldMapGVal> <!-- the world map has a hidden color map to implement the biome map.  The RGB values attached to biomes must correspond to the colors used in the hidden_map texture -->
+	<mWorldMapBVal>204</mWorldMapBVal> <!-- the world map has a hidden color map to implement the biome map.  The RGB values attached to biomes must correspond to the colors used in the hidden_map texture -->
+	
+	<mTagList>
+	  <!-- description tags: -->
+	  <i>weather_noun:storm</i>
+	  <i>weather_noun:swell</i>
+	  <i>weather_noun:rain</i>
+	  <i>weather_noun:high tide</i>
+	  <i>weather_noun:low tide</i>
+	  <i>weather_adj:tidal</i>
+	  <i>weather_adj:stormy</i>
+	  <i>weather_adj:temperate</i>
+	  <i>weather_adj:mild</i>
+	  <i>resourcedegradesource_noun:cold</i>
+	  <i>resourcedegradesource_noun:water</i>
+	  <i>resourcedegradesource_noun:current</i>
+	  <i>resourcedegradesource_noun:sealife</i>
+	  <i>resourcedegradesource_adj:cold</i>
+	  <i>resourcedegradesource_adj:underwater</i>
+	  <i>resourcedegradesource_adj:swirling</i>
+	  <i>resourcedegradesource_adj:pest-ridden</i>
+	  <i>landscape_adj:dark</i>
+	  <i>landscape_adj:deep</i>
+	  <i>landscape_adj:still</i>
+	  <i>ground_noun:muck</i>
+	  <i>ground_noun:seabed</i>
+	  <i>ground_noun:sea floor</i>
+	  <i>fluid_noun:water</i>
+	  <i>fluid_noun:current</i>
+	  <i>fluid_noun:sea</i>
+	  <i>fauna_noun:sharks</i>
+	  <i>fauna_noun:whales</i>
+	  <i>fauna_noun:fish</i>
+	  <i>fauna_noun:octopi</i>
+	  <i>fauna_noun:squid</i>
+	  <i>flora_noun:seaweed</i>
+	  <i>flora_noun:coral</i>
+	  <i>flora_noun:algae</i>
+	  <i>farabove_noun:surface</i>
+	  <i>exposurerisk_noun:salt</i>
+	  <i>exposurerisk_noun:cold</i>
+	  <i>exposurerisk_adj:salty</i>
+	  <i>exposurerisk_adj:cold</i>
+	</mTagList>
+  </igTerrainBiome>
+</core_data>

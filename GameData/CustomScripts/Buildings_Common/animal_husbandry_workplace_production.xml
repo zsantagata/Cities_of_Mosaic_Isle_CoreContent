@@ -1,0 +1,306 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+		
+			<!-- balance reference for animal grazing/feed: a deer eats 7 pounds of food a day.  But how much a larger animal eats as it moves away from this is more quadratic than linear, and smaller animals are between the two. -->
+			<!-- the formula I use for animal feed is: -->
+			<!-- each animal must eat daily 0.7 / sqrt(production speed) units of feed if its production speed is less than 0.01 -->
+			<!-- each animal must eat daily 0.22136 / (production speed)^(0.75) units of feed if its production speed is 0.01 or greater --> <!-- magic number in front is used to make the two equations meet approximately at (0.01,7) -->
+			<i1><a>animal_husbandry_workplace_production production_speed vertex</a> <b>double</b> <c>0.01</c></i1>
+			<i1><a>animal_husbandry_workplace_production production_speed lower_than_vertex numerator</a> <b>double</b> <c>0.7</c></i1>
+			<i1><a>animal_husbandry_workplace_production production_speed greater_than_vertex numerator</a> <b>double</b> <c>0.7</c></i1>
+			<i1><a>animal_husbandry_workplace_production production_speed lower_than_vertex exponent</a> <b>double</b> <c>-0.5</c></i1>
+			<i1><a>animal_husbandry_workplace_production production_speed greater_than_vertex exponent</a> <b>double</b> <c>-0.5</c></i1>
+			
+			<i1><a>animal_husbandry_workplace_production product_offset min</a> <b>double</b> <c>-0.075</c></i1> <!-- if animal feed is min qual, this is the (proportion of the whole range) quality offset of animal products including offspring -->
+			<i1><a>animal_husbandry_workplace_production product_offset max</a> <b>double</b> <c>0.075</c></i1> <!-- if animal feed is max qual, this is the (proportion of the whole range) quality offset of animal products including offspring -->
+			
+			<!-- each animal has a (this * sqrt(production speed)) chance to give birth to offspring daily -->
+			<i1><a>animal_husbandry_workplace_production offspring production_speed mult</a> <b>double</b> <c>0.06666666</c></i1>
+			
+			<i1><a>animal_husbandry_workplace_production no_production before_replace_text</a> <b>string</b>
+			<c>This workplace will not take care of any animals.</c></i1>
+			
+			<i1><a>animal_husbandry_workplace_production display before_replace_text</a> <b>string</b>
+			<c>This workplace will produce [0] animal feed of quality [1].  It will feed [2], leaving [3] animal feed unused.  It will gather [4].  On average, [5] will be born.</c></i1>
+			<!-- if there is no gathered resources from the animals, replace "[4]" with the word "nothing". -->
+			<i1><a>animal_husbandry_workplace_production nothing_gathered before_replace_text</a> <b>string</b>
+			<c>nothing</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script animal_husbandry_workplace_production</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines how many animals will be fed by this building's workers and what the result of that will be -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has four inputs: IFBuilding inBuilding, double inQuantityOfAnimalFeed, double inQualityOfAnimalFeed, bool inJustPredicting.
+	It has two outputs: string outStringToDisplay, Dictionary&lt;IFResource, double&gt; outResourcesCreated. -->
+	<!-- if we are not just predicting, this script will tally and add the animal-derived non-slaughtering resources (such as eggs for chickens) gathered by taking care of the animals.  It is necessary to do it here, rather than let the caller do so, because the resources added are (possibly) all at different qualities and the C# code after returning from workplace after-production script only uses one quality for all resources added.
+		as a result, outResourcesCreated will be the value that the production script should return: non-empty if we are just predicting (the prediction will be off in quality though), and empty if we are not just predicting -->
+	<!-- in addition to these direct outputs, if we are not just predicting, the building will prevent an integer number of livestock from having their quality degraded, and in fact will slowly increase their quality (to a max) -->
+	<!-- this script is called by pasture shack and animal shed workplace production scripts -->
+	<i1><a>animal_husbandry_workplace_production</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(double), typeof(double), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("animal_husbandry_workplace_production custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  double inQuantityOfAnimalFeed = (double)inArguments[1];
+	  double inQualityOfAnimalFeed = (double)inArguments[2];
+	  bool inJustPredicting = (bool)inArguments[3];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("animal_husbandry_workplace_production custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  
+	  string outStringToDisplay = "";
+	  Dictionary&lt;IFResource, double&gt; outResourcesCreated = new Dictionary&lt;IFResource, double&gt;();
+	  bool success = false;
+	  
+	  //sanity check: quantity animal feed should be above zero:
+	  if(inQuantityOfAnimalFeed &lt;= 0.0d)
+	  {
+		outStringToDisplay = customConsts.getStringConst("animal_husbandry_workplace_production no_production before_replace_text", out success);
+		if(!success) outStringToDisplay = "This workplace will not take care of any animals.";
+		return new List&lt;object&gt;() { outStringToDisplay, outResourcesCreated };
+	  }
+	  
+	  //first, figure out which animals we are trying to take care of, and how many have already been fed:
+	  Dictionary&lt;IFResource, double&gt; animalsFedSoFar = new Dictionary&lt;IFResource, double&gt;();
+	  foreach(IFResource res in inBuilding.getWorkplaceComponent().getInputsChosen())
+	  {
+		if(res.hasTag("animal"))
+		{
+			animalsFedSoFar.Add(res, 0);
+			IFConnectedVariable fedTop = variableHandler.getConnectedVariable("husbandry_fedAnimalCount_resource" + res.getInternalName());
+			if(fedTop != null)
+			{
+				animalsFedSoFar[res] = fedTop.getVariableAsDouble();
+			}
+		}
+	  }
+	  
+	  //from this, figure out how many animals have not yet been fed of each type:
+	  Dictionary&lt;IFResource, double&gt; animalsNotFedYet = new Dictionary&lt;IFResource, double&gt;();
+	  Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; animalsFedByThisBuilding = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+	  IFResourcePool resPool = getAPI().getLocalCommunity().getResourcePool();
+	  foreach(var kvpair in animalsFedSoFar)
+	  {
+		double countNotFedYet = resPool.getResourceQuantity(kvpair.Key) - kvpair.Value;
+		if(countNotFedYet &gt; 0)
+		{
+			animalsNotFedYet.Add(kvpair.Key, countNotFedYet);
+			animalsFedByThisBuilding.Add(kvpair.Key, Tuple.Create(0.0d, resPool.getResourceQuantity(kvpair.Key)));
+		}
+	  }
+	  
+	  //calculate animal feed per 1.0 animals of each kind:
+	  Dictionary&lt;IFResource, double&gt; feedForOneAnimal = new Dictionary&lt;IFResource, double&gt;();
+	  double vertex = customConsts.getDoubleConst("animal_husbandry_workplace_production production_speed vertex", out success);
+	  if(!success) vertex = 0.01d;
+	  double lowerNumerator = customConsts.getDoubleConst("animal_husbandry_workplace_production production_speed lower_than_vertex numerator", out success);
+	  if(!success) lowerNumerator = 0.07d;
+	  double greaterNumerator = customConsts.getDoubleConst("animal_husbandry_workplace_production production_speed greater_than_vertex numerator", out success);
+	  if(!success) greaterNumerator = 0.22136d;
+	  double lowerExponent = customConsts.getDoubleConst("animal_husbandry_workplace_production production_speed lower_than_vertex exponent", out success);
+	  if(!success) lowerExponent = -0.5d;
+	  double greaterExponent = customConsts.getDoubleConst("animal_husbandry_workplace_production production_speed greater_than_vertex exponent", out success);
+	  if(!success) greaterExponent = -0.75d;
+	  
+	  foreach(IFResource res in animalsNotFedYet.Keys)
+	  {
+		double productionSpeed = res.getProductionSpeed();
+		double feedOneAnimal = (productionSpeed &lt; vertex ? lowerNumerator * Math.Pow(productionSpeed, lowerExponent) : greaterNumerator * Math.Pow(productionSpeed, greaterExponent));
+		feedForOneAnimal.Add(res, feedOneAnimal);
+	  }
+	  
+	  //iterate: feed all animal kinds with equal quantities of food, subtracting out the real quantity of animal feed given, limiting by quantity of animals left to feed.
+	  double feedLeftover = inQuantityOfAnimalFeed;
+	  while((animalsNotFedYet.Count &gt; 0) &amp;&amp; (feedLeftover &gt; 0.0d))
+	  {
+		double feedPerKind = feedLeftover / animalsNotFedYet.Count;
+		feedLeftover = 0.0d;
+		List&lt;IFResource&gt; kindsToRemove = new List&lt;IFResource&gt;();
+		foreach(var kvpair in animalsNotFedYet)
+		{
+			double totalFeedRequired = feedForOneAnimal[kvpair.Key] * kvpair.Value;
+			if(totalFeedRequired &gt; feedPerKind)
+			{
+				animalsFedByThisBuilding[kvpair.Key] = Tuple.Create(animalsFedByThisBuilding[kvpair.Key].Item1 + (feedPerKind / feedForOneAnimal[kvpair.Key]), animalsFedByThisBuilding[kvpair.Key].Item2);
+				animalsNotFedYet[kvpair.Key] -= (feedPerKind / feedForOneAnimal[kvpair.Key]);
+			}
+			else
+			{
+				animalsFedByThisBuilding[kvpair.Key] = Tuple.Create(animalsFedByThisBuilding[kvpair.Key].Item1 + kvpair.Value, animalsFedByThisBuilding[kvpair.Key].Item2);
+				animalsNotFedYet[kvpair.Key] = 0.0d;
+				feedLeftover += (feedPerKind - totalFeedRequired);
+				kindsToRemove.Add(kvpair.Key);
+			}
+		}
+		
+		foreach(IFResource res in kindsToRemove)
+		{
+			animalsNotFedYet.Remove(res);
+		}
+	  }
+	  
+	  //now we have the full count of animals fed, and the total feed left over if all possible animals are fed.
+	  //B) from the quality of the animal feed, calculate the quality offset of animal products gathered and animal offspring
+	  //C) from the quantity of animals fed, calculate the quantity and qualities of animal products gathered
+	  //D) from the quantity of animals fed, calculate the probability of offspring and quality if it does occur
+	  //if not just predicting:
+	  //A) store the animals fed
+	  //E) calculate if there is offspring and add it if so
+	  //F) add the quantity and quality of animal products gathered to the resource pool
+	  
+	  //B)
+	  double offsetMin = customConsts.getDoubleConst("animal_husbandry_workplace_production product_offset min", out success);
+	  if(!success) offsetMin = -0.075d;
+	  double offsetMax = customConsts.getDoubleConst("animal_husbandry_workplace_production product_offset max", out success);
+	  if(!success) offsetMax = 0.075d;
+	  
+	  double minQual = consts.getResourceQualityMin();
+	  double maxQual = consts.getResourceQualityMax();
+	  double qualityFeedProportion = (inQualityOfAnimalFeed - minQual) / (maxQual - minQual);
+	  double offset = (offsetMin + qualityFeedProportion * (offsetMax - offsetMin)) * (maxQual - minQual);
+	  
+	  //C)
+	  Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; animalProductsToAdd = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+	  foreach(var kvpair in animalsFedByThisBuilding)
+	  {
+		Dictionary&lt;IFResource, double&gt; resourcesCreatedByAnimalKind = new Dictionary&lt;IFResource, double&gt;();
+		//fetch custom consts list:
+		foreach(string resName in customConsts.getListConst("livestock " + kvpair.Key.getInternalName() + " farmed_resource list", out _))
+		{
+			IFResource targetResource = (IFResource)getAPI().getMOFromInternalName("resources", resName);
+			if(targetResource == null)
+			{
+				addDebugMessage(inScriptInstance, "unable to resolve name of resource (" + resName + ")");
+			}
+			else
+			{
+				double quanAddedPerUnitFed = customConsts.getDoubleConst("livestock " + kvpair.Key.getInternalName() + " farmed_resource " + resName + " daily value", out success);
+				
+				if(success &amp;&amp; (quanAddedPerUnitFed &gt; 0.0d))
+				{
+					if(!animalProductsToAdd.ContainsKey(targetResource))
+						animalProductsToAdd.Add(targetResource, Tuple.Create(0.0d, 0.0d));
+					double newQuan = animalProductsToAdd[targetResource].Item1 + quanAddedPerUnitFed * kvpair.Value.Item1;
+					double newQual = Math.Max(minQual, Math.Min(offset + resPool.getResourceQuality(kvpair.Key), maxQual));
+					animalProductsToAdd[targetResource] = Tuple.Create(newQuan, (animalProductsToAdd[targetResource].Item1 * animalProductsToAdd[targetResource].Item2 + quanAddedPerUnitFed * kvpair.Value.Item1 * newQual) / newQuan);
+				}
+			}
+		}
+	  }
+	  
+	  //D)
+	  double offspringMult = customConsts.getDoubleConst("animal_husbandry_workplace_production offspring production_speed mult", out success);
+	  if(!success) offspringMult = 0.06666666d;
+	  
+	  Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; offspringTotals = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+	  foreach(var kvpair in animalsFedByThisBuilding)
+	  {
+		double productionSpeed = kvpair.Key.getProductionSpeed();
+		offspringTotals.Add(kvpair.Key, Tuple.Create(offspringMult * kvpair.Value.Item1 * Math.Sqrt(productionSpeed), Math.Max(minQual, Math.Min(offset + resPool.getResourceQuality(kvpair.Key), maxQual))));
+	  }
+	  
+	  if(!inJustPredicting)
+	  {
+		foreach(var kvpair in animalsFedByThisBuilding)
+		{
+			//A)
+			IFConnectedVariable fedTop = variableHandler.getConnectedVariable("husbandry_fedAnimalCount_resource" + kvpair.Key.getInternalName());
+			if(fedTop == null)
+			{
+				variableHandler.addConnectedDouble("husbandry_fedAnimalCount_resource" + kvpair.Key.getInternalName(), 0.0d, out fedTop, getAPI().getCalendar().getCurrentDate(), IFConnectedVariable.eCombinationType.cAdd);
+			}
+			variableHandler.addConnectedDouble("husbandry" + inBuilding.getUID() + "_fedAnimalCount_resource" + kvpair.Key.getInternalName(), kvpair.Value.Item1, out IFConnectedVariable fedBottom, getAPI().getCalendar().getCurrentDate());
+			variableHandler.connectVariables(fedBottom, fedTop);
+			
+			//E)
+			Int64 offspringQuantity = (Int64)offspringTotals[kvpair.Key].Item1;
+			double offspringProb = offspringTotals[kvpair.Key].Item1 - offspringQuantity;
+			if(getAPI().calcProb(offspringProb))
+			{
+				offspringQuantity++;
+			}
+			resPool.addResourcesOfQuality(kvpair.Key, (double)offspringQuantity, offspringTotals[kvpair.Key].Item2, inBuilding);
+		}
+	    //F)
+	    foreach(var kvpair in animalProductsToAdd)
+	    {
+			resPool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2, inBuilding);
+	    }
+	  }
+	  
+	  //here, assemble the output string:
+	  outStringToDisplay = customConsts.getStringConst("animal_husbandry_workplace_production display before_replace_text", out success);
+	  if(!success) outStringToDisplay = "This workplace will produce [0] animal feed of quality [1].  It will feed [2], leaving [3] animal feed unused.  It will gather [4].  On average, [5] will be born.";
+	  
+	  outStringToDisplay = outStringToDisplay.Replace("[0]", consts.getQuantityFormattedString(inQuantityOfAnimalFeed));
+	  outStringToDisplay = outStringToDisplay.Replace("[1]", consts.getQualityFormattedString(inQualityOfAnimalFeed));
+	  
+	  //here, take advantage of existing description scripts:
+	  if(customScripts.runCustomScriptCheckTypes("replaceDescriptionMarkupKind_common_resourcedictionary", new List&lt;object&gt;() { animalsFedByThisBuilding, false }, out List&lt;object&gt; replacedMarkup2, false, typeof(string)))
+	  {
+		outStringToDisplay = outStringToDisplay.Replace("[2]", replacedMarkup2[0].ToString());
+	  }
+	  outStringToDisplay = outStringToDisplay.Replace("[3]", consts.getQuantityFormattedString(feedLeftover));
+	  if(customScripts.runCustomScriptCheckTypes("replaceDescriptionMarkupKind_common_resourcedictionary", new List&lt;object&gt;() { animalProductsToAdd, true }, out List&lt;object&gt; replacedMarkup4, false, typeof(string)))
+	  {
+		if(replacedMarkup4[0].ToString() == "")
+		{
+			string nothingString = customConsts.getStringConst("animal_husbandry_workplace_production nothing_gathered before_replace_text", out success);
+			if(!success) nothingString = "nothing";
+			replacedMarkup4[0] = nothingString;
+		}
+		outStringToDisplay = outStringToDisplay.Replace("[4]", replacedMarkup4[0].ToString());
+	  }
+	  if(customScripts.runCustomScriptCheckTypes("replaceDescriptionMarkupKind_common_resourcedictionary", new List&lt;object&gt;() { offspringTotals, true }, out List&lt;object&gt; replacedMarkup5, false, typeof(string)))
+	  {
+		outStringToDisplay = outStringToDisplay.Replace("[5]", replacedMarkup5[0].ToString());
+	  }
+	  
+	  if(inJustPredicting)
+	  {
+		  foreach(var kvpair in animalProductsToAdd)
+		  {
+			if(!outResourcesCreated.ContainsKey(kvpair.Key))
+				outResourcesCreated.Add(kvpair.Key, 0.0d);
+			outResourcesCreated[kvpair.Key] += kvpair.Value.Item1;
+		  }
+		  foreach(var kvpair in offspringTotals)
+		  {
+			if(!outResourcesCreated.ContainsKey(kvpair.Key))
+				outResourcesCreated.Add(kvpair.Key, 0.0d);
+			outResourcesCreated[kvpair.Key] += kvpair.Value.Item1;
+		  }
+	  }
+	  
+	return new List&lt;object&gt;() { outStringToDisplay, outResourcesCreated };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of scripts which are called daily on loyal pops on the local map, relating to their health -->
+  
+  <gamescripts name="default">
+	<!-- pops have four health needs: protein, MCal, Water, and HStasis.  These scripts are called on all non-dead, not-in-delegation pops of the player community. -->
+	<!-- the scripts are called in the following order: mPopHealthProtein, mPopHealthMCal, mPopHealthWater, mPopHealthHStasis, mPopHealthWoundCureItem, mPopHealthIllCureItem, mPopHealthOverall -->
+	<!-- (that is the order in which they appear in this file) -->
+	<!-- all scripts are called for one pop, then the next pop is considered.  These scripts are called at midnight.  mPopConsumeDaily has been called for these pops beforehand, so these scripts know what resources the pop has consumed today. -->
+  
+	<!-- pop health from protein script has four input arguments: IFPop upon which we are performing operations, protein consumed (a value similar to "getProteinValueEven"), protein quality multiplier (already weighted by average input quality), bool are_we_roughing_it.  There is no output. -->
+	<mPopHealthProtein>
+	  //input count check:
+	  if(inArguments.Length &lt; 4)
+	  {
+	    return null;
+	  }
+	  
+	  IFPop pop = (IFPop)inArguments[0];
+	  double prot_consumed = (double)inArguments[1];
+	  double prot_mult = (double)inArguments[2];
+	  bool roughing_it = (bool)inArguments[3];
+	  
+	  //the calculation is common to this and delegation-related scripts, so it is a custom script:
+	  var customScripts = getAPI().getCustomScripts();
+	  customScripts.runCustomScript("popHealth_protein", new List&lt;object&gt;() { pop, prot_consumed, prot_mult, roughing_it }, out _);
+	  
+    return null;
+  </mPopHealthProtein>
+	
+	<!-- pop health from mcal script has four input arguments: IFPop upon which we are performing operations, MCal consumed, MCal quality multiplier (already weighted by average input quality), bool are_we_roughing_it.  There is no output. -->
+	<mPopHealthMCal>
+	  //input count check:
+	  if(inArguments.Length &lt; 4)
+	  {
+	    return null;
+	  }
+	  
+	  IFPop pop = (IFPop)inArguments[0];
+	  double mcal_consumed = (double)inArguments[1];
+	  double mcal_mult = (double)inArguments[2];
+	  bool roughing_it = (bool)inArguments[3];
+	  
+	  //the calculation is common to this and delegation-related scripts, so it is a custom script:
+	  var customScripts = getAPI().getCustomScripts();
+	  customScripts.runCustomScript("popHealth_MCal", new List&lt;object&gt;() { pop, mcal_consumed, mcal_mult, roughing_it }, out _);
+	  
+    return null;
+  </mPopHealthMCal>
+	
+	<!-- pop health from water script has two input arguments: IFPop upon which we are performing operations, bool are_we_roughing_it.  There is no output. -->
+	<mPopHealthWater>
+	  //input count check:
+	  if(inArguments.Length &lt; 2)
+	  {
+	    return null;
+	  }
+	  
+	  IFPop pop = (IFPop)inArguments[0];
+	  bool roughing_it = (bool)inArguments[1];
+	  
+	  var consts = getAPI().getConsts();
+	
+	  //determine water availability of the current map:
+	  IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+	  double landBiomeWaterAvailability = map.getLandBiome().getWaterAvailability();
+	  double waterRatio = map.getWaterRatio();
+	  waterRatio = waterRatio + (1 - waterRatio) * landBiomeWaterAvailability;
+	  
+	  bool waterProvidedByHousing = false;
+	  if(pop.hasHomeBuilding())
+	  {
+		  IFBuilding building = pop.getHomeBuilding();
+		  for(int i=1; i &lt; getAPI().getTotalCountOfMO("industries"); i++)
+		  {
+			IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", i);
+			if(industry.hasTag("water bearing") &amp;&amp; (building.calcServiceQualityForIndustry((UInt64)i) != consts.getResourceQualityMin()))
+			{
+				waterProvidedByHousing = true;
+				break;
+			}
+		  }
+	  }
+	  
+	  //the calculation is common to this and delegation-related scripts, so it is a custom script:
+	  var customScripts = getAPI().getCustomScripts();
+	  customScripts.runCustomScript("popHealth_water", new List&lt;object&gt;() { pop, waterRatio, waterProvidedByHousing, roughing_it }, out _);
+	  
+    return null;
+  </mPopHealthWater>
+	
+	<!-- pop health from hstasis script has four input arguments: IFPop upon which we are performing operations, IFResource that would be consumed (can be null), item quality of potential item consumed, bool are_we_roughing_it.  There is no output -->
+	<mPopHealthHStasis>
+	  //input count check:
+	  if(inArguments.Length &lt; 3)
+	  {
+	    return null;
+	  }
+	  
+	  IFPop pop = (IFPop)inArguments[0];
+      IFResource res = (IFResource)inArguments[1];
+	  double item_qual = (double)inArguments[2];
+	  bool roughing_it = (bool)inArguments[3];
+	  
+	  IFResourcePool resourcePool = getAPI().getLocalCommunity().getResourcePool();
+	  IFMap map = getAPI().getLocalCommunity().getDomesticComponent().getMap();
+	  double waterRatio = map.getWaterRatio();
+	  double hstasisMinimum = 0.0d;
+	  
+	  bool success = false;
+	  var customConsts = getAPI().getCustomConsts();
+	  
+	  double hstasisMinLand = customConsts.getDoubleConst("biome " + map.getLandBiome().getInternalName() + " hstasis min proportion", out success);
+	  if(!success) hstasisMinLand = 0.0d;
+	  double hstasisMinWater = customConsts.getDoubleConst("biome " + map.getWaterBiome().getInternalName() + " hstasis min proportion", out success);
+	  if(!success) hstasisMinWater = 0.0d;
+	  hstasisMinLand = Math.Max(0.0d, Math.Min(1.0d, hstasisMinLand));
+	  hstasisMinWater = Math.Max(0.0d, Math.Min(1.0d, hstasisMinWater));
+	  
+	  if(waterRatio == 0.0d) hstasisMinimum = hstasisMinLand;
+	  else if(waterRatio == 1.0d) hstasisMinimum = hstasisMinWater;
+	  else hstasisMinimum = Math.Max(hstasisMinLand, hstasisMinWater);
+	  
+	  //the calculation is common to this and delegation-related scripts, so it is a custom script:
+	  var customScripts = getAPI().getCustomScripts();
+	  customScripts.runCustomScript("popHealth_HStasis", new List&lt;object&gt;() { pop, res, resourcePool, hstasisMinimum, item_qual, roughing_it }, out _);
+	  
+	  return null;
+	</mPopHealthHStasis>
+	
+	<!-- pop health from wound cure item script has four input arguments: IFPop upon which we are performing operations, IFResource that would be consumed (can be null), item quality of potential item consumed, bool are_we_roughing_it.  There is one output, false if no item has been consumed, and true if one has. -->
+	<mPopHealthWoundCureItem>
+	  //input count check:
+	  if(inArguments.Length &lt; 3)
+	  {
+		  return null;
+	  }
+	  
+	  IFPop pop = (IFPop)inArguments[0];
+      IFResource res = (IFResource)inArguments[1];
+	  double item_qual = (double)inArguments[2];
+	  bool roughing_it = (bool)inArguments[3];
+	  
+	  IFResourcePool resourcePool = getAPI().getLocalCommunity().getResourcePool();
+	  
+	  //the calculation is common to this and delegation-related scripts, so it is a custom script:
+	  var customScripts = getAPI().getCustomScripts();
+	  customScripts.runCustomScript("popHealth_checkWoundCureItemUse", new List&lt;object&gt;() { pop, res, resourcePool, item_qual, roughing_it }, out _);
+	  
+	  return null;
+	</mPopHealthWoundCureItem>
+	
+	<!-- pop health from illness cure item script has four input arguments: IFPop upon which we are performing operations, IFResource that would be consumed (can be null), item quality of potential item consumed, bool are_we_roughing_it.  There is one output, false if no item has been consumed, and true if it has. -->
+	<mPopHealthIllCureItem>
+	  //input count check:
+	  if(inArguments.Length &lt; 3)
+	  {
+		  return null;
+	  }
+	  
+	  IFPop pop = (IFPop)inArguments[0];
+      IFResource res = (IFResource)inArguments[1];
+	  double item_qual = (double)inArguments[2];
+	  bool roughing_it = (bool)inArguments[3];
+	  
+	  IFResourcePool resourcePool = getAPI().getLocalCommunity().getResourcePool();
+	  
+	  //the calculation is common to this and delegation-related scripts, so it is a custom script:
+	  var customScripts = getAPI().getCustomScripts();
+	  customScripts.runCustomScript("popHealth_checkSickCureItemUse", new List&lt;object&gt;() { pop, res, resourcePool, item_qual, roughing_it }, out _);
+	  
+	  return null;
+	</mPopHealthIllCureItem>
+	
+	<!-- pop health overall script has one input arguments: IFPop upon which we are performing operations.  There are no outputs. -->
+	<mPopHealthOverall>
+	  //input count check:
+	  if(inArguments.Length &lt; 1)
+	  {
+	    return null;
+	  }
+	  
+	  IFPop pop = (IFPop)inArguments[0];
+	  
+	  //the calculation is common to this and delegation-related scripts, so it is a custom script:
+	  var customScripts = getAPI().getCustomScripts();
+	  customScripts.runCustomScript("popHealth_overall", new List&lt;object&gt;() { pop }, out _);
+	  
+	  return null;
+	</mPopHealthOverall>
+  
+  </gamescripts>
+  
+</core_data>

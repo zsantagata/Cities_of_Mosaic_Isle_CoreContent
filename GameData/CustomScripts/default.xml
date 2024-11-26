@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <!-- custom scripts are scripts which are never called directly by C# code, but instead are themselves called by some (other) script.  They are callable by any script, even themselves (but recursion and circular script calls are generally bad practice) -->
+  <!-- you can think of custom scripts as functions/subroutines for other scripts.  Custom scripts will never simply execute on their own; they must be called. -->
+  <!-- unlike game scripts, which will have correct inputs given by the C# code, custom scripts might be called by some other idiot who doesn't know what they're doing. So it's good practice for a custom script to check its inputs -->
+  <!-- unlike game scripts, whose return types are determined by the needs of the C# code and aren't ever in question, a custom script has no enforced return types. But it's good practice for each custom script to always return the same types in the same order (though that doesn't matter if it THROWs an exception) -->
+  <!-- when calling a custom script, make sure to check the return boolean value of runCustomScript or runCustomScriptCheckTypes to confirm the target script was called correctly (false=not called correctly) -->
+  <!-- the function runCustomScriptCheckTypes is useful if you need to make sure that the return types of your call to a custom script are the types you expect: it will AND together the called-correctly bool and the type-correctness/count/order of the return values -->
+  <!-- note that if a custom script detects that it was not successfully called, it should THROW an exception.  This will cause either runCustomScript or runCustomScriptCheckTypes to return false, whichever was called. It is bad practice to silently fail!  (When a script THROWs an exception, the return value is forced to be an empty List of object) -->
+  <!-- (all the basic good practices of error handling apply: do all your checks before changing game state, check in the order of fastest->slowest to check, and fail as soon as any check indicates a problem)  -->
+
+  <!-- early and late midnight custom scripts are, in contrast, indeed called directly by C# code.  Unlike moddableGameScripts, they are not directly associated with something happening in the game; they are simply called at a specific time during midnight processing:
+	all early scripts are called once each, after building construction and cleanup, but before any real calculation
+	all late scripts are called once each, after event MTTH is calculated, but before some UI is refreshed and sanity checks are made
+	Early and late scripts have no inputs, no outputs, and cannot be called directly by other scripts.  If you need to call one, turn the logic into a custom script and put a wrapper script in early/late midnight scripts.
+	Early scripts have no guaranteed ordering between each other.  Late scripts have no guaranteed ordering between each other.  If ordering is necessary, make it one script or change up the logic to accomodate.
+  -->
+
+  <customScripts name="default">
+	<mCustomScriptsList> <!-- IMPORTANT, IMPORTANT NOTE: in every other file than this, you should label mCustomScriptsList with one of kind="add", kind="remove", kind="replace" depending on what you want to do (most likely kind="add" is your goal; see example_listmodify.xml).  If you don't, you'll be erasing every custom script added previously!  -->
+		<!--
+			<i1>
+				<a>unique script name, in which capitalization is ignored</a> //other scripts will call this script by its name
+				<b>actual script (which, like any other script, is provided inArguments and has a return type of List<object>)</b>
+			</i1>
+		-->
+	</mCustomScriptsList>
+	
+	<mEarlyMidnightScripts> <!-- same important note as for mCustomScriptsList -->
+		<!-- same internal structure as mCustomScriptsList -->
+	</mEarlyMidnightScripts>
+	
+	<mLateMidnightScripts> <!-- same important note as for mCustomScriptsList -->
+		<!-- same internal structure as mCustomScriptsList -->
+	</mLateMidnightScripts>
+  </customScripts>
+  
+  
+  
+  <customconsts name="default">
+	  <mCustomVariableList kind="add">
+		  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+		  <i1><a>log_script_custom script basictestscript</a> <b>int</b> <c>1</c></i1>
+		  <i1><a>log_script_custom script basictestfailurescript</a> <b>int</b> <c>1</c></i1>
+		  
+		  <!-- early midnight scripts and late midnight scripts have different naming for their logging consts: -->
+		  <i1><a>log_script_custom early midnight script basicearlytestscript</a> <b>int</b> <c>1</c></i1>
+		  <i1><a>log_script_custom late midnight script basiclatetestscript</a> <b>int</b> <c>1</c></i1>
+	  </mCustomVariableList>
+  </customconsts>
+  
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	<!-- this is an example script, and also a useful script to make sure everything is working correctly: all it does is print a debug message (if the associated custom const is 1) and return a list with one variable: true -->
+	<i1><a>basicTestScript</a>
+	<b>
+	  Int64 inputCount = inArguments.Length; //in this script we don't care what the actual inputs are
+	  addDebugMessage(inScriptInstance, "basicTestScript called with " + inputCount + " input(s)");
+	  
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	  toReturn.Add(true);
+	  return toReturn;
+	</b>
+	</i1>
+	
+	<!-- this is an example script, and also a useful script to make sure everything is working correctly: all it does is print a debug message (if the associated custom const is 1) and throw an exception -->
+	<i1><a>basicTestFailureScript</a>
+	<b>
+	  Int64 inputCount = inArguments.Length; //in this script we don't care what the actual inputs are
+	  addDebugMessage(inScriptInstance, "basicTestFailureScript called with " + inputCount + " input(s)");
+	  
+	  throw new Exception("basicTestFailureScript always throws an exception because that is its purpose");
+	  return null;
+	</b>
+	</i1>
+	</mCustomScriptsList>
+	
+	<mEarlyMidnightScripts kind="add">
+	<!-- this is an example script: all it does is print a debug message -->
+	<i1><a>basicEarlyTestScript</a>
+	<b>
+	  Int64 inputCount = inArguments.Length; //in early scripts the input count of the arguments will always be 0
+	  addDebugMessage(inScriptInstance, "basicEarlyTestScript called with " + inputCount + " input(s)");
+	  
+	  return null;
+	</b>
+	</i1>
+	</mEarlyMidnightScripts>
+	
+	<mLateMidnightScripts kind="add">
+	<!-- this is an example script: all it does is print a debug message -->
+	<i1><a>basicLateTestScript</a>
+	<b>
+	  Int64 inputCount = inArguments.Length; //in late scripts the input count of the arguments will always be 0
+	  addDebugMessage(inScriptInstance, "basicLateTestScript called with " + inputCount + " input(s)");
+	  
+	  return null;
+	</b>
+	</i1>
+	</mLateMidnightScripts>
+	
+  </customscripts>
+  
+</core_data>

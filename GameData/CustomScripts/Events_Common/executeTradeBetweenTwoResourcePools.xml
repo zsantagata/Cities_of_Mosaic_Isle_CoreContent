@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script executeTradeBetweenTwoResourcePools</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which executes a trade between two resource pools -->
+  <!-- this script saves replicated code in a lot of events and some other places.  It makes sure to subtract all resources first, then add them, to make sure resource qualities are exchanged correctly.  -->
+  <!-- If for some reason the actual values in the resource pools are different than the indicated resources in, this script will exchange based on the actual values.  -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+		IFResourcePool inFirstResourcePool,
+		IFResourcePool inSecondResourcePool,
+		Dictionary<IFResource, Tuple<double, double>> inResourcesComingFromFirstResourcePool,
+		Dictionary<IFResource, Tuple<double, double>> inResourcesComingFromSecondResourcePool
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>executeTradeBetweenTwoResourcePools</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFResourcePool), typeof(IFResourcePool), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)
+			}
+	      }, out _))
+	    {
+			throw new ArgumentException("executeTradeBetweenTwoResourcePools custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFResourcePool inFirstResourcePool = (IFResourcePool)inArguments[0];
+		IFResourcePool inSecondResourcePool = (IFResourcePool)inArguments[1];
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inResourcesComingFromFirstResourcePool = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)inArguments[2];
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inResourcesComingFromSecondResourcePool = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)inArguments[3];
+		
+		if(inFirstResourcePool == null)
+		{
+			throw new ArgumentException("executeTradeBetweenTwoResourcePools custom script received invalid arguments: inFirstResourcePool cannot be null");
+			return null;
+		}
+		if(inSecondResourcePool == null)
+		{
+			throw new ArgumentException("executeTradeBetweenTwoResourcePools custom script received invalid arguments: inSecondResourcePool cannot be null");
+			return null;
+		}
+		if(inResourcesComingFromFirstResourcePool == null)
+		{
+			throw new ArgumentException("executeTradeBetweenTwoResourcePools custom script received invalid arguments: inResourcesComingFromFirstResourcePool cannot be null");
+			return null;
+		}
+		if(inResourcesComingFromSecondResourcePool == null)
+		{
+			throw new ArgumentException("executeTradeBetweenTwoResourcePools custom script received invalid arguments: inResourcesComingFromSecondResourcePool cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//first: from each pool, subtract the resources.  If the quantity available or quality is different, modify inResources* dictionaries
+		foreach(IFResource res in inResourcesComingFromFirstResourcePool.Keys)
+		{
+			double quan = inResourcesComingFromFirstResourcePool[res].Item1;
+			double qual = inResourcesComingFromFirstResourcePool[res].Item2;
+			
+			double quanAvail = inFirstResourcePool.getResourceQuantity(res);
+			double qualAvail = inFirstResourcePool.getResourceQuality(res);
+			
+			if((quanAvail &lt; quan) || (qualAvail != qual))
+			{
+				inResourcesComingFromFirstResourcePool[res] = Tuple.Create(quanAvail, qualAvail);
+			}
+			
+			inFirstResourcePool.subtractResource(res, quan);
+		}
+		foreach(IFResource res in inResourcesComingFromSecondResourcePool.Keys)
+		{
+			double quan = inResourcesComingFromSecondResourcePool[res].Item1;
+			double qual = inResourcesComingFromSecondResourcePool[res].Item2;
+			
+			double quanAvail = inSecondResourcePool.getResourceQuantity(res);
+			double qualAvail = inSecondResourcePool.getResourceQuality(res);
+			
+			if((quanAvail &lt; quan) || (qualAvail != qual))
+			{
+				inResourcesComingFromSecondResourcePool[res] = Tuple.Create(quanAvail, qualAvail);
+			}
+			
+			inSecondResourcePool.subtractResource(res, quan);
+		}
+		
+		//second: add resources into each pool
+		foreach(var kvpair in inResourcesComingFromFirstResourcePool)
+		{
+			inSecondResourcePool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+		}
+		foreach(var kvpair in inResourcesComingFromSecondResourcePool)
+		{
+			inFirstResourcePool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

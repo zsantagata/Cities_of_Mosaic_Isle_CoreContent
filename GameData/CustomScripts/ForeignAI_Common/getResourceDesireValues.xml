@@ -1,0 +1,391 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- the upper connected variable names for resource by MOID is: resourceDesireValue_moid[MOID of resource]_all and resourceDesireValue_moid[MOID of resource]_uid[UID of community] -->
+			<!-- the combination type is a multiplication, though this function will limit the output to a minimum of 0.0d -->
+			<!-- if the connected variable does not exist, the value of 1.0 will be used -->
+			<i1><a>foreign_community resource_desire prepend_name</a> <b>string</b> <c>resourceDesireValue</c></i1>
+			<!-- if an igEvent or something else wants to shift these values by groups (such as "all food"), they need to iterate over all appropriate MOIDs (e.g. checking every resource for "isFood" and modifying those that are true) -->
+			
+			<!-- in addition to the above variable modifiers, foreign communities can have desire values decided by their foreign AI (hardcoded or not depends on the foreign AI) -->
+			<!-- the name of the function that will be checked for existence (and expected return value of List<double> of same size as outDesireValues) is: getResourceDesireValues_[name of foreign AI] -->
+			<!-- these values will be multiplied into this function's outDesireValues -->
+			
+			<!-- in addition to the above specific modifiers, foreign communities have common desire values.  That is taken care of in this function. -->
+			<!-- food and hstasis goods are necessary for survival, so communities with a low ratio of those to their population count want those more -->
+			<!-- wound and disease heal goods might save lives, so communities with a low ratio of those to their population count (especially their currently-wounded and currently-ill population count) want those more -->
+			<!-- military equipment might save lives, so communities with a high count of unequipped pops (including undeclared pop counts) want those more -->
+			<!-- drugs are fun but not necessary for survival, so while survival is truly precarious, drug desire values are very low.  Drug desire value is higher otherwise. -->
+			<!-- trade goods have constant higher desire values -->
+			<!-- Lastly, all desire values are modified by how quickly the resource in question expires -->
+			
+			<!-- all desire due to lack is quadratic: the vertex is (safe_threshold, 1.0d) and the desire value when no resources are had is at (0.0d, lack_const) -->
+			<!-- in desire = a * (count) ^ 2 + b * count + c this makes c=lack_const, a = (lack_const - 1) / (safe_threshold * safe_threshold), and b = (1 - lack_const) / (0.5 * safe_threshold) -->
+			<!-- lack_const should always be greater than 1.0d, and safe_threshold greater than 0.0d, if that wasn't clear -->
+			<i1><a>foreign_community resource_desire food_stress per_pop safe_threshold</a> <b>double</b> <c>75</c></i1> <!-- with this many *days of* food or more per pop (TODO racial needs will modify this!), desire value due to lack is 1.0d -->
+			<i1><a>foreign_community resource_desire food_stress per_pop lack_const</a> <b>double</b> <c>10</c></i1> <!-- as a community totally lacks food, its desire value for food is multiplied by a factor approaching this -->
+			<i1><a>foreign_community resource_desire hstasis_stress per_pop safe_threshold</a> <b>double</b> <c>20</c></i1> <!-- with this many *days of* hstasis or more per pop (TODO racial needs will modify this!), desire value due to lack is 1.0d -->
+			<i1><a>foreign_community resource_desire hstasis_stress per_pop lack_const</a> <b>double</b> <c>4</c></i1> <!-- as a community totally lacks hstasis, its desire value for hstasis is multiplied by a factor approaching this -->
+			
+			<i1><a>foreign_community resource_desire woundheal_stress wounded_pop factor</a> <b>double</b> <c>2.5</c></i1> <!-- a wounded pop will count as this many normal pops for calculating "lack of woundheal resources" -->
+			<i1><a>foreign_community resource_desire woundheal_stress per_pop safe_threshold</a> <b>double</b> <c>5</c></i1> <!-- with this many woundheal or more per pop (TODO racial needs will modify this!), desire value due to lack is 1.0d -->
+			<i1><a>foreign_community resource_desire woundheal_stress per_pop lack_const</a> <b>double</b> <c>8</c></i1> <!-- as a community totally lacks woundheal, its desire value for woundheal is multiplied by a factor approaching this -->
+			<i1><a>foreign_community resource_desire diseaseheal_stress wounded_pop factor</a> <b>double</b> <c>2.5</c></i1> <!-- an ill pop will count as this many normal pops for calculating "lack of diseaseheal resources" -->
+			<i1><a>foreign_community resource_desire diseaseheal_stress per_pop safe_threshold</a> <b>double</b> <c>5</c></i1> <!-- with this many diseaseheal or more per pop (TODO racial needs will modify this!), desire value due to lack is 1.0d -->
+			<i1><a>foreign_community resource_desire diseaseheal_stress per_pop lack_const</a> <b>double</b> <c>8</c></i1> <!-- as a community totally lacks diseaseheal, its desire value for diseaseheal is multiplied by a factor approaching this -->
+			
+			<i1><a>foreign_community resource_desire milequip_stress per_pop safe_threshold</a> <b>double</b> <c>1.75</c></i1> <!-- with this many of a military equipment resource per pop that does not have that military equipment equipped, desire value due to lack is 1.0d -->
+			<i1><a>foreign_community resource_desire milequip_stress per_pop lack_const</a> <b>double</b> <c>3</c></i1> <!-- as a community totally lacks a military equipment, its desire value for that military equipment is multiplied by a factor approaching this -->
+			
+			<!-- drug desire value is 1/sqrt(multiplication of desire values of food, hstasis, woundheal, diseaseheal) times the below const factor -->
+			<i1><a>foreign_community resource_desire drug const</a> <b>double</b> <c>2.0</c></i1> <!-- drug goods are desired by this much more than other goods -->
+			
+			<!-- trade goods is a flat multiplier: -->
+			<i1><a>foreign_community resource_desire trade const</a> <b>double</b> <c>2.25</c></i1> <!-- trade goods are desired by this much more than other goods -->
+			
+			<!-- the question of "how much do I care about a resource decaying" must depend on another question, "how long do I think it'll be until I use this resource?" -->
+			<!-- therefore, resource decay matters a lot less when there's not much of the resource in the pool, and a lot more when there's a lot of the resource in the pool -->
+			<!-- desire due to decay is quadratic: as a function of the resource alone, desire = a * (days) ^ 2 + b * (days) + c where c = min_desire_value, a = (min_desire_value - 1) / (decay_days max * decay_days max), and b = (1 - min_desire_value) / (0.5 * decay_days max) -->
+			<!-- as a function of how many resources are already in the pool, an intermediate value is calculated: how many resources per pop are there? -->
+			<!-- as resources per pop approaches (1 resource consumed per day for every day that the resource would fully decay in), desire approaches 0.0d.  It starts at 1.0d -->
+			<!-- desire = a * (count per pop) ^ 2 + b * (count per pop) + c where a = 1 / (days * days), b = -2 / (days), c = 1 -->
+			<!-- in the world of COMI it is difficult to know and plan for the future, so pops discount decay that happens after a certain time: -->
+			<i1><a>foreign_community resource_desire decay_days max</a> <b>double</b> <c>90</c></i1> <!-- goods that take longer than this to fully decay are treated as if they will fully decay by this time -->
+			<!-- a resource that lasts until used is desired at 1.0 value, while a resource that decays immediately is desired at the below value: -->
+			<i1><a>foreign_community resource_desire decay min_desire_value</a> <b>double</b> <c>0.2</c></i1> <!-- if a good decays in 0 days, desire value from decay is this -->
+			
+			<!-- these values are not used in this script but indicate how much a community values a resource based on its quality (this is a multiplier and linearly changes from min to max as resource quality does) -->
+			<i1><a>foreign_community resource_desire max_qual mult</a> <b>double</b> <c>2.25</c></i1>
+			<i1><a>foreign_community resource_desire min_qual mult</a> <b>double</b> <c>0.45</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script getresourcedesirevalues</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- foreign communities need to decide what they desire more, and what they desire less, if deciding to raid/trade/change opinion based on diplomatic gift -->
+  <!-- this file holds the implementation of a custom script which returns the relative values a foreign community puts on gaining (or not losing) pooled resources.  The base value is 1.0d, the value will not be 0.0d or less, and there is no maximum. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunity //this can be the local community, and this script will return the local pops'/races' resource desires
+	-->
+	
+	<!-- output:
+	List<double> outDesireValues //the index of this list will be the MOID of the resource in question; therefore MOID=0 will always return 1.0d and the size of this will always be the total count of resources declared, even if they are not in the resource pool
+	-->
+	<i1><a>getResourceDesireValues</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity)}
+	      }, out _))
+	    {
+			throw new ArgumentException("getResourceDesireValues custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		
+		if(inCommunity == null)
+		{
+			throw new ArgumentException("getResourceDesireValues custom script received invalid arguments: inCommunity cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		Int64 countOfResources = getAPI().getTotalCountOfMO("resources");
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		List&lt;double&gt; outDesireValues = new List&lt;double&gt;();
+		outDesireValues.Add(1.0d); //moid = 0 is default; ignore it
+		
+		//special communities (Wanderers, Rebels, GenericEnemy, and TheLady) should have all resource desire values set to 1.0d:
+		if(inCommunity.isWanderers() || inCommunity.isRebels() || inCommunity.isGenericEnemy() || inCommunity.isTheLady())
+		{
+			for(int moid = 1; moid &lt; countOfResources; moid++)
+			{
+				outDesireValues.Add(1.0d);
+			}
+			toReturn.Add(outDesireValues);
+			return toReturn;
+		}
+		
+		//there are four components to each resource's desire values:
+		//connected variable, foreign AI specifics, common desire, decays concerns
+		
+		//in order to calculate some of those, we need to tally up pops in the community in question, and some of their conditions:
+		Int64 countOfPopsWounded = 0;
+		Int64 countOfPopsIll = 0;
+		Int64 totalPopCount = 0;
+		Dictionary&lt;IFResource, Int64&gt; countOfPopsEquippedWithMilEquip = new Dictionary&lt;IFResource, Int64&gt;();
+		Dictionary&lt;IFResource, double&gt; pooledMilEquipCounts = new Dictionary&lt;IFResource, double&gt;();
+		//furthermore, we need to tally up how much food/hstasis/woundheal/illheal/mil equip of each kind already exists in the pool:
+		double existingFood = 0.0d;
+		double existingHStasis = 0.0d;
+		double existingWoundHeal = 0.0d;
+		double existingIllHeal = 0.0d;
+		IFResourcePool resPool = inCommunity.getResourcePool();
+		
+		//initialize the military equipment dictionary and tally up existing resources from pool:
+		for(int moid = 1; moid &lt; countOfResources; moid++)
+		{
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res != null)
+			{
+				double amount = resPool.getResourceQuantity(res);
+				if(res.isFood())
+					existingFood += amount;
+				if(res.isHStasis())
+					existingHStasis += amount;
+				if(res.isWoundHeal())
+					existingWoundHeal += amount;
+				if(res.isDiseaseHeal())
+					existingIllHeal += amount;
+				if(res.isMilEquip())
+				{
+					countOfPopsEquippedWithMilEquip.Add(res, 0L);
+					pooledMilEquipCounts.Add(res, amount);
+				}
+			}
+		}
+		foreach(IFPop pop in inCommunity.getPopsLoyalToCommunity(true, false))
+		{
+			totalPopCount++;
+			if(pop.isWounded())
+				countOfPopsWounded++;
+			if(pop.isIll())
+				countOfPopsIll++;
+			foreach(IFResource res in countOfPopsEquippedWithMilEquip.Keys)
+			{
+				if(pop.hasEquipment(res))
+				{
+					countOfPopsEquippedWithMilEquip[res]++;
+				}
+			}
+		}
+		foreach(var kvpair in inCommunity.getAdditionalUndeclaredPopCounts())
+		{
+			totalPopCount += (Int64)kvpair.Value;
+		}
+		
+		//if there are no pops in the community, all resources are equal(ly useless)
+		if(totalPopCount == 0)
+		{
+			for(int moid = 1; moid &lt; countOfResources; moid++)
+				outDesireValues.Add(1.0d);
+			toReturn.Add(outDesireValues);
+			return toReturn;
+		}
+		
+		string cvNamePrepend = customConsts.getStringConst("foreign_community resource_desire prepend_name", out bool success);
+		if(!success) cvNamePrepend = "resourceDesireValue";
+		
+		List&lt;double&gt; foreignAIdesireValues = new List&lt;double&gt;();
+		//look for the custom script that provides foreign AI desire values for this foreign AI:
+		string foreignAIName = inCommunity.getCurrentAI() != null ? inCommunity.getCurrentAI().getInternalName() : "null";
+		if(customScripts.doesCustomScriptExistWithName("getResourceDesireValues_" + foreignAIName))
+		{
+			if(customScripts.runCustomScriptCheckTypes("getResourceDesireValues_" + foreignAIName, new List&lt;object&gt;() { inCommunity }, out List&lt;object&gt; outputs, false, typeof(List&lt;double&gt;)))
+			{
+				foreignAIdesireValues = (List&lt;double&gt;)outputs[0];
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "custom script with name getResourceDesireValues_" + foreignAIName + " did not execute successfully");
+			}
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "could not find custom script with name getResourceDesireValues_" + foreignAIName);
+		}
+		
+		double foodStressThreshold = customConsts.getDoubleConst("foreign_community resource_desire food_stress per_pop safe_threshold", out success);
+		if(!success) foodStressThreshold = 75.0d;
+		double hstasisStressThreshold = customConsts.getDoubleConst("foreign_community resource_desire hstasis_stress per_pop safe_threshold", out success);
+		if(!success) hstasisStressThreshold = 20.0d;
+		double woundHealStressThreshold = customConsts.getDoubleConst("foreign_community resource_desire woundheal_stress per_pop safe_threshold", out success);
+		if(!success) woundHealStressThreshold = 5.0d;
+		double illHealStressThreshold = customConsts.getDoubleConst("foreign_community resource_desire diseaseheal_stress per_pop safe_threshold", out success);
+		if(!success) illHealStressThreshold = 5.0d;
+		double milEquipStressThreshold = customConsts.getDoubleConst("foreign_community resource_desire milequip_stress per_pop safe_threshold", out success);
+		if(!success) milEquipStressThreshold = 1.75d;
+		
+		double foodLackConst = customConsts.getDoubleConst("foreign_community resource_desire food_stress per_pop lack_const", out success);
+		if(!success) foodLackConst = 10.0d;
+		double hstasisLackConst = customConsts.getDoubleConst("foreign_community resource_desire hstasis_stress per_pop lack_const", out success);
+		if(!success) hstasisLackConst = 4.0d;
+		double woundHealLackConst = customConsts.getDoubleConst("foreign_community resource_desire woundheal_stress per_pop lack_const", out success);
+		if(!success) woundHealLackConst = 8.0d;
+		double illHealLackConst = customConsts.getDoubleConst("foreign_community resource_desire diseaseheal_stress per_pop lack_const", out success);
+		if(!success) illHealLackConst = 8.0d;
+		double milEquipLackConst = customConsts.getDoubleConst("foreign_community resource_desire milequip_stress per_pop lack_const", out success);
+		if(!success) milEquipLackConst = 3.0d;
+		
+		double woundedPopFactor = customConsts.getDoubleConst("foreign_community resource_desire woundheal_stress wounded_pop factor", out success);
+		if(!success) woundedPopFactor = 2.5d;
+		double illPopFactor = customConsts.getDoubleConst("foreign_community resource_desire diseaseheal_stress wounded_pop factor", out success);
+		if(!success) illPopFactor = 2.5d;
+		
+		double drugFactor = customConsts.getDoubleConst("foreign_community resource_desire drug const", out success);
+		if(!success) drugFactor = 2.0d;
+		double tradeFactor = customConsts.getDoubleConst("foreign_community resource_desire trade const", out success);
+		if(!success) tradeFactor = 2.25d;
+		
+		double foodPerPop = existingFood / totalPopCount;
+		double min_mcal_for_health = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out success);
+		if(!success) min_mcal_for_health = 2.0d;
+		double daysOfFoodPerPop = foodPerPop / min_mcal_for_health;
+		double hstasisPerPop = existingHStasis / totalPopCount;
+		double hstasisDaysPerUnit = customConsts.getDoubleConst("popHealth_HStasis hstasis death_days value", out success);
+		if(!success) hstasisDaysPerUnit = 21.0d;
+		double daysOfHStasisPerPop = hstasisPerPop * hstasisDaysPerUnit;
+		double woundHealPerPop = existingWoundHeal / (totalPopCount + (woundedPopFactor - 1) * countOfPopsWounded);
+		double illHealPerPop = existingIllHeal / (totalPopCount + (illPopFactor - 1) * countOfPopsIll);
+		
+		double decayDaysMax = customConsts.getDoubleConst("foreign_community resource_desire decay_days max", out success);
+		if(!success) decayDaysMax = 90.0d;
+		double decayMinValue = customConsts.getDoubleConst("foreign_community resource_desire decay min_desire_value", out success);
+		if(!success) decayMinValue = 0.2d;
+		
+		//common desires:
+		double foodDesireA = (foodLackConst - 1) / (foodStressThreshold * foodStressThreshold);
+		double foodDesireB = (1 - foodLackConst) / (0.5 * foodStressThreshold);
+		double foodDesireValue = daysOfFoodPerPop &lt; foodStressThreshold ? foodDesireA * daysOfFoodPerPop * daysOfFoodPerPop + foodDesireB * daysOfFoodPerPop + foodLackConst : 1.0d;
+		double hstasisDesireA = (hstasisLackConst - 1) / (hstasisStressThreshold * hstasisStressThreshold);
+		double hstasisDesireB = (1 - hstasisLackConst) / (0.5 * hstasisStressThreshold);
+		double hstasisDesireValue = daysOfHStasisPerPop &lt; hstasisStressThreshold ? hstasisDesireA * daysOfHStasisPerPop * daysOfHStasisPerPop + hstasisDesireB * daysOfHStasisPerPop + hstasisLackConst : 1.0d;
+		double woundHealDesireA = (woundHealLackConst - 1) / (woundHealStressThreshold * woundHealStressThreshold);
+		double woundHealDesireB = (1 - woundHealLackConst) / (0.5 * woundHealStressThreshold);
+		double woundHealDesireValue = woundHealPerPop &lt; woundHealStressThreshold ? woundHealDesireA * woundHealPerPop * woundHealPerPop + woundHealDesireB * woundHealPerPop + woundHealLackConst : 1.0d;
+		double illHealDesireA = (illHealLackConst - 1) / (illHealStressThreshold * illHealStressThreshold);
+		double illHealDesireB = (1 - illHealLackConst) / (0.5 * illHealStressThreshold);
+		double illHealDesireValue = illHealPerPop &lt; illHealStressThreshold ? illHealDesireA * illHealPerPop * illHealPerPop + illHealDesireB * illHealPerPop + illHealLackConst : 1.0d;
+		double drugDesireValue = drugFactor / Math.Sqrt(Math.Max(0.0001d, foodDesireValue * hstasisDesireValue * woundHealDesireValue * illHealDesireValue)); //all of the desire values should be above 1.0d, but just in case
+		double tradeDesireValue = tradeFactor;
+		double milDesireA = (milEquipLackConst - 1) / (milEquipStressThreshold * milEquipStressThreshold);
+		double milDesireB = (1 - milEquipLackConst) / (0.5 * milEquipStressThreshold);
+		
+		//decay:
+		double min_qual = consts.getResourceQualityMin();
+		double max_qual = consts.getResourceQualityMax();
+		double maxDecayDaysToConsider = customConsts.getDoubleConst("foreign_community resource_desire decay_days max", out success);
+		if(!success) maxDecayDaysToConsider = 90.0d;
+		double minDecayDesireValue = customConsts.getDoubleConst("foreign_community resource_desire decay min_desire_value", out success);
+		if(!success) minDecayDesireValue = 0.2d;
+		
+		//calculate per-resource desire values:
+		for(int moid = 1; moid &lt; countOfResources; moid++)
+		{
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res == null)
+			{
+				outDesireValues.Add(1.0d);
+				continue;
+			}
+		
+			//connected variables:
+			string name_all = cvNamePrepend + "_moid" + moid + "_all";
+			double cvall_mult_val = variableHandler.getConnectedDouble(name_all, out success);
+			if(!success) cvall_mult_val = 1.0d;
+			string name_specific = cvNamePrepend + "_moid" + moid + "_uid" + inCommunity.getUID();
+			double cvspecific_mult_val = variableHandler.getConnectedDouble(name_specific, out success);
+			if(!success) cvspecific_mult_val = 1.0d;
+			
+			//foreign AI values:
+			double foreignAIValue = 1.0d;
+			if(foreignAIdesireValues.Count &gt; moid)
+				foreignAIValue = foreignAIdesireValues[moid];
+			
+			//common desires:
+			//(remember: if this is a milequip, have to calculate the mil desire value here)
+			double foodDesire = res.isFood() ? foodDesireValue : 1.0d;
+			double hstasisDesire = res.isHStasis() ? hstasisDesireValue : 1.0d;
+			double woundHealDesire = res.isWoundHeal() ? woundHealDesireValue : 1.0d;
+			double illHealDesire = res.isDiseaseHeal() ? illHealDesireValue : 1.0d;
+			double drugDesire = res.isDrug() ? drugDesireValue : 1.0d;
+			double tradeDesire = res.isTrade() ? tradeDesireValue : 1.0d;
+			double milDesire = 1.0d;
+			if(res.isMilEquip())
+			{
+				Int64 countMissingEquipment = totalPopCount - countOfPopsEquippedWithMilEquip[res];
+				if(countMissingEquipment > 0)
+				{
+					double pooledRatioToMissing = pooledMilEquipCounts[res] / countMissingEquipment;
+					milDesire = pooledRatioToMissing &lt; milEquipStressThreshold ? milDesireA * pooledRatioToMissing * pooledRatioToMissing + milDesireB * pooledRatioToMissing + milEquipLackConst : 1.0d;
+				}
+			}
+			
+			//decay concerns:
+			double degSpeed = res.getDecaySpeed(); //this is proportion of the whole range
+			double decayValueResourceItself = 1.0d;
+			double decayValueStorage = 1.0d;
+			if(degSpeed > 0.0d)
+			{
+				double daysToFullyDecay = Math.Max(1.0d / degSpeed, maxDecayDaysToConsider);
+				double decayAloneA = (minDecayDesireValue - 1.0d) / (maxDecayDaysToConsider * maxDecayDaysToConsider);
+				double decayAloneB = (1.0d - minDecayDesireValue) / (0.5d * maxDecayDaysToConsider);
+				decayValueResourceItself = daysToFullyDecay &lt; maxDecayDaysToConsider ? decayAloneA * daysToFullyDecay * daysToFullyDecay + decayAloneB * daysToFullyDecay + minDecayDesireValue : 1.0d;
+			
+				double resourceCountPerPop = resPool.getResourceQuantity(res) / totalPopCount;
+				double decayStorageA = 1.0d / (daysToFullyDecay * daysToFullyDecay);
+				double decayStorageB = -2.0d / (daysToFullyDecay);
+				decayValueStorage = resourceCountPerPop &lt; daysToFullyDecay ? decayStorageA * resourceCountPerPop * resourceCountPerPop + decayStorageB * resourceCountPerPop + 1 : 1.0d;
+			}
+			
+			double totalMult = cvall_mult_val * cvspecific_mult_val * foreignAIValue * foodDesire * hstasisDesire * woundHealDesire * illHealDesire * drugDesire * tradeDesire * milDesire * decayValueResourceItself * decayValueStorage;
+			totalMult = Math.Max(0.0d, totalMult); //make negative = 0.0d
+			
+			//print out which factors impacted the total multiplication:
+			string factorsToDisplay = "";
+			if(cvall_mult_val != 1.0d)
+				factorsToDisplay += "cvall_mult_val=" + cvall_mult_val + " ";
+			if(cvspecific_mult_val != 1.0d)
+				factorsToDisplay += "cvspecific_mult_val=" + cvspecific_mult_val + " ";
+			if(foreignAIValue != 1.0d)
+				factorsToDisplay += "foreignAIValue=" + foreignAIValue + " ";
+			if(foodDesire != 1.0d)
+				factorsToDisplay += "foodDesire=" + foodDesire + " ";
+			if(hstasisDesire != 1.0d)
+				factorsToDisplay += "hstasisDesire=" + hstasisDesire + " ";
+			if(woundHealDesire != 1.0d)
+				factorsToDisplay += "woundHealDesire=" + woundHealDesire + " ";
+			if(illHealDesire != 1.0d)
+				factorsToDisplay += "illHealDesire=" + illHealDesire + " ";
+			if(drugDesire != 1.0d)
+				factorsToDisplay += "drugDesire=" + drugDesire + " ";
+			if(tradeDesire != 1.0d)
+				factorsToDisplay += "tradeDesire=" + tradeDesire + " ";
+			if(milDesire != 1.0d)
+				factorsToDisplay += "milDesire=" + milDesire + " ";
+			if(decayValueResourceItself != 1.0d)
+				factorsToDisplay += "decayValueResourceItself=" + decayValueResourceItself + " ";
+			if(decayValueStorage != 1.0d)
+				factorsToDisplay += "decayValueStorage=" + decayValueStorage + " ";
+			
+			addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " values resource " + res.getDebugName() + " at value=" + totalMult + "; factors: " + factorsToDisplay);
+			if(totalMult &lt;= 0.0001d)
+			{
+				totalMult = 0.0001d;
+				addDebugMessage(inScriptInstance, "correcting total mult to 0.0001 to avoid any possible divide by zero errors");
+			}
+			outDesireValues.Add(totalMult);
+		}
+		
+		toReturn.Add(outDesireValues);
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

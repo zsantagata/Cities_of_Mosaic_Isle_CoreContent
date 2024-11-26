@@ -1,0 +1,382 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igIndustry name="Diplomacy">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Diplomacy</full_path>
+	  <body_text>Diplomacy.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:tricky</i>
+		<i>description_adj:humble</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Military">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Military</full_path>
+	  <body_text>Military.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mTagList>
+	  <i1>military</i1> <!-- military -->
+	  
+		<!-- description tags: -->
+		<i>description_adj:proud</i>
+		<i>description_adj:glorious</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Science">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Science</full_path>
+	  <body_text>Science.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:noble</i>
+		<i>description_adj:wise</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Distribution">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Distribution</full_path>
+	  <body_text>Distribution.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mIndustryQualities>0x2</mIndustryQualities> <!-- 0x2 = distribution -->
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:neverending</i>
+		<i>description_adj:evermoving</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Construction">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Construction</full_path>
+	  <body_text>Construction.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mIndustryQualities>0x4</mIndustryQualities> <!-- 0x4 = construction -->
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:laborious</i>
+		<i>description_adj:difficult</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Smelting">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Smelting</full_path>
+	  <body_text>Smelting.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:sweaty</i>
+		<i>description_adj:smoky</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Medicine">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Medicine</full_path>
+	  <body_text>Medicine.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:complex</i>
+		<i>description_adj:challenging</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Drugs">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Drugs</full_path>
+	  <body_text>Drugs.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:mundane</i>
+		<i>description_adj:repetitive</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Clothesmaking">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Clothesmaking</full_path>
+	  <body_text>Clothesmaking.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:mundane</i>
+		<i>description_adj:repetitive</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Crafting">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Crafting</full_path>
+	  <body_text>Crafting.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:mundane</i>
+		<i>description_adj:repetitive</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Jewelry">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Jewelry</full_path>
+	  <body_text>Jewelry.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:mundane</i>
+		<i>description_adj:repetitive</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Farming">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Farming</full_path>
+	  <body_text>Farming.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:pastoral</i>
+		<i>description_adj:important</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Fishing">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Fishing</full_path>
+	  <body_text>Fishing.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:relaxing</i>
+		<i>description_adj:timetaking</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Hunting">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Hunting</full_path>
+	  <body_text>Hunting.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:risky</i>
+		<i>description_adj:dangerous</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Husbandry">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Husbandry</full_path>
+	  <body_text>Husbandry.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:pastoral</i>
+		<i>description_adj:important</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Mining">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Mining</full_path>
+	  <body_text>Mining.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:laborious</i>
+		<i>description_adj:difficult</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Logging">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Logging</full_path>
+	  <body_text>Logging.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:laborious</i>
+		<i>description_adj:difficult</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Water Bearing">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Water Bearing</full_path>
+	  <body_text>Water Bearing.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mTagList>
+	  <i1>water bearing</i1> <!-- water bearing industries serve water needs of pops in houses -->
+	</mTagList>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:humble</i>
+		<i>description_adj:important</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Doctoring">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Doctoring</full_path>
+	  <body_text>Doctoring.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mTagList>
+		<!-- description tags: -->
+		<i>description_adj:noble</i>
+		<i>description_adj:complex</i>
+		<i>description_adj:challenging</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Repair">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Repair</full_path>
+	  <body_text>Repair.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mTagList>
+		<!-- description tags: -->
+		<i>description_adj:laborious</i>
+		<i>description_adj:repetitive</i>
+		<i>description_adj:important</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Entertainment">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Entertainment</full_path>
+	  <body_text>Entertainment.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mTagList>
+		<!-- description tags: -->
+		<i>description_adj:demanding</i>
+		<i>description_adj:proud</i>
+		<i>description_adj:tricky</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Companionship">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Companionship</full_path>
+	  <body_text>Companionship.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mTagList>
+		<!-- description tags: -->
+		<i>description_adj:libidinous</i>
+		<i>description_adj:delightful</i>
+	</mTagList>
+  </igIndustry>
+  
+  <igIndustry name="Salvage">
+    <Encyclopedia_Entry>
+	  <full_path>Industry/Salvage</full_path>
+	  <body_text>Salvage.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mTagList>
+		<!-- description tags: -->
+		<i>description_adj:unclean</i>
+		<i>description_adj:laborious</i>
+	</mTagList>
+  </igIndustry>
+  
+</core_data>

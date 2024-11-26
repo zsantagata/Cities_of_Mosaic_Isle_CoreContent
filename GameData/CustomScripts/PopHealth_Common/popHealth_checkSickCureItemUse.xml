@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+		<i1><a>popHealth_checkSickCureItemUse illness_cure days min</a> <b>int</b> <c>1</c></i1> <!-- minimum day reduction an illness gets from the pop using an illness cure item -->
+		<i1><a>popHealth_checkSickCureItemUse illness_cure days max</a> <b>int</b> <c>13</c></i1> <!-- minimum day reduction an illness gets from the pop using an illness cure item -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script popHealth_checksickcureitemuse</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which handles whether or not a pop will use an illness cure item, and the consequences of doing so -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop,
+	IFResource inResourceToConsume,
+	IFResourcePool inResourcePoolToConsumeFrom,
+	double inItemQual,
+	bool inRoughingIt
+	
+	There is no output -->
+	<i1><a>popHealth_checkSickCureItemUse</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop), typeof(IFResource), typeof(IFResourcePool), typeof(double), typeof(bool)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popHealth_checkSickCureItemUse custom script received invalid arguments");
+		return null;
+	}
+	
+	IFPop inPop = (IFPop)inArguments[0];
+    IFResource inResourceToConsume = (IFResource)inArguments[1];
+	IFResourcePool inResourcePoolToConsumeFrom = (IFResourcePool)inArguments[2];
+    double inItemQual = (double)inArguments[3];
+    bool inRoughingIt = (bool)inArguments[4];
+	
+    var consts = getAPI().getConsts();
+    var customConsts = getAPI().getCustomConsts();
+
+    if((inResourceToConsume == null) || (inResourcePoolToConsumeFrom == null))
+    {
+		return null;
+    }
+	  
+	//TODO any race or other non-standard considerations
+	  
+    List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	if((!inPop.isIll()) || inRoughingIt)
+	{
+		toReturn.Add(false);
+		return toReturn;
+	}
+	  
+	bool consuming_item = true;
+	double min_qual = consts.getResourceQualityMin();
+	double max_qual = consts.getResourceQualityMax();
+	if((inItemQual &lt; min_qual) || (inItemQual == min_qual) || (inResourcePoolToConsumeFrom.getResourceQuantity(inResourceToConsume) &lt; 1.0d))
+	{
+		consuming_item = false;
+	}
+	Int64 min_day_reduction = customConsts.getIntConst("popHealth_checkSickCureItemUse illness_cure days min", out bool success);
+	if(!success) min_day_reduction = 1L;
+	Int64 max_day_reduction = customConsts.getIntConst("popHealth_checkSickCureItemUse illness_cure days max", out success);
+	if(!success) max_day_reduction = 13L;
+	
+	double qual_factor = (inItemQual - min_qual) / (max_qual - min_qual);
+	  
+	double days_to_reduce = 0; 
+	if(consuming_item)
+	{
+	    days_to_reduce = min_day_reduction + (qual_factor * (max_day_reduction - min_day_reduction));
+	    addDebugMessage(inScriptInstance, "reducing illness days of pop " + inPop.getDebugName() + " by " + days_to_reduce + " as a result of consuming illness heal item");
+		inResourcePoolToConsumeFrom.subtractResource(inResourceToConsume, 1.0d, inPop.getHomeBuilding(), inPop);
+	}
+	  
+	//there are buffs on housing to be taken into account:
+	if(inPop.hasHomeBuilding())
+	{
+		double buff_day_reduction = getAPI().getVariableHandler().getConnectedDouble("recoveryDaySkip_building" + inPop.getHomeBuilding().getUID(), out success);
+		if(success)
+		{
+		    //take the full integer number of days and then the remaining fraction is a chance of one more day
+		    int full_days = (int)buff_day_reduction;
+		    buff_day_reduction -= full_days;
+		    full_days = getAPI().calcProb(buff_day_reduction) ? full_days + 1 : full_days;
+	        addDebugMessage(inScriptInstance, "reducing illness days of pop " + inPop.getDebugName() + " by " + full_days + " as a result of buffs");
+		    days_to_reduce += full_days;
+		}
+	}
+	  
+	inPop.setIllDayOver((Int64)(inPop.getIllDayOver() - days_to_reduce));
+    getAPI().getVariableHandler().storeDoubleVariable(getAPI().getCalendar().getCurrentDate(), "pop_consumed_illHeal" + inPop.getUID(), inItemQual); //this will be used in a script called later on in midnight processing so make it expire today
+	   
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>determineDelegationAttackers illness_cause_no_attack prob</a> <b>double</b> <c>0.5</c></i1> <!-- this is the chance that an ill pop will choose not to attack solely based on the fact they are ill -->
+	  <i1><a>determineDelegationAttackers wound_cause_no_attack prob</a> <b>double</b> <c>1.0</c></i1> <!-- this is the chance that an wounded pop will choose not to attack solely based on the fact they are wounded -->
+	  
+	  <!-- morale results in a non-linear chance for attackers to participate. -->
+	  <!-- the formula is: chance to participate = 1 - (1 - morale/morale_max) ^ [power] -->
+	  <!-- where morale is limited between 0.0d and morale_max.  If morale is 0, chance is 0%, and if morale is max, chance is 100%. -->
+	  <!-- power must be a positive number.  The greater that [power] is than 1.0d, the higher chance a pop will attack when morale is middling, and vice versa.  When [power] is 1.0d, morale % is also the chance %. -->
+	  <i1><a>determineDelegationAttackers morale_attack power factor</a> <b>double</b> <c>2.0</c></i1>
+	  
+		
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script determinedelegationattackers</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which determines which pops of a player-sourced war/raiding delegation choose to actively attack the enemy community and attempt to achieve the delegation's goal -->
+  <!-- only pops that choose to attack can cause damage to the enemy community.  Pops which attack are first intercepted by defenders with some probability, but any which are not intercepted cause damage. -->
+  <!-- The probability of defenders intercepting attackers is related to the ratio of defenders to attackers, and military and economic strength of the community.  The first two increase the probability, and the last one decreases it. -->
+  <!-- When all attackers are intercepted and there are defenders left over, the defenders can attack the camp of the delegation and fight non-attackers or destroy resources. -->
+  <!-- Which pops are attackers are determined by: that pop's illness/lack of illness, the war target, that pop's wounds/lack of wounds, and the morale of the delegation -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFDelegation inDelegation,
+	string inWarTarget,
+	double inDelegationMorale,
+	bool inRaiding //if false it means war
+	
+	The output is a List of IFPop selected.  These pops will always be from inDelegation, be loyal to the player community, not be dead, and equip better military equipment if any is held by the delegation (not by others *in* the delegation, though) -->
+	<i1><a>determineDelegationAttackers</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFDelegation), typeof(string), typeof(double), typeof(bool)}
+	  }, out _))
+	{
+		throw new ArgumentException("determineDelegationAttackers custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFDelegation inDelegation = (IFDelegation)inArguments[0];
+	string inWarTarget = (string)inArguments[1]; //TODO: actually use this
+	double inDelegationMorale = (double)inArguments[2];
+	bool inRaiding = (bool)inArguments[3];
+	
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	double illnessChanceNoAttack = customConsts.getDoubleConst("determineDelegationAttackers illness_cause_no_attack prob", out bool success);
+	if(!success) illnessChanceNoAttack = 0.5d;
+	if(illnessChanceNoAttack &gt; 1.0d) illnessChanceNoAttack = 0.5d;
+	if(illnessChanceNoAttack &lt; 0.0d) illnessChanceNoAttack = 0.5d;
+	
+	double woundChanceNoAttack = customConsts.getDoubleConst("determineDelegationAttackers wound_cause_no_attack prob", out success);
+	if(!success) woundChanceNoAttack = 1.0d;
+	if(woundChanceNoAttack &gt; 1.0d) woundChanceNoAttack = 1.0d;
+	if(woundChanceNoAttack &lt; 0.0d) woundChanceNoAttack = 1.0d;
+	
+	double morale_max = consts.getMoraleMax();
+	if(inDelegationMorale &gt; morale_max) inDelegationMorale = morale_max;
+	if(inDelegationMorale &lt; 0.0d) inDelegationMorale = 0.0d;
+	
+	double power_factor = customConsts.getDoubleConst("determineDelegationAttackers morale_attack power factor", out success);
+	if(!success) power_factor = 2.0d;
+	if(power_factor &lt;= 0.0d) power_factor = 2.0d;
+	
+	double moraleChanceNoAttack = 1.0d - Math.Pow(inDelegationMorale/morale_max, power_factor);
+	
+	addDebugMessage(inScriptInstance, "Calculating attackers for delegation " + inDelegation.getDebugName() + ", illnessChanceNoAttack = " + illnessChanceNoAttack + " woundChanceNoAttack = " + woundChanceNoAttack +
+		" inDelegationMorale = " + inDelegationMorale + " power_factor = " + power_factor + " moraleChanceNoAttack = " + moraleChanceNoAttack + " inWarTarget = " + inWarTarget + " inRaiding = " + inRaiding);
+	
+	string descriptionOfAttackers = "";
+	string descriptionOfNotAttackers = "";
+	int popsNotAttackingCount = 0;
+	
+	List&lt;IFPop&gt; popsAttacking = new List&lt;IFPop&gt;();
+	foreach(IFPop pop in inDelegation.getPopsInDelegation())
+	{
+		if(pop.isDead() || (pop.getCommunity() != inDelegation.getSourceCommunity()))
+			continue; //don't list out the dead or prisoners
+		if(pop.isWounded() &amp;&amp; getAPI().calcProb(woundChanceNoAttack))
+		{
+			descriptionOfNotAttackers += pop.getDebugName() + " reason:wounded; ";
+			popsNotAttackingCount++;
+			continue;
+		}
+		if(pop.isIll() &amp;&amp; getAPI().calcProb(illnessChanceNoAttack))
+		{
+			descriptionOfNotAttackers += pop.getDebugName() + " reason:ill; ";
+			popsNotAttackingCount++;
+			continue;
+		}
+		if(getAPI().calcProb(moraleChanceNoAttack))
+		{
+			descriptionOfNotAttackers += pop.getDebugName() + " reason:morale; ";
+			popsNotAttackingCount++;
+			continue;
+		}
+		descriptionOfAttackers += pop.getDebugName() + "; ";
+		popsAttacking.Add(pop);
+	}
+	  
+	addDebugMessage(inScriptInstance, popsAttacking.Count + " pops attacking: " + descriptionOfAttackers);
+	addDebugMessage(inScriptInstance, popsNotAttackingCount + " pops not attacking: " + descriptionOfNotAttackers);
+	
+	//the pops which are chosen to attack should equip the best equipment available
+	List&lt;IFResource&gt; milResources = new List&lt;IFResource&gt;();
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res.isMilEquip())
+			milResources.Add(res);
+	}
+	IFResourcePool resPool = inDelegation.getResourcePool();
+	
+	foreach(IFPop pop in popsAttacking)
+	{
+		foreach(IFResource res in milResources)
+		{
+			double equippedQual = pop.getEquipmentQuality(res);
+			double storedQual = resPool.getResourceQuality(res);
+			if((equippedQual &lt; storedQual) &amp;&amp; (resPool.getResourceQuantity(res) &gt;= 1.0d))
+			{
+				pop.replaceEquipment(res, storedQual);
+				resPool.subtractResource(res, 1.0d);
+				resPool.addResourcesOfQuality(res, 1.0d, equippedQual);
+			}
+		}
+	}
+	
+	List&lt;object&gt; toReturn = new List&lt;object&gt;() { popsAttacking };
+	return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

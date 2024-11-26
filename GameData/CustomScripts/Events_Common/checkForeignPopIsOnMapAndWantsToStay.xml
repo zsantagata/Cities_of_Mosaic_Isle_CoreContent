@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script checkForeignPopIsOnMapAndWantsToStay</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which checks if a pop is a Wanderer or other neutral, is alive, is on the local map, and wants to stay on the local map -->
+  <!-- if any condition is false, this script returns false -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFPop inPop
+	-->
+	
+	<!-- output:
+	bool outPopIsNeutralAndAliveAndOnLocalMapAndWantsToStay
+	-->
+	<i1><a>checkForeignPopIsOnMapAndWantsToStay</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFPop)}
+	      }, out _))
+	    {
+			throw new ArgumentException("checkForeignPopIsOnMapAndWantsToStay custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFPop inPop = (IFPop)inArguments[0];
+		
+		if(inPop == null)
+		{
+			throw new ArgumentException("checkForeignPopIsOnMapAndWantsToStay custom script received invalid arguments: inPop cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		bool isNeutral = (!getAPI().getHostileCommunities().Contains(inPop.getCommunity())) &amp;&amp; (inPop.getCommunity() != getAPI().getLocalCommunity());
+		bool isAlive = !inPop.isDead();
+		bool isOnLocalMap = getAPI().getPopsWithinLocalCommunityMap().Contains(inPop);
+		bool wantsToStay = false;
+		
+		string variableName = "desireToStayOnMap_pop" + inPop.getUID();
+		//if the variable does not exist or negative, the pop wishes to leave.  Only if the variable exists and is positive does the pop wish to stay
+		  
+		double desireToStay = variableHandler.getConnectedDouble(variableName, out bool success);
+		wantsToStay = success &amp;&amp; (desireToStay &gt; 0.0d);
+		
+		bool returnBool = isNeutral &amp;&amp; isAlive &amp;&amp; isOnLocalMap &amp;&amp; wantsToStay;
+		addDebugMessage(inScriptInstance, inPop.getDebugName() + " " + (returnBool ? "wants" : "does not want") + " to stay on map as an alive neutral, isNeutral=" + isNeutral + " isAlive=" + isAlive + " isOnLocalMap=" + isOnLocalMap + " wantsToStay=" + wantsToStay);
+		
+	    return new List&lt;object&gt;() { returnBool };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- only one of these should exist and its name should be "default" -->
+  <!-- note: scripts are provided with three inputs: int inScriptInstance, object[] inArguments.  inScriptInstance is an int which is unique per each run of the script, and is only necessary for logging purposes (in other words: don't change it; nothing interesting will happen if you do).  The arguments actually useful to the script are stored in inArguments -->
+  <!-- note: all scripts must return some sort of List (of type object), but the return value can be null for those scripts in which the return value count is zero.  Otherwise, a null return value will cause an error. -->
+  <!-- note: if the script's return values are used, they must be the correct type (although double/Int64 will be converted correctly) and in the correct order. -->
+  
+  <!-- custom consts related to Pathfinding: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+		<i1><a>log_script_mscriptsdeterminingwhichscripttorun</a> <b>int</b> <c>1</c></i1>
+		<i1><a>log_script_mscriptsdeterminingstateandtarget place_pop_on_nearest_passable_location</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+	
+  <Pathfinding name="default">
+  
+    <!-- the first element of mListOfPathfindingStatesAndTimings is the name of the state, the second element is the minimum time before the pop is handed back to pathfinding scripts to recalculate pathfinding (overridden by direct orders/battle starting or ending) after reaching its destination, the third element is the time before the pop's need to pathfind again is considered urgent and will happen even if it lags the game a bit (and even if it hasn't reached its destination) -->
+	<mListOfPathfindingStatesAndTimings> <!-- note: the names of entries in this have capitalization ignored and are made unique after loading from file -->
+		<!-- the following four states are hardcoded to appear in this list, even if they are removed: -->
+		<i1><a>Idle</a> <!-- intent: this pop has no target -->
+		<b>3.5</b><c>7.0</c></i1>
+		<i1><a>Ordered</a> <!-- intent: this pop is mustered and has been ordered by the player to move to a location.  Scripts should have a good reason for changing a pop's pathfinding if it is in this state. -->
+		<b>0.5</b><c>0.5</c></i1> <!-- these values are low so that pops moving to a location as ordered by the player will look around themselves for fights and join if possible -->
+		<i1><a>MovetoMuster</a> <!-- intent: this pop is moving to a location in order to muster -->
+		<b>0.5</b><c>10.5</c></i1>
+		<i1><a>Fighting</a> <!-- intent: this pop is actively fighting another pop(s).  This will prevent a pop from being ordered, being added to or removed from workplaces/mustering points, and being ordered -->
+		<b>4.0</b><c>4.01</c></i1>
+		
+	</mListOfPathfindingStatesAndTimings>
+  
+    <mListOfPathfindingStatesThatMakePopInvisibleOnMap> <!-- if a pop is in one of these pathfinding states, its sprite is not displayed, and it cannot be selected by clicking or boxclicking -->
+    </mListOfPathfindingStatesThatMakePopInvisibleOnMap>
+  
+	<!-- target choice works like this: -->
+	<!-- a priority-list of scripts (mScriptsDeterminingWhichScriptToRun) determines which priority-list of scripts should be run to determine target (mScriptsDeterminingTarget) -->
+	<!-- all scripts have inArguments: IFPop inPop, IFMap inLocalMap, bool inBattleOngoing -->
+	<!-- scripts in mScriptsDeterminingWhichScriptToRun return a single string.  If the string matches any script category in mScriptsDeterminingTarget, then those scripts are called in priority order.  If not, we continue to the next script in the priority-list.  (If it is the last one, then the pop is told it does not have a target and waits around for a while.) -->
+	<!-- scripts in mScriptsDeterminingTarget return six values: string outPopPathfindingState, IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  If the second return value is non-null, the following are unused.  If the second return value is non-null, the following are unused.  If the third return value is true, the following are unused.  If either double is negative, then the script has not determined what the target should be, so we continue to the next script in this category's priority-list.  (If it is the last one, then the pop is told it does not have a target and waits around for a while.) -->
+  
+	<mScriptsDeterminingWhichScriptToRun>
+		<i1> <!-- each script in mScriptsDeterminingWhichScriptToRun has: the script itself, and an int relating to priority -->
+			<a> <!-- script itself: -->
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+				
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+				
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+				
+				addDebugMessage(inScriptInstance, "default script is finding category for pop " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;() {""};
+				
+				//note to modders: since this is the default behavior, I want to take care of all possibilities here (AKA have no fall-throughs).  In a script which will be executed before this, it's best to let a possibility fall through if you don't care about it.
+				//first, if the pop currently cannot reach a map edge, transport it to the nearest location that can:
+				if(!getAPI().isMapEdgeAccessibleByPop(inPop))
+				{
+					addDebugMessage(inScriptInstance, "pop cannot reach map edge; using category " + "place_pop_on_nearest_passable_location");
+					toReturn[0] = "place_pop_on_nearest_passable_location";
+					return toReturn;
+				}
+				
+				//check if the pop should transition to the Dead/Wounded/Sick states:
+				HashSet&lt;string&gt; initialStatesToCheck = new HashSet&lt;string&gt;();
+				initialStatesToCheck.Add("Dead");
+				initialStatesToCheck.Add("Wounded");
+				initialStatesToCheck.Add("Sick");
+				foreach(string health_state in initialStatesToCheck)
+				{
+					if(customScripts.runCustomScriptCheckTypes("pathfinding_state_" + health_state + "_hasValidTargetForTransitionIn", new List&lt;object&gt;() {inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt, true, typeof(bool)))
+					{
+						if((bool)validTgt[0])
+						{
+							addDebugMessage(inScriptInstance, "pathfinding based on health condition; using category " + "state_" + health_state);
+							toReturn[0] = "state_" + health_state;
+							return toReturn;
+						}
+					}
+				}
+				
+				//most of the time, we want to let a pop pathfind based solely on its current pathfinding state.  Do so here:
+				if(getAPI().getTargetChoiceCategories().Contains("state_" + inPop.getPathfindingState()))
+				{
+					addDebugMessage(inScriptInstance, "pathfinding based on state; using category " + "state_" + inPop.getPathfindingState());
+					toReturn[0] = "state_" + inPop.getPathfindingState();
+					return toReturn;
+				}
+				
+				//if we have reached here, then somehow the script has not found a category to choose.  Nothing to do but say so:
+				addDebugMessage(inScriptInstance, "failed to find a category of scripts to choose to determine target");
+				return toReturn;
+			</a>
+			<b>0x7FFFFFFFFFFFFFFF</b> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+	</mScriptsDeterminingWhichScriptToRun>
+	
+	<mScriptsDeterminingStateAndTarget>
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+		
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "default place_pop_on_nearest_passable_location script is finding target for pop " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				bool landBreathing = inPop.getRace().isCanBreatheOverwater() || inBattleOngoing; //during battle, consider pops as both-breathing
+				bool waterBreathing = inPop.getRace().isCanBreatheUnderwater() || inBattleOngoing; //during battle, consider pops as both-breathing
+				
+				Tuple&lt;double, double&gt; newLocation = inLocalMap.findClosestMapEdgeAccessibleLocationTo(inPop.getMapLocationX(), inPop.getMapLocationY(), landBreathing, waterBreathing);
+				inPop.setMapLocation(newLocation.Item1, newLocation.Item2);
+				
+				//Idle in the new location:
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+		
+				return toReturn;
+			</a>
+			<b>place_pop_on_nearest_passable_location</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  The way I use category names is: [BATTLE|PEACE]_[POPCOMMUNITY]_[DETAIL]_[WHEREPOPSHOULDGO].  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+	</mScriptsDeterminingStateAndTarget>
+	
+  </Pathfinding>
+  
+</core_data>

@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the EnemyStealingFromBuilding state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: A pop is stealing from a building if it is an enemy pop, the wargoal is to steal resources, and a building from which to steal is nearby. -->
+		<i1><a>EnemyStealingFromBuilding</a>
+		<b>5.0</b><c>5.01</c></i1>
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to EnemyStealingFromBuilding: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_EnemyStealingFromBuilding -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>pathfinding_state_EnemyStealingFromBuilding steal_resources radius</a> <b>double</b> <c>1.0</c></i1> <!-- if an otherwise targetable building is closer than this, it can be stolen from.  Do not set below 0.5 -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_enemystealingfrombuilding_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_enemystealingfrombuilding_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemystealingfrombuilding</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to EnemyStealingFromBuilding: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_EnemyStealingFromBuilding -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_EnemyStealingFromBuilding_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_EnemyStealingFromBuilding_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_EnemyStealingFromBuilding_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//three considerations:
+				//the first consideration is if the pop is an enemy pop during battle:
+				bool first_consideration = getAPI().isHostileCommunity(inPop.getCommunity()) &amp;&amp; inBattleOngoing;
+				
+				//the second consideration is if the wargoal includes stealing resources from a target building:
+				string wargoal = variableHandler.getString("battleAI_battleGoal_community" + inPop.getCommunity().getUID(), out bool success);
+				bool second_consideration = success &amp;&amp; wargoal.Contains("steal_resources_");
+				
+				//the third consideration is if there is a building nearby which can be stolen from:
+				bool third_consideration = false;
+				if(first_consideration &amp;&amp; second_consideration)
+				{
+					double radius = customConsts.getDoubleConst("pathfinding_state_EnemyStealingFromBuilding steal_resources radius", out success);
+					if(!success) radius = 1.0d;
+					
+					var mapTiles = inLocalMap.getMapTilesInRadius(radius, inPop.getMapLocationX(), inPop.getMapLocationY(), 0.0d, 0.0d);
+					foreach(IFMapTile tile in mapTiles)
+					{
+						if(tile.hasBuilding() &amp;&amp; (tile.getBuilding().getCurrentBuildingDurability() != tile.getBuilding().getMaxBuildingDurability())) //can only steal from damaged buildings
+						{
+							if(getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, tile.getBuilding(), inLocalMap) &lt; radius)
+							{
+								//check if this pop wants to target the building:
+								if(customScripts.runCustomScriptCheckTypes("battleAIEnemyWantsTargetBuilding", new List&lt;object&gt;() {inPop, tile.getBuilding()},
+									out List&lt;object&gt; validTgt, true, typeof(bool)))
+								{
+									if((bool)validTgt[0])
+									{
+										third_consideration = true;
+										break;
+									}
+								}
+							}
+						}
+					}
+				}
+				
+				toReturn.Add(first_consideration &amp;&amp; second_consideration &amp;&amp; third_consideration);
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_EnemyStealingFromBuilding_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_EnemyStealingFromBuilding_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_EnemyStealingFromBuilding_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//while a pop is stealing, it should stay still:
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_EnemyStealingFromBuilding" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+
+				addDebugMessage(inScriptInstance, "default state_EnemyStealingFromBuilding script is finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//like the Fighting state, when we are pathing for EnemyStealingFromBuilding it is the end of a period of time for a pop.  In this case, the pop has stolen from a building.
+				//However, if the pop notices that the wargoal has been abandoned, it should drop its plunder immediately; this is the equivalent of never plundering at all
+				//This is unlike fighting or damaging a building because it means the pop does not do the thing it was preparing to do.  Abducting works in the same way.
+				
+				//if the battle goal has been lost, now start to leave the map with a broken mindset (broken pops don't look to fight or steal)
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"EnemyFleeingMapBroken", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt2, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt2[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the EnemyFleeingMapBroken state due to: " + " wargoal is now abandoned");
+						toReturn.Add("EnemyFleeingMapBroken");
+						toReturn.Add((IFBuilding)validTgt2[1]);
+						toReturn.Add((IFPop)validTgt2[2]);
+						toReturn.Add((bool)validTgt2[3]);
+						toReturn.Add((double)validTgt2[4]);
+						toReturn.Add((double)validTgt2[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the EnemyFleeingMapBroken state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//now set up the theft:
+				//first, find the stolen-from building:
+				double closestDist = double.MaxValue;
+				IFBuilding closestBuilding = null;
+				double radius = customConsts.getDoubleConst("pathfinding_state_EnemyStealingFromBuilding steal_resources radius", out bool success);
+				if(!success) radius = 1.0d;
+				var mapTiles = inLocalMap.getMapTilesInRadius(radius, inPop.getMapLocationX(), inPop.getMapLocationY(), 0.0d, 0.0d);
+				foreach(IFMapTile tile in mapTiles)
+				{
+					if(tile.hasBuilding() &amp;&amp; (tile.getBuilding().getCurrentBuildingDurability() != tile.getBuilding().getMaxBuildingDurability())) //can only steal from damaged buildings
+					{
+						double dist = getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, tile.getBuilding(), inLocalMap);
+						if((dist &lt; radius) &amp;&amp; (dist &lt; closestDist))
+						{
+							//check if this pop wants to target the building:
+							if(customScripts.runCustomScriptCheckTypes("battleAIEnemyWantsTargetBuilding", new List&lt;object&gt;() {inPop, tile.getBuilding()},
+								out List&lt;object&gt; validTgt, true, typeof(bool)))
+							{
+								if((bool)validTgt[0])
+								{
+									closestDist = dist;
+									closestBuilding = tile.getBuilding();
+								}
+							}
+						}
+					}
+				}
+				if(closestBuilding != null)
+				{
+					//steal from the building:
+					customScripts.runCustomScript("buildingSteal", new List&lt;object&gt;() { inPop, closestBuilding }, out _);
+					
+					if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"EnemyFleeingMapStealing", inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+					{
+						if((bool)validTgt[0])
+						{
+							addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the EnemyFleeingMapStealing state due to: " + " pop has successfully stolen goods");
+							toReturn.Add("EnemyFleeingMapStealing");
+							toReturn.Add((IFBuilding)validTgt[1]);
+							toReturn.Add((IFPop)validTgt[2]);
+							toReturn.Add((bool)validTgt[3]);
+							toReturn.Add((double)validTgt[4]);
+							toReturn.Add((double)validTgt[5]);
+							return toReturn;
+						}
+					}
+				}
+				//we failed to call a script correctly somehow.  Transition to EnemyIdleEval instead:
+				addDebugMessage(inScriptInstance, "custom scripts indicated pop could not stay in the EnemyFleeingMapStealing state so pop is transitioning directly to EnemyIdleEval state");
+				toReturn.Add("EnemyIdleEval");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_EnemyStealingFromBuilding</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

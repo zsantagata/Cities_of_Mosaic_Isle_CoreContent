@@ -1,0 +1,310 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the FleeingHostile state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: a pop is fleeing hostile if it is a loyal/neutral pop, unwounded, is unmustered, and a hostile is nearby. -->
+		<i1><a>FleeingHostile</a> 
+		<b>0.1</b><c>1.0</c></i1>
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to FleeingHostile: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_FleeingHostile -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>pathfinding_state_FleeingHostile flee_enemy radius</a> <b>double</b> <c>8.0</c></i1> <!-- only flee from enemies within this radius -->
+			<i1><a>pathfinding_state_FleeingHostile flee_enemy distance</a> <b>double</b> <c>16.0</c></i1> <!-- a fleeing pop does not care to pathfind fully across the map, just away from its immediate threat.  This is the distance away that the pop wants to run -->
+			
+			<i1><a>pathfinding_state_FleeingHostile jump_to_home_or_workplace radius</a> <b>double</b> <c>1.0</c></i1> <!-- if a pop is closer than this to its home/workplace when pathfinding occurs, it will hide there -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_fleeinghostile_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_fleeinghostile_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_fleeinghostile</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to FleeingHostile: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_FleeingHostile -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_FleeingHostile_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_FleeingHostile_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_FleeingHostile_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//considerations:
+				//A) this pop must be neutral, or unmustered, during battle
+				//B) there must be an enemy pop within a certain distance
+				bool neutral = (inPop.getCommunity() != getAPI().getLocalCommunity()) &amp;&amp; !getAPI().isHostileCommunity(inPop.getCommunity());
+				bool unmustered = (inPop.getCommunity() == getAPI().getLocalCommunity()) &amp;&amp; !inPop.isMustered();
+				bool first_consideration = (neutral || unmustered) &amp;&amp; inBattleOngoing;
+				
+				bool second_consideration = false;
+				if(first_consideration)
+				{
+					double radiusToFleeEnemy = customConsts.getDoubleConst("pathfinding_state_FleeingHostile flee_enemy radius", out bool success);
+					if(!success) radiusToFleeEnemy = 8.0d;
+					foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+					{
+						if(!pop.isDead() &amp;&amp; !pop.isWounded() &amp;&amp; getAPI().isHostileCommunity(pop.getCommunity()) &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap))
+						{
+							double dist = getAPI().calcDistanceBetweenPoints(inPop.getMapLocationTuple(), pop.getMapLocationTuple());
+							if(dist &lt; radiusToFleeEnemy)
+							{
+								addDebugMessage(inScriptInstance, "enemy pop " + pop.getDebugName() + " is close enough to cause pop to flee");
+								second_consideration = true;
+								break;
+							}
+						}
+					}
+				}
+				
+				toReturn.Add(first_consideration &amp;&amp; second_consideration);
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_FleeingHostile_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_FleeingHostile_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_FleeingHostile_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//find the closest enemy pop and try to move directly away from them, limited by map edges
+				IFPop nearestEnemy = null;
+				double nearestDistance = double.MaxValue;
+				HashSet&lt;IFCommunity&gt; hostileCommunities = new HashSet&lt;IFCommunity&gt;(getAPI().getHostileCommunities());
+				foreach(IFPop targetPop in getAPI().getPopsWithinLocalCommunityMap())
+				{
+					if(hostileCommunities.Contains(targetPop.getCommunity()) &amp;&amp; (targetPop.getPopLocation() == IFPop.ePopLocation.cOnCommunityMap) &amp;&amp; !targetPop.isDead())
+					{
+						if(getAPI().isPopAccessibleByPop(inPop, targetPop))
+						{
+							double dist = getAPI().calcDistanceBetweenPoints(inPop.getMapLocationTuple(), targetPop.getMapLocationTuple());
+							if(dist &lt; nearestDistance)
+							{
+								nearestEnemy = targetPop;
+								nearestDistance = dist;
+							}
+						}
+					}
+				}
+				if(nearestEnemy != null)
+				{
+					double radiusToSeeEnemy = customConsts.getDoubleConst("pathfinding_state_FleeingHostile flee_enemy radius", out bool success);
+					if(!success) radiusToSeeEnemy = 8.0d;
+					double distanceToFlee = customConsts.getDoubleConst("pathfinding_state_FleeingHostile flee_enemy distance", out success);
+					if(!success) distanceToFlee = 16.0d;
+					if(nearestDistance &lt; radiusToSeeEnemy)
+					{
+						//find the angle from enemy to pop and keep moving that way:
+						double x_diff = inPop.getMapLocationX() - nearestEnemy.getMapLocationX();
+						double y_diff = inPop.getMapLocationY() - nearestEnemy.getMapLocationY();
+						double angle = Math.Atan2(y_diff, x_diff);
+						double x_target = inPop.getMapLocationX() + (Math.Cos(angle) * distanceToFlee);
+						double y_target = inPop.getMapLocationY() + (Math.Sin(angle) * distanceToFlee);
+						
+						//limit the target location based on map edges
+						if(x_target &lt; 0.0d) x_target = 0.0d;
+						if(y_target &lt; 0.0d) y_target = 0.0d;
+						if(x_target &gt; inLocalMap.getMapDimensions().Item1) x_target = inLocalMap.getMapDimensions().Item1;
+						if(y_target &gt; inLocalMap.getMapDimensions().Item2) y_target = inLocalMap.getMapDimensions().Item2;
+						
+						toReturn.Add(null);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(x_target);
+						toReturn.Add(y_target);
+						return toReturn;
+					}
+				}
+				
+				//if there is no nearest enemy, just tell the pop to Idle (we shouldn't be in this state but w/e)
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_FleeingHostile" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+
+				addDebugMessage(inScriptInstance, "default state_FleeingHostile script is finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//first and foremost: if the pop has a workplace or home nearby, hide there:
+				double hideInBuildingDistance = customConsts.getDoubleConst("pathfinding_state_FleeingHostile jump_to_home_or_workplace radius", out bool success);
+				if(!success) hideInBuildingDistance = 1.0d;
+				if(inPop.hasHomeBuilding() &amp;&amp; (hideInBuildingDistance &gt; getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, inPop.getHomeBuilding(), inLocalMap)))
+				{
+					//check if the home is hideable:
+					if(customScripts.runCustomScriptCheckTypes("buildingDamageCanHideHere", new List&lt;object&gt;() {inPop.getHomeBuilding()},
+						out List&lt;object&gt; canHide, false, typeof(bool)))
+					{
+						if((bool)canHide[0])
+						{
+							inPop.removePopFromMap(IFPop.ePopLocation.cInHome);
+							addDebugMessage(inScriptInstance, "pop is sheltering in home; removing from map (pathfinding scripts will return information for Idle state)");
+							toReturn.Add("Idle");
+							toReturn.Add(null);
+							toReturn.Add(null);
+							toReturn.Add(false);
+							toReturn.Add(-1.0d);
+							toReturn.Add(-1.0d);
+							return toReturn;
+						}
+					}
+				}
+				if(inPop.hasWorkplaceBuilding() &amp;&amp; (hideInBuildingDistance &gt; getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, inPop.getWorkplaceBuilding(), inLocalMap)))
+				{
+					//check if the workplace is hideable:
+					if(customScripts.runCustomScriptCheckTypes("buildingDamageCanHideHere", new List&lt;object&gt;() {inPop.getWorkplaceBuilding()},
+						out List&lt;object&gt; canHide, false, typeof(bool)))
+					{
+						if((bool)canHide[0])
+						{
+							inPop.removePopFromMap(IFPop.ePopLocation.cInWorkplace);
+							addDebugMessage(inScriptInstance, "pop is sheltering in workplace; removing from map (pathfinding scripts will return information for Idle state)");
+							toReturn.Add("Idle");
+							toReturn.Add(null);
+							toReturn.Add(null);
+							toReturn.Add(false);
+							toReturn.Add(-1.0d);
+							toReturn.Add(-1.0d);
+							return toReturn;
+						}
+					}
+				}
+				
+				//if there is still an enemy nearby, continue to flee
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"FleeingHostile", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt3, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt3[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should stay in the FleeingHostile state due to: " + " there is still an enemy nearby");
+						toReturn.Add("FleeingHostile");
+						toReturn.Add((IFBuilding)validTgt3[1]);
+						toReturn.Add((IFPop)validTgt3[2]);
+						toReturn.Add((bool)validTgt3[3]);
+						toReturn.Add((double)validTgt3[4]);
+						toReturn.Add((double)validTgt3[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not stay in the FleeingHostile state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//we're here because there are no hostiles or buildings to hide in nearby, so transition to UnmusteredInBattle:
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"UnmusteredInBattle", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt2, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt2[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the UnmusteredInBattle state due to: " + " pop no longer sees hostiles nearby");
+						toReturn.Add("UnmusteredInBattle");
+						toReturn.Add((IFBuilding)validTgt2[1]);
+						toReturn.Add((IFPop)validTgt2[2]);
+						toReturn.Add((bool)validTgt2[3]);
+						toReturn.Add((double)validTgt2[4]);
+						toReturn.Add((double)validTgt2[5]);
+						return toReturn;
+					}
+				}
+				//we failed to call a script correctly somehow.  Transition to Idle instead:
+				addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the UnmusteredInBattle state so pop is transitioning directly to Idle state");
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_FleeingHostile</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

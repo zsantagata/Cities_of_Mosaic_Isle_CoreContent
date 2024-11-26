@@ -1,0 +1,241 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>steal_from_building amount base</a> <b>double</b> <c>40.0</c></i1> <!-- this is the starting amount of stolen goods -->
+			<i1><a>steal_from_building amount ill factor</a> <b>double</b> <c>0.5</c></i1> <!-- when a pop is ill, the amount of goods it can steal is multiplied by this -->
+			<i1><a>steal_from_building amount health_min factor</a> <b>double</b> <c>0.5</c></i1> <!-- as a pop's health approaches min, the amount of goods it can steal is multiplied by a factor approaching this -->
+			<i1><a>steal_from_building amount soldier_skill_max factor</a> <b>double</b> <c>1.25</c></i1> <!-- as a pop's soldier skill approaches max, the amount of goods it can steal is multiplied by a factor approaching this -->
+			<i1><a>steal_from_building amount random_min factor</a> <b>double</b> <c>0.8</c></i1> <!-- the amount of goods a pop steals is multiplied by a random factor; this is the lower bound -->
+			<i1><a>steal_from_building amount random_max factor</a> <b>double</b> <c>1.25</c></i1> <!-- the amount of goods a pop steals is multiplied by a random factor; this is the upper bound -->
+			
+			<i1><a>steal_from_building steal_each_iteration min</a> <b>double</b> <c>5.0</c></i1> <!-- the stealing algorithm is iterative; this is the desired min stolen each time (limited by how much is available) -->
+			<i1><a>steal_from_building steal_each_iteration max</a> <b>double</b> <c>10.0</c></i1> <!-- the stealing algorithm is iterative; this is the maximum amount stolen each time -->
+			
+			<i1><a>steal_from_building leave_remaining_amount</a> <b>double</b> <c>0.01</c></i1> <!-- stealing from the resource pool will make sure to leave this amount of resources in the pool.  also, pops will only steal a minimum of this amount of resource -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script buildingsteal</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines wounds and deaths in combat -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	<!-- building steal has two input arguments: IFPop inPop, IFBuilding inBuilding.  There is no output -->
+	<!-- this script is called during battle, when a pop steals from a building.  It can also be called outside of battle, when a pop is sneakily stealing.  This script determines quantity and type of resources stolen, sets up the connected variables to record the theft, and removes the resources from the player resource pool -->
+	<i1><a>buildingSteal</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+    {typeof(IFPop), typeof(IFBuilding)}
+    }, out _))
+    {
+    throw new ArgumentException("buildingSteal custom script received invalid arguments");
+    return null;
+    }
+
+    IFPop inPop = (IFPop)inArguments[0];
+    IFBuilding inBuilding = (IFBuilding)inArguments[1];
+    if((inPop == null) || (inBuilding == null))
+    {
+    throw new ArgumentException("buildingSteal custom script received invalid argument: neither inPop nor inBuilding should be null");
+    return null;
+    }
+
+    var consts = getAPI().getConsts();
+    var customConsts = getAPI().getCustomConsts();
+    var variableHandler = getAPI().getVariableHandler();
+
+    //bypass sanity checks if the inPop is a member of the local community: this would mean the pop is sneakily stealing
+    string wargoal = "";
+    bool success = false;
+    if(inPop.getCommunity() != getAPI().getLocalCommunity())
+    {
+    //sanity checks: first, the wargoal must include stealing
+    wargoal = variableHandler.getString("battleAI_battleGoal_community" + inPop.getCommunity().getUID(), out success);
+    if(!wargoal.Contains("steal_resources"))
+    {
+    return null;
+    }
+
+    //sanity checks: second, the target building must be distribution
+    if((inBuilding.getBuildingKind().getIndustry() == null) || (!inBuilding.getBuildingKind().getIndustry().isDistribution()))
+    {
+    return null;
+    }
+    }
+
+    //first, calculate total quantity of goods stolen:
+    double base_quantity = customConsts.getDoubleConst("steal_from_building amount base", out success);
+    if(!success) base_quantity = 40.0d;
+
+    double ill_factor = customConsts.getDoubleConst("steal_from_building amount ill factor", out success);
+    if(!success) ill_factor = 0.5d;
+
+    double health_min_factor = customConsts.getDoubleConst("steal_from_building amount health_min factor", out success);
+    if(!success) health_min_factor = 0.5d;
+    double health_min = consts.getHealthMin();
+    double health_max = consts.getHealthMax();
+
+    double soldier_skill_max_factor = customConsts.getDoubleConst("steal_from_building amount soldier_skill_max factor", out success);
+    if(!success) soldier_skill_max_factor = 1.25d;
+    double soldier_skill_min = consts.getSoldierSkillMin();
+    double soldier_skill_max = consts.getSoldierSkillMax();
+
+    double random_min_factor = customConsts.getDoubleConst("steal_from_building amount random_min factor", out success);
+    if(!success) random_min_factor = 0.8d;
+    double random_max_factor = customConsts.getDoubleConst("steal_from_building amount random_max factor", out success);
+    if(!success) random_max_factor = 1.25d;
+
+    double amount_stolen = base_quantity;
+    if(inPop.isIll())
+    {
+    amount_stolen *= ill_factor;
+    }
+    //line from health_min_factor to 1.0d as health goes from min to max:
+    double health_factor = ((1.0d - health_min_factor) * inPop.getOverallHealth() + ((health_min_factor * health_max) - health_min)) / (health_max - health_min);
+    amount_stolen *= health_factor;
+    //line from 1.0d to soldier_skill_max_factor as ss goes from min to max:
+    double soldier_skill_factor = ((soldier_skill_max_factor - 1.0d) * inPop.getSoldierSkill() + (soldier_skill_max - (soldier_skill_min * soldier_skill_max_factor))) / (soldier_skill_max - soldier_skill_min);
+    amount_stolen *= soldier_skill_factor;
+    double random_factor = (getAPI().calcRand() * (random_max_factor - random_min_factor)) + random_min_factor;
+    amount_stolen *= random_factor;
+
+    addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " is attempting to steal quantity " + amount_stolen + " of goods, based on base of " + base_quantity + " with ill factor of " + (!inPop.isIll() ? "not ill" : ill_factor.ToString())
+    + " and health factor of " + health_factor + " and soldier skill factor of " + soldier_skill_factor + " and random factor of " + random_factor);
+
+    if((amount_stolen &lt;= 0.0d) || (double.IsNaN(amount_stolen)))
+	  {
+		return null;
+	  }
+	  
+	  //second, get the set of resources that the pop wants to steal, and can be stolen from this building:
+	  List&lt;IFResource&gt; resTargeted = new List&lt;IFResource&gt;();
+	  ReadOnlyCollection&lt;bool&gt; resEnabledForBuilding = getAPI().getResourcesEnabledListForDistributionBuildingKind(inBuilding.getBuildingKind());
+    if(wargoal.Contains("_specific"))
+		{
+			//need to fetch the specific resources:
+			IFConnectedVariable listOfResources = variableHandler.getConnectedVariable("battleAI_battleGoal_community" + inPop.getCommunity().getUID() + "_specific");
+			if(listOfResources != null)
+			{
+				foreach(IFConnectedVariable cv in listOfResources.getLowers())
+				{
+					Int64 moid = cv.getVariableAsInt();
+					if((moid &lt;= 0) || (moid &gt;= resEnabledForBuilding.Count)) continue;
+					if(!resEnabledForBuilding[(int)moid]) continue;
+					IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+					if((res != null) &amp;&amp; !res.isNotInResourcePool())
+					{
+						resTargeted.Add(res);
+					}
+				}
+			}
+			else
+			{
+				wargoal = "steal_resources_all"; //do this so that resources can indeed be stolen
+			}
+	  }
+	  if(wargoal.Contains("_all"))
+	  {
+		//all resources that are valid:
+		for(int i = 1; i &lt; resEnabledForBuilding.Count; i++) //skip moid of 0; do not use the default resource
+		{
+			if(resEnabledForBuilding[i])
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+				if((res != null) &amp;&amp; !res.isNotInResourcePool())
+				{
+					resTargeted.Add(res);
+				}
+			}
+		}
+	  }
+	  if(resTargeted.Count == 0)
+	  {
+			//mark this building as "plundered" so other pops of this community don't target it:
+			variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_plunderedByCommunity" + inPop.getCommunity().getUID() + "_building" + inBuilding.getUID(), 1L);
+			return null;
+	  }
+	  
+	  //third: assemble a dictionary of resource->count in resource pool:
+	  double amount_to_leave = customConsts.getDoubleConst("steal_from_building leave_remaining_amount", out success);
+	  if(!success) amount_to_leave = 0.01d;
+	  IFResourcePool resPool = getAPI().getLocalCommunity().getResourcePool();
+	  Dictionary&lt;IFResource, double&gt; resourceCountsAvailable = new Dictionary&lt;IFResource, double&gt;();
+	  foreach(IFResource res in resTargeted)
+	  {
+			double quantity = resPool.getResourceQuantity(res);
+			if(quantity &gt; (2 * amount_to_leave))
+			{
+				resourceCountsAvailable.Add(res, quantity - amount_to_leave);
+			}
+	  }
+	  resTargeted = new List&lt;IFResource&gt;(resourceCountsAvailable.Keys);
+	  
+	  //fourth: actually choose the resources to steal
+	  double amount_to_steal_min = customConsts.getDoubleConst("steal_from_building steal_each_iteration min", out success);
+	  if(!success) amount_to_steal_min = 5.0d;
+	  double amount_to_steal_max = customConsts.getDoubleConst("steal_from_building steal_each_iteration max", out success);
+	  if(!success) amount_to_steal_max = 10.0d;
+	  Dictionary&lt;IFResource, double&gt; resourceCountsStolenSoFar = new Dictionary&lt;IFResource, double&gt;();
+	  double totalAmountStolenSoFar = 0.0d;
+	  bool keep_going = (resourceCountsAvailable.Count != 0) &amp;&amp; (totalAmountStolenSoFar &lt; amount_stolen);
+	  while(keep_going)
+	  {
+			int index = (int)getAPI().calcRandIntUnder(resTargeted.Count);
+			IFResource res = resTargeted[index];
+			if(resourceCountsAvailable[res] &lt;= 0.0d)
+			{
+				resourceCountsAvailable.Remove(res);
+				resTargeted.RemoveAt(index);
+			}
+			else
+			{
+				double amount_want_to_steal = ((amount_to_steal_max - amount_to_steal_min) * getAPI().calcRand()) + amount_to_steal_min;
+				amount_want_to_steal = Math.Min(amount_want_to_steal, resourceCountsAvailable[res]);
+				amount_want_to_steal = Math.Min(amount_want_to_steal, (amount_stolen - totalAmountStolenSoFar));
+				resourceCountsAvailable[res] -= amount_want_to_steal;
+				if(!resourceCountsStolenSoFar.ContainsKey(res))
+				{
+					resourceCountsStolenSoFar.Add(res, 0.0d);
+				}
+				resourceCountsStolenSoFar[res] += amount_want_to_steal;
+				totalAmountStolenSoFar += amount_want_to_steal;
+			}
+			keep_going = (resourceCountsAvailable.Count != 0) &amp;&amp; (totalAmountStolenSoFar &lt; amount_stolen);
+	  }
+	  if(totalAmountStolenSoFar &lt; amount_to_leave)
+	  {
+			//mark this building as "plundered" so other pops of this community don't target it:
+			variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate(), "battleAI_plunderedByCommunity" + inPop.getCommunity().getUID() + "_building" + inBuilding.getUID(), 1L);
+			return null;
+	  }
+	  
+	  //fifth: actually steal the resources and set up connected variables while we do it:
+	  variableHandler.addConnectedInt("battleAI_listOfPlunderedResourceCounts_pop" + inPop.getUID(), 0L /*this does not matter because it's a list variable*/, out IFConnectedVariable listPlunderedResources,
+	  getAPI().getCalendar().getCurrentDate(), IFConnectedVariable.eCombinationType.cLIST);
+      variableHandler.clearConnectedVariable(listPlunderedResources); //if the variable already existed, clear it
+	  string debugMessageString = "";
+	  foreach(var kvpair in resourceCountsStolenSoFar)
+	  {
+			debugMessageString += "stealing " + kvpair.Value + " of resource " + kvpair.Key.getDebugName() + ", ";
+			resPool.subtractResource(kvpair.Key, kvpair.Value);
+			//the name of the resource variables is structured as "battleAI_plundered" + resource.getInternalName() + "Amount_pop" + inPop.getUID()
+			variableHandler.addConnectedDouble("battleAI_plundered" + kvpair.Key.getInternalName() + "Amount_pop" + inPop.getUID(), kvpair.Value, out IFConnectedVariable cvLower, getAPI().getCalendar().getCurrentDate());
+			variableHandler.clearConnectedVariable(cvLower); //if the variable already existed, clear it
+			variableHandler.connectVariables(cvLower, listPlunderedResources);
+	  }
+	  debugMessageString += " for actual total of " + totalAmountStolenSoFar + " goods stolen";
+	  addDebugMessage(inScriptInstance, debugMessageString);
+	  
+	  return null;
+	</b>
+	</i1>
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

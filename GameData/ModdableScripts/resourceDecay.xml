@@ -1,0 +1,528 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <!-- custom consts related to pop death: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+		<i1><a>distribution decay work factor</a> <b>double</b> <c>2.0</c></i1> <!-- this relates work in distribution workplaces to the reduction of goods' decay -->
+		<i1><a>distribution decay one_day_distance value</a> <b>double</b> <c>100.0</c></i1> <!-- for goods decay purposes, this is the distance that a pop is considered to move goods in one day -->
+		
+		<!-- a resource at minimum quality will decay to its sub-resources first if it has any -->
+		<i1><a>decay other_resources factor min</a> <b>double</b> <c>0.1</c></i1> <!-- minimum proportion decaying to sub-resources -->
+		<i1><a>decay other_resources factor max</a> <b>double</b> <c>0.6</c></i1> <!-- maximum proportion decaying to sub-resources -->
+		<!-- a portion of the remainder of resources will be tossed out in some proportion: -->
+		<i1><a>decay tossout factor min</a> <b>double</b> <c>0.0</c></i1> <!-- minimum proportion decaying to sub-resources -->
+		<i1><a>decay tossout factor max</a> <b>double</b> <c>1.0</c></i1> <!-- maximum proportion decaying to sub-resources -->
+		<i1><a>decay tossout factor offset</a> <b>double</b> <c>0.05</c></i1> <!-- this will be added to the proportion tossed out, but will not impact the following quality improvement -->
+		<!-- based on the proportion tossed out, the remainder will increase in quality -->
+		<i1><a>decay new_quality_from_tossout min</a> <b>double</b> <c>0.0</c></i1> <!-- this is the proportion of the whole range of quality that the resources will now be at if the tossout factor is minimum -->
+		<i1><a>decay new_quality_from_tossout max</a> <b>double</b> <c>0.5</c></i1> <!-- this is the proportion of the whole range of quality that the resources will now be at if the tossout factor is maximum -->
+		
+		<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+		<i1><a>log_script_custom script playerResourceDecayDaily</a> <b>int</b> <c>1</c></i1>
+		<i1><a>log_script_custom script handleResourcesFullyDecayed</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+  <!-- this file holds the implementation of scripts relating to player's resource quality decaying over time -->
+  <gamescripts name="default">
+	<!-- resource decay daily has two inputs: Dictionary<IFBuildingKind, List<bool>> buildingKindToEnabledResourceList (index of the list is resource MOID), Dictionary<IFBuilding, Dictionary<UInt32, double>> distributionBuildingToResourceChangeMap (key of the inner dictionary is resource MOID).  There are no outputs. -->
+	<!-- this script is called once each day, and is meant to calculate resource decay of the local community's resource pool based on the properties of the distribution network -->
+	<mResourceDecayDaily>
+		//input count check:
+		if (inArguments.Length &lt; 2)
+		{
+			return null;
+		}
+		
+		Dictionary&lt;IFBuildingKind, List&lt;bool&gt;&gt; buildingKindToEnabledResourceList = (Dictionary&lt;IFBuildingKind, List&lt;bool&gt;&gt;)inArguments[0];
+		Dictionary&lt;IFBuilding, Dictionary&lt;UInt32, double&gt;&gt; distributionBuildingToResourceChangeMap = (Dictionary&lt;IFBuilding, Dictionary&lt;UInt32, double&gt;&gt;)inArguments[1];
+			
+		//two custom scripts implement this script:
+		var customScripts = getAPI().getCustomScripts();
+		customScripts.runCustomScript("playerResourceDecayDaily", new List&lt;object&gt;() { buildingKindToEnabledResourceList, distributionBuildingToResourceChangeMap }, out _);
+		customScripts.runCustomScript("handleResourcesFullyDecayed", new List&lt;object&gt;() { getAPI().getLocalCommunity().getResourcePool() }, out _);
+		
+		return null;
+	</mResourceDecayDaily>
+	
+  </gamescripts>
+  
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- player resource decay daily has two inputs: Dictionary<IFBuildingKind, List<bool>> buildingKindToEnabledResourceList (index of the list is resource MOID), Dictionary<IFBuilding, Dictionary<UInt32, double>> distributionBuildingToResourceChangeMap (key of the inner dictionary is resource MOID).  There are no outputs. -->
+	<!-- this script is called as the first part of mResourceDecayDaily -->
+	<i1><a>playerResourceDecayDaily</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(Dictionary&lt;IFBuildingKind, List&lt;bool&gt;&gt;), typeof(Dictionary&lt;IFBuilding, Dictionary&lt;UInt32, double&gt;&gt;)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("doesNeutralPopDesireToStay custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	Dictionary&lt;IFBuildingKind, List&lt;bool&gt;&gt; buildingKindToEnabledResourceList = (Dictionary&lt;IFBuildingKind, List&lt;bool&gt;&gt;)inArguments[0];
+	Dictionary&lt;IFBuilding, Dictionary&lt;UInt32, double&gt;&gt; distributionBuildingToResourceChangeMap = (Dictionary&lt;IFBuilding, Dictionary&lt;UInt32, double&gt;&gt;)inArguments[1];
+
+	//steps this custom script will take:
+	//per resource (as long as it is in resource pool):
+	//  calculate center of mass of distribution buildings which are enabled to hold this resource
+	//  calculate center of mass of consumption of resource
+	//  calculate center of mass of production of resource
+	//  calculate total consumption and total production of this resource
+	//  after above has been done (need centers of mass), calculate weighted RMS of: distribution buildings, removal of resource, adding of resource.  the RMS is an estimate of how compact the distribution is; lower is more compact.
+	//  after above has been done, calculate four components of resource decay:
+	//  A) calculate holding-only decay (decay of a resource without moving it around)
+	//  B) calculate transport-only decay
+	//  C) calculate storage-leveling decay
+	//  D) calculate average work-like input from all distribution buildings that are enabled to hold this resource
+	//
+	//  after all the above, actually perform resource decay, remembering that foodprocessors prevent it under a certain quality for food
+
+	double res_min = consts.getResourceQualityMin();
+	double res_max = consts.getResourceQualityMax();
+	double res_factor = customConsts.getDoubleConst("distribution decay work factor", out bool success);
+	if(!success) res_factor = 2.0d;
+	//we decide here that the workplace_avg->decay factor curve sits on a parabola, where we have three explicit points: (min, factor) , ((max+min)/2, 1.0d) , (max, 1/factor)
+	//if max+min=0 we can do simplification
+	//that simplification has been done but I'm sure more could be.  WARNING NOTE: IF YOU CHANGE RESOURCE MAX AND MIN TO NOT BE SYMMETRIC ABOUT 0 (meaning -1 * Min == Max) THEN THIS WILL NEED TO CHANGE AS WELL
+	double quadratic_common = (res_factor - 1) / (res_max * res_min * res_factor * (res_max - res_min));
+	double quadratic_a = -1 * quadratic_common * (res_max * res_factor + res_min);
+	double quadratic_b = quadratic_common * (res_max * res_max * res_factor + res_min * res_min);
+	double one_day_distance = customConsts.getDoubleConst("distribution decay one_day_distance value", out success);
+	if(!success) one_day_distance = 100.0d;
+	addDebugMessage(inScriptInstance, "quadratic_a=" + quadratic_a + " quadratic_b=" + quadratic_b);
+
+	IFTerrainBiome landBiome = getAPI().getLocalCommunity().getLandBiome();
+	IFTerrainBiome waterBiome = getAPI().getLocalCommunity().getWaterBiome();
+	double biomeMultiplier = 1.0d;
+	if((landBiome != null) &amp;&amp; (waterBiome != null))
+	{
+		biomeMultiplier = (1.0d - getAPI().getLocalCommunity().getWaterRatio()) * landBiome.getBiomeQualityDecayStrength() + getAPI().getLocalCommunity().getWaterRatio() * waterBiome.getBiomeQualityDecayStrength();
+	}
+	else if(landBiome != null)
+	{
+		biomeMultiplier = landBiome.getBiomeQualityDecayStrength();
+	}
+	else if(waterBiome != null)
+	{
+		biomeMultiplier = waterBiome.getBiomeQualityDecayStrength();
+	}
+
+	for (int resMOID = 1; resMOID &lt; getAPI().getTotalCountOfMO("resources"); resMOID++)
+    {
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", resMOID);
+		if (res.isNotInResourcePool())
+			continue;
+		if (res.getDecaySpeed() == 0.0d)
+			continue;
+		if(getAPI().getLocalCommunity().getResourcePool().getResourceQuantity(res) == 0.0d)
+			continue;
+
+		addDebugMessage(inScriptInstance, "starting decay calculation for resource " + res.getDebugName());
+		//calculate centers of mass:
+		double com_all_x = 0.0d;
+		double com_all_y = 0.0d;
+		int com_all_count = 0;
+		double com_add_x = 0.0d;
+		double com_add_y = 0.0d;
+		double com_add_sum = 0.0d;
+		double com_removal_x = 0.0d;
+		double com_removal_y = 0.0d;
+		double com_removal_sum = 0.0d;
+		List&lt;IFBuilding&gt; care_about_buildings = new List&lt;IFBuilding&gt;(); //helper to speed up second foreach loop
+		foreach(IFBuilding blding in distributionBuildingToResourceChangeMap.Keys)
+		{
+			if(buildingKindToEnabledResourceList.ContainsKey(blding.getBuildingKind()))
+			{
+				var list = buildingKindToEnabledResourceList[blding.getBuildingKind()]; //save a call/access by storing the list for a moment
+				if (list.Count &gt; resMOID)
+				{
+					if(list[resMOID])
+					{
+						string toReport = blding.getDebugName() + " can store resource";
+						care_about_buildings.Add(blding);
+						//include this distribution building in centers of mass:
+						com_all_x += blding.getMapLocationX();
+						com_all_y += blding.getMapLocationY();
+						com_all_count++;
+
+						if(distributionBuildingToResourceChangeMap[blding].ContainsKey((UInt32)resMOID))
+						{
+							double amt = distributionBuildingToResourceChangeMap[blding][(UInt32)resMOID];
+							if (amt &gt; 0.0d) //adding to the resource pool
+							{
+								com_add_x += blding.getMapLocationX() * amt;
+								com_add_y += blding.getMapLocationY() * amt;
+								com_add_sum += amt;
+								toReport += " and adds to pool amt of " + amt.ToString();
+							}
+							else if (amt &lt; 0.0d) //this distribution building is removing from the resource pool
+							{
+								//later on we will account for the fact that amt is negative, don't bother right now
+								com_removal_x += blding.getMapLocationX() * amt;
+								com_removal_y += blding.getMapLocationY() * amt;
+								com_removal_sum += amt;
+								toReport += " and removes from pool amt of " + amt.ToString();
+							}
+							//if amt == 0.0d nothing to do
+						}
+
+						addDebugMessage(inScriptInstance, toReport);
+					}
+				}
+			}
+		}
+		//after the foreach loop, "com_*_x" and "com_*_y" variables are the correct sums but have not been divided correctly by their total weights.  do it now.
+		bool no_one_touched_resource = false;
+		if (com_all_count == 0)
+			no_one_touched_resource = true;
+		if((com_add_sum == 0.0d) &amp;&amp; (com_removal_sum == 0.0d))
+			no_one_touched_resource = true;
+		//this is a tag which indicates that the resource does not degrade from being moved around (such as animals):
+		if(res.hasTag("no-distribution-spreadness-decay"))
+			no_one_touched_resource = true;
+		
+		double levelingComponent = 0.0d;
+		double workplaceFactor = 1.0d;
+		if(!no_one_touched_resource)
+		{
+			com_all_x /= com_all_count;
+			com_all_y /= com_all_count;
+			if (com_add_sum != 0.0d)
+			{
+				com_add_x /= com_add_sum;
+				com_add_y /= com_add_sum;
+			}
+			if (com_removal_sum != 0.0d)
+			{
+				com_removal_x /= com_removal_sum; //sign will be correct (positive) after this
+				com_removal_y /= com_removal_sum; //sign will be correct (positive) after this
+			}
+			addDebugMessage(inScriptInstance, com_all_count + " distribution buildings total, total production = " + com_add_sum + " and total consumption = " + com_removal_sum);
+			addDebugMessage(inScriptInstance, "center mass of all = " + com_all_x + "," + com_all_y + " center mass of production = " + com_add_x + "," + com_add_y + " center mass of removal = " + com_removal_x + "," + com_removal_y);
+
+			//now we have the centers of mass for storage (all), consumption (removal), and production (add).  we must now calculate the weighted root-mean-square (RMS) of the spread of the three.
+			//RMS serves as an approximate measure of how compact the spread of the three is.  the lower the RMS, the more compact.  the more compact, the slower resources decay.
+			double all_rms = 0.0d;
+			double removal_rms = 0.0d;
+			double add_rms = 0.0d;
+			double workplace_avg = 0.0d; //note that this isn't related to rms but we take advantage of this loop being here.  prevent having to loop again later.
+			foreach (IFBuilding blding in care_about_buildings)
+			{
+				Int64 x_instance = blding.getMapLocationX();
+				Int64 y_instance = blding.getMapLocationY();
+				double proportion_of_total = 0.0d;
+				if(distributionBuildingToResourceChangeMap[blding].ContainsKey((UInt32)resMOID))
+				{
+					proportion_of_total = distributionBuildingToResourceChangeMap[blding][(UInt32)resMOID];
+				}
+				bool add = false;
+				bool remove = false;
+				if((proportion_of_total &gt; 0.0d) &amp;&amp; (com_add_sum != 0.0d))
+				{
+					proportion_of_total /= com_add_sum;
+					add = true;
+				}
+				else if((proportion_of_total &lt; 0.0d) &amp;&amp; (com_removal_sum != 0.0d))
+				{
+					proportion_of_total /= com_removal_sum; //sign will be correct (positive) after this
+					remove = true;
+				}
+
+				double x_contribution_all = (x_instance - com_all_x) * (x_instance - com_all_x);
+				double y_contribution_all = (y_instance - com_all_y) * (y_instance - com_all_y);
+				all_rms += (x_contribution_all + y_contribution_all); //we will divide by com_all_count later
+				if(add)
+				{
+					double x_contribution_add = (x_instance - com_add_x) * (x_instance - com_add_x);
+					double y_contribution_add = (y_instance - com_add_y) * (y_instance - com_add_y);
+					add_rms += ((x_contribution_add + y_contribution_add) * proportion_of_total);
+				}
+				else if(remove)
+				{
+					double x_contribution_remove = (x_instance - com_removal_x) * (x_instance - com_removal_x);
+					double y_contribution_remove = (y_instance - com_removal_y) * (y_instance - com_removal_y);
+					removal_rms += ((x_contribution_remove + y_contribution_remove) * proportion_of_total);
+				}
+
+				//a distribution building is a service building and service buildings store their own output value internally like this.  will be "min" if does not exist (i.e. building not currently being worked)
+				workplace_avg += blding.getServiceQualities().ContainsKey(blding) ? blding.getServiceQualities()[blding] : res_min;
+				addDebugMessage(inScriptInstance, "building " + blding.getDebugName() + " provides distribution service of quality " + res_min);
+			}
+			//after the foreach loop, the rms have not had square root performed.  also all_rms has not had 1/n multiplied in.
+			all_rms /= com_all_count;
+			//now do the square roots:
+			all_rms = Math.Sqrt(all_rms);
+			add_rms = Math.Sqrt(add_rms);
+			removal_rms = Math.Sqrt(removal_rms);
+			addDebugMessage(inScriptInstance, "RMS of all = " + all_rms + " RMS of production = " + add_rms + " RMS of consumption = " + removal_rms);
+			
+			//now we have the centers of mass of storage/production/consumption and their RMS (a mathematical measure of their spread) as well.
+			//we can start to calculate components of decay from moving goods around.
+
+			//transport-only decay: this is extra decay caused by resources that are created and consumed in the same day
+			//I decide that such resources do not cause any decay.
+
+			//next, storage-leveling decay: this is extra decay caused by resources being consumed from stockpile/added to stockpile and the need to shuffle resources around to maintain access
+			//I approximate this as (proportion of moved to stored) * (estimation of distance these goods move)
+			//the approximation is not perfect; there are distribution network geometries where RMS and center-of-mass-to-center-of-mass are not accurate representations of the paths the goods could follow.
+			//but for the purposes of this game, it's good enough and calculates quickly
+			double resource_proportion = com_add_sum - com_removal_sum; //this will always be positive.  this right now is the amount of resources added/removed
+			if(resource_proportion &gt; 0.0d)
+			{
+				resource_proportion /= (resource_proportion + getAPI().getLocalCommunity().getResourcePool().getResourceQuantity(res));
+				double estimated_distance = all_rms;
+				if(com_add_sum &gt; (-1 * com_removal_sum))
+				{
+					//we are adding more than we are removing so we need to focus on the distribution of resources being added
+					double x_diff = com_all_x - com_add_x;
+					double y_diff = com_all_y - com_add_y;
+					estimated_distance += add_rms + Math.Sqrt(x_diff * x_diff + y_diff * y_diff); //second term is distance between centers of mass
+				}
+				else
+				{
+					//we are removing more than we are adding so we need to focus on the distribution of resources being removed
+					double x_diff = com_all_x - com_removal_x;
+					double y_diff = com_all_y - com_removal_y;
+					estimated_distance += removal_rms + Math.Sqrt(x_diff * x_diff + y_diff * y_diff); //second term is distance between centers of mass
+				}
+				levelingComponent = resource_proportion * res.getDecaySpeed() * (res_max - res_min) * estimated_distance  / one_day_distance;
+			}
+			addDebugMessage(inScriptInstance, "levelingComponent of decay = " + levelingComponent);
+
+			//next, workplace average: this is a factor multiplied in afterwards that accelerates or diminishes resource decay based on the efforts of distribution workers
+			workplace_avg /= com_all_count;
+			if (workplace_avg &gt; res_max) //somehow
+				workplace_avg = res_max;
+			else if (workplace_avg &lt; res_min) //somehow
+				workplace_avg = res_min;
+			workplaceFactor = quadratic_a * workplace_avg * workplace_avg + quadratic_b * workplace_avg + 1.0d; //ax^2 + bx + c
+			addDebugMessage(inScriptInstance, "workplaceFactor of decay = " + workplaceFactor);
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "no one touched resource today; only holding decay will apply");
+		}
+
+		//"holding-only" decay (this is independent of distribution network) caused by the resources sitting somewhere, untouched.
+		double holdingOnlyComponent = res.getDecaySpeed() * (res_max - res_min);
+		double vbl = variableHandler.getConnectedDouble("holdingOnlyDegradeMultiplier_resource" + resMOID, out success); //the connected variable is a * of its lowers
+		if(success)
+		{
+			if (vbl &lt; 0.0d)
+				vbl = 0.0d; //don't improve quality over time (do that some other place; the variable is called holdingOnlyDegradeMultiplier so respect that)
+			//but if multiplier is higher than 1.0 (meaning it decays faster than regular) that's okay
+			holdingOnlyComponent *= vbl;
+		}
+		addDebugMessage(inScriptInstance, "holdingOnlyComponent of decay = " + holdingOnlyComponent);
+
+		double total_decay = holdingOnlyComponent + (levelingComponent * workplaceFactor);
+		if(total_decay &gt; 0.0d)
+		{
+			total_decay *= biomeMultiplier;
+		}
+		double current_quality = getAPI().getLocalCommunity().getResourcePool().getResourceQuality(res);
+		addDebugMessage(inScriptInstance, "initial total decay of " + total_decay + " to be applied to resource of current quality " + current_quality + " before difficulty adjustment or buffs");
+		
+		//buffs:
+		if (res.isFood())
+		{
+			//there are food preservation buffs.  take care of them here:
+			string mapUID = getAPI().getLocalCommunity().getDomesticComponent().getMap().getUID().ToString();
+			if (variableHandler.connectedVariableExists("probFoodPreservation_map" + mapUID) &amp;&amp; variableHandler.connectedVariableExists("thresholdFoodPreservation_map" + mapUID))
+			{
+				//probFoodPreservation is a list variable that holds probabilities relating to food preservation
+				//thresholdFoodPreservation is a list variable that holds the thresholds corresponding to the above probabilities relating to food preservation
+				var list_of_probs = variableHandler.getConnectedVariable("probFoodPreservation_map" + mapUID).getLowers();
+				var list_of_thresholds = variableHandler.getConnectedVariable("thresholdFoodPreservation_map" + mapUID).getLowers();
+				int count = Math.Min(list_of_probs.Count, list_of_thresholds.Count);
+				for(int j = 0; j &lt; count; j++)
+				{
+					//if decay of this resource would put it below the threshold quality, run the probability that the buff prevents it
+					if(current_quality - total_decay &lt; list_of_thresholds[j].getVariableAsDouble())
+					{
+						if(getAPI().calcProb(list_of_probs[j].getVariableAsDouble()))
+						{
+							total_decay = current_quality - list_of_thresholds[j].getVariableAsDouble();
+							if (total_decay &lt; 0.0d)
+								total_decay = 0.0d;
+							addDebugMessage(inScriptInstance, "total decay reduced to " + total_decay + " based on buff");
+						}
+					}
+				}
+			}
+		}
+		//livestock buff:
+		if(res.hasTag("animal"))
+		{
+			//there are livestock-being-fed buffs.  take care of them here:
+			IFConnectedVariable fedTop = variableHandler.getConnectedVariable("husbandry_fedAnimalCount_resource" + res.getInternalName());
+			if(fedTop != null)
+			{
+				double countFed = fedTop.getVariableAsDouble();
+				double quantityInPool = getAPI().getLocalCommunity().getResourcePool().getResourceQuantity(res);
+				if(quantityInPool &lt;= countFed)
+				{
+					total_decay = 0.0d;
+					addDebugMessage(inScriptInstance, "all animals of kind " + res.getDebugName() + " are being fed today");
+				}
+				else
+				{
+					double reduceFactor = ((quantityInPool - countFed) / quantityInPool);
+					total_decay *= reduceFactor;
+					addDebugMessage(inScriptInstance, countFed + " animals of kind " + res.getDebugName() + " are being fed today; reducing total decay by factor of " + reduceFactor);
+				}
+			}
+		}
+		
+		double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("resource degradation");
+		if(total_decay &lt; 0.0d) //this means quality improves
+		{
+			if(difficulty &gt; 0.0d)
+			{
+				total_decay /= difficulty;
+			}
+			else
+			{
+				total_decay = double.MaxValue;
+			}
+		}
+		else //quality decreases
+		{
+			total_decay *= difficulty;
+		}
+		addDebugMessage(inScriptInstance, "total decay of " + total_decay + " to be applied to resource of current quality " + current_quality);
+		
+		//lastly for this resource: actually do decay!
+		getAPI().getLocalCommunity().getResourcePool().changeResourceQuality((UInt32)resMOID, -1 * total_decay);
+	}
+
+    return null;
+	</b>
+	</i1>
+	
+  
+	<!-- handle resources fully decayed has one input: the resource pool in question.  There are no outputs. -->
+	<!-- this script is called as the second part of mResourceDecayDaily, but might be called in other contexts such as foreign AI handling their own resources -->
+	<i1><a>handleResourcesFullyDecayed</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFResourcePool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("doesNeutralPopDesireToStay custom script received invalid arguments");
+		  return null;
+	  }
+	  
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	IFResourcePool resPool = (IFResourcePool)inArguments[0];
+
+	double minQual = consts.getResourceQualityMin();
+	double maxQual = consts.getResourceQualityMax();
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("resource degradation");
+
+	double decayToSubResourcesFactorMin = customConsts.getDoubleConst("decay other_resources factor min", out bool success);
+	if(!success) decayToSubResourcesFactorMin = 0.1d;
+	double decayToSubResourcesFactorMax = customConsts.getDoubleConst("decay other_resources factor max", out success);
+	if(!success) decayToSubResourcesFactorMax = 0.6d;
+	
+	double decayTossoutFactorMin = customConsts.getDoubleConst("decay tossout factor min", out success);
+	if(!success) decayTossoutFactorMin = 0.0d;
+	double decayTossoutFactorMax = customConsts.getDoubleConst("decay tossout factor max", out success);
+	if(!success) decayTossoutFactorMax = 1.0d;
+	double decayTossoutFactorOffset = customConsts.getDoubleConst("decay tossout factor offset", out success);
+	if(!success) decayTossoutFactorOffset = 0.05d;
+	decayTossoutFactorOffset *= difficulty;
+	
+	double newQualFromTossoutMin = customConsts.getDoubleConst("decay new_quality_from_tossout min", out success);
+	if(!success) newQualFromTossoutMin = 0.0d;
+	double newQualFromTossoutMax = customConsts.getDoubleConst("decay new_quality_from_tossout max", out success);
+	if(!success) newQualFromTossoutMax = 0.5d;
+
+	//store all added resources and only add them at the end:
+	//(this means resources at minimum quality decay to other resources (and will be at minimum quality) but those other resources will not themselves decay today)
+	Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesToAdd = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+	
+	//iterate over all resources in pool:
+	for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+	{
+		IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+		if(res == null)
+			continue;
+		if(res.isNotInResourcePool())
+			continue;
+			
+		double remainingQuan = resPool.getResourceQuantity(res);
+		if(remainingQuan == 0.0d)
+			continue;
+		double qual = resPool.getResourceQuality(res);
+		if(qual &gt; minQual)
+			continue;
+			
+		//randomly choose factors:
+		double decaySubResourcesFactor = decayToSubResourcesFactorMin + getAPI().calcRand() * (decayToSubResourcesFactorMax - decayToSubResourcesFactorMin);
+		decaySubResourcesFactor = Math.Min(1.0d, Math.Max(0.0d, decaySubResourcesFactor));
+		double tossoutFactor = decayTossoutFactorMin + getAPI().calcRand() * (decayTossoutFactorMax - decayTossoutFactorMin);
+		tossoutFactor = Math.Min(1.0d, Math.Max(0.0d, tossoutFactor));
+		double tossoutProportion = tossoutFactor + decayTossoutFactorOffset;
+		tossoutProportion = Math.Min(1.0d, Math.Max(0.0d, tossoutFactor));
+		
+		//calculate new quality:
+		double newQual = newQualFromTossoutMin + tossoutFactor * (newQualFromTossoutMax - newQualFromTossoutMin); //using tossoutFactor here, not tossoutProportion
+		newQual *= (maxQual - minQual);
+		
+		//breakdown:
+		if(res.getBreakdownResources().Count != 0)
+		{
+			double quanToBreakdown = decaySubResourcesFactor * remainingQuan;
+			remainingQuan -= quanToBreakdown;
+			
+			foreach(var tuple in res.getBreakdownResources())
+			{
+				if(!resourcesToAdd.ContainsKey(tuple.Item1))
+					resourcesToAdd.Add(tuple.Item1, Tuple.Create(0.0d, minQual));
+				resourcesToAdd[tuple.Item1] = Tuple.Create(quanToBreakdown * tuple.Item2 + resourcesToAdd[tuple.Item1].Item1, minQual);
+			}
+			
+			addDebugMessage(inScriptInstance, quanToBreakdown + " of " + res.getDebugName() + " breaking down to sub-resources (minimum quality)");
+			resPool.subtractResource(res, quanToBreakdown);
+		}
+		
+		//toss out:
+		double tossoutQuan = tossoutProportion * remainingQuan;
+		addDebugMessage(inScriptInstance, tossoutQuan + " of " + res.getDebugName() + " being tossed out (minimum quality)");
+		resPool.subtractResource(res, tossoutQuan);
+		
+		//change remaining resource quality:
+		addDebugMessage(inScriptInstance, "changing remaining " + resPool.getResourceQuantity(res) + " of " + res.getDebugName() + " to quality " + (newQual + minQual) + " (improvement from tossout)");
+		resPool.changeResourceQuality(res, newQual);
+	}
+	
+	//now, add all the resources to the pool:
+	foreach(var kvpair in resourcesToAdd)
+	{
+		resPool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+	}
+
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

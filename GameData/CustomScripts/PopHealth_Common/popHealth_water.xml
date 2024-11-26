@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+		<i1><a>popHealth_water water death_days value</a> <b>double</b> <c>3.0</c></i1> <!-- how many days without water will cause water health to drop from max to min -->
+		<i1><a>popHealth_water water recovery_days value</a> <b>double</b> <c>1.0</c></i1> <!-- how many days of full water need med will cause water health to rise from min to max -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script pophealth_water</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which handles pop water health from whatever situation the pop is in -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop,
+	double inWaterConsumed, //this comes from the biome, but is ignored if inWaterProvidedByHousing is true
+	bool inWaterProvidedByHousing, //this is true if the pop's housing is underwater in any way
+	bool inRoughingIt
+	
+	There is no output -->
+	<i1><a>popHealth_water</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop), typeof(double), typeof(bool), typeof(bool)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popHealth_water custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	double inWaterConsumed = (double)inArguments[1];
+	bool inWaterProvidedByHousing = (bool)inArguments[2];
+	bool inRoughingIt = (bool)inArguments[3];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	double healthLowThreshold = consts.getHealthLowThreshold();
+	double healthMax = consts.getHealthMax();
+	  
+	//TODO any race or other non-standard considerations
+	  
+	double daily_water_need_met = 0;
+	bool success = false;
+	if(inWaterProvidedByHousing)
+	{
+		daily_water_need_met = 1.0d;
+	}
+
+    //water needs decay quickly and recover quickly
+    //water has 3 days to death at 0.0 need met and 1 days to recovery at 1.5* need met
+
+    double deathDays = customConsts.getDoubleConst("popHealth_water water death_days value", out success);
+    if(!success) deathDays = 3.0d;
+    double recoveryDays = customConsts.getDoubleConst("popHealth_water water recovery_days value", out success);
+    if(!success) recoveryDays = 1.0d;
+	
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("pop health decay");
+	if(difficulty &gt; 0.0d)
+	{
+		recoveryDays *= difficulty;
+		deathDays /= difficulty;
+	}
+
+    // just a line between days to death at 0.0 and days to recovery at 1.5
+    double shift_from_current_water_health = 1 / (1.5d * deathDays);
+    shift_from_current_water_health = shift_from_current_water_health + ( 1 / (1.5d * recoveryDays));
+    shift_from_current_water_health = shift_from_current_water_health * daily_water_need_met;
+    shift_from_current_water_health = shift_from_current_water_health - ( 1.0d / deathDays );
+    shift_from_current_water_health = shift_from_current_water_health * (consts.getHealthMax() - consts.getHealthMin());
+    addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " increasing water health by " + shift_from_current_water_health.ToString() + " as a result of daily water need met at ratio " + daily_water_need_met.ToString());
+
+	//if a pop is in a home or otherwise healthy enough to gather water from the environment, their minimum water health is the water availability of the local map:
+	double toSet = inPop.getWaterHealth() + shift_from_current_water_health;
+	if(!inRoughingIt || inPop.isPopNoHealthStatus()) toSet = Math.Max(toSet, inWaterConsumed * (consts.getHealthMax() - consts.getHealthMin()));
+    inPop.setWaterHealth(toSet);
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

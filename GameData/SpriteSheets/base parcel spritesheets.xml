@@ -1,0 +1,892 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <spritesheet name="Overlay SS">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Overlay SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Cold Water">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Cold Water SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Desert">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Desert SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Forest">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Forest SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Grassland">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Grassland SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Hills">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Hills SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Jungle">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Jungle SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Mountain">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Mountain SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Steppe">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Steppe SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Swamp">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Swamp SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Taiga">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Taiga SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Temperate Water">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Temperate Water SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Tundra">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Tundra SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
+  <spritesheet name="Warm Water">
+    <mSheetTypeName>igTerrainBaseParcel</mSheetTypeName>
+	<mPath>_Previs Map Objects/Base_Parcels/Warm Water SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>1x1</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>100</width>
+		<height>51</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>1</id> <!-- integer, ids must be unique and flush -->
+		<name>1x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>52</y_origin> <!-- the top of an image is 0 -->
+		<width>150</width>
+		<height>76</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>2</id> <!-- integer, ids must be unique and flush -->
+		<name>2x2</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>129</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>3</id> <!-- integer, ids must be unique and flush -->
+		<name>1x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>231</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>4</id> <!-- integer, ids must be unique and flush -->
+		<name>2x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>333</y_origin> <!-- the top of an image is 0 -->
+		<width>250</width>
+		<height>126</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	  
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>5</id> <!-- integer, ids must be unique and flush -->
+		<name>3x3</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>460</y_origin> <!-- the top of an image is 0 -->
+		<width>300</width>
+		<height>151</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+</core_data>

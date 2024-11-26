@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igResource name="Aloe">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Plants/Aloe</full_path>
+	  <body_text>Aloe.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x0</mResourceQualities>
+	<mDecaySpeed>0.01</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>1</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>0.4</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>soil-growable</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_noun:ingredient</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:shriveled</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>property_adj:spiky</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Animal Feed">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Plants/Aloe</full_path>
+	  <body_text></body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+    <mResourceQualities>0x80</mResourceQualities> <!-- breaks down immediately.  This is used to indicate that the resource is not stored, since Animal Grazing is meant to represent how much animals can feed from the land -->
+	<mBreakdownResources>
+	</mBreakdownResources>
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>immediate breakdown</i1>
+	</mTagList>
+	<mDesolationFactor>0.5</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mProductionSpeed>30.0</mProductionSpeed>
+  </igResource>
+  
+  <igResource name="Cotton">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Plants/Cotton</full_path>
+	  <body_text>Cotton.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x0</mResourceQualities>
+	<mDecaySpeed>0.0025</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>11</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>1.0</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>fibrous</i1>
+		<i1>soil-growable</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_noun:fiber</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>property_adj:white</i1>
+		<i1>degrade_noun:wisps</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Hemp">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Plants/Hemp</full_path>
+	  <body_text>Hemp.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x0</mResourceQualities>
+	<mDecaySpeed>0.0025</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>21</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>0.5</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>fibrous</i1>
+		<i1>soil-growable</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_noun:fiber</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>property_adj:tan</i1>
+		<i1>degrade_noun:wisps</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Ladyhair">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Plants/Ladyhair</full_path>
+	  <body_text>Ladyhair.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x0</mResourceQualities>
+	<mDecaySpeed>-0.0003125</mDecaySpeed> <!-- ladyhair improves, very slowly, over time after harvest -->
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>24</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>1.45</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>fibrous</i1>
+		<i1>soil-growable</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_noun:fiber</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>property_adj:multicolored</i1>
+		<i1>degrade_noun:wisps</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Mustard Seed">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Plants/Mustard Seed</full_path>
+	  <body_text>Mustard Seed.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0006125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>34</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>-0.2</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>soil-growable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_adj:spicy</i1>
+		<i1>use_noun:ingredient</i1>
+		<i1>use_noun:spice</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:cracked</i1>
+		<i1>qual_high_adj:aromatic</i1>
+		<i1>qual_high_adj:preserved</i1>
+		<i1>property_adj:dry</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Painplant">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Plants/Painplant</full_path>
+	  <body_text>Painplant.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x0</mResourceQualities>
+	<mDecaySpeed>0.025</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>39</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>1.2</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>fibrous</i1>
+		<i1>soil-growable</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_noun:ingredient</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:shriveled</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>property_adj:green</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Tobacco">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Plants/Tobacco</full_path>
+	  <body_text>Tobacco.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x0</mResourceQualities>
+	<mDecaySpeed>0.01</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>46</mSpriteID><!-- sprite for icon -->
+	<mDesolationFactor>1.1</mDesolationFactor> <!-- this is a multiplier on how much a resource will cause desolation on tiles from which it is extracted -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>soil-growable</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_noun:ingredient</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:shriveled</i1>
+		<i1>qual_high_adj:healthy</i1>
+		<i1>qual_high_adj:fresh</i1>
+		<i1>property_adj:leafy</i1>
+		<i1>degrade_noun:rot</i1>
+	</mTagList>
+  </igResource>
+  
+</core_data>

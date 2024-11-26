@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script workplaceproduction_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script workplaceproduction_quanqual_common</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which is the overarching workplace production script for buildingkinds that do not have a specific one -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community
+	bool inJustPredicting
+	
+	outputs:
+	Dictionary<IFResource, double> outResourcesConsumedAsInputs, //"which should/would be" consumed as inputs; this script does not do it
+	Dictionary<IFResource, double> outResourcesConsumedOtherwise, //"which should/would be" consumed additionally; this script does not do it
+	Dictionary<IFResource, double> outputResourcesCreated, //"which should/would be" added to the pool; this script does not do it
+	double outputQuality,
+	bool outputQualityWasChanged //this is only true if outputQuality is different than what the workplace in question had on its qual/quan dial
+	bool outIsWorkplaceOn
+	 -->
+	<i1><a>workplaceproduction_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  bool inJustPredicting = (bool)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  
+	  Dictionary&lt;IFResource, double&gt; outResourcesConsumedAsInputs = new Dictionary&lt;IFResource, double&gt;();
+	  Dictionary&lt;IFResource, double&gt; outResourcesConsumedOtherwise = new Dictionary&lt;IFResource, double&gt;();
+	  Dictionary&lt;IFResource, double&gt; outputResourcesCreated = new Dictionary&lt;IFResource, double&gt;();
+	  double outputQuality = consts.getResourceQualityMin();
+	  bool outputQualityWasChanged = false;
+	  bool outIsWorkplaceOn = false;
+	  
+	  //factors-of-production calculations:
+	  string buildingKindName = inWorkplace.getBuildingKind().getInternalName();
+	  string scriptToRunName = "workplaceproduction_factorvalue_all_common";
+	  if(customScripts.doesCustomScriptExistWithName("workplaceproduction_factorvalue_all_" + buildingKindName))
+	  {
+		scriptToRunName = "workplaceproduction_factorvalue_all_" + buildingKindName;
+	  }
+	  double productionValue = 0.0d;
+	  if(customScripts.runCustomScriptCheckTypes(scriptToRunName, new List&lt;object&gt;() { inWorkplace, inCommunity, inJustPredicting }, out List&lt;object&gt; factorOutputs, false, 
+		typeof(double), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;)))
+	  {
+		productionValue = (double)factorOutputs[0];
+		outResourcesConsumedAsInputs = (Dictionary&lt;IFResource, double&gt;)factorOutputs[1];
+		outResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)factorOutputs[2];
+	  }
+	  
+	  //determine quan and qual from production value:
+	  scriptToRunName = "workplaceproduction_quanqual_common";
+	  if(customScripts.doesCustomScriptExistWithName("workplaceproduction_quanqual_" + buildingKindName))
+	  {
+		scriptToRunName = "workplaceproduction_quanqual_" + buildingKindName;
+	  }
+	  if(customScripts.runCustomScriptCheckTypes(scriptToRunName, new List&lt;object&gt;() { inWorkplace, inCommunity, productionValue, outResourcesConsumedAsInputs, outResourcesConsumedOtherwise, inJustPredicting }, out List&lt;object&gt; qualQuanOutputs, false, 
+		typeof(Dictionary&lt;IFResource, double&gt;), typeof(double), typeof(bool), typeof(bool)))
+	  {
+		outputResourcesCreated = (Dictionary&lt;IFResource, double&gt;)qualQuanOutputs[0];
+		outputQuality = (double)qualQuanOutputs[1];
+		outputQualityWasChanged = (bool)qualQuanOutputs[2];
+		outIsWorkplaceOn = (bool)qualQuanOutputs[3];
+	  }
+	  
+	  //note that calling the buildingkind's custom after-workplace-calculations script is the responsibility of the caller
+	  //note that subtracting resources consumed from the pool, and then adding resource outputs to the pool, is also the responsibility of the caller
+	  
+	  return new List&lt;object&gt;() { outResourcesConsumedAsInputs, outResourcesConsumedOtherwise, outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn };
+	</b>
+	</i1>
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community
+	double inProductionValue,
+	Dictionary<IFResource, double> inResourcesConsumedAsInputs,
+	Dictionary<IFResource, double> inResourcesConsumedOtherwise,
+	bool inJustPredicting
+	
+	outputs:
+	Dictionary<IFResource, double> outputResourcesCreated,
+	double outputQuality,
+	bool outputQualityWasChanged //this is only true if outputQuality is different than what the workplace in question had on its qual/quan dial
+	bool outIsWorkplaceOn
+	 -->
+	<i1><a>workplaceproduction_quanqual_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(double), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_quanqual_common custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  double inProductionValue = (double)inArguments[2];
+	  Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInputs = (Dictionary&lt;IFResource, double&gt;)inArguments[3];
+	  Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)inArguments[4];
+	  bool inJustPredicting = (bool)inArguments[5];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  if(inResourcesConsumedAsInputs == null)
+	  {
+		inResourcesConsumedAsInputs = new Dictionary&lt;IFResource, double&gt;();
+	  }
+	  if(inResourcesConsumedOtherwise == null)
+	  {
+		inResourcesConsumedOtherwise = new Dictionary&lt;IFResource, double&gt;();
+	  }
+	  
+	  Dictionary&lt;IFResource, double&gt; outputResourcesCreated = new Dictionary&lt;IFResource, double&gt;();
+	  double outputQuality = consts.getResourceQualityMin();
+	  bool outputQualityWasChanged = false;
+	  bool outIsWorkplaceOn = false;
+	  
+	  //if this is a service workplace, use a service workplace script.  Otherwise use a resource creation script.
+	  bool from_land = inWorkplace.getBuildingKind().isUsesLandResources(); //this is a goods-producing workplace that extracts resources from the land
+	  bool goods = inWorkplace.getBuildingKind().getOutputResources().Count != 0; //this is a goods-producing workplace (else-if will mean this applies if from_land is false)
+	  bool services = inWorkplace.getBuildingKind().isServiceWorkplace(); //this is a service-producing workplace (else-if will mean this applies if from_land and services is false)
+	  bool has_script = inWorkplace.getBuildingKind().isHasWorkplaceScript(); //treat like a service-producing workplace if none of the above are true
+	  
+	  if(!from_land &amp;&amp; !goods &amp;&amp; !services &amp;&amp; !has_script)
+	  {
+		addDebugMessage(inScriptInstance, inWorkplace.getBuildingKind().getDebugName() + " is labeled as a workplace but does not extract from the land, does not have any output goods, is not marked as a service workplace, and has no script.  Why is this a workplace? Returning early");
+		return new List&lt;object&gt;() { outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn };
+	  }
+	  
+	  string workplaceKindString = (from_land || goods) ? "resourcecreationbuilding" : "servicebuilding";
+	  string buildingKindName = inWorkplace.getBuildingKind().getInternalName();
+	  string scriptToRunName = "workplaceproduction_" + workplaceKindString + "_common";
+	  if(customScripts.doesCustomScriptExistWithName("workplaceproduction_" + workplaceKindString + "_" + buildingKindName))
+	  {
+		scriptToRunName = "workplaceproduction_" + workplaceKindString + "_" + buildingKindName;
+	  }
+	  if(customScripts.runCustomScriptCheckTypes(scriptToRunName, new List&lt;object&gt;() { inWorkplace, inCommunity, inProductionValue, inResourcesConsumedAsInputs, inResourcesConsumedOtherwise, inJustPredicting }, out List&lt;object&gt; qualQuanOutputs, false, 
+		typeof(Dictionary&lt;IFResource, double&gt;), typeof(double), typeof(bool), typeof(bool)))
+	  {
+		outputResourcesCreated = (Dictionary&lt;IFResource, double&gt;)qualQuanOutputs[0];
+		outputQuality = (double)qualQuanOutputs[1];
+		outputQualityWasChanged = (bool)qualQuanOutputs[2];
+		outIsWorkplaceOn = (bool)qualQuanOutputs[3];
+	  }
+	
+	  return new List&lt;object&gt;() { outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

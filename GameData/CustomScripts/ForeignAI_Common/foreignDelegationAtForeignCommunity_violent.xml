@@ -1,0 +1,505 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>foreignDelegationAtForeignCommunity_violent attacker_morale days_max</a> <b>int</b> <c>12</c></i1> <!-- foreign-foreign sieges will last only this many days max.  This is a safeguard to prevent infinite loops/too much processing.  Could consider it a choice by all attackers that a more-than-this-day-siege is too long -->
+			
+			<!-- based on a nebulous "success proportion", the count of pops abducted and resources stolen slides from max to 0 -->
+			<i1><a>foreignDelegationAtForeignCommunity_violent success_from_no_self_damage proportion</a> <b>double</b> <c>0.4</c></i1> <!-- this is the proportion of "success" that comes from attacking pops not being wounded/dead.  The rest is from harming target pops -->
+			<i1><a>foreignDelegationAtForeignCommunity_violent success_from_target_damage multiplier</a> <b>double</b> <c>2.0</c></i1> <!-- "full success" for the proportion of "success" that comes from targets being harmed is achieved when this times the total number of attackers has been wounded or killed -->
+			<i1><a>foreignDelegationAtForeignCommunity_violent additional_kill ratio min</a> <b>double</b> <c>0.0</c></i1> <!-- war delegations kill an additional number of pops based on their starting pop count, success proportion, and a random chance.  This is the minimum of the random chance. -->
+			<i1><a>foreignDelegationAtForeignCommunity_violent additional_kill ratio max</a> <b>double</b> <c>2.5</c></i1> <!-- war delegations kill an additional number of pops based on their starting pop count, success proportion, and a random chance.  This is the maximum of the random chance. -->
+			
+			<!-- a foreign community can become a servant of the attacking community (or, if the attacking community is the servant of the master, the relation is cleared).  This happens with some small probability, in exchange for the attack immediately stopping -->
+			<!-- this can only happen if: the target community is not already the servant community of the attacker, the source community is not itself a servant community, and the attacking delegation is a war delegation -->
+			<i1><a>foreignDelegationAtForeignCommunity_violent become_vassal_daily prob</a> <b>double</b> <c>0.005</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script foreigndelegationatforeigncommunity_violent</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which handles violent (war/raiding) delegations whose source and target are neither player controlled -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+	none
+	-->
+	<i1><a>foreignDelegationAtForeignCommunity_violent</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFDelegation)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("foreignDelegationAtForeignCommunity_violent custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		if(inDelegation == null)
+		{
+		  throw new ArgumentException("foreignDelegationAtForeignCommunity_violent custom script received invalid arguments: inDelegation cannot be null");
+		  return null;
+		}
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		if((inDelegation.getSourceCommunity() == localCommunity) || (inDelegation.getTargetCommunity() == localCommunity))
+		{
+		  throw new ArgumentException("foreignDelegationAtForeignCommunity_violent custom script received invalid arguments: inDelegation's source or target community cannot be the local community");
+		  return null;
+		}
+		bool inRaiding = (inDelegation.getDelegationType() == IFDelegation.eDelegationType.cRaiding);
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		double attackerMorale = consts.getMoraleMax();
+		int totalCountOfRaces = (int)getAPI().getTotalCountOfMO("races");
+		List&lt;double&gt; raceCareValuesAttacker = new List&lt;double&gt;();
+		if(customScripts.runCustomScriptCheckTypes("getRaceCareValues", new List&lt;object&gt;() { inDelegation.getSourceCommunity(), null },
+								out List&lt;object&gt; outRaceCareValuesAttacker, true, typeof(List&lt;double&gt;)))
+		{
+			raceCareValuesAttacker = (List&lt;double&gt;)outRaceCareValuesAttacker[0];
+		}
+		
+		bool keepAttacking = true;
+		bool totalSuccess = false;
+		Int64 countTargetsKilled = 0;
+		Int64 countTargetsWounded = 0;
+		List&lt;IFPop&gt; attackersStarting = new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation());
+		if(attackersStarting.Count == 0)
+		{
+			addDebugMessage(inScriptInstance, "delegation " + inDelegation.getDebugName() + " has no pops in it; ending function early");
+			return null;
+		}
+		Int64 daysToSiegeLeft = customConsts.getIntConst("foreignDelegationAtForeignCommunity_violent attacker_morale days_max", out bool success);
+		if(!success) daysToSiegeLeft = 12;
+		
+		Int64 previousRoundDefendingPopsDead = 0;
+		Int64 previousRoundDefendingPopsWounded = 0;
+		foreach(IFPop pop in inDelegation.getTargetCommunity().getPopsLoyalToCommunity())
+		{
+			//since this is only used for a subtraction, filtering out pops that shouldn't be included isn't necessary
+			if(pop.isDead()) previousRoundDefendingPopsDead++;
+			else if(pop.isWounded()) previousRoundDefendingPopsWounded++;
+		}
+		double averageResourceQuality = (consts.getResourceQualityMax() + consts.getResourceQualityMin()) / 2;
+		
+		double becomeServantDailyProb = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_violent become_vassal_daily prob", out success);
+		if(!success) becomeServantDailyProb = 0.005d;
+		if(inRaiding) becomeServantDailyProb = 0.0d; //only war delegations can make servant communities
+		if(inDelegation.getTargetCommunity().getMasterCommunity() == inDelegation.getSourceCommunity()) becomeServantDailyProb = 0.0d; //already a servant community of the attacker
+		if(inDelegation.getSourceCommunity().hasMasterCommunity() &amp;&amp; (inDelegation.getSourceCommunity().getMasterCommunity() != inDelegation.getTargetCommunity())) becomeServantDailyProb = 0.0d; //the attacker is a servant but not of the target
+		bool madeServant = false;
+		bool milStrengthLower = (inDelegation.getTargetCommunity().getMilStrength() &lt; inDelegation.getSourceCommunity().getMilStrength());
+		Int64 blockFromBeingServant = variableHandler.getConnectedInt("blockFromBeingServant_community" + inDelegation.getTargetCommunity().getUID(), out success);
+		if(!success) blockFromBeingServant = 0;
+		Int64 blockFromBeingMaster = variableHandler.getConnectedInt("blockFromBeingMaster_community" + inDelegation.getSourceCommunity().getUID(), out success);
+		if(!success) blockFromBeingMaster = 0;
+		if(((blockFromBeingServant != 0) || (blockFromBeingMaster != 0)) &amp;&amp; (inDelegation.getTargetCommunity() != inDelegation.getSourceCommunity().getMasterCommunity())) becomeServantDailyProb = 0.0d; //the source would make the target a servant, but variables block it from doing so
+		
+		addDebugMessage(inScriptInstance, "delegation " + inDelegation.getDebugName() + " starting siege of community " + inDelegation.getTargetCommunity().getDebugName() + ", starting attacker count=" + attackersStarting.Count
+			+ " daysToSiege=" + daysToSiegeLeft);
+		
+		while(keepAttacking)
+		{
+			//determine defenders
+			List&lt;IFPop&gt; defenders = new List&lt;IFPop&gt;();
+			if(customScripts.runCustomScriptCheckTypes("determineDelegationEnemyDefenders", new List&lt;object&gt;() { inDelegation, consts.getMoraleMax(), inRaiding },
+				out List&lt;object&gt; outDefenders, true, typeof(List&lt;IFPop&gt;)))
+			{
+				defenders = (List&lt;IFPop&gt;)outDefenders[0];
+			}
+			
+			//determine attackers (aka all healthy of them)
+			List&lt;IFPop&gt; attackers = new List&lt;IFPop&gt;();
+			foreach(IFPop pop in attackersStarting)
+			{
+				if(!pop.isDead() &amp;&amp; !pop.isWounded() &amp;&amp; !pop.isIll())
+					attackers.Add(pop);
+			}
+			List&lt;IFPop&gt; savedAttackers = new List&lt;IFPop&gt;(attackers);
+			
+			addDebugMessage(inScriptInstance, "starting fights between " + defenders.Count + " defenders and " + attackers.Count + " attackers, daysToSiegeLeft=" + daysToSiegeLeft);
+			daysToSiegeLeft--;
+			
+			//determine delegation interceptions
+			if(customScripts.runCustomScriptCheckTypes("determineDelegationInterceptions", new List&lt;object&gt;() { inDelegation, attackers, defenders, inRaiding },
+				out List&lt;object&gt; outRemainingAttackersDefenders, true, typeof(List&lt;IFPop&gt;), typeof(List&lt;IFPop&gt;)))
+			{
+				attackers = (List&lt;IFPop&gt;)outRemainingAttackersDefenders[0];
+				defenders = (List&lt;IFPop&gt;)outRemainingAttackersDefenders[1];
+			}
+			
+			//determine results of battles with non-defending pops (TODO right now does not take into consideration which races the attackers wish to target, must be done for both player-sourced and foreign communities)
+			customScripts.runCustomScriptCheckTypes("determineAttackerResults_peopleTarget", new List&lt;object&gt;() { inDelegation, attackers, defenders, inRaiding },
+				out List&lt;object&gt; _, true, typeof(double));
+			
+			//count newly dead, wounded, ill attackers
+			Int64 newAttackersDead = 0;
+			Int64 newAttackersWounded = 0;
+			Int64 newAttackersIll = 0;
+			foreach(IFPop pop in savedAttackers)
+			{
+				if(pop.isDead()) newAttackersDead++;
+				else
+				{
+					if(pop.isWounded()) newAttackersWounded++;
+					if(pop.isIll()) newAttackersIll++;
+				}
+			}
+			
+			//count up dead and wounded pops in the target community
+			Int64 newDefendersDead = -1 * previousRoundDefendingPopsDead;
+			Int64 newDefendersWounded = -1 * previousRoundDefendingPopsWounded;
+			foreach(IFPop pop in inDelegation.getTargetCommunity().getPopsLoyalToCommunity())
+			{
+				//since this is only used for a subtraction, filtering out pops that shouldn't be included isn't necessary
+				if(pop.isDead()) newDefendersDead++;
+				else if(pop.isWounded()) newDefendersWounded++;
+			}
+			
+			//determine attacker morale
+			if(customScripts.runCustomScriptCheckTypes("determineAttackerMorale", new List&lt;object&gt;() { inDelegation, attackerMorale, false, averageResourceQuality, false, averageResourceQuality, 
+				newAttackersDead, newAttackersWounded, newAttackersIll, newDefendersDead, newDefendersWounded, "people", (double)(newDefendersDead + newDefendersWounded), inRaiding },
+				out List&lt;object&gt; outNewMorale, true, typeof(double)))
+			{
+				attackerMorale = (double)outNewMorale[0];
+			}
+			
+			addDebugMessage(inScriptInstance, "fights caused " + newDefendersDead + " newly dead defenders, " + newDefendersWounded + " newly wounded defenders, " + newAttackersDead + " newly dead attackers, and " + newAttackersWounded + " newly wounded attackers. "
+				+ "Attacker morale=" + attackerMorale);
+			
+			previousRoundDefendingPopsDead += newDefendersDead;
+			previousRoundDefendingPopsWounded += newDefendersWounded;
+			countTargetsKilled += newDefendersDead;
+			countTargetsWounded += newDefendersWounded;
+		
+			//check if we should keep attacking: 
+			totalSuccess = true;
+			//the target community must not have surrendered (which they will only do if any have taken wounds/been killed, and if the mil strength of the target community is lower):
+			if(milStrengthLower &amp;&amp; ((newDefendersDead &gt; 0) || (newDefendersWounded &gt; 0)) &amp;&amp; getAPI().calcProb(becomeServantDailyProb))
+			{
+				totalSuccess = false;
+				keepAttacking = false;
+				madeServant = true;
+				//if the target is the master of the source, clear the relation:
+				if(inDelegation.getSourceCommunity().getMasterCommunity() == inDelegation.getTargetCommunity())
+				{
+					inDelegation.getSourceCommunity().setMasterCommunity(null);
+				}
+				//else the source is now the master of the target (the probability is set to 0 if this can't happen):
+				else
+				{
+					inDelegation.getTargetCommunity().setMasterCommunity(inDelegation.getSourceCommunity());
+				}
+				break;
+			}
+			//the target community must have healthy pops *to* attack
+			////if not, total success was achieved
+			foreach(var kvpair in inDelegation.getTargetCommunity().getAdditionalUndeclaredPopCounts())
+			{
+				if(kvpair.Value != 0)
+				{
+					totalSuccess = false;
+					break;
+				}
+			}
+			if(totalSuccess)
+			{
+				foreach(IFPop pop in inDelegation.getTargetCommunity().getPopsLoyalToCommunity(true, false))
+				{
+					if((pop.getPopLocation() == IFPop.ePopLocation.cInForeignCommunity) &amp;&amp; !pop.hasDelegation())
+					{
+						totalSuccess = false;
+						break;
+					}
+				}
+			}
+			if(totalSuccess)
+			{
+				keepAttacking = false;
+				addDebugMessage(inScriptInstance, inDelegation.getDebugName() + " attack on " + inDelegation.getTargetCommunity().getDebugName() + " will stop due to total success");
+			}
+			else
+			{
+				//there must be healthy pops in the delegation
+				keepAttacking = false;
+				foreach(IFPop pop in inDelegation.getPopsInDelegation())
+				{
+					if(!(pop.isDead() || pop.isWounded() || pop.isIll() || (pop.getCommunity() != inDelegation.getSourceCommunity())))
+					{
+						keepAttacking = true;
+						break;
+					}
+				}
+				if(!keepAttacking)
+				{
+					addDebugMessage(inScriptInstance, inDelegation.getDebugName() + " attack on " + inDelegation.getTargetCommunity().getDebugName() + " will stop due to no healthy attackers");
+				}
+				//morale must be greater than zero
+				else if(attackerMorale &lt;= 0.0d)
+				{
+					keepAttacking = false;
+					addDebugMessage(inScriptInstance, inDelegation.getDebugName() + " attack on " + inDelegation.getTargetCommunity().getDebugName() + " will stop due to low morale");
+				}
+				//siege must not have gone on for too long:
+				else if(daysToSiegeLeft == 0)
+				{
+					keepAttacking = false;
+					addDebugMessage(inScriptInstance, inDelegation.getDebugName() + " attack on " + inDelegation.getTargetCommunity().getDebugName() + " will stop due to going on for too many days");
+				}
+			}
+		}
+		
+		Int64 countAttackersWounded = 0;
+		Int64 countAttackersKilled = 0;
+		foreach(IFPop pop in attackersStarting)
+		{
+			if(pop.isDead())
+				countAttackersKilled++;
+			else if(pop.isWounded())
+				countAttackersWounded++;
+		}
+		double prop_from_no_self_damage = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_violent success_from_no_self_damage proportion", out success);
+		if(!success) prop_from_no_self_damage = 0.4d;
+		prop_from_no_self_damage = Math.Max(0.0d, Math.Min(1.0d, prop_from_no_self_damage));
+		double prop_from_target_damage = 1.0d - prop_from_no_self_damage;
+		double targetDamageMultiplier = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_violent success_from_target_damage multiplier", out success);
+		if(!success) targetDamageMultiplier = 2.0d;
+		double targetDamageMax = targetDamageMultiplier * attackersStarting.Count;
+		
+		double successProportion = (prop_from_no_self_damage) * ((attackersStarting.Count - (countAttackersKilled + countAttackersWounded)) / (attackersStarting.Count));
+		successProportion += (prop_from_target_damage) * Math.Min(1.0d, (countTargetsKilled + countTargetsWounded) / (2 * attackersStarting.Count));
+		
+		double resourcesCarriedByOnePop = customConsts.getDoubleConst("steal_from_building amount base", out success);
+		if(!success) resourcesCarriedByOnePop = 40.0d;
+		
+		int attackingHealthyPops = 0;
+		foreach(IFPop pop in inDelegation.getPopsInDelegation())
+		{
+			if(!(pop.isDead() || pop.isWounded() || pop.isIll() || (pop.getCommunity() != inDelegation.getSourceCommunity())))
+			{
+				attackingHealthyPops++;
+			}
+		}
+		
+		//if this is a raid, or total success was achieved, abduct pops:
+		if(totalSuccess || inRaiding)
+		{
+			//for a community to want to abduct pops, its care for that pop should be at or above 1.0 (because races consider their own pops at 1.0, this means only mono-racial communities or special considerations (such as crossbreed-needers) perform abduction)
+			//the target pop must not be dead, but it can be wounded or ill
+			//furthermore, only one pop can be abducted per healthy pop in the attacking delegation at max
+			int countPopsAbductedMax = (int)(attackingHealthyPops * successProportion);
+			
+			HashSet&lt;int&gt; moidsOfRacesToAbduct = new HashSet&lt;int&gt;();
+			for(int moid = 0; moid &lt; totalCountOfRaces; moid++)
+			{
+				if((raceCareValuesAttacker.Count &gt; moid) &amp;&amp; (raceCareValuesAttacker[moid] &gt;= 1.0d))
+				{
+					moidsOfRacesToAbduct.Add(moid);
+				}
+			}
+			int countPopsAbductedSoFar = 0;
+			foreach(IFPop pop in inDelegation.getTargetCommunity().getPopsLoyalToCommunity())
+			{
+				if((countPopsAbductedSoFar &gt;= countPopsAbductedMax) || (moidsOfRacesToAbduct.Count == 0))
+					break;
+				if(moidsOfRacesToAbduct.Contains((int)pop.getRace().getMOID()) &amp;&amp; !(pop.isDead() || pop.hasDelegation() || (pop.getPopLocation() != IFPop.ePopLocation.cInForeignCommunity)))
+				{
+					countPopsAbductedSoFar++;
+					pop.setDelegation(inDelegation);
+					pop.removePopFromMap(IFPop.ePopLocation.cInDelegation);
+				}
+			}
+			
+			//there cannot be any pops left to be reified for a total success, but otherwise:
+			if((countPopsAbductedSoFar &lt; countPopsAbductedMax) &amp;&amp; (moidsOfRacesToAbduct.Count != 0) &amp;&amp; !totalSuccess)
+			{
+				//get the races to be reified:
+				List&lt;Tuple&lt;IFRace, UInt64&gt;&gt; racesToBeReifiedAndCount = new List&lt;Tuple&lt;IFRace, UInt64&gt;&gt;();
+				UInt64 totalCountOfTargets = (UInt64)0;
+				foreach(int moid in moidsOfRacesToAbduct)
+				{
+					IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+					if(race != null)
+					{
+						UInt64 countOfRace = inDelegation.getTargetCommunity().getAdditionalUndeclaredPopCounts().ContainsKey(race) ? (UInt64)inDelegation.getTargetCommunity().getAdditionalUndeclaredPopCounts()[race] : (UInt64)0;
+						totalCountOfTargets += countOfRace;
+						racesToBeReifiedAndCount.Add(Tuple.Create(race, countOfRace));
+					}
+				}
+				//calculate the actual counts to be reified and then abducted (note that this will not always be 100% of all possible abduct targets due to randomness, and also will ignore how much one race is desirable in comparison to another):
+				for(int i = 0; i &lt; racesToBeReifiedAndCount.Count; i++)
+				{
+					UInt64 countOfThisRaceAbducted = (UInt64)Math.Max(0.0d, (getAPI().calcRand() * Math.Min((int)(countPopsAbductedMax - countPopsAbductedSoFar), (int)(racesToBeReifiedAndCount[i].Item2))));
+					countPopsAbductedSoFar += (int)countOfThisRaceAbducted;
+					racesToBeReifiedAndCount[i] = Tuple.Create(racesToBeReifiedAndCount[i].Item1, countOfThisRaceAbducted); 
+				}
+				//reify and abduct:
+				foreach(var tpl in racesToBeReifiedAndCount)
+				{
+					if(tpl.Item2 == 0)
+						continue;
+					List&lt;IFRace&gt; raceToReify = new List&lt;IFRace&gt;();
+					raceToReify.AddRange(Enumerable.Repeat(tpl.Item1, (int)tpl.Item2));
+					if(customScripts.runCustomScriptCheckTypes("reifyPopsFromForeignCommunity", new List&lt;object&gt;() { inDelegation.getTargetCommunity(), raceToReify, null, null, null, null, false, (Int64)tpl.Item2 },
+											out List&lt;object&gt; outPopsReified, true, typeof(List&lt;IFPop&gt;)))
+					{
+						List&lt;IFPop&gt; popsReified = (List&lt;IFPop&gt;)outPopsReified[0];
+						foreach(IFPop pop in popsReified)
+						{
+							pop.setDelegation(inDelegation);
+							pop.removePopFromMap(IFPop.ePopLocation.cInDelegation);
+						}
+					}
+				}
+			}
+			addDebugMessage(inScriptInstance, "as a result of total success or the end of a raid, attackers have abducted " + countPopsAbductedSoFar + " pops");
+		}
+		
+		//if this is a raid delegation or total success, get to loot:
+		if(totalSuccess || inRaiding)
+		{
+			double totalResourcesStolen = 0.0d;
+			double totalResourcesLeftToLoot = attackingHealthyPops * resourcesCarriedByOnePop * successProportion;
+			List&lt;double&gt; resourceDesireValues = new List&lt;double&gt;();
+			if(customScripts.runCustomScriptCheckTypes("getResourceDesireValues", new List&lt;object&gt;() { inDelegation.getSourceCommunity() },
+									out List&lt;object&gt; outResourceDesireValuesAttacker, true, typeof(List&lt;double&gt;)))
+			{
+				resourceDesireValues = (List&lt;double&gt;)outResourceDesireValuesAttacker[0];
+			}
+			//sort resource moids by desire value:
+			List&lt;Tuple&lt;double, int&gt;&gt; moidsOfResourcesToSteal = new List&lt;Tuple&lt;double, int&gt;&gt;();
+			if(resourceDesireValues.Count == 0)
+			{
+				for(int i = 0; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+					moidsOfResourcesToSteal.Add(Tuple.Create(1.0d, i));
+			}
+			else
+			{
+				for(int moid = 0; moid &lt; resourceDesireValues.Count; moid++)
+				{
+					bool added = false;
+					for(int i = 0; i &lt; moidsOfResourcesToSteal.Count; i++)
+					{
+						if(moidsOfResourcesToSteal[i].Item1 &lt; resourceDesireValues[moid])
+						{
+							moidsOfResourcesToSteal.Insert(i, Tuple.Create(resourceDesireValues[moid], moid));
+							added = true;
+							break;
+						}
+					}
+					if(!added)
+					{
+						moidsOfResourcesToSteal.Add(Tuple.Create(resourceDesireValues[moid], moid));
+					}
+				}
+			}
+			//steal resources:
+			IFResourcePool resPoolToStealFrom = inDelegation.getTargetCommunity().getResourcePool();
+			IFResourcePool resPoolToAddTo = inDelegation.getResourcePool();
+			for(int i = 0; i &lt; moidsOfResourcesToSteal.Count; i++)
+			{
+				if(totalResourcesLeftToLoot == 0.0d)
+					break;
+				int moid = moidsOfResourcesToSteal[i].Item2;
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res == null)
+				{
+					continue;
+				}
+				double totalCountOfRes = resPoolToStealFrom.getResourceQuantity(res);
+				if(totalCountOfRes == 0.0d)
+					continue;
+				double totalToSteal = getAPI().calcRand() * Math.Max(totalResourcesLeftToLoot, totalCountOfRes); //yes, max, so taking everything is possible
+				totalToSteal = Math.Min(totalToSteal, totalResourcesLeftToLoot);
+				totalToSteal = Math.Min(totalToSteal, totalCountOfRes);
+				
+				totalResourcesStolen += totalToSteal;
+				totalResourcesLeftToLoot -= totalToSteal;
+				resPoolToAddTo.addResourcesOfQuality(res, totalToSteal, resPoolToStealFrom.getResourceQuality(res));
+				resPoolToStealFrom.subtractResource(res, totalToSteal);
+			}
+			addDebugMessage(inScriptInstance, "as a result of total success or the end of a raid, attackers have stolen " + totalResourcesStolen + " resources");
+		}
+		
+		//if there are any healthy attacking pops left, and this was a total success, kill all the defending wounded/ill pops left:
+		if(totalSuccess)
+		{
+			if(attackingHealthyPops != 0)
+			{
+				//no need to reify anyone -- for total success there must be no reifiable pops left
+				addDebugMessage(inScriptInstance, "as a result of total success, attackers will kill all wounded and ill pops left in the community");
+				foreach(IFPop pop in inDelegation.getTargetCommunity().getPopsLoyalToCommunity(true, false))
+				{
+					if(!pop.hasDelegation() &amp;&amp; (pop.getPopLocation() == IFPop.ePopLocation.cInForeignCommunity) &amp;&amp; (pop.isWounded() || pop.isIll()))
+					{
+						pop.setIsDead(true, IFPop.ePopDeathReason.cViolence); //TODO choose a random pop in the delegation to do the deed
+					}
+				}
+			}
+		}
+		//if this is a war delegation, kill additional pops related to how much success was achieved and how many starting pops there were (as long as the target wasn't made a servant)
+		else if(!madeServant &amp;&amp; (inDelegation.getDelegationType() == IFDelegation.eDelegationType.cWar))
+		{
+			double countToKill = successProportion * attackersStarting.Count;
+			
+			double minRandomKillMult = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_violent additional_kill ratio min", out success);
+			if(!success) minRandomKillMult = 0.0d;
+			double maxRandomKillMult = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_violent additional_kill ratio max", out success);
+			if(!success) maxRandomKillMult = 2.5d;
+			
+			countToKill *= (getAPI().calcRand() * (maxRandomKillMult - minRandomKillMult) + minRandomKillMult);
+			addDebugMessage(inScriptInstance, "as a result of war delegation success, attackers will kill " + countToKill + " pops left in the community, starting with undeclared pops");
+			
+			//first try to "kill" undeclared pops as it's easier:
+			List&lt;IFRace&gt; undeclaredRaces = new List&lt;IFRace&gt;(inDelegation.getTargetCommunity().getAdditionalUndeclaredPopCounts().Keys);
+			while((undeclaredRaces.Count != 0) &amp;&amp; (countToKill != 0.0d))
+			{
+				int index = (int)getAPI().calcRandIntUnder(undeclaredRaces.Count);
+				IFRace race = undeclaredRaces[index];
+				undeclaredRaces.RemoveAt(index);
+				
+				UInt64 undeclaredCount = inDelegation.getTargetCommunity().getAdditionalUndeclaredPopCounts()[race];
+				if(undeclaredCount &gt;= (UInt64)countToKill)
+				{
+					inDelegation.getTargetCommunity().getAdditionalUndeclaredPopCounts()[race] -= (UInt64)countToKill;
+					countToKill = 0.0d;
+				}
+				else
+				{
+					countToKill -= inDelegation.getTargetCommunity().getAdditionalUndeclaredPopCounts()[race];
+					inDelegation.getTargetCommunity().getAdditionalUndeclaredPopCounts().Remove(race);
+				}
+			}
+			
+			//if more pops need to die, look for declared pops:
+			foreach(IFPop pop in inDelegation.getTargetCommunity().getPopsLoyalToCommunity(true, false))
+			{
+				if(pop.hasDelegation() || (pop.getPopLocation() != IFPop.ePopLocation.cInForeignCommunity))
+					continue;
+				pop.setIsDead(true, IFPop.ePopDeathReason.cViolence); //TODO choose a random pop in the delegation to do the deed
+				countToKill -= 1.0d;
+				if(countToKill &lt;= 0.0d)
+					break;
+			}
+		}
+		
+	    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

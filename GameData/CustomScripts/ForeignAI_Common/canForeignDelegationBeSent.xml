@@ -1,0 +1,326 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- variableHandler could possibly hold variables which disable all, or certain kinds of, delegations being sent by foreign communities. -->
+			<!-- these variables are connected variables with the OR combination type.  That means if any of their connected lower Int64s are nonzero, the top value is nonzero. -->
+			<!-- if disable for a larger group is active, it will disable delegations being sent even if a narrower group is not disabled. -->
+			<!-- the names of the uppers work like this: [const name]_[source]_[target]_[kind].  [who] relates to who is sending.  [target] relates to who the target is.  [kind] relates to the delegation type. -->
+			<!-- the names of the lowers are whatever the specific event/reason wants -->
+			<i1><a>foreign_community send_delegation variable_const_name</a> <b>string</b> <c>disableForeignDelegationsVariable</c></i1>
+			
+			<i1><a>foreign_community send_delegation disable_all variable_source_name</a> <b>string</b> <c>all</c></i1>
+			<i1><a>foreign_community send_delegation disable_foreign_master variable_source_name</a> <b>string</b> <c>foreign_master</c></i1>
+			<i1><a>foreign_community send_delegation disable_foreign_servant variable_source_name</a> <b>string</b> <c>foreign_servant</c></i1>
+			<i1><a>foreign_community send_delegation disable_player_master variable_source_name</a> <b>string</b> <c>player_master</c></i1>
+			<i1><a>foreign_community send_delegation disable_player_servant variable_source_name</a> <b>string</b> <c>player_servant</c></i1>
+			<i1><a>foreign_community send_delegation disable_specific variable_source_name</a> <b>string</b> <c>uid</c></i1> <!-- this must be followed by the numerical UID of the target community -->
+			
+			<i1><a>foreign_community send_delegation disable_all variable_target_name</a> <b>string</b> <c>all</c></i1>
+			<i1><a>foreign_community send_delegation disable_player variable_target_name</a> <b>string</b> <c>player</c></i1>
+			<i1><a>foreign_community send_delegation disable_foreign variable_target_name</a> <b>string</b> <c>foreign</c></i1>
+			<i1><a>foreign_community send_delegation disable_my_master variable_target_name</a> <b>string</b> <c>my_master</c></i1>
+			<i1><a>foreign_community send_delegation disable_my_servant variable_target_name</a> <b>string</b> <c>my_servant</c></i1>
+			<i1><a>foreign_community send_delegation disable_player_master variable_target_name</a> <b>string</b> <c>player_master</c></i1>
+			<i1><a>foreign_community send_delegation disable_player_servant variable_target_name</a> <b>string</b> <c>player_servant</c></i1>
+			<i1><a>foreign_community send_delegation disable_specific variable_target_name</a> <b>string</b> <c>uid</c></i1> <!-- this must be followed by the numerical UID of the target community -->
+			
+			<i1><a>foreign_community send_delegation disable_all variable_kind_name</a> <b>string</b> <c>all</c></i1>
+			<i1><a>foreign_community send_delegation disable_war variable_kind_name</a> <b>string</b> <c>war</c></i1>
+			<i1><a>foreign_community send_delegation disable_raiding variable_kind_name</a> <b>string</b> <c>raiding</c></i1>
+			<i1><a>foreign_community send_delegation disable_diplomacy variable_kind_name</a> <b>string</b> <c>diplomacy</c></i1>
+			<i1><a>foreign_community send_delegation disable_trade variable_kind_name</a> <b>string</b> <c>trade</c></i1>
+			<i1><a>foreign_community send_delegation disable_emigration variable_kind_name</a> <b>string</b> <c>emigration</c></i1>
+			<i1><a>foreign_community send_delegation disable_settlement variable_kind_name</a> <b>string</b> <c>settlement</c></i1> <!-- future proofing I guess -->
+			
+			<!-- a "performance" limit on the number of foreign-sourced delegations that can be active at the same time: -->
+			<i1><a>foreign_community send_delegation foreign_source_delegation_count performance max</a> <b>int</b> <c>100</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script canforeigndelegationbesent</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which checks general gates on foreign delegations being sent.  This script returns false if the delegation should not be created/sent, and true otherwise -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFDelegation.eDelegationType inDelegationType,
+	IFCommunity inSourceCommunity,
+	IFCommunity inTargetCommunity
+	-->
+	
+	<!-- output:
+	bool outCanForeignDelegationBeSent
+	-->
+	<i1><a>canForeignDelegationBeSent</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFDelegation.eDelegationType), typeof(IFCommunity), typeof(IFCommunity)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("canForeignDelegationBeSent custom script received invalid arguments");
+		  return null;
+	    }
+		
+		IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[0];
+		IFCommunity inSourceCommunity = (IFCommunity)inArguments[1];
+		IFCommunity inTargetCommunity = (IFCommunity)inArguments[2];
+		
+		var customConsts = getAPI().getCustomConsts();
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		
+		if(inDelegationType == IFDelegation.eDelegationType.cNone)
+		{
+			addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because delegation type is cNone");
+			toReturn.Add(false);
+			return toReturn;
+		}
+		if(inDelegationType == IFDelegation.eDelegationType.cSettlement)
+		{
+			addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because delegation type is cSettlement (foreign communities do not send settlement delegations)");
+			toReturn.Add(false);
+			return toReturn;
+		}
+		
+		if(inSourceCommunity == null)
+		{
+			addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because inSourceCommunity is null");
+			toReturn.Add(false);
+			return toReturn;
+		}
+		if(inSourceCommunity == localCommunity)
+		{
+			addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because inSourceCommunity is the local community (why are you trying to do that?)");
+			toReturn.Add(false);
+			return toReturn;
+		}
+		//normal communities can send delegations.  Invisible and abstract communities should only send delegations as a result of specific events (ones that ignore this function).
+		//The Lady, Wanderers, Generic Enemies, and Rebels should never send delegations
+		if(!inSourceCommunity.isNormalCommunity())
+		{
+			addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because inSourceCommunity is not a normal community; type=" + inSourceCommunity.getCommunityType().ToString());
+			toReturn.Add(false);
+			return toReturn;
+		}
+		if(inSourceCommunity == inTargetCommunity)
+		{
+			addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because inSourceCommunity is the same as inTargetCommunity, inSourceCommunity=" + inSourceCommunity.getDebugName());
+			toReturn.Add(false);
+			return toReturn;
+		}
+		
+		if(inTargetCommunity == null)
+		{
+			addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because inTargetCommunity is null");
+			toReturn.Add(false);
+			return toReturn;
+		}
+		//normal communities can recieve delegations.  Abstract communities should only receive delegations from the player or as a result of specific events (ones that ignore this function).
+		//Invisible communities, The Lady, Wanderers, Generic Enemies, and Rebels should never send delegations
+		if(!inTargetCommunity.isNormalCommunity())
+		{
+			addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because inTargetCommunity is not a normal community; type=" + inTargetCommunity.getCommunityType().ToString());
+			toReturn.Add(false);
+			return toReturn;
+		}
+		//foreign communities do not send diplomatic delegations between themselves:
+		if((inTargetCommunity != localCommunity) &amp;&amp; (inDelegationType == IFDelegation.eDelegationType.cDiplomacy))
+		{
+			addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because foreign inTargetCommunity cannot be sent a diplomatic delegation (that only goes to the player community)");
+			toReturn.Add(false);
+			return toReturn;
+		}
+		//the target community must have non-zero alive pops (though that may change by the time the foreign delegation arrives):
+		bool hasAlivePops = (inTargetCommunity.getPopCountOfRace(inTargetCommunity.getMostPopulousRace()) != 0);
+		if(!hasAlivePops)
+		{
+			addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because inTargetCommunity does not have any alive pops left");
+			toReturn.Add(false);
+			return toReturn;
+		}
+		
+		//now that all the non-variable checks are through, assemble the names of all variables to be checked:
+		List&lt;string&gt; sourceNames = new List&lt;string&gt;();
+		List&lt;string&gt; targetNames = new List&lt;string&gt;();
+		List&lt;string&gt; kindNames = new List&lt;string&gt;();
+		
+		string constStr = customConsts.getStringConst("foreign_community send_delegation disable_all variable_source_name", out bool success);
+		if(!success) constStr = "all";
+		sourceNames.Add(constStr);
+		if(inSourceCommunity.hasServantCommunities())
+		{
+			constStr = customConsts.getStringConst("foreign_community send_delegation disable_foreign_master variable_source_name", out success);
+			if(!success) constStr = "foreign_master";
+			sourceNames.Add(constStr);
+		}
+		if(inSourceCommunity.hasMasterCommunity())
+		{
+			constStr = customConsts.getStringConst("foreign_community send_delegation disable_foreign_servant variable_source_name", out success);
+			if(!success) constStr = "foreign_servant";
+			sourceNames.Add(constStr);
+		}
+		if(inSourceCommunity.hasServantCommunities() &amp;&amp; inSourceCommunity.getServantCommunities().Contains(localCommunity))
+		{
+			constStr = customConsts.getStringConst("foreign_community send_delegation disable_player_master variable_source_name", out success);
+			if(!success) constStr = "player_master";
+			sourceNames.Add(constStr);
+		}
+		if(inSourceCommunity.getMasterCommunity() == localCommunity)
+		{
+			constStr = customConsts.getStringConst("foreign_community send_delegation disable_player_servant variable_source_name", out success);
+			if(!success) constStr = "player_servant";
+			sourceNames.Add(constStr);
+		}
+		constStr = customConsts.getStringConst("foreign_community send_delegation disable_specific variable_source_name", out success);
+		if(!success) constStr = "uid";
+		sourceNames.Add(constStr + inSourceCommunity.getUID());
+		
+		constStr = customConsts.getStringConst("foreign_community send_delegation disable_all variable_target_name", out success);
+		if(!success) constStr = "all";
+		targetNames.Add(constStr);
+		if(inTargetCommunity == localCommunity)
+		{
+			constStr = customConsts.getStringConst("foreign_community send_delegation disable_player variable_target_name", out success);
+			if(!success) constStr = "player";
+			targetNames.Add(constStr);
+		}
+		else
+		{
+			constStr = customConsts.getStringConst("foreign_community send_delegation disable_foreign variable_target_name", out success);
+			if(!success) constStr = "foreign";
+			targetNames.Add(constStr);
+		}
+		if(inTargetCommunity == inSourceCommunity.getMasterCommunity())
+		{
+			constStr = customConsts.getStringConst("foreign_community send_delegation disable_my_master variable_target_name", out success);
+			if(!success) constStr = "my_master";
+			targetNames.Add(constStr);
+		}
+		if(inSourceCommunity.getServantCommunities().Contains(inTargetCommunity))
+		{
+			constStr = customConsts.getStringConst("foreign_community send_delegation disable_my_servant variable_target_name", out success);
+			if(!success) constStr = "my_servant";
+			targetNames.Add(constStr);
+		}
+		if(inTargetCommunity == localCommunity.getMasterCommunity())
+		{
+			constStr = customConsts.getStringConst("foreign_community send_delegation disable_player_master variable_target_name", out success);
+			if(!success) constStr = "player_master";
+			targetNames.Add(constStr);
+		}
+		if(localCommunity.getServantCommunities().Contains(inTargetCommunity))
+		{
+			constStr = customConsts.getStringConst("foreign_community send_delegation disable_player_servant variable_target_name", out success);
+			if(!success) constStr = "player_servant";
+			targetNames.Add(constStr);
+		}
+		constStr = customConsts.getStringConst("foreign_community send_delegation disable_specific variable_target_name", out success);
+		if(!success) constStr = "uid";
+		targetNames.Add(constStr + inTargetCommunity.getUID());
+		
+		constStr = customConsts.getStringConst("foreign_community send_delegation disable_all variable_kind_name", out success);
+		if(!success) constStr = "all";
+		kindNames.Add(constStr);
+		switch(inDelegationType)
+		{
+			case IFDelegation.eDelegationType.cWar:
+				constStr = customConsts.getStringConst("foreign_community send_delegation disable_war variable_kind_name", out success);
+				if(!success) constStr = "war";
+				kindNames.Add(constStr);
+				break;
+			case IFDelegation.eDelegationType.cRaiding:
+				constStr = customConsts.getStringConst("foreign_community send_delegation disable_raiding variable_kind_name", out success);
+				if(!success) constStr = "raiding";
+				kindNames.Add(constStr);
+				break;
+			case IFDelegation.eDelegationType.cTrade:
+				constStr = customConsts.getStringConst("foreign_community send_delegation disable_trade variable_kind_name", out success);
+				if(!success) constStr = "trade";
+				kindNames.Add(constStr);
+				break;
+			case IFDelegation.eDelegationType.cDiplomacy:
+				constStr = customConsts.getStringConst("foreign_community send_delegation disable_diplomacy variable_kind_name", out success);
+				if(!success) constStr = "diplomacy";
+				kindNames.Add(constStr);
+				break;
+			case IFDelegation.eDelegationType.cEmigration:
+				constStr = customConsts.getStringConst("foreign_community send_delegation disable_emigration variable_kind_name", out success);
+				if(!success) constStr = "emigration";
+				kindNames.Add(constStr);
+				break;
+			case IFDelegation.eDelegationType.cSettlement:
+				constStr = customConsts.getStringConst("foreign_community send_delegation disable_settlement variable_kind_name", out success);
+				if(!success) constStr = "settlement";
+				kindNames.Add(constStr);
+				break;
+		
+			case IFDelegation.eDelegationType.cNone:
+			default:
+				break;
+		}
+		
+		constStr = customConsts.getStringConst("foreign_community send_delegation variable_const_name", out success);
+		if(!success) constStr = "disableForeignDelegationsVariable";
+		
+		var variableHandler = getAPI().getVariableHandler();
+		foreach(string src in sourceNames)
+		{
+			foreach(string tgt in targetNames)
+			{
+				foreach(string kind in kindNames)
+				{
+					string nameOfVariableToCheck = constStr + "_" + src + "_" + tgt + "_" + kind;
+					IFConnectedVariable upperCV = variableHandler.getConnectedVariable(nameOfVariableToCheck);
+					if(upperCV != null)
+					{
+						if(upperCV.getVariableAsInt() != 0)
+						{
+							addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because variable forbids it (must be zero or not exist to allow): " + nameOfVariableToCheck + " = " + upperCV.getVariableAsInt());
+							toReturn.Add(false);
+							return toReturn;
+						}
+					}
+				}
+			}
+		}
+		
+		//lastly, check that there are not too many foreign-sourced delegations for performance:
+		Int64 maxForeignDelegations = customConsts.getIntConst("foreign_community send_delegation foreign_source_delegation_count performance max", out success);
+		if(!success) maxForeignDelegations = 100;
+		int countForeignDelegations = 0;
+		foreach(UInt64 uid in getAPI().getUIDsOfAllSO("delegations"))
+		{
+			IFDelegation del = (IFDelegation)getAPI().getSO("delegations", uid);
+			if(del != null)
+			{
+				if((del.getSourceCommunity() != localCommunity) &amp;&amp; !del.isTotalLoss())
+				{
+					countForeignDelegations++;
+					if(countForeignDelegations &gt;= maxForeignDelegations)
+					{
+						addDebugMessage(inScriptInstance, "proposed delegation cannot be sent because there are too many foreign-sourced delegations (performance limit): max=" + maxForeignDelegations);
+						toReturn.Add(false);
+						return toReturn;
+					}
+				}
+			}
+		}
+		
+		addDebugMessage(inScriptInstance, "proposed delegation is okay to be sent");
+		toReturn.Add(true);
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

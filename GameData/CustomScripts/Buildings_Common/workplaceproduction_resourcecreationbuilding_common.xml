@@ -1,0 +1,614 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+		
+			<i1><a>workplaceproduction_resourcecreationbuilding_common log_debug_messages_when_just_predicting if_nonzero</a> <b>int</b> <c>0</c></i1>
+			<i1><a>workplaceproduction_multiplelandsource_splitresources_common log_debug_messages_when_just_predicting if_nonzero</a> <b>int</b> <c>0</c></i1>
+			
+			<!-- this is the minimum total quantity that can be output: -->
+			<i1><a>workplaceproduction_resourcecreationbuilding_common quantity_total_raw minimum</a> <b>double</b> <c>0.025</c></i1>
+			<!-- total quantity produced = this * inProductionValue if the desired quality would be *minimum chooseable*: -->
+			<i1><a>workplaceproduction_resourcecreationbuilding_common quantity_total_mult maximum</a> <b>double</b> <c>2.0</c></i1>
+			<!-- total quantity produced is a line between the two.  However, there are important restrictions:
+			A) if inProductionValue <= 0, outputQuality = min and quantity out = 0 and the workplace is considered "off".  Otherwise, the workplace is on.
+			B) if inProductionValue * quantity_total_mult maximum is less than quantity_total_raw minimum, outputQuality = min chooseable and quantity out = quantity_total_raw minimum
+			C) if the workplace cannot produce more quantity than its input quantity, and the total quantity produced is higher than the input quantity, outputQuality is increased until the quantity output is exactly the input quantity
+			D) if the quality desired would result in quantity output less than quantity_total_raw minimum, outputQuality is decreased until quantity output is exactly quantity_total_raw minimum.  (For workplaces that extract multiple resources from the land, any resources extracted with less than this quantity are instead dropped entirely, possibly turning the workplace off if none are left.  The quantity is unchanged.)
+			E) if both C) and D) cause problems then the result is the same as A)
+			-->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script workplaceproduction_resourcecreationbuilding_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script workplaceproduction_multiplelandsource_splitresources_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script workplaceproduction_desolation_goods_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script workplaceproduction_desolation_land_common</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which is determines output quality and quantity of goods for goods-producing buildingkinds that do not have a specific script -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community
+	double inProductionValue,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInputs,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise,
+	bool inJustPredicting
+	
+	outputs:
+	Dictionary<IFResource, double> outputResourcesCreated,
+	double outputQuality,
+	bool outputQualityWasChanged //this is only true if outputQuality is different than what the workplace in question had on its qual/quan dial
+	bool outIsWorkplaceOn
+	 -->
+	<i1><a>workplaceproduction_resourcecreationbuilding_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(double), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_resourcecreationbuilding_common custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  double inProductionValue = (double)inArguments[2];
+	  Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInputs = (Dictionary&lt;IFResource, double&gt;)inArguments[3];
+	  Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)inArguments[4];
+	  bool inJustPredicting = (bool)inArguments[5];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_resourcecreationbuilding_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_resourcecreationbuilding_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_resourcecreationbuilding_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_resourcecreationbuilding_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  
+	  //quick check:
+	  if(inResourcesConsumedAsInputs == null)
+		inResourcesConsumedAsInputs = new Dictionary&lt;IFResource, double&gt;();
+	  if(inResourcesConsumedOtherwise == null)
+		inResourcesConsumedOtherwise = new Dictionary&lt;IFResource, double&gt;();
+	  
+	  Dictionary&lt;IFResource, double&gt; outputResourcesCreated = new Dictionary&lt;IFResource, double&gt;();
+	  double outputQuality = consts.getResourceQualityMin();
+	  bool outputQualityWasChanged = false;
+	  bool outIsWorkplaceOn = false;
+	  
+	  Int64 logStuffAlwaysIfNonZero = customConsts.getIntConst("workplaceproduction_resourcecreationbuilding_common log_debug_messages_when_just_predicting if_nonzero", out bool success);
+	  if(!success) logStuffAlwaysIfNonZero = 0;
+	  bool logStuff = (!inJustPredicting || (logStuffAlwaysIfNonZero != 0));
+	  //A)
+	  if(inProductionValue &lt;= 0.0d)
+	  {
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " in production value is less than or equal to zero; returning early");
+		outputQualityWasChanged = true;
+		return new List&lt;object&gt;() { outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn};
+	  }
+	  outIsWorkplaceOn = true;
+	  
+	  //fetch values:
+	  double minQualChooseable = consts.getResourceQualityMinChoosable();
+	  double maxQualChooseable = consts.getResourceQualityMaxChoosable();
+	  double minQual = consts.getResourceQualityMin();
+	  double maxQual = consts.getResourceQualityMax();
+	  
+	  double quantityRawMin = customConsts.getDoubleConst("workplaceproduction_resourcecreationbuilding_common quantity_total_raw minimum", out success);
+	  if(!success) quantityRawMin = 0.025d;
+	  double quantityMultMax = customConsts.getDoubleConst("workplaceproduction_resourcecreationbuilding_common quantity_total_mult maximum", out success);
+	  if(!success) quantityMultMax = 2.0d;
+	  
+	  bool from_land = inWorkplace.getBuildingKind().isUsesLandResources();
+	  double difficultyMult = from_land ? getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("resource gathering")
+		: getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("resource refining");
+	  //before any limiting or other considerations, scale inProductionValue by the difficulty multiplier:
+	  inProductionValue *= difficultyMult;
+	  
+	  //if this building extracts from multiple land sources at once, restriction D) is not applied here.  Otherwise, it is, and we can already apply the scale factor of the output resource itself:
+	  bool multipleLandOutputs = from_land &amp;&amp; !inWorkplace.getBuildingKind().isChoosesOutputResource();
+	  if(!multipleLandOutputs)
+	  {
+		double outputResourceSpeedFactor = (inWorkplace.getWorkplaceComponent().getOutputResourceChosen() != null ? inWorkplace.getWorkplaceComponent().getOutputResourceChosen().getProductionSpeed() : 1.0d);
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " scaling inProductionValue by production speed of " + outputResourceSpeedFactor);
+		inProductionValue *= outputResourceSpeedFactor;
+	  }
+	  
+	  double totalQuantityCreated = 0.0d;
+	  //B)
+	  if(inProductionValue * quantityMultMax &lt;= quantityRawMin)
+	  {
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " in production value is so small only the minimum goods can be created");
+		totalQuantityCreated = quantityRawMin;
+		outputQuality = minQualChooseable;
+		outputQualityWasChanged = true;
+	  }
+	  else
+	  {
+		double quantityMax = inProductionValue * quantityMultMax;
+		double slope = quantityMax / (minQualChooseable - maxQual); //this should be negative.  Deliberately use maxQual instead of maxQualChooseable so that maxQualChooseable is not a fixed point
+		double offset = (-1.0d) * slope * maxQual; //should be positive
+		
+	    outputQuality = inWorkplace.getWorkplaceComponent().getResourceQualityDesiredFromQualQuanDial(); //will be between the two chooseable qualities, inclusive
+		
+		//C)
+		double totalQuantityInput = 0.0d;
+		foreach(var kvpair in inResourcesConsumedAsInputs)
+		{
+			totalQuantityInput += kvpair.Value;
+		}
+		//if the workplace has the tag, limit the output quantity if necessary:
+		if(inWorkplace.getBuildingKind().hasTag("workplace cannot output more than input"))
+		{
+			double qualityMinValid = maxQual + (totalQuantityInput / quantityMax) * (minQualChooseable - maxQual); //quality for which the line intersects totalQuantityInput
+			if(outputQuality &lt; qualityMinValid)
+			{
+				if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " desired quality value would create too many goods (this buildingkind cannot create more than input)" +
+					" so reducing; desired = " + outputQuality + " min valid quality=" + qualityMinValid);
+				outputQuality = qualityMinValid;
+				outputQualityWasChanged = true;
+			}
+		}
+		
+		//D)
+		bool bothCandDTriggered = false;
+		if(!multipleLandOutputs)
+		{
+			double qualityMaxValid = maxQual + (quantityRawMin / quantityMax) * (minQualChooseable - maxQual); //quality for which the line intersects quantityRawMin
+			if(outputQuality &gt; qualityMaxValid)
+			{
+				if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " desired quality value would create too few goods so reducing; desired = "
+					+ outputQuality + " max valid quality =" + qualityMaxValid);
+				outputQuality = qualityMaxValid;
+				bothCandDTriggered = outputQualityWasChanged;
+				outputQualityWasChanged = true;
+			}
+		}
+		
+		if(bothCandDTriggered)
+		{
+			if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " min quality from output-quan-less-than-input and max quality from output-quan-above-certain-value make no "
+				+ " quality possible, workplace being set to off");
+			outputQuality = consts.getResourceQualityMin();
+			outputQualityWasChanged = false;
+			outIsWorkplaceOn = false;
+			return new List&lt;object&gt;() { outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn};
+		}
+		else
+		{
+			//now that we have the actual quality at which the goods will be created, calculate total quantity created:
+			totalQuantityCreated = slope * outputQuality + offset; //will be positive and greater than quantityRawMin
+			if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " totalQuantityCreated=" + totalQuantityCreated + " from scaled inProductionValue=" + inProductionValue
+			 + " and quality = " + outputQuality);
+		}
+	  }
+	  
+	  //split here based on if the workplace extracts multiple land resources or not:
+	  string buildingKindName = inWorkplace.getBuildingKind().getInternalName();
+	  if(multipleLandOutputs)
+	  {
+		string scriptToRunName = "workplaceproduction_multiplelandsource_splitresources_common";
+		if(customScripts.doesCustomScriptExistWithName("workplaceproduction_multiplelandsource_splitresources_" + buildingKindName))
+		{
+			scriptToRunName = "workplaceproduction_multiplelandsource_splitresources_" + buildingKindName;
+		}
+		if(customScripts.runCustomScriptCheckTypes(scriptToRunName, new List&lt;object&gt;() { inWorkplace, inCommunity, totalQuantityCreated, outputQuality, inResourcesConsumedAsInputs, inResourcesConsumedOtherwise, inJustPredicting },
+			out List&lt;object&gt; multResourceOutputs, false, typeof(Dictionary&lt;IFResource, double&gt;)))
+		{
+			outputResourcesCreated = (Dictionary&lt;IFResource, double&gt;)multResourceOutputs[0];
+		}
+		if(outputResourcesCreated.Count == 0)
+		{
+			if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " extracted no possible resources from land; workplace counts as off");
+			outIsWorkplaceOn = false;
+			return new List&lt;object&gt;() { outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn};
+		}
+	  }
+	  else //not multiple land outputs
+	  {
+		//only one output:
+		//note that workplaces which output direct to script have getOutputResourceChosen() return null so that must be checked here:
+		IFResource outRes = inWorkplace.getWorkplaceComponent().getOutputResourceChosen();
+		if(outRes == null)
+		{
+			//0 is the "default" or "backup" resource, and should not be seen by the player.  Use it here to indicate direct-to-script output:
+			outputResourcesCreated.Add((IFResource)getAPI().getMOFromMOID("resources", 0), totalQuantityCreated);
+		}
+		else
+		{
+			//if the resource is from land, we need to check that there is a resource parcel in the radius that produces this resource:
+			if(from_land)
+			{
+				bool resourceParcelExists = false;
+				if(inCommunity.hasDomesticComponent() &amp;&amp; (inCommunity.getDomesticComponent().getMap() != null))
+				{
+					IFMap map = inCommunity.getDomesticComponent().getMap();
+					foreach(IFMapTile tile in map.getMapTilesInBuildingRadius(inWorkplace))
+					{
+						if(tile.hasResourceParcel())
+						{
+							var resourcesFromThisTile = 
+							   tile.isUnderwater() ? tile.getResourceParcel().getTerrainSource().getAllowedResourcesWater()
+												   : tile.getResourceParcel().getTerrainSource().getAllowedResourcesLand();
+							if(resourcesFromThisTile.Contains(outRes))
+							{
+								resourceParcelExists = true;
+								break;
+							}
+						}
+					}
+				}
+				if(resourceParcelExists)
+				{
+					outputResourcesCreated.Add(outRes, totalQuantityCreated);
+				}
+				else
+				{
+					if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " has no resource parcels in radius that source " + outRes.getDebugName() + " so outputting nothing");
+					outIsWorkplaceOn = false;
+				}
+			}
+			else
+			{
+				outputResourcesCreated.Add(outRes, totalQuantityCreated);
+			}
+		}
+	  }
+	  
+	  //now that we have assembled the output resources and their quality, adjust desolation in the surrounding area if we are not just predicting:
+	  if(!inJustPredicting)
+	  {
+		string typeOfBuildingString = from_land ? "land" : "goods";
+		string scriptToRunName = "workplaceproduction_desolation_" + typeOfBuildingString + "_common";
+		if(customScripts.doesCustomScriptExistWithName("workplaceproduction_desolation_" + buildingKindName))
+		{
+			scriptToRunName = "workplaceproduction_desolation_" + buildingKindName;
+		}
+		//the script has no return values
+		customScripts.runCustomScript(scriptToRunName, new List&lt;object&gt;() { inWorkplace, inCommunity, outputResourcesCreated, outputQuality, inResourcesConsumedAsInputs, inResourcesConsumedOtherwise }, out _);
+	  }
+	  
+	  return new List&lt;object&gt;() { outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn };
+	</b>
+	</i1>
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community, but no matter what must have a domestic component and a map
+	double inQuantityCreatedTotal,
+	//the following three are unused in this script but might be used in scripts that are specific to a buildingkind so they're staying as inputs
+	double inQuality,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInputs,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise,
+	bool inJustPredicting
+	
+	outputs:
+	Dictionary<IFResource, double> outputResourcesCreated
+	 -->
+	<i1><a>workplaceproduction_multiplelandsource_splitresources_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_multiplelandsource_splitresources_common custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  double inQuantityCreatedTotal = (double)inArguments[2];
+	  bool inJustPredicting = (bool)inArguments[6];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_multiplelandsource_splitresources_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_multiplelandsource_splitresources_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_multiplelandsource_splitresources_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_multiplelandsource_splitresources_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  //sanity check: the input community must have a domestic component and a non-null map:
+	  if(!inCommunity.hasDomesticComponent() || (inCommunity.getDomesticComponent().getMap() == null))
+	  {
+		  throw new ArgumentException("workplaceproduction_multiplelandsource_splitresources_common custom script received invalid argument: the input inCommunity must have a domestic component and a map");
+		  return null;
+	  }
+	  
+	  Dictionary&lt;IFResource, double&gt; outputResourcesCreated = new Dictionary&lt;IFResource, double&gt;();
+	  
+	  Int64 logStuffAlwaysIfNonZero = customConsts.getIntConst("workplaceproduction_multiplelandsource_splitresources_common log_debug_messages_when_just_predicting if_nonzero", out bool success);
+	  if(!success) logStuffAlwaysIfNonZero = 0;
+	  bool logStuff = (!inJustPredicting || (logStuffAlwaysIfNonZero != 0));
+	
+	  IFMap map = inCommunity.getDomesticComponent().getMap();
+	
+	  ReadOnlyCollection&lt;IFResource&gt; extractedResources = inWorkplace.getBuildingKind().getOutputResources();
+	  Dictionary&lt;IFResource, Int64&gt; resourcesFromTiles = new Dictionary&lt;IFResource, Int64&gt;(); //this counts, per resource, tiles extracted from
+	  Int64 totalCountOfResourceTilePairs = 0;
+	  //this foreach loop initializes the above dictionary:
+	  foreach(IFMapTile tile in map.getMapTilesInBuildingRadius(inWorkplace))
+	  {
+	    if(tile.hasResourceParcel())
+	    {
+			var resourcesFromThisTile = 
+			   tile.isUnderwater() ? tile.getResourceParcel().getTerrainSource().getAllowedResourcesWater().Intersect(extractedResources)
+		                           : tile.getResourceParcel().getTerrainSource().getAllowedResourcesLand().Intersect(extractedResources);
+			foreach(IFResource res in resourcesFromThisTile)
+			{
+				if(!resourcesFromTiles.ContainsKey(res))
+					resourcesFromTiles.Add(res, 0);
+				resourcesFromTiles[res]++;
+				totalCountOfResourceTilePairs++;
+			}
+	    }
+	  }
+	
+	  if(totalCountOfResourceTilePairs != 0)
+	  {
+		  double minQuantityCreateable = customConsts.getDoubleConst("workplaceproduction_resourcecreationbuilding_common quantity_total_raw minimum", out success);
+		  if(!success) minQuantityCreateable = 0.025d;
+	  
+		  foreach(var kvpair in resourcesFromTiles)
+		  {
+			IFResource res = kvpair.Key;
+			Int64 resCount = kvpair.Value;
+			double resRatio = (resCount) / ((double)totalCountOfResourceTilePairs);
+			double resAmt = resRatio * inQuantityCreatedTotal * res.getProductionSpeed();
+			
+			if(resAmt &lt; minQuantityCreateable)
+			{
+				if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " would create less of " + res.getDebugName() + " than quantity allowable (" + minQuantityCreateable + "), skipping");
+			}
+			else
+			{
+				outputResourcesCreated.Add(res, resAmt);
+			}
+		  }
+	  }
+	
+	  return new List&lt;object&gt;() { outputResourcesCreated };
+	</b>
+	</i1>
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community, but no matter what must have a domestic component and a map
+	Dictionary&lt;IFResource, double&gt; inResourcesExtractedFromLand,
+	//the following three are unused in this script but might be used in scripts that are specific to a buildingkind so they're staying as inputs
+	double inQuality,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInputs,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise,
+	
+	outputs: none
+	 -->
+	<i1><a>workplaceproduction_desolation_goods_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(Dictionary&lt;IFResource, double&gt;), typeof(double), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_goods_common custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  Dictionary&lt;IFResource, double&gt; inResourcesExtractedFromLand = (Dictionary&lt;IFResource, double&gt;)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_goods_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_goods_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_goods_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_goods_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  //sanity check: the input community must have a domestic component and a non-null map:
+	  if(!inCommunity.hasDomesticComponent() || (inCommunity.getDomesticComponent().getMap() == null))
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_goods_common custom script received invalid argument: the input inCommunity must have a domestic component and a map");
+		  return null;
+	  }
+	
+	  IFMap map = inCommunity.getDomesticComponent().getMap();
+	  
+	  double deso_rate = inWorkplace.getBuildingKind().getDesolationRateInRadius() * inWorkplace.getWorkplaceComponent().getWorkerPops().Count / (double)(inWorkplace.getBuildingKind().getMaxWorkers());
+      if(deso_rate != 0.0d)
+	  {
+        addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + "increasing desolation of tiles in radius by " + deso_rate);
+		ReadOnlyCollection&lt;IFMapTile&gt; list_of_tiles = map.getMapTilesInBuildingRadius(inWorkplace);
+		
+	    //for workplaces that are not land extraction, spread desolation equally across land in radius
+		foreach(IFMapTile tile in list_of_tiles)
+		{
+		  tile.setDesolation(tile.getDesolation() + (deso_rate / list_of_tiles.Count));
+		}
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community, but no matter what must have a domestic component and a map
+	Dictionary&lt;IFResource, double&gt; inResourcesExtractedFromLand,
+	//the following three are unused in this script but might be used in scripts that are specific to a buildingkind so they're staying as inputs
+	double inQuality,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInputs,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise,
+	
+	outputs: none
+	 -->
+	<i1><a>workplaceproduction_desolation_land_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(Dictionary&lt;IFResource, double&gt;), typeof(double), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_land_common custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  Dictionary&lt;IFResource, double&gt; inResourcesExtractedFromLand = (Dictionary&lt;IFResource, double&gt;)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_land_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_land_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_land_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_land_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  //sanity check: the input community must have a domestic component and a non-null map:
+	  if(!inCommunity.hasDomesticComponent() || (inCommunity.getDomesticComponent().getMap() == null))
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_land_common custom script received invalid argument: the input inCommunity must have a domestic component and a map");
+		  return null;
+	  }
+	
+	  IFMap map = inCommunity.getDomesticComponent().getMap();
+	  
+	  //fetch all tiles extracted from:
+	  var extractedResources = inResourcesExtractedFromLand.Keys;
+	  Dictionary&lt;IFResource, List&lt;IFMapTile&gt;&gt; resourcesFromTiles = new Dictionary&lt;IFResource, List&lt;IFMapTile&gt;&gt;(); //this lists, per resource, tiles extracted from
+	  Int64 totalCountOfResourceTilePairs = 0;
+	  //this foreach loop initializes the above dictionary:
+	  foreach(IFMapTile tile in map.getMapTilesInBuildingRadius(inWorkplace))
+	  {
+	    if(tile.hasResourceParcel())
+	    {
+			var resourcesFromThisTile = 
+			   tile.isUnderwater() ? tile.getResourceParcel().getTerrainSource().getAllowedResourcesWater().Intersect(extractedResources)
+		                           : tile.getResourceParcel().getTerrainSource().getAllowedResourcesLand().Intersect(extractedResources);
+			foreach(IFResource res in resourcesFromThisTile)
+			{
+				if(!resourcesFromTiles.ContainsKey(res))
+					resourcesFromTiles.Add(res, new List&lt;IFMapTile&gt;());
+				resourcesFromTiles[res].Add(tile);
+				totalCountOfResourceTilePairs++;
+			}
+	    }
+	  }
+	  
+	  //spread desolation over them based on the resource extracted:
+	  double buildingDesoTotal = inWorkplace.getBuildingKind().getDesolationRateInRadius() * inWorkplace.getWorkplaceComponent().getWorkerPops().Count / (double)(inWorkplace.getBuildingKind().getMaxWorkers());
+	  foreach(var kvpair in resourcesFromTiles)
+	  {
+		double resourceDesolationFactor = kvpair.Key.getDesolationFactor();
+		foreach(IFMapTile tile in kvpair.Value)
+		{
+			tile.setDesolation(tile.getDesolation() + (buildingDesoTotal * resourceDesolationFactor / totalCountOfResourceTilePairs));
+		}
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

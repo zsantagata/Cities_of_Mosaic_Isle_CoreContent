@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of the script that determines how much effort goes into building new buildings -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+		<i1><a>mBuildingConstruction unhealthy_pop popday mult</a> <b>double</b> <c>0.4</c></i1> <!-- this is how much of a pop-day that an unhealthy (ill/wounded/pregnant immobile) pop contributes.  A healthy pop contributes 1.0d -->
+		
+		<i1><a>mBuildingConstruction additional_days_from_other_sources variable name</a> <b>string</b> <c>constructionAdditionalEffort</c></i1> <!-- this is the name of the connected variable that this script will use, before "_map" + [map UID] are appended to it -->
+		
+		<i1><a>mBuildingConstruction buildings_complete alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
+		<i1><a>mBuildingConstruction buildings_complete alert before_replace_text</a> <b>string</b>
+		<c>[0] buildings have been fully built.</c></i1>
+		
+		<i1><a>mBuildingConstruction history action before_replace_text</a> <b>string</b>
+		<c>has built</c></i1>
+		<i1><a>mBuildingConstruction history major_adjective before_replace_text</a> <b>string</b>
+		<c>construction</c></i1>
+		<i1><a>mBuildingConstruction history minor_adjectives before_replace_text</a> <b>list</b>
+		<c>creation</c></i1>
+		<i1><a>mBuildingConstruction history other_effects_strings before_replace_text</a> <b>list</b>
+		<c></c></i1>
+		<i1><a>mBuildingConstruction history other_effects_values</a> <b>list</b>
+		<c></c></i1>
+		<i1><a>mBuildingConstruction history costBenefit value</a> <b>int</b>
+		<c>0</c></i1>
+		
+		<i1><a>mBuildingConstruction predict_text before_replace_text 1</a> <b>string</b>
+		<c>[0] unemployed pops contribute [1] pop-days of effort to construction of new buildings.</c></i1>
+		<i1><a>mBuildingConstruction predict_text before_replace_text 2</a> <b>string</b>
+		<c>[2] buildings need [3] pop-days of construction to be fully built.</c></i1>
+		<i1><a>mBuildingConstruction predict_text before_replace_text 3</a> <b>string</b>
+		<c>Yesterday's construction planning contributes an additional [4] pop-days of effort.</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+  <gamescripts name="default">
+	<!-- building construction script has two inputs: List<IFBuilding> inAllUnfinishedBuildings, bool inJustPredicting.  There is one output: string outTextToDisplayInInfoView. -->
+	<!-- this script is called whenever Info View is refreshed (with inJustPredicting=true), and once early on in each midnight processing. Note that this script is called BEFORE regular workplaces add to constructionAdditionalEffort, which is why they all impact *tomorrow's* efforts -->
+	<mBuildingConstruction>
+		//input count check:
+		if (inArguments.Length &lt; 2)
+		{
+			return null;
+		}
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var customScripts = getAPI().getCustomScripts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		List&lt;IFBuilding&gt; inAllUnfinishedBuildings = (List&lt;IFBuilding&gt;)inArguments[0];
+		bool inJustPredicting = (bool)inArguments[1];
+		
+		int unemployed_healthy_count = 0;
+		int unemployed_unhealthy_count = 0;
+		
+		foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap().Intersect(localCommunity.getPopsLoyalToCommunity(true, false)))
+		{
+			if(!pop.hasWorkplaceBuilding())
+			{
+				//TODO: once "striking/not working" is established, check that as well
+				if(pop.isPopNoHealthStatus())
+				{
+					unemployed_healthy_count++;
+				}
+				else
+				{
+					unemployed_unhealthy_count++;
+				}
+			}
+		}
+		
+		IFIndustry constructionIndustry = null;
+		int totalIndustries = getAPI().getTotalCountOfMO("industries");
+		for(int i = 0; i &lt; totalIndustries; i++)
+		{
+			IFIndustry toCheck = (IFIndustry)getAPI().getMOFromMOID("industries", i);
+			if(toCheck.isConstruction())
+			{
+				constructionIndustry = toCheck;
+				break;
+			}
+		}
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		if(constructionIndustry == null)
+		{
+			addDebugMessage(inScriptInstance, "Could not find a construction industry at all!  No buildings will be built -- check it hasn't been modded out");
+			toReturn.Add("");
+			return toReturn;
+		}
+		
+		//the construction leader does not have an impact if they are among the unemployed
+		double skill = localCommunity.getDomesticComponent().getIndustrySkills().getAverageSkill(constructionIndustry);
+		double min_skill = consts.getWorkerSkillMin();
+		double max_skill = consts.getWorkerSkillMax();
+		double min_factor = consts.getProductionWorkerSkillFactorMin();
+		double max_factor = consts.getProductionWorkerSkillFactorMax();
+		double skill_factor = min_factor + ( ((max_factor - min_factor) * (skill - min_skill)) / ( max_skill - min_skill ) );
+		
+		double unhealthyFactor = customConsts.getDoubleConst("mBuildingConstruction unhealthy_pop popday mult", out bool success);
+		if(!success) unhealthyFactor = 0.4d;
+		
+		double unemployedPopDays = (unemployed_healthy_count + unemployed_unhealthy_count * unhealthyFactor) * skill_factor;
+		
+		//now look for the contribution from construction buildings:
+		IFMap map = localCommunity.getDomesticComponent().getMap();
+		string connectedVariableName = customConsts.getStringConst("mBuildingConstruction additional_days_from_other_sources variable name", out success);
+		if(!success) connectedVariableName = "constructionAdditionalEffort";
+		connectedVariableName += "_map" + map.getUID();
+		double additionalContribution = variableHandler.getConnectedDouble(connectedVariableName, out success);
+		if(!success) additionalContribution = 0.0d;
+		
+		double totalPopDays = unemployedPopDays + additionalContribution;
+		Int64 totalPopDaysInt = (int)totalPopDays;
+		totalPopDaysInt += getAPI().calcProb(totalPopDays - totalPopDaysInt) ? 1 : 0;
+		
+		addDebugMessage(inScriptInstance, totalPopDaysInt + " pop-days of construction effort will occur from"
+			+ " unemployed_healthy_count=" + unemployed_healthy_count
+			+ " unemployed_unhealthy_count=" + unemployed_unhealthy_count
+			+ " skill_factor=" + skill_factor
+			+ " additionalContribution=" + additionalContribution
+			);
+		
+		//order buildings from least days left to most:
+		Int64 totalPopDaysDesiredByBuildings = 0;
+		List&lt;IFBuilding&gt; orderedList = new List&lt;IFBuilding&gt;();
+		foreach(IFBuilding blding in inAllUnfinishedBuildings)
+		{
+			Int64 popDaysLeftThisBuilding = blding.getPopDaysLeftToComplete();
+			if(popDaysLeftThisBuilding &lt;= 0) //this shouldn't be the case, but just in case
+				continue;
+			totalPopDaysDesiredByBuildings += popDaysLeftThisBuilding;
+			bool added = false;
+			for(int i = 0; i &lt; orderedList.Count; i++)
+			{
+				if(popDaysLeftThisBuilding &lt; orderedList[i].getPopDaysLeftToComplete())
+				{
+					added = true;
+					orderedList.Insert(i, blding);
+					break;
+				}
+			}
+			if(!added)
+				orderedList.Add(blding);
+		}
+		
+		Int64 popDaysToExpend = Math.Min(totalPopDaysDesiredByBuildings, totalPopDaysInt);
+		Int64 popDaysToExpendSaved = popDaysToExpend;
+		if(!inJustPredicting)
+		{
+			int buildingCountConstructed = 0;
+			while((popDaysToExpend != 0) &amp;&amp; (orderedList.Count != 0))
+			{
+				Int64 left = orderedList[0].getPopDaysLeftToComplete();
+				Int64 expendedOnThisBuilding = Math.Min(popDaysToExpend, left);
+				popDaysToExpend -= expendedOnThisBuilding;
+				orderedList[0].setPopDaysLeftToComplete(left - expendedOnThisBuilding);
+				if((left - expendedOnThisBuilding) == 0)
+				{
+					//make a historical event for this building being completed:
+					string text = customConsts.getStringConst("mBuildingConstruction history action before_replace_text", out success);
+					if(!success) text = "has built";
+					string majorAdjective = customConsts.getStringConst("mBuildingConstruction history major_adjective before_replace_text", out success);
+					if(!success) majorAdjective = "construction";
+					ReadOnlyCollection&lt;string&gt; minorAdjectives = customConsts.getListConst("mBuildingConstruction history minor_adjectives before_replace_text", out success);
+					if(!success) minorAdjectives = (new List&lt;string&gt;() { "creation" }).AsReadOnly();
+					
+					ReadOnlyCollection&lt;string&gt; otherEffectsNames = customConsts.getListConst("mBuildingConstruction history other_effects_strings before_replace_text", out success);
+					if(!success) otherEffectsNames = (new List&lt;string&gt;() { "" }).AsReadOnly();
+					ReadOnlyCollection&lt;string&gt; otherEffectsValues = customConsts.getListConst("mBuildingConstruction history other_effects_values", out success);
+					if(!success) otherEffectsValues = (new List&lt;string&gt;() { "" }).AsReadOnly();
+					
+					Dictionary&lt;string, int&gt; otherEffects = new Dictionary&lt;string, int&gt;();
+					for(int i = 0; (i &lt; otherEffectsNames.Count) &amp;&amp; (i &lt; otherEffectsValues.Count); i++)
+					{
+						if(int.TryParse(otherEffectsValues[i], out int value))
+						{
+							otherEffects.Add(otherEffectsNames[i], value);
+						}
+					}
+					
+					Int64 costBenefit = customConsts.getIntConst("mBuildingConstruction history costBenefit value", out success);
+					if(!success) costBenefit = 0;
+									
+					localCommunity.getHistory().add(getAPI().createNewHistoricalOccurrenceToday(
+						IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(),
+						text, majorAdjective, minorAdjectives, 
+						IFHistoryTarget.eTargetKind.cBuilding, orderedList[0].getUID(),
+						costBenefit, otherEffects
+						));
+						
+					orderedList.RemoveAt(0);
+					buildingCountConstructed++;
+				}
+			}
+			
+			if(popDaysToExpendSaved != 0)
+			{
+				double onlyCountExpendedEffortFactor = (double)(popDaysToExpendSaved - popDaysToExpend) / popDaysToExpendSaved;
+				//increase construction skill due to unemployed pops:
+				customScripts.runCustomScript("increaseSkillOfIndustryDaily", new List&lt;object&gt;() { localCommunity, constructionIndustry, (Int64)(onlyCountExpendedEffortFactor * (unemployed_healthy_count + unemployed_unhealthy_count)) }, out _);
+				//architecture planning skill increase is done regularly as the building.  Also, that skill increase (unlike the above) does not take into account how many of those pop-days are actually *used*, which is desired behavior.
+			}
+			
+			//if buildings have been completed, send an alert:
+			Int64 enableIfNotZero = customConsts.getIntConst("mBuildingConstruction buildings_complete alert enable_if_not_zero", out success);
+			if(!success) enableIfNotZero = 0;
+			if(buildingCountConstructed == 0) enableIfNotZero = 0;
+			if(enableIfNotZero != 0)
+			{
+				string before_replace_text = customConsts.getStringConst("mBuildingConstruction buildings_complete alert before_replace_text", out success);
+				if(!success) before_replace_text = "[0] buildings have been fully built.";
+				before_replace_text = before_replace_text.Replace("[0]", buildingCountConstructed.ToString());
+				getAPI().createAlert(before_replace_text, 255, 255, 255, false); //the numbers are r/g/b, and false is for not pausing
+			}
+			
+			//outTextToDisplayInInfoView only matters if "just predicting" is true
+			toReturn.Add("");
+			return toReturn;
+		}
+		
+		string before_replace_text1 = customConsts.getStringConst("mBuildingConstruction predict_text before_replace_text 1", out success);
+		if(!success) before_replace_text1 = "[0] unemployed pops contribute [1] pop-days of effort to construction of new buildings.";
+		before_replace_text1 = before_replace_text1.Replace("[0]", (unemployed_healthy_count + unemployed_unhealthy_count).ToString());
+		before_replace_text1 = before_replace_text1.Replace("[1]", unemployedPopDays.ToString());
+		
+		string before_replace_text2 = customConsts.getStringConst("mBuildingConstruction predict_text before_replace_text 2", out success);
+		if(!success) before_replace_text2 = "[2] buildings need [3] pop-days of construction to be fully built.";
+		before_replace_text2 = before_replace_text2.Replace("[2]", orderedList.Count.ToString());
+		before_replace_text2 = before_replace_text2.Replace("[3]", totalPopDaysDesiredByBuildings.ToString());
+		
+		string outTextToDisplayInInfoView = before_replace_text1;
+		if(additionalContribution != 0.0d)
+		{
+			string before_replace_text3 = customConsts.getStringConst("mBuildingConstruction predict_text before_replace_text 3", out success);
+			if(!success) before_replace_text3 = "Yesterday's construction planning contributes an additional [4] pop-days of effort.";
+			before_replace_text3 = before_replace_text3.Replace("[4]", additionalContribution.ToString());
+			outTextToDisplayInInfoView += "  " + before_replace_text3;
+		}
+		outTextToDisplayInInfoView += "  " + before_replace_text2;
+		
+		toReturn.Add(outTextToDisplayInInfoView);
+		return toReturn;
+	</mBuildingConstruction>
+	
+  </gamescripts>
+  
+</core_data>

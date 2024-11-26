@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>combat continue_fighting racial_low prob</a> <b>double</b> <c>0.15</c></i1> <!-- TODO use this -->
+			<i1><a>combat continue_fighting base prob</a> <b>double</b> <c>0.45</c></i1>
+			<i1><a>combat continue_fighting racial_high prob</a> <b>double</b> <c>0.9</c></i1> <!-- TODO use this -->
+			
+			<i1><a>combat direct_kill prob</a> <b>double</b> <c>0.2</c></i1> <!-- this is the chance that a pop who should be wounded will instead be directly killed by combat -->
+			
+			<!-- TODO if a pop cannot breathe where it is fighting, introduce a penalty that increases as rounds go on -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script combatresolve</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines wounds and deaths in combat -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- combat resolution has six input arguments: IFPop inFirstPop, IFPop inSecondPop, IFPop inThirdPop, bool inIsThirdPopOnFirstPopSide, double inXMapLocation, double inYMapLocation.  There are no outputs. -->
+	<!-- this script is called after a period of time of 2 or 3 pops fighting, and should result in the pops of at least one side all being wounded or killed -->
+	<!-- inFirstPop and inSecondPop should never be null, and always will be on opposing sides.  inThirdPop may be null, and its loyalty is determined by inIsThirdPopOnFirstPopSide -->
+	<!-- it is assumed the pops are not wounded or dead already but nothing should fail if they are; combat might resolve after just one round though and debug messages might be weird (oh and the script might add a wound to a dead pop or set them dead again) -->
+	<i1><a>combatResolve</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop), typeof(IFPop), typeof(IFPop), typeof(bool), typeof(double), typeof(double)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("combatResolve custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFPop inFirstPop = (IFPop)inArguments[0];
+	  IFPop inSecondPop = (IFPop)inArguments[1];
+	  IFPop inThirdPop = (IFPop)inArguments[2];
+	  bool inIsThirdPopOnFirstPopSide = (bool)inArguments[3];
+	  double inXMapLocation = (double)inArguments[4];
+	  double inYMapLocation = (double)inArguments[5];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  List&lt;IFPop&gt; pops = new List&lt;IFPop&gt;();
+	  List&lt;bool&gt; popLoyaltyToFirstSide = new List&lt;bool&gt;(); //first side = true
+	  pops.Add(inFirstPop);
+	  popLoyaltyToFirstSide.Add(true);
+	  pops.Add(inSecondPop);
+	  popLoyaltyToFirstSide.Add(false);
+	  if(inThirdPop != null)
+	  {
+	    pops.Add(inThirdPop);
+		popLoyaltyToFirstSide.Add(inIsThirdPopOnFirstPopSide);
+		addDebugMessage(inScriptInstance, "three pops (" + inFirstPop.getUID() + "," + inSecondPop.getUID() + "," + inThirdPop.getUID() + ") in combat, third pop loyalty to first=" + inIsThirdPopOnFirstPopSide);
+	  }
+	  else
+	  {
+		addDebugMessage(inScriptInstance, "two pops (" + inFirstPop.getUID() + "," + inSecondPop.getUID() + ") in combat");
+	  }
+	  
+	  double wounded_continue = customConsts.getDoubleConst("combat continue_fighting base prob", out bool success);
+	  if(!success) wounded_continue = 0.45d;
+	  
+	  double direct_kill_chance = customConsts.getDoubleConst("combat direct_kill prob", out success);
+	  if(!success) direct_kill_chance = 0.2d;
+	  
+	  bool oneSideFullyWoundedOrDead = false;
+	  while(!oneSideFullyWoundedOrDead)
+	  {
+	    double totalWeight = 0.0d;
+		double firstSideWeight = 0.0d;
+		double secondSideWeight = 0.0d;
+	    //calculate weight per pop:
+		for(int i = 0; i &lt; pops.Count; i++)
+		{
+			//a pop could be dead, if so, skip them:
+			if(pops[i].isDead())
+			{
+				addDebugMessage(inScriptInstance, "pop #" + i + " (" + pops[i].getUID() + ") is dead and does not contribute to combat weight");
+				continue;
+			}
+			
+			//fetch the pop combat power for this pop and use it as a direct weight:
+			double pop_weight = 0.0d;
+			if(customScripts.runCustomScriptCheckTypes("getCombatPowerOfPop", new List&lt;object&gt;() { pops[i] },
+									out List&lt;object&gt; combatPower, true, typeof(double)))
+			{
+				pop_weight = (double)combatPower[0];
+			}
+			
+			totalWeight += pop_weight;
+			if(popLoyaltyToFirstSide[i])
+			{
+			  firstSideWeight += pop_weight;
+			}
+			else
+			{
+			  secondSideWeight += pop_weight;
+			}
+		}
+		
+		if(totalWeight &lt;= 0.0d)
+		{
+			addDebugMessage(inScriptInstance, "somehow combat power of all pops involved is less than or equal to 0.0d; ending early");
+			break;
+		}
+	  
+	    //determine which side wins (it's the side that the weight falls on)
+		double randomVal = getAPI().calcRand() * totalWeight;
+		bool firstSideWins = randomVal &lt; firstSideWeight;
+		
+		//choose a pop on the losing side and make it wounded/dead
+		IFPop attackingPop = null;
+		IFPop sufferingPop = null;
+		sufferingPop = pops[firstSideWins ? 1 : 0];
+		attackingPop = pops[firstSideWins ? 0 : 1];
+		if(pops.Count == 3 &amp;&amp; (firstSideWins != popLoyaltyToFirstSide[2]) &amp;&amp; (getAPI().calcRandIntUnder(2) == 0))
+		{
+		  sufferingPop = pops[2];
+		}
+		if(sufferingPop.isWounded())
+		{
+		  addDebugMessage(inScriptInstance, "pop (" + sufferingPop.getUID() + "), on " + (firstSideWins ? "second" : "first") + " side, was wounded and is now dead from combat");
+		  sufferingPop.setIsDead(true, IFPop.ePopDeathReason.cViolence, attackingPop);
+		}
+		else if(getAPI().calcProb(direct_kill_chance))
+		{
+		  addDebugMessage(inScriptInstance, "pop (" + sufferingPop.getUID() + "), on " + (firstSideWins ? "second" : "first") + " side, is now directly dead from combat");
+		  sufferingPop.setIsDead(true, IFPop.ePopDeathReason.cViolence, attackingPop);
+		}
+		else
+		{
+		  addDebugMessage(inScriptInstance, "pop (" + sufferingPop.getUID() + "), on " + (firstSideWins ? "second" : "first") + " side, is now wounded from combat");
+		  sufferingPop.addWound(false, false, false, true, attackingPop);
+		}
+		
+		//recalculate oneSideFullyWoundedOrDead:
+		bool firstSideHasCombatant = false;
+		bool secondSideHasCombatant = false;
+		for(int i = 0; i &lt; pops.Count; i++)
+		{
+		  if(pops[i].isDead())
+		    continue;
+			
+		  if(pops[i].isWounded())
+		  {
+		    //there is a chance that a wounded pop continues fighting anyway:
+			if(getAPI().calcRand() &gt; wounded_continue)
+			{
+			  continue;
+			}
+			addDebugMessage(inScriptInstance, "pop #" + i + " continues fighting despite their wound, chance of this happening=" + wounded_continue);
+			if(popLoyaltyToFirstSide[i])
+			{
+			  firstSideHasCombatant = true;
+			}
+			else
+			{
+			  secondSideHasCombatant = true;
+			}
+		  }
+		  else if(popLoyaltyToFirstSide[i])
+		  {
+			firstSideHasCombatant = true;
+		  }
+		  else
+		  {
+			secondSideHasCombatant = true;
+		  }
+		}
+		if(!firstSideHasCombatant)
+		{
+		  addDebugMessage(inScriptInstance, "the first side of the combat has no combatants left and therefore fighting will end");
+		  oneSideFullyWoundedOrDead = true;
+		}
+		else if(!secondSideHasCombatant)
+		{
+		  addDebugMessage(inScriptInstance, "the second side of the combat has no combatants left and therefore fighting will end");
+		  oneSideFullyWoundedOrDead = true;
+		}
+		else
+		{
+		  addDebugMessage(inScriptInstance, "both sides have combatants remaining so combat continues");
+		}
+	  }
+	  
+	  //place all pops at the location where the fight was centered:
+	  inFirstPop.setMapLocation(inXMapLocation, inYMapLocation);
+	  inSecondPop.setMapLocation(inXMapLocation, inYMapLocation);
+	  if(inThirdPop != null) inThirdPop.setMapLocation(inXMapLocation, inYMapLocation);
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts used in Delegation Hall scripts are declared here -->
+			<!-- consts related to this file's scripts can have any name, but should look like the other consts and should not override other consts -->
+			<i1><a>Delegation Hall seize_goods_button before_replace_text</a> <b>string</b>
+			<c>Seize Goods</c></i1>
+			
+			<i1><a>Delegation Hall request_trade_proposal_button before_replace_text</a> <b>string</b>
+			<c>Request Trade</c></i1>
+			
+			</mCustomVariableList>
+	</customconsts>
+	
+  <igBuildingKind name="Delegation Hall">
+    <Encyclopedia_Entry>
+	  <full_path>Buildings/Delegation Hall</full_path>
+	  <body_text>Delegation Hall.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mBuildingKindQualities>0x38003</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x8000 = this is a service workplace (outputs no goods), 0x10000 = workplace can use no inputs, 0x20000 = workplace forces best quality (only valid for service industry buildings) -->
+	<mWidth>3</mWidth>
+    <mHeight>3</mHeight>
+	<mPopDaysToBuild>16</mPopDaysToBuild> <!-- values below 1 will be treated as 1 -->
+	<mBaseDurability>125</mBaseDurability>
+	
+	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive).  If nothing exists, this building does not require any resources to build.  If one entry has a quantity of 0, then this building can be built with resources or not. -->	  
+	  <i1>
+	    <a>TAG:stony</a>
+	    <b>115</b>
+	  </i1>
+	  <i1>
+	    <a>TAG:woody</a>
+	    <b>135</b>
+	  </i1>
+	</mResourcesToBuild>
+	
+	<mOutputMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, int value.  If nothing exists, this building does not shift output based on construction resources.  Names here that do not appear in mResourcesToBuild will have no effect -->
+	</mOutputMultBasedOnConstructionResources>
+	
+	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value.  If nothing exists, this building does not shift durability based on construction resources.  Names here that do not appear in mResourcesToBuild will have no effect -->
+	  <i1>
+	    <a>TAG:woody</a>
+		<b>1.25</b>
+	  </i1>
+	  <i1>
+	    <a>TAG:stony</a>
+		<b>2.5</b>
+	  </i1>
+	</mDurabilityMultBasedOnConstructionResources>
+	
+	<mBeautyValue>5</mBeautyValue>
+	<mBeautyRadius>3</mBeautyRadius>
+    <mBeautySynergyBuildings><!-- basic list of names -->
+	</mBeautySynergyBuildings>
+	
+    <mSSIDs>
+		<i>Delegation Hall</i>
+	</mSSIDs>
+	
+	<mHousingCapacity>16</mHousingCapacity>
+	<mHousingQualityFactor>1.0</mHousingQualityFactor>
+	
+	<mMaxWorkers>12</mMaxWorkers>
+	<mIndustry>Diplomacy</mIndustry>
+	<mRadius>0</mRadius>
+	<mDesolationRateInRadius>0.0</mDesolationRateInRadius> <!-- this is used by in-game moddable scripts for workplaces.  At the time of service calculation, desolation is distributed to appropriate land sources (extract-from-land workplaces) or all tiles in radius (others).  This can also obviously be used by daily scripts or custom workplace scripts. -->
+	
+	<mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor> <!-- this is a list of: reference to resource (rare input resource), list of references to resources (outputs for which consumption of the rare-input-resource is disabled), list of references to resources (other resources which must be consumed while the rare-input-resource is being consumed), list of references to resources (other resources which cannot be consumed while the rare-input-resource is being consumed) -->
+	  <i1>
+	    <a>TAG:food</a>
+		<b>
+		</b>
+		<c>
+		</c>
+		<d>
+		</d>
+		<e>1.0</e>
+		<f>1.0</f>
+	  </i1>
+	  <i1>
+	    <a>TAG:drug</a>
+		<b>
+		</b>
+		<c>
+		</c>
+		<d>
+		</d>
+		<e>1.0</e>
+		<f>1.3</f>
+	  </i1>
+	</mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor>
+	
+	<mRequiredResourceInputs><!-- basic list of names: if the workplace is on at all, these resources must be consumed -->
+	</mRequiredResourceInputs>
+	
+	<mOutputResources><!-- basic list of names: possibilities, chosen by player in the moment.  Not all created at once -->
+	</mOutputResources>
+	
+	<mScriptCalledDaily></mScriptCalledDaily> <!-- exactly what it says on the tin: if this building is fully constructed, this script is called daily.  First input is the building itself. -->
+	<mScriptCalledBetweenOutputCalculationAndResolution><!-- workers working in the Inn naturally add the service quality of the Inn to the building, so no script is necessary here.  TODO balancing: a script will probably be necessary so that balance can be properly achieved as the benefit from 8 workers working is kinda low and not worth it -->
+	</mScriptCalledBetweenOutputCalculationAndResolution>
+	
+	<mCustomBuildingButtons> <!-- this is a list of string-string-string, the first string is the internal button name (case ignored), the second string is script which determines visibility and displayed name of button, the third string is script which occurs when button is clicked -->
+	  <i1>
+	    <a>seize_goods_button</a>
+		<b>
+			//input count check:
+			if (inArguments.Length &lt; 1)
+			{
+				return null;
+			}
+			
+			IFBuilding inBuilding = (IFBuilding)inArguments[0];
+			bool validToReturn = false;
+			
+			var customScripts = getAPI().getCustomScripts();
+			if(customScripts.runCustomScript("seize_goods_valid", new List&lt;object&gt;() { inBuilding }, out List&lt;object&gt; returnVals))
+			{
+				validToReturn = (bool)returnVals[0];
+			}
+			
+			string name = "";
+			var customConsts = getAPI().getCustomConsts();
+			name = customConsts.getStringConst("Delegation Hall seize_goods_button before_replace_text", out bool success);
+			if(!success) name = "Seize Goods";
+		
+			return new List&lt;object&gt;() { validToReturn, name };
+		</b>
+		<c>
+			//input count check:
+			if (inArguments.Length &lt; 1)
+			{
+				return null;
+			}
+			
+			IFBuilding inBuilding = (IFBuilding)inArguments[0];
+			
+			var customScripts = getAPI().getCustomScripts();
+			customScripts.runCustomScript("seize_goods_action", new List&lt;object&gt;() { inBuilding }, out _);
+		
+			return null;
+		</c>
+	  </i1>
+	  
+	  <i1>
+	    <a>request_trade_proposal_button</a>
+		<b>
+			//input count check:
+			if (inArguments.Length &lt; 1)
+			{
+				return null;
+			}
+			
+			IFBuilding inBuilding = (IFBuilding)inArguments[0];
+			bool validToReturn = false;
+			
+			var customScripts = getAPI().getCustomScripts();
+			if(customScripts.runCustomScript("request_trade_proposal_valid", new List&lt;object&gt;() { inBuilding }, out List&lt;object&gt; returnVals))
+			{
+				validToReturn = (bool)returnVals[0];
+			}
+			
+			string name = "";
+			var customConsts = getAPI().getCustomConsts();
+			name = customConsts.getStringConst("Delegation Hall request_trade_proposal_button before_replace_text", out bool success);
+			if(!success) name = "Request Trade";
+		
+			return new List&lt;object&gt;() { validToReturn, name };
+		</b>
+		<c>
+			//input count check:
+			if (inArguments.Length &lt; 1)
+			{
+				return null;
+			}
+			
+			IFBuilding inBuilding = (IFBuilding)inArguments[0];
+			
+			var customScripts = getAPI().getCustomScripts();
+			customScripts.runCustomScript("request_trade_proposal_action", new List&lt;object&gt;() { inBuilding }, out _);
+		
+			return null;
+		</c>
+	  </i1>
+	</mCustomBuildingButtons>
+	
+	<mOutputResourceQuanDailyFactor>2.545</mOutputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make output goods per day approximately equal to 1 for a single unskilled worker using one perfectly-average common good, for a workplace that does not work the land. -->
+	<mInputResourceQuanDailyFactor>1</mInputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make input goods per day per worker approximately equal to 1, spread over all inputs (not counting those which are required to be consumed TODO figure that out?). -->
+	
+	<mIsHousing>1</mIsHousing> <!-- bool, true if nonzero -->
+	<mIsWorkplace>1</mIsWorkplace> <!-- bool, true if nonzero -->
+	<mTagList> <!-- this is a list of tags associated with this moddable object.  This list is not used by hard-coded C# calculations; it only exists for access by scripts. -->
+		<i1>housing foreign delegations</i1>
+		<i1>housing only foreign delegations</i1>
+		<i1>housing only one delegation</i1>
+		
+	  <!-- description tags: -->
+	  <i1>description_shape_top_noun:roof tiles</i1>
+	  <i1>description_shape_side_noun:walls</i1>
+	  <i1>description_shape_middle_noun:beds</i1>
+	  <i1>description_shape_bottom_noun:floors</i1>
+	</mTagList>
+  </igBuildingKind>
+</core_data>

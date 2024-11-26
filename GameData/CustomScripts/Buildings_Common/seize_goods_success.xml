@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+		
+			<i1><a>seize_goods_success flat_foreign_offense value</a> <b>double</b> <c>-5.0</c></i1>
+			<i1><a>seize_goods_success foreign_offense_per_1p0_resourcedesire value</a> <b>double</b> <c>-0.02</c></i1>
+			
+			<i1><a>seize_goods_success localrace_offense_per_1p0_racecare</a> <b>double</b> <c>-15</c></i1>
+			<i1><a>seize_goods_success localrace_offense_racecare min</a> <b>double</b> <c>0.6</c></i1> <!-- if the total race care is below this, it won't be included in the calculation -->
+			<i1><a>seize_goods_success localrace_happiness_per_1p0_resourcedesire</a> <b>double</b> <c>0.04</c></i1>
+			<i1><a>seize_goods_success localrace_happiness min</a> <b>double</b> <c>4.0</c></i1> <!-- if the race's opinion of the seizure is between 0.0d (inclusive) and this (exclusive), it will not appear -->
+			
+			<i1><a>seize_goods_success foreign_offense_action before_replace_text</a> <b>string</b>
+			<c>seized the goods of peaceful visitors from</c></i1>
+			<i1><a>seize_goods_success foreign_offense_adjective before_replace_text</a> <b>string</b>
+			<c>theft</c></i1>
+			<i1><a>seize_goods_success delRate mult min</a> <b>double</b> <c>0.55</c></i1>
+			<i1><a>seize_goods_success delRate mult max</a> <b>double</b> <c>0.80</c></i1>
+			<i1><a>seize_goods_success delRate days min</a> <b>int</b> <c>27</c></i1>
+			<i1><a>seize_goods_success delRate days max</a> <b>int</b> <c>81</c></i1>
+			
+			<i1><a>seize_goods_success local_offense_race_name before_replace_text</a> <b>string</b>
+			<c>Theft from visitors</c></i1>
+			<i1><a>seize_goods_success localrace_offense before_replace_text</a> <b>string</b>
+			<c>The City Leader chose to seize resources from foreign visitors, and members of this race sympathize with the foreigners.</c></i1>
+			
+			<i1><a>seize_goods_success local_happy_race_name before_replace_text</a> <b>string</b>
+			<c>Theft from visitors</c></i1>
+			<i1><a>seize_goods_success localrace_happy before_replace_text</a> <b>string</b>
+			<c>The City Leader chose to seize resources from foreign visitors, and members of this race are glad for the free resources.</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script seize_goods_success</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which resolves the success of an attempt to seize goods from pops stored within a building -->
+  <!-- pops will give up their goods, leave the map immediately, and tell others about what happened -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has inputs:
+	IFBuilding inBuilding,
+	List<IFDelegation> inDelegationsToSeizeFrom,
+	Dictionary<Int64, Tuple<List<IFPop>, Dictionary<IFResource, Tuple<double, double>>>> inWandererPopGroupsAndAssociatedResources
+	
+	It has no outputs. -->
+	<!-- this script is called by Delegation Hall and Inn custom button scripts (through other custom scripts) -->
+	<i1><a>seize_goods_success</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(List&lt;IFDelegation&gt;), typeof(Dictionary&lt;Int64, Tuple&lt;List&lt;IFPop&gt;, Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;&gt;)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("seize_goods_success custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  List&lt;IFDelegation&gt; inDelegationsToSeizeFrom = (List&lt;IFDelegation&gt;)inArguments[1];
+	  Dictionary&lt;Int64, Tuple&lt;List&lt;IFPop&gt;, Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;&gt; inWandererPopGroupsAndAssociatedResources
+		= (Dictionary&lt;Int64, Tuple&lt;List&lt;IFPop&gt;, Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;&gt;)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  bool success = false;
+	  IFCommunity localCommunity = getAPI().getLocalCommunity();
+	  
+	  //sanity check: the inputs should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("seize_goods_success custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  if(inDelegationsToSeizeFrom == null)
+	  {
+		  throw new ArgumentException("seize_goods_success custom script received invalid argument: the input inDelegationsToSeizeFrom should not be null");
+		  return null;
+	  }
+	  if(inWandererPopGroupsAndAssociatedResources == null)
+	  {
+		  throw new ArgumentException("seize_goods_success custom script received invalid argument: the input inWandererPopGroupsAndAssociatedResources should not be null");
+		  return null;
+	  }
+	  
+	  //firstly, seize the resources (hold per community):
+	  Dictionary&lt;IFCommunity, Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt; resourcesSeizedPerCommunity = new Dictionary&lt;IFCommunity, Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;();
+	  Dictionary&lt;IFRace, int&gt; countOfPopsStolenFromByRace = new Dictionary&lt;IFRace, int&gt;();
+	  int totalPopsStolenFrom = 0;
+	  foreach(IFDelegation del in inDelegationsToSeizeFrom)
+	  {
+		int totalPopCount = del.getPopsInDelegation().Count;
+		int popsSeizedFrom = inBuilding.getHousingComponent().getHousedPops().Intersect(del.getPopsInDelegation()).Count();
+		
+		foreach(IFPop pop in del.getPopsInDelegation())
+		{
+			if(!countOfPopsStolenFromByRace.ContainsKey(pop.getRace()))
+			{
+				countOfPopsStolenFromByRace.Add(pop.getRace(), 0);
+			}
+			countOfPopsStolenFromByRace[pop.getRace()]++;
+		}
+		totalPopsStolenFrom += totalPopCount;
+		
+		double ratioOfAllGoods = ((double)popsSeizedFrom) / ((double)totalPopCount);
+		double totalGoods = 0.0d;
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+		{
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res != null)
+			{
+				totalGoods += del.getResourcePool().getResourceQuantity(res);
+			}
+		}
+		
+		addDebugMessage(inScriptInstance, "fetching " + (ratioOfAllGoods * totalGoods) + " of total " + totalGoods + " resources from delegation " + del.getDebugName() + " based on housed pop ratio of " + popsSeizedFrom + "/" + totalPopCount);
+		
+		if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;() { del.getResourcePool(), false, false, null, ratioOfAllGoods * totalGoods, true, false, false, false, false, false, true },
+			out List&lt;object&gt; seizedResourcesFromDelegationReturn, false, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+		{
+			Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; seizedResourcesFromDelegation = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)seizedResourcesFromDelegationReturn[2];
+			
+			if(!resourcesSeizedPerCommunity.ContainsKey(del.getSourceCommunity()))
+			{
+				resourcesSeizedPerCommunity.Add(del.getSourceCommunity(), seizedResourcesFromDelegation);
+			}
+			else
+			{
+				foreach(var kvpair in seizedResourcesFromDelegation)
+				{
+					if(!resourcesSeizedPerCommunity[del.getSourceCommunity()].ContainsKey(kvpair.Key))
+					{
+						resourcesSeizedPerCommunity[del.getSourceCommunity()].Add(kvpair.Key, kvpair.Value);
+					}
+					else
+					{
+						resourcesSeizedPerCommunity[del.getSourceCommunity()][kvpair.Key] = Tuple.Create(kvpair.Value.Item1 + resourcesSeizedPerCommunity[del.getSourceCommunity()][kvpair.Key].Item1,
+							(kvpair.Value.Item1 * kvpair.Value.Item2 + resourcesSeizedPerCommunity[del.getSourceCommunity()][kvpair.Key].Item1 * resourcesSeizedPerCommunity[del.getSourceCommunity()][kvpair.Key].Item2) / (kvpair.Value.Item1 + resourcesSeizedPerCommunity[del.getSourceCommunity()][kvpair.Key].Item1));
+					}
+				}
+			}
+		}
+	  }
+	  
+	  IFCommunity wandererCommunity = getAPI().getWandererCommunity();
+	  //seize from Wanderers:
+	  foreach(var tuple in inWandererPopGroupsAndAssociatedResources.Values) //the keys are unimportant
+	  {
+		int totalPopCount = tuple.Item1.Count;
+		int popsSeizedFrom = inBuilding.getHousingComponent().getHousedPops().Intersect(tuple.Item1).Count();
+		
+		foreach(IFPop pop in tuple.Item1)
+		{
+			if(!pop.isDead())
+			{
+				if(!countOfPopsStolenFromByRace.ContainsKey(pop.getRace()))
+				{
+					countOfPopsStolenFromByRace.Add(pop.getRace(), 0);
+				}
+				countOfPopsStolenFromByRace[pop.getRace()]++;
+			}
+		}
+		totalPopsStolenFrom += totalPopCount;
+		
+		double ratioOfAllGoods = ((double)popsSeizedFrom) / ((double)totalPopCount);
+		
+		if(!resourcesSeizedPerCommunity.ContainsKey(wandererCommunity))
+		{
+			resourcesSeizedPerCommunity.Add(wandererCommunity, new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;());
+		}
+		foreach(var kvpair in tuple.Item2)
+		{
+			if(!resourcesSeizedPerCommunity[wandererCommunity].ContainsKey(kvpair.Key))
+			{
+				resourcesSeizedPerCommunity[wandererCommunity].Add(kvpair.Key, Tuple.Create(ratioOfAllGoods * kvpair.Value.Item1, kvpair.Value.Item2));
+			}
+			else
+			{
+				resourcesSeizedPerCommunity[wandererCommunity][kvpair.Key] = Tuple.Create(ratioOfAllGoods * kvpair.Value.Item1 + resourcesSeizedPerCommunity[wandererCommunity][kvpair.Key].Item1,
+					(ratioOfAllGoods * kvpair.Value.Item1 * kvpair.Value.Item2 + resourcesSeizedPerCommunity[wandererCommunity][kvpair.Key].Item1 * resourcesSeizedPerCommunity[wandererCommunity][kvpair.Key].Item2) / (ratioOfAllGoods * kvpair.Value.Item1 + resourcesSeizedPerCommunity[wandererCommunity][kvpair.Key].Item1));
+			}
+		}
+	  }
+	  
+	  //now, tell all pops of any of the communities seized from to leave the map:
+	  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+	  {
+		if(resourcesSeizedPerCommunity.ContainsKey(pop.getCommunity()))
+		{
+			//pops in delegations leave to the delegation; wanderer pops leave to unspecified nowhere; other pops leave to their foreign communities
+			if(pop.hasDelegation())
+			{
+				pop.removePopFromMap(IFPop.ePopLocation.cInDelegation);
+			}
+			else if(pop.getCommunity() == wandererCommunity)
+			{
+				pop.removePopFromMap(IFPop.ePopLocation.cUnspecifiedNowhere);
+			}
+			else
+			{
+				pop.removePopFromMap(IFPop.ePopLocation.cInForeignCommunity);
+			}
+		}
+	  }
+	  
+	  //now, make communities angry, and less likely to visit the player:
+	  double flatOffenseStrength = customConsts.getDoubleConst("seize_goods_success flat_foreign_offense value", out success);
+	  if(!success) flatOffenseStrength = -5.0d;
+	  double foreignOffensePer1p0ResourceDesire = customConsts.getDoubleConst("seize_goods_success foreign_offense_per_1p0_resourcedesire value", out success);
+	  if(!success) foreignOffensePer1p0ResourceDesire = -0.02d;
+	  
+	  string foreignOffenseActionText = customConsts.getStringConst("seize_goods_success foreign_offense_action before_replace_text default", out success);
+	  if(!success) foreignOffenseActionText = "seized the goods of peaceful visitors from";
+	  string offenseMajorAdjective = customConsts.getStringConst("seize_goods_success foreign_offense_adjective before_replace_text default", out success);
+	  if(!success) offenseMajorAdjective = "theft";
+	  
+	  double delegationReduceRateMin = customConsts.getDoubleConst("seize_goods_success delRate mult min", out success);
+	  if(!success) delegationReduceRateMin = 0.55d;
+	  double delegationReduceRateMax = customConsts.getDoubleConst("seize_goods_success delRate mult max", out success);
+	  if(!success) delegationReduceRateMax = 0.80d;
+	  Int64 delegationReduceDaysMin = customConsts.getIntConst("seize_goods_success delRate days min", out success);
+	  if(!success) delegationReduceDaysMin = 27;
+	  Int64 delegationReduceDaysMax = customConsts.getIntConst("seize_goods_success delRate days max", out success);
+	  if(!success) delegationReduceDaysMax = 81;
+	  
+	  Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+	  foreach(IFCommunity community in resourcesSeizedPerCommunity.Keys)
+	  {
+		if(community.isWanderers())
+			continue;
+		
+		double offenseTotal = flatOffenseStrength;
+		//calculate the resource desire value of the resources seized and use that to calculate total offense:
+		if(customScripts.runCustomScriptCheckTypes("getDesireTotalOfResourceCollection", new List&lt;object&gt;() { community, null, resourcesSeizedPerCommunity[community] }, out List&lt;object&gt; desireTotal,
+			false, typeof(double)))
+		{
+			offenseTotal += ((double)desireTotal[0]) * foreignOffensePer1p0ResourceDesire;
+		}
+		offenseTotal = Math.Min(0.0d, Math.Max(-100.0d, offenseTotal));
+		
+		if(offenseTotal &gt; 0.0d)
+		{
+			community.getHistory().add(getAPI().createNewHistoricalOccurrenceToday(
+				IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(),
+				foreignOffenseActionText, offenseMajorAdjective, (List&lt;string&gt;)null,
+				IFHistoryTarget.eTargetKind.cCommunity, community.getUID(),
+				(Int64)offenseTotal, null
+				));
+			localCommunity.getHistory().add(getAPI().createNewHistoricalOccurrenceToday(
+				IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(),
+				foreignOffenseActionText, offenseMajorAdjective, (List&lt;string&gt;)null,
+				IFHistoryTarget.eTargetKind.cCommunity, community.getUID(),
+				(Int64)offenseTotal, null
+				));
+				
+			double rateDecrease = delegationReduceRateMin + (delegationReduceRateMax - delegationReduceRateMin) * getAPI().calcRand();
+			Int64 decreaseDays = delegationReduceDaysMin + getAPI().calcRandIntUnder(delegationReduceDaysMax + 1 - delegationReduceDaysMin);
+			
+			string diploRateVariableName = "multForeignDelegationsProb_uid" + community.getUID() + "_player_diplomacy";
+			IFConnectedVariable topVariable = variableHandler.getConnectedVariable(diploRateVariableName);
+			if(topVariable == null)
+			{
+				variableHandler.addConnectedDouble(diploRateVariableName, 0.0d, out topVariable, currentDate + decreaseDays, IFConnectedVariable.eCombinationType.cMult);
+			}
+			variableHandler.addConnectedDouble("day" + currentDate + "seize_goods_success" + inBuilding.getUID() + "_multForeignDelegationsProb_uid" + community.getUID() + "_player_diplomacy", rateDecrease, out IFConnectedVariable lowerVariable, currentDate + decreaseDays);
+			variableHandler.connectVariables(lowerVariable, topVariable);
+			
+			string tradeRateVariableName = "multForeignDelegationsProb_uid" + community.getUID() + "_player_trade";
+			topVariable = variableHandler.getConnectedVariable(tradeRateVariableName);
+			if(topVariable == null)
+			{
+				variableHandler.addConnectedDouble(tradeRateVariableName, 0.0d, out topVariable, currentDate + decreaseDays, IFConnectedVariable.eCombinationType.cMult);
+			}
+			variableHandler.addConnectedDouble("day" + currentDate + "seize_goods_success" + inBuilding.getUID() + "_multForeignDelegationsProb_uid" + community.getUID() + "_player_trade", rateDecrease, out lowerVariable, currentDate + decreaseDays);
+			variableHandler.connectVariables(lowerVariable, topVariable);
+		}
+	  }
+	  
+	  //now, make local races angry or happy:
+	  double localRaceHappinessPer1p0ResourceDesire = customConsts.getDoubleConst("seize_goods_success localrace_happiness_per_1p0_resourcedesire", out success);
+	  if(!success) localRaceHappinessPer1p0ResourceDesire = 0.04d;
+	  double localRaceHappinessMinToAppear = customConsts.getDoubleConst("seize_goods_success localrace_happiness min", out success);
+	  if(!success) localRaceHappinessMinToAppear = 4.0d;
+	  double localRaceOffensePer1p0RaceCare = customConsts.getDoubleConst("seize_goods_success localrace_offense_per_1p0_racecare", out success);
+	  if(!success) localRaceOffensePer1p0RaceCare = -15.0d;
+	  double localRaceOffenseRaceCareMin = customConsts.getDoubleConst("seize_goods_success localrace_offense_racecare min", out success);
+	  if(!success) localRaceOffenseRaceCareMin = 0.6d;
+	  
+	  string localRaceOffenseName = customConsts.getStringConst("seize_goods_success local_offense_race_name before_replace_text", out success);
+	  if(!success) localRaceOffenseName = "Theft from visitors";
+	  string localRaceOffenseText = customConsts.getStringConst("seize_goods_success localrace_offense before_replace_text", out success);
+	  if(!success) localRaceOffenseText = "The City Leader chose to seize resources from foreign visitors, and members of this race sympathize with the foreigners.";
+	  string localRaceHappyName = customConsts.getStringConst("seize_goods_success local_happy_race_name before_replace_text", out success);
+	  if(!success) localRaceHappyName = "Theft from visitors";
+	  string localRaceHappyText = customConsts.getStringConst("seize_goods_success localrace_happy before_replace_text", out success);
+	  if(!success) localRaceHappyText = "The City Leader chose to seize resources from foreign visitors, and members of this race are glad for the free resources.";
+	  
+	  Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; allGoodsToGiveToPlayer = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+	  foreach(var dict in resourcesSeizedPerCommunity.Values)
+	  {
+		foreach(var kvpair in dict)
+		{
+			if(!allGoodsToGiveToPlayer.ContainsKey(kvpair.Key))
+			{
+				allGoodsToGiveToPlayer.Add(kvpair.Key, kvpair.Value);
+			}
+			else
+			{
+				allGoodsToGiveToPlayer[kvpair.Key] = Tuple.Create(kvpair.Value.Item1 + allGoodsToGiveToPlayer[kvpair.Key].Item1,
+					(kvpair.Value.Item1 * kvpair.Value.Item2 + allGoodsToGiveToPlayer[kvpair.Key].Item1 * allGoodsToGiveToPlayer[kvpair.Key].Item2) / (kvpair.Value.Item1 + allGoodsToGiveToPlayer[kvpair.Key].Item1));
+			}
+		}
+	  }
+	  
+	  double resourceDesireLocalCommunity = 0.0d;
+	  if(customScripts.runCustomScriptCheckTypes("getDesireTotalOfResourceCollection", new List&lt;object&gt;() { localCommunity, null, allGoodsToGiveToPlayer }, out List&lt;object&gt; desireTotal2,
+			false, typeof(double)))
+	  {
+		resourceDesireLocalCommunity = (double)desireTotal2[0];
+	  }
+	  double happinessFromResourceDesire = resourceDesireLocalCommunity * localRaceHappinessPer1p0ResourceDesire; //this is the same for all races
+	  
+	  foreach(IFRace race in localCommunity.getLoyalPopsByRace(true, false).Keys)
+	  {
+		  if(customScripts.runCustomScriptCheckTypes("getRaceCareValues", new List&lt;object&gt;() { localCommunity, race}, out List&lt;object&gt; raceCareValues,
+				false, typeof(List&lt;double&gt;)))
+		  {
+			List&lt;double&gt; raceCaresForThisRace = (List&lt;double&gt;)raceCareValues[0];
+			
+			double totalRaceCare = 0.0d;
+			foreach(var kvpair in countOfPopsStolenFromByRace)
+			{
+				totalRaceCare += kvpair.Value * raceCaresForThisRace[(int)kvpair.Key.getMOID()];
+			}
+			totalRaceCare /= totalPopsStolenFrom;
+			
+			double totalHappinessFromTheft = happinessFromResourceDesire;
+			if(totalRaceCare &gt; localRaceOffenseRaceCareMin)
+			{
+				totalHappinessFromTheft += totalRaceCare * localRaceOffensePer1p0RaceCare;
+			}
+			
+			if(totalHappinessFromTheft &lt; 0.0d)
+			{
+				localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(race, localRaceOffenseName, localRaceOffenseText, totalHappinessFromTheft, false);
+			}
+			else if(totalHappinessFromTheft &gt;= localRaceHappinessMinToAppear)
+			{
+				localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(race, localRaceHappyName, localRaceHappyText, totalHappinessFromTheft, false);
+			}
+		  }
+	  }
+	  
+	  //add the goods to the player community:
+	  foreach(var kvpair in allGoodsToGiveToPlayer)
+	  {
+		localCommunity.getResourcePool().addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+	  }
+	  
+	  //store other variables:
+	  variableHandler.storeIntVariable(currentDate, "Seize Goods Success Event_buildingSeizedFromUID", (Int64)inBuilding.getUID());
+	  variableHandler.addConnectedInt("Seize Goods Success Event_listOfCommunities", 0L, out IFConnectedVariable communityListCV, currentDate, IFConnectedVariable.eCombinationType.cLIST);
+	  foreach(IFCommunity community in resourcesSeizedPerCommunity.Keys)
+	  {
+		variableHandler.addConnectedInt("Seize Goods Success Event_community" + community.getUID(), (Int64)community.getUID(), out IFConnectedVariable communityCV, currentDate);
+		variableHandler.connectVariables(communityCV, communityListCV);
+	  }
+	  
+	  //lastly, assemble text for and evoke the event (an informatory event that shows an event report):
+	  string variableToStoreName = "Seize Goods Success Event_storedSeizedGoodsText";
+	  string textToStore = "";
+	  if(customScripts.runCustomScriptCheckTypes("replaceDescriptionMarkups", new List&lt;object&gt;() { "[one_listofresources|yes_qualities_list:0]",
+			new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { allGoodsToGiveToPlayer } }, out List&lt;object&gt; markupReturn, false, typeof(string)))
+	  {
+		textToStore = (string)markupReturn[0];
+	  }
+	  variableHandler.storeStringVariable(currentDate, variableToStoreName, textToStore);
+	  
+	  string nameOfEvent = "Seize Goods Success Event";
+	  IFEvent evt = (IFEvent)getAPI().getMOFromInternalName("events", nameOfEvent);
+	  if(evt != null)
+	  {
+		evt.evokeEventImmediately(true, true); //evoke-only events start disabled (and should remain disabled) and in this case we know not to gate the event (it doesn't have a real gating script anyway)
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

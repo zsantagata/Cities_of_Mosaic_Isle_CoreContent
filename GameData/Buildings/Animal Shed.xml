@@ -1,0 +1,408 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script workplaceproduction_animal shed</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <igBuildingKind name="Animal Shed">
+    <Encyclopedia_Entry>
+	  <full_path>Buildings/Animal Shed</full_path>
+	  <body_text>Animal Shed.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mBuildingKindQualities>0x3</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable -->
+    <mWidth>1</mWidth>
+    <mHeight>5</mHeight>
+
+	<mPopDaysToBuild>4</mPopDaysToBuild>
+	<mBaseDurability>80</mBaseDurability>
+	
+	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive) -->
+	  <i1>
+	    <a>TAG:woody</a>
+		<b>80</b>
+	  </i1>
+	  <i1>
+	    <a>TAG:stony</a>
+		<b>80</b>
+	  </i1>
+	  <i5>
+	    <a>TAG:metallic</a>
+		<b>80</b>
+	  </i5>
+	</mResourcesToBuild>
+	
+	<mOutputMultBasedOnConstructionResources>
+	</mOutputMultBasedOnConstructionResources>
+	
+	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value -->
+	  <i1>
+	    <a>TAG:woody</a>
+		<b>1.25</b>
+	  </i1>
+	  <i1>
+	    <a>TAG:stony</a>
+		<b>2.5</b>
+	  </i1>
+	  <i1>
+	    <a>TAG:metallic</a>
+		<b>1.75</b>
+	  </i1>
+	</mDurabilityMultBasedOnConstructionResources>
+	
+	<mBeautyValue>-15</mBeautyValue>
+	<mBeautyRadius>8</mBeautyRadius>
+    <mBeautySynergyBuildings><!-- basic list of names -->
+	</mBeautySynergyBuildings>
+	
+    <mSSIDs>
+		<i>Animal Shed</i>
+	</mSSIDs>
+	
+	<mMaxWorkers>10</mMaxWorkers>
+	<mIndustry>Husbandry</mIndustry>
+	<mRadius>5</mRadius>
+	<mDesolationRateInRadius>-0.35555555</mDesolationRateInRadius> <!-- an animal shed's scraps rejuvenate the soil around it -->
+	
+	<!-- note that "required other" indicates that ALL those resources are required, not ANY.  So to implement ANY, we need to use the workplace script instead of putting tagged resources here. -->
+	<mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor> <!-- this is a list of: reference to resource (common input resource), list of references to resources (outputs for which consumption of the common-input-resource is disabled), list of references to resources (other resources which must be consumed while the common-input-resource is being consumed), list of references to resources (other resources which cannot be consumed while the common-input-resource is being consumed) -->
+	  <i1>
+	    <a>TAG:food</a>
+		<b>
+		</b>
+		<c>
+		</c>
+		<d>
+		</d>
+		<e>1.0</e>
+		<f>1.0</f>
+	  </i1>
+	  <i1>
+	    <a>TAG:eats-plant-food</a>
+		<b>
+		</b>
+		<c>
+		</c>
+		<d>
+		</d>
+		<e>0.0</e>
+		<f>1.000001</f> <!-- so the animals are ordered before the food -->
+	  </i1>
+	  <i1>
+	    <a>TAG:eats-animal-food</a>
+		<b>
+		</b>
+		<c>
+		</c>
+		<d>
+		</d>
+		<e>0.0</e>
+		<f>1.000001</f> <!-- so the animals are ordered before the food -->
+	  </i1>
+	  <i1>
+	    <a>TAG:eats-misc-food</a>
+		<b>
+		</b>
+		<c>
+		</c>
+		<d>
+		</d>
+		<e>0.0</e>
+		<f>1.000001</f> <!-- so the animals are ordered before the food -->
+	  </i1>
+	</mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor>
+	
+	<mRequiredResourceInputs><!-- basic list of names: if the workplace is on at all, these resources must be consumed -->
+	</mRequiredResourceInputs>
+	
+	<mOutputResources>
+	  <i1>Animal Feed</i1>
+	</mOutputResources>
+	
+	<mScriptCalledDaily></mScriptCalledDaily> <!-- exactly what it says on the tin: if this building is fully constructed, this script is called daily.  First input is the building itself. -->
+	<mScriptCalledBetweenOutputCalculationAndResolution>
+		//intent: call through to the common script to use animal feed to, surprisingly, feed animals
+		
+		//common to all workplace scripts:
+		if(inArguments.Length &lt; 7)
+		{
+		  return null;
+		}
+		IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+		Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInput = (Dictionary&lt;IFResource, double&gt;)inArguments[1];
+		Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)inArguments[2];
+		Dictionary&lt;IFResource, double&gt; inResourcesCreated = (Dictionary&lt;IFResource, double&gt;)inArguments[3];
+		double inQuality = (double)inArguments[4];
+		bool inWorkplaceOn = (bool)inArguments[5];
+		bool inJustPredicting = (bool)inArguments[6];
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		var customConsts = getAPI().getCustomConsts();
+		var consts = getAPI().getConsts();
+		var customScripts = getAPI().getCustomScripts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		string outPredictionText = "";
+		
+		//start of unique part of script:
+		//gather quantity:
+		IFResource animalFeedRes = (IFResource)getAPI().getMOFromInternalName("resources", "Animal Feed");
+		if(animalFeedRes != null)
+		{
+			double quantityAnimalFeed = 0.0d;
+			if(inResourcesCreated.ContainsKey(animalFeedRes))
+			{
+				quantityAnimalFeed = inResourcesCreated[animalFeedRes];
+			}
+			else
+			{
+				quantityAnimalFeed = 0;
+			}
+			if(customScripts.runCustomScriptCheckTypes("animal_husbandry_workplace_production", new List&lt;object&gt;() { inWorkplace, quantityAnimalFeed, inQuality, inJustPredicting },
+				out List&lt;object&gt; stringToOutput, false, typeof(string), typeof(Dictionary&lt;IFResource, double&gt;)))
+		    {
+				outPredictionText = (string)stringToOutput[0];
+				inResourcesCreated = (Dictionary&lt;IFResource, double&gt;)stringToOutput[1];
+		    }
+		}
+
+		//outputs: generally if they do not need to be changed, don't modify the values going out, even as a "sanity/safety check".  Doing so would force changes to this script if other scripts change (from, for example, mods)
+		toReturn.Add(inResourcesConsumedAsInput);
+		toReturn.Add(inResourcesConsumedOtherwise);
+		toReturn.Add(inResourcesCreated);
+		toReturn.Add(inQuality);
+		toReturn.Add(inWorkplaceOn);
+		toReturn.Add(outPredictionText);
+		return toReturn;
+	</mScriptCalledBetweenOutputCalculationAndResolution> 
+	
+	<!-- input quantity of goods and output quantity are not linked because animals can eat some things like leaves that people don't eat -->
+	<mOutputResourceQuanDailyFactor>5.45</mOutputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make output goods per day approximately equal to 10 for a single unskilled worker using one perfectly-average common good, for a workplace that does not work the land. -->
+	<mInputResourceQuanDailyFactor>9</mInputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make input goods per day per worker approximately equal to 9, spread over all inputs (not counting those which are required to be consumed TODO figure that out?). -->
+	
+	<mIsHousing>0</mIsHousing> <!-- bool, true if nonzero -->
+	<mIsWorkplace>1</mIsWorkplace> <!-- bool, true if nonzero -->
+	
+	<mTagList>
+	  <i1>road benefit increase leader control count</i1>
+	  <i1>workers happiness bonus</i1>
+	  
+	  <!-- description tags: -->
+	  <i1>description_shape_top_noun:eaves</i1>
+	  <i1>description_shape_side_noun:walls</i1>
+	  <i1>description_shape_middle_noun:pens</i1>
+	  <i1>description_shape_bottom_noun:hays</i1>
+	</mTagList>
+  </igBuildingKind>
+  
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community
+	bool inJustPredicting
+	
+	outputs:
+	Dictionary<IFResource, double> outResourcesConsumedAsInputs, //"which should/would be" consumed as inputs; this script does not do it
+	Dictionary<IFResource, double> outResourcesConsumedOtherwise, //"which should/would be" consumed additionally; this script does not do it
+	Dictionary<IFResource, double> outputResourcesCreated, //"which should/would be" added to the pool; this script does not do it
+	double outputQuality,
+	bool outputQualityWasChanged //this is only true if outputQuality is different than what the workplace in question had on its qual/quan dial
+	bool outIsWorkplaceOn
+	 -->
+	<i1><a>workplaceproduction_animal shed</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  bool inJustPredicting = (bool)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  
+	  Dictionary&lt;IFResource, double&gt; outResourcesConsumedAsInputs = new Dictionary&lt;IFResource, double&gt;();
+	  Dictionary&lt;IFResource, double&gt; outResourcesConsumedOtherwise = new Dictionary&lt;IFResource, double&gt;();
+	  Dictionary&lt;IFResource, double&gt; outputResourcesCreated = new Dictionary&lt;IFResource, double&gt;();
+	  double outputQuality = consts.getResourceQualityMin();
+	  bool outputQualityWasChanged = false;
+	  bool outIsWorkplaceOn = false;
+	  
+	  //this script is only used because Animal Shed has complex restrictions on which inputs can be used simultaneously, and we want to restrict those *before* calling the common workplace production scripts
+		//first, make sure all animals can breathe wherever the animal shed is, and disable those that can't:
+		IFBuilding.eBuildingWaterStatus waterStatus = inWorkplace.getBuildingWaterStatus();
+		if(waterStatus != IFBuilding.eBuildingWaterStatus.cMixed)
+		{
+			List&lt;IFResource&gt; animalsToDisable = new List&lt;IFResource&gt;();
+			foreach(IFResource res in inWorkplace.getWorkplaceComponent().getInputsChosen())
+			{
+				if(res.hasTag("animal"))
+				{
+					if(waterStatus == IFBuilding.eBuildingWaterStatus.cOverwaterEntirely &amp;&amp; !res.hasTag("breathes-overwater"))
+					{
+						animalsToDisable.Add(res);
+					}
+					else if(waterStatus == IFBuilding.eBuildingWaterStatus.cUnderwaterEntirely &amp;&amp; !res.hasTag("breathes-underwater"))
+					{
+						animalsToDisable.Add(res);
+					}
+				}
+			}
+			foreach(IFResource res in animalsToDisable)
+			{
+				inWorkplace.getWorkplaceComponent().toggleWorkplaceInputChosen(res);
+			}
+		}
+		
+		//secondly, make sure that all selected animals can eat all inputs:
+		//if not:
+		//A) if there are more than one category of animals, de-select the animals with the least count of valid inputs
+		//B) de-select the invalid inputs
+		List&lt;IFResource&gt; plantOnlyEaters = new List&lt;IFResource&gt;();
+		List&lt;IFResource&gt; animalOnlyEaters = new List&lt;IFResource&gt;();
+		//misc eaters can eat anything
+		List&lt;IFResource&gt; plantInputs = new List&lt;IFResource&gt;();
+		List&lt;IFResource&gt; animalInputs = new List&lt;IFResource&gt;();
+		List&lt;IFResource&gt; miscInputs = new List&lt;IFResource&gt;();
+		foreach(IFResource res in inWorkplace.getWorkplaceComponent().getInputsChosen())
+		{
+			if(res.hasTag("eats-plant-food-only"))
+			{
+				plantOnlyEaters.Add(res);
+			}
+			if(res.hasTag("eats-animal-food-only"))
+			{
+				animalOnlyEaters.Add(res);
+			}
+			if(!res.hasTag("animal-food") &amp;&amp; res.hasTag("plant-food"))
+			{
+				plantInputs.Add(res);
+			}
+			else if(!res.hasTag("plant-food") &amp;&amp; res.hasTag("animal-food"))
+			{
+				animalInputs.Add(res);
+			}
+			else if(res.hasTag("food"))
+			{
+				miscInputs.Add(res);
+			}
+		}
+		
+		if(   ((plantOnlyEaters.Count != 0) &amp;&amp; ((animalInputs.Count != 0) || (miscInputs.Count != 0)))
+		   || ((animalOnlyEaters.Count != 0) &amp;&amp; ((plantInputs.Count != 0) || (miscInputs.Count != 0)))
+		  )
+		{
+			//A)
+			if((plantOnlyEaters.Count != 0) &amp;&amp; (animalOnlyEaters.Count != 0)) //there are both plant-only eaters and animal-only eaters, so clear one:
+			{
+				if(animalInputs.Count &lt;= plantInputs.Count)
+				{
+					foreach(IFResource res in animalOnlyEaters)
+					{
+						inWorkplace.getWorkplaceComponent().toggleWorkplaceInputChosen(res);
+					}
+					animalOnlyEaters.Clear();
+				}
+				else
+				{
+					foreach(IFResource res in plantOnlyEaters)
+					{
+						inWorkplace.getWorkplaceComponent().toggleWorkplaceInputChosen(res);
+					}
+					plantOnlyEaters.Clear();
+				}
+			}
+			//B)
+			if(plantOnlyEaters.Count == 0)
+			{
+				//take away plant/misc inputs:
+				foreach(IFResource res in plantInputs)
+				{
+					inWorkplace.getWorkplaceComponent().toggleWorkplaceInputChosen(res);
+				}
+				plantInputs.Clear();
+				foreach(IFResource res in miscInputs)
+				{
+					inWorkplace.getWorkplaceComponent().toggleWorkplaceInputChosen(res);
+				}
+				miscInputs.Clear();
+			}
+			else if(animalOnlyEaters.Count == 0)
+			{
+				//take away animal/misc inputs:
+				foreach(IFResource res in animalInputs)
+				{
+					inWorkplace.getWorkplaceComponent().toggleWorkplaceInputChosen(res);
+				}
+				animalInputs.Clear();
+				foreach(IFResource res in miscInputs)
+				{
+					inWorkplace.getWorkplaceComponent().toggleWorkplaceInputChosen(res);
+				}
+				miscInputs.Clear();
+			}
+		}
+	  
+	    //now that the inputs have been restricted successfully, use all the common workplace scripts:
+		if(customScripts.runCustomScriptCheckTypes("workplaceproduction_common", new List&lt;object&gt;() { inWorkplace, inCommunity, inJustPredicting }, out List&lt;object&gt; productionOutputs, false, 
+			typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(double), typeof(bool), typeof(bool)))
+		{
+			outResourcesConsumedAsInputs = (Dictionary&lt;IFResource, double&gt;)productionOutputs[0];
+			outResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)productionOutputs[1];
+			outputResourcesCreated = (Dictionary&lt;IFResource, double&gt;)productionOutputs[2];
+			outputQuality = (double)productionOutputs[3];
+			outputQualityWasChanged = (bool)productionOutputs[4];
+			outIsWorkplaceOn = (bool)productionOutputs[5];
+		}
+	  
+	  return new List&lt;object&gt;() { outResourcesConsumedAsInputs, outResourcesConsumedOtherwise, outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn };
+	</b>
+	</i1>
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

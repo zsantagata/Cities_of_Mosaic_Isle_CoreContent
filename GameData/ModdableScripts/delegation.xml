@@ -1,0 +1,559 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+		<i1><a>delegationDelayOneDayTravel wounded_pop speed mult</a> <b>double</b> <c>0.65</c></i1> <!-- a wounded pop moves at this speed compared to its normal speed -->
+		<i1><a>delegationDelayOneDayTravel ill_pop speed mult</a> <b>double</b> <c>0.8</c></i1> <!-- an ill pop moves at this speed compared to its normal speed -->
+		<i1><a>delegationDelayOneDayTravel pregnantimmobile_pop speed mult</a> <b>double</b> <c>0.75</c></i1> <!-- a pregnant immobile pop moves at this speed compared to its normal speed -->
+		<i1><a>delegationDelayOneDayTravel healthy helper speed mult</a> <b>double</b> <c>0.9</c></i1> <!-- if a wounded or ill pop has a healthy pop to help them travel, this is their move speed -->
+		
+		<i1><a>mCanDelegationLaunch target_no_alive before_replace_text</a> <b>string</b>
+		<c>Target community has no loyal pops left alive.</c></i1>
+		<i1><a>mCanDelegationLaunch delegation_nostart_nolocate before_replace_text</a> <b>string</b>
+		<c>Target community's location could not be determined by our pops.</c></i1>
+		<i1><a>mCanDelegationLaunch delegation_nostart_noroute before_replace_text</a> <b>string</b>
+		<c>No route to the target community exists at this time.</c></i1>
+		<i1><a>mCanDelegationLaunch delegation_nostart_nopops before_replace_text</a> <b>string</b>
+		<c>Pops must be assigned to a delegation.</c></i1>
+		<i1><a>mCanDelegationLaunch delegation_nostart_mismatchbreathe before_replace_text</a> <b>string</b>
+		<c>Some assigned pops can breathe only overwater, and others only underwater.</c></i1>
+		<i1><a>mCanDelegationLaunch delegation_nostart_pathbreathe before_replace_text</a> <b>string</b>
+		<c>Some assigned pops cannot breathe on all biomes to the target.</c></i1>
+		<i1><a>mCanDelegationLaunch delegation_nostart_lowfood before_replace_text</a> <b>string</b>
+		<c>Only [0] of required [1] food assigned to delegation.</c></i1>
+		
+		<!-- when taking prisoners of a race, the race will be unhappy by this * (prisoners/total) ratio of full happiness range -->
+		<i1><a>mDelegationReturnPrisonerConversion happiness_from_abduction proportion</a> <b>double</b> <c>0.75</c></i1>
+		<i1><a>mDelegationReturnPrisonerConversion happiness_from_abduction name before_replace_text</a> <b>string</b>
+		<c>Ex-Abductees Became Community Members</c></i1>
+		<i1><a>mDelegationReturnPrisonerConversion happiness_from_abduction text before_replace_text</a> <b>string</b>
+		<c>Our community has abducted foreign pops and forced them to become members of the community.  They will be upset about this for a time, and more likely to cause trouble.</c></i1>
+		
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of scripts which are called daily on pops in a player-sourced delegation, mostly relating to their health -->
+  <!-- this file also holds the implementation of scripts which are called when the player wishes to start a delegation and determines which pops can join the delegation and if the delegation can be sent -->
+  <gamescripts name="default">
+	<!-- canPopJoinDelegation has three inputs: IFPop inPop, IFDelegation.eDelegationType inDelegationType, ReadOnlyCollection<IFPop> inOtherPopsOnProposedDelegation.  It has one output: bool outCanPopJoinDelegation -->
+	<!-- this script will be called for each pop that could possibly join a delegation.  C# filters out pops which are dead, which are not loyal, which are not on the local map, and which are already proposed to be on the delegation -->
+	<mCanPopJoinDelegation>
+        //input count check:
+        if (inArguments.Length &lt; 3)
+        {
+            return null;
+        }
+			
+		IFPop inPop = (IFPop)inArguments[0];
+		IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[1];
+		ReadOnlyCollection&lt;IFPop&gt; inOtherPopsOnProposedDelegation = (ReadOnlyCollection&lt;IFPop&gt;)inArguments[2];
+		
+		bool outCanPopJoinDelegation = true;
+		
+		//if the delegation type is not "emigration", and the pop has a health condition, it cannot join:
+		outCanPopJoinDelegation = outCanPopJoinDelegation &amp;&amp; !((inDelegationType != IFDelegation.eDelegationType.cEmigration) &amp;&amp; !inPop.isPopNoHealthStatus());
+		
+		//if the pop is a race or City leader, it cannot join the delegation, except for the following conditions:
+		//the race leader can join emigration delegations if all loyal pops of the same race are on the delegation
+		//the City leader must join settlement delegations
+		bool popIsCityLeader = inPop.getCommunity().getLeaderCollection().getCityLeader() == inPop;
+		outCanPopJoinDelegation = outCanPopJoinDelegation &amp;&amp; (!popIsCityLeader || (inDelegationType == IFDelegation.eDelegationType.cSettlement));
+		
+		bool popIsRaceLeader = inPop.getCommunity().getLeaderCollection().getRaceLeader(inPop.getRace()) == inPop;
+		if(popIsRaceLeader)
+		{
+			if(inDelegationType == IFDelegation.eDelegationType.cEmigration)
+			{
+				ReadOnlyCollection&lt;IFPop&gt; sameRacePops = inPop.getCommunity().getLoyalPopsByRace(true, false)[inPop.getRace()];
+				if(sameRacePops.Intersect(inOtherPopsOnProposedDelegation).Count() + 1 != sameRacePops.Count) //the +1 is for this pop, the race leader
+				{
+					outCanPopJoinDelegation = false;
+				}
+			}
+			else
+			{
+				outCanPopJoinDelegation = false;
+			}
+		}
+		
+	    return new List&lt;object&gt;() { outCanPopJoinDelegation };
+	</mCanPopJoinDelegation>
+	
+	<!-- canDelegationLaunch has four inputs: IFCommunity inCommunityTarget, IFDelegation.eDelegationType inDelegationType, ReadOnlyCollection<IFPop> inProposedPops, IFResourcePool inProposedResourcePool.
+	It has two outputs: bool outCanDelegationBeSent, string outReasonDelegationCannotBeSent -->
+	<!-- this script will be called when the player is on the delegation summary screen (preparing a delegation to launch).  C# code does not allow delegations to launch if it cannot find a path to the destination, or during non-regular time such as military time -->
+	<mCanDelegationLaunch>
+        //input count check:
+        if (inArguments.Length &lt; 4)
+        {
+            return null;
+        }
+			
+		IFCommunity inCommunityTarget = (IFCommunity)inArguments[0];
+		IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[1];
+		ReadOnlyCollection&lt;IFPop&gt; inProposedPops = (ReadOnlyCollection&lt;IFPop&gt;)inArguments[2];
+		IFResourcePool inProposedResourcePool = (IFResourcePool)inArguments[3]; //note that this resource pool is not yet registered with the savegame, so it will not be fetched by getAPI().getSO until and unless the delegation is launched without leaving this screen
+		
+		var customConsts = getAPI().getCustomConsts();
+	    var customScripts = getAPI().getCustomScripts();
+		
+		bool outCanDelegationBeSent = true;
+		string outReasonDelegationCannotBeSent = "";
+		bool success = false;
+		
+		//breathability:
+		bool allPopsCanBreatheOverwater = true;
+		bool allPopsCanBreatheUnderwater = true;
+		foreach (IFPop pop in inProposedPops)
+		{
+			if (!pop.getRace().isCanBreatheOverwater())
+			{
+				allPopsCanBreatheOverwater = false;
+			}
+			if (!pop.getRace().isCanBreatheUnderwater())
+			{
+				allPopsCanBreatheUnderwater = false;
+			}
+			if (!allPopsCanBreatheUnderwater &amp;&amp; !allPopsCanBreatheOverwater)
+				break;
+		}
+		
+		//prepare food count check:
+		double necessaryFoodCount = 0.0d;
+		double heldFoodCount = 0.0d;
+		if(getAPI().getRoundTripTimeAndKindBetweenCommunities(getAPI().getLocalCommunity(), inCommunityTarget, inProposedPops, out IFCommunity.ePathTypes outPathType, out double estimatedReturnDate))
+		{
+			double totalDaysToJourney = estimatedReturnDate - getAPI().getCalendar().getCurrentDate();
+			if(customScripts.runCustomScriptCheckTypes("delegation_foodCountToLaunch", new List&lt;object&gt;() { inProposedPops, inDelegationType, totalDaysToJourney }, out List&lt;object&gt; outputs, false, 
+					typeof(double)))
+			{
+				necessaryFoodCount = (double)outputs[0];
+			}
+			for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res != null)
+				{
+					if(res.isFood())
+					{
+						heldFoodCount += inProposedResourcePool.getResourceQuantity(res);
+					}
+				}
+			}
+		}
+		//the function returns false if there is no path, which will also hit one of the below conditions, so no extra consideration is necessary
+		
+		//delegations cannot be sent to communities which have no loyal pops alive.  TODO this will probably need to change for settlement delegations
+		if(inCommunityTarget.getPopCountOfRace(inCommunityTarget.getMostPopulousRace()) == 0)
+		{
+			outCanDelegationBeSent = false;
+			outReasonDelegationCannotBeSent = customConsts.getStringConst("mCanDelegationLaunch target_no_alive before_replace_text", out success);
+			if(!success) outReasonDelegationCannotBeSent = "Target community has no loyal pops left alive.";
+		}
+		
+		//delegations must travel to normal or abstract communities.  Communities like "Wanderers" or "Rebels" don't exist on the map
+		if ((inCommunityTarget.getCommunityType() != IFCommunity.eCommunityType.cNormal) &amp;&amp; (inCommunityTarget.getCommunityType() != IFCommunity.eCommunityType.cAbstract))
+		{
+			outCanDelegationBeSent = false;
+			outReasonDelegationCannotBeSent = customConsts.getStringConst("mCanDelegationLaunch delegation_nostart_nolocate before_replace_text", out success);
+			if(!success) outReasonDelegationCannotBeSent = "Target community's location could not be determined by our pops.";
+		}
+		//there must be a route to the destination community
+		else if (inCommunityTarget.getPathTypesToPlayerCommunity() == 0L)
+		{
+			outCanDelegationBeSent = false;
+			outReasonDelegationCannotBeSent = customConsts.getStringConst("mCanDelegationLaunch delegation_nostart_noroute before_replace_text", out success);
+			if(!success) outReasonDelegationCannotBeSent = "No route to the target community exists at this time.";
+		}
+		//there must be pops on a delegation:
+		else if(inProposedPops.Count == 0)
+		{
+			outCanDelegationBeSent = false;
+			outReasonDelegationCannotBeSent = customConsts.getStringConst("mCanDelegationLaunch delegation_nostart_nopops before_replace_text", out success);
+			if(!success) outReasonDelegationCannotBeSent = "Pops must be assigned to a delegation.";
+		}
+		//the proposed pops must be able to travel either over land, under water, or both
+		else if(!allPopsCanBreatheOverwater &amp;&amp; !allPopsCanBreatheUnderwater)
+		{
+			outCanDelegationBeSent = false;
+			outReasonDelegationCannotBeSent = customConsts.getStringConst("mCanDelegationLaunch delegation_nostart_mismatchbreathe before_replace_text", out success);
+			if(!success) outReasonDelegationCannotBeSent = "Some assigned pops can breathe only overwater, and others only underwater.";
+		}
+		//the proposed pops must be able to travel on a path that exists to the target community
+		else if(  (!allPopsCanBreatheOverwater &amp;&amp; !inCommunityTarget.hasWaterOnlyPathToPlayerCommunity()) //all paths to the community include land travel, which some pops can't breathe on
+			   || (!allPopsCanBreatheUnderwater &amp;&amp; !inCommunityTarget.hasLandOnlyPathToPlayerCommunity()) //all paths to the community include water travel, which some pops can't breathe under
+		       )
+		{
+			outCanDelegationBeSent = false;
+			outReasonDelegationCannotBeSent = customConsts.getStringConst("mCanDelegationLaunch delegation_nostart_pathbreathe before_replace_text", out success);
+			if(!success) outReasonDelegationCannotBeSent = "Some assigned pops cannot breathe on all biomes to the target.";
+		}
+		//the proposed food to send must be enough for the proposed pops to agree to journey out
+		else if(heldFoodCount &lt; necessaryFoodCount)
+		{
+			outCanDelegationBeSent = false;
+			outReasonDelegationCannotBeSent = customConsts.getStringConst("mCanDelegationLaunch delegation_nostart_lowfood before_replace_text", out success);
+			if(!success) outReasonDelegationCannotBeSent = "Only [0] of required [1] food assigned to delegation.";
+			
+			//TODO format doubles
+			outReasonDelegationCannotBeSent = outReasonDelegationCannotBeSent.Replace("[0]", heldFoodCount.ToString());
+			outReasonDelegationCannotBeSent = outReasonDelegationCannotBeSent.Replace("[1]", necessaryFoodCount.ToString());
+		}
+		
+	    return new List&lt;object&gt;() { outCanDelegationBeSent, outReasonDelegationCannotBeSent };
+	</mCanDelegationLaunch>
+  
+  
+	<!-- Delegation resolution works like this: -->
+	<!-- for a single day, health changes, new wounds, new illnesses, new deaths, delegation delay, and resource decay are calculated (in that order) -->
+	<!-- then, (assuming it's not the arrival day), events which could happen to the delegation are polled and resolved one by one -->
+	<!-- then the day is advanced, and if it's the return day, the delegation has been fully evaluated -->
+	<!-- (the arrival day is special) -->
+	
+	<!-- delegation health changes has one input: IFDelegation inDelegation.  There are no outputs -->
+	<!-- this script will be called at the beginning of a day that the delegation is traveling (i.e. it is not called while a war/raiding delegation is laying siege to a community) -->
+	<mDelegationHealthChangeForOneDayTravel>
+        //input count check:
+        if (inArguments.Length &lt; 1)
+        {
+            return null;
+        }
+			
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		
+		//this is common to both travel and sieging, so it is in a custom script:
+	    var customScripts = getAPI().getCustomScripts();
+		customScripts.runCustomScript("delegation_healthChange", new List&lt;object&gt;() { inDelegation }, out _);
+		
+	    return null;
+	</mDelegationHealthChangeForOneDayTravel>
+	
+	<!-- delegation new wounds has one input: IFDelegation inDelegation.  There is one output: count of new wounds -->
+	<!-- this script will be called at the beginning of a day that the delegation is traveling (i.e. it is not called while a war/raiding delegation is laying siege to a community) -->
+	<mDelegationNewWoundsForOneDayTravel>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			var customScripts = getAPI().getCustomScripts();
+			IFDelegation inDelegation = (IFDelegation)inArguments[0];
+			
+			int woundCountStart = 0;
+			int woundCountEnd = 0;
+			foreach(IFPop pop in inDelegation.getPopsInDelegation())
+			{
+				if(pop.isWounded()) woundCountStart++;
+			}
+			
+			//while traveling, there are two sources of wounds: travel itself, and exposure
+			customScripts.runCustomScript("delegation_travelWounds", new List&lt;object&gt;() { inDelegation }, out _);
+			foreach(IFPop pop in inDelegation.getPopsInDelegation())
+			{
+				if(!pop.isDead())
+				{
+					customScripts.runCustomScript("popWoundFromExposure", new List&lt;object&gt;() { pop }, out _);
+					if(pop.isWounded())
+						woundCountEnd++;
+				}
+			}
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add((Int64)Math.Max(0, woundCountEnd - woundCountStart));
+			return toReturn;
+	</mDelegationNewWoundsForOneDayTravel>
+	
+	<!-- delegation new illness has one input: IFDelegation inDelegation.  There is one output: count of new illnesses -->
+	<!-- this script will be called at the beginning of a day that the delegation is traveling (i.e. it is not called while a war/raiding delegation is laying siege to a community) -->
+	<mDelegationNewIllnessForOneDayTravel>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			var customScripts = getAPI().getCustomScripts();
+			IFDelegation inDelegation = (IFDelegation)inArguments[0];
+			
+			int illCountStart = 0;
+			int illCountEnd = 0;
+			foreach(IFPop pop in inDelegation.getPopsInDelegation())
+			{
+				if(pop.isIll()) illCountStart++;
+			}
+			
+			customScripts.runCustomScript("delegation_illnesses", new List&lt;object&gt;() { inDelegation }, out _);
+			
+			foreach(IFPop pop in inDelegation.getPopsInDelegation())
+			{
+				if(pop.isIll()) illCountEnd++;
+			}
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add((Int64)Math.Max(0, illCountEnd - illCountStart));
+			return toReturn;
+	</mDelegationNewIllnessForOneDayTravel>
+	
+	<!-- delegation births has one input: IFDelegation inDelegation.  There are three outputs: Int64 outCountOfBirths, Int64 outCountDeadMothers, Int64 outCountStillbirths -->
+	<!-- this script will be called at the beginning of a day that the delegation is traveling (i.e. it is not called while a war/raiding delegation is laying siege to a community) -->
+	<mDelegationBirthsForOneDayTravel>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			var customScripts = getAPI().getCustomScripts();
+			IFDelegation inDelegation = (IFDelegation)inArguments[0];
+			
+			Int64 dateToProcess = inDelegation.getNextDateToCalcEventsFor();
+			List&lt;IFPop&gt; popsToGiveBirth = new List&lt;IFPop&gt;();
+			foreach(IFPop pop in inDelegation.getPopsInDelegation())
+			{
+				if(pop.getPregnantDayOver() &lt; dateToProcess)
+				{
+					popsToGiveBirth.Add(pop);
+				}
+			}
+			
+			Int64 outCountStillbirths = 0;
+			Int64 outCountOfBirths = 0;
+			if(customScripts.runCustomScriptCheckTypes("delegation_births", new List&lt;object&gt;() { inDelegation }, out List&lt;object&gt; outputs, false, 
+				typeof(List&lt;IFPop&gt;))
+			  )
+			{
+				List&lt;IFPop&gt; popsNewlyBorn = (List&lt;IFPop&gt;)outputs[0];
+				foreach(IFPop pop in popsNewlyBorn)
+				{
+					if(pop.isDead())
+						outCountStillbirths++;
+				}
+				outCountOfBirths = popsNewlyBorn.Count - outCountStillbirths;
+			}
+			
+			Int64 outCountDeadMothers = 0;
+			foreach(IFPop pop in popsToGiveBirth)
+			{
+				if(pop.isDead())
+					outCountDeadMothers++;
+			}
+			
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add(outCountOfBirths);
+			toReturn.Add(outCountDeadMothers);
+			toReturn.Add(outCountStillbirths);
+			return toReturn;
+	</mDelegationBirthsForOneDayTravel>
+	
+	<!-- delegation deaths has one input: IFDelegation inDelegation.  There is one output: count of deaths -->
+	<!-- this script will be called at the beginning of a day that the delegation is traveling (i.e. it is not called while a war/raiding delegation is laying siege to a community) -->
+	<mDelegationDeathForOneDayTravel>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			var customScripts = getAPI().getCustomScripts();
+			IFDelegation inDelegation = (IFDelegation)inArguments[0];
+			
+			Int64 deadCountNew = 0;
+			List&lt;IFPop&gt; pops = new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()); //if the collection of a foreach loop is modified an exception occurs
+			foreach(IFPop pop in pops)
+			{
+				if(!pop.isDead())
+				{
+					//these are common scripts used in both local community and delegations, so each is a custom script:
+					customScripts.runCustomScript("popDeathFromIllness", new List&lt;object&gt;() { pop }, out _);
+					customScripts.runCustomScript("popDeathFromWounds", new List&lt;object&gt;() { pop }, out _);
+					customScripts.runCustomScript("popDeathFromOldAge", new List&lt;object&gt;() { pop }, out _);
+					if(pop.isDead()) deadCountNew++;
+				}
+			}
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			toReturn.Add(deadCountNew);
+			return toReturn;
+	</mDelegationDeathForOneDayTravel>
+	
+	<!-- delegation delay has one input: IFDelegation inDelegation.  There are no outputs (the inDelegation should have the function called directly) -->
+	<!-- this script will be called at the beginning of a day that the delegation is traveling (i.e. it is not called while a war/raiding delegation is laying siege to a community) -->
+	<mDelegationDelayForOneDayTravel>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			var customScripts = getAPI().getCustomScripts();
+			IFDelegation inDelegation = (IFDelegation)inArguments[0];
+			
+			double woundedPopSpeed = customConsts.getDoubleConst("delegationDelayOneDayTravel wounded_pop speed mult", out bool success);
+			if(!success) woundedPopSpeed = 0.65d;
+			double illPopSpeed = customConsts.getDoubleConst("delegationDelayOneDayTravel ill_pop speed mult", out success);
+			if(!success) illPopSpeed = 0.8d;
+			double pregnantImmobilePopSpeed = customConsts.getDoubleConst("delegationDelayOneDayTravel pregnantimmobile_pop speed mult", out success);
+			if(!success) pregnantImmobilePopSpeed = 0.75d;
+			double helpedPopSpeed = customConsts.getDoubleConst("delegationDelayOneDayTravel healthy helper speed mult", out success);
+			if(!success) helpedPopSpeed = 0.9d;
+			
+			//count up total number of wounded, ill, and healthy pops:
+			int woundedPopCount = 0;
+			int illPopCount = 0;
+			int healthyPopCount = 0;
+			int pregnantImmobilePopCount = 0;
+			foreach(IFPop pop in inDelegation.getPopsInDelegation())
+			{
+				if(pop.isDead()) continue;
+				if(pop.isWounded()) woundedPopCount++;
+				else if(pop.isPregnantImmobile()) pregnantImmobilePopCount++;
+				else if(pop.isIll()) illPopCount++;
+				else healthyPopCount++;
+			}
+			int helpedPopCount = 0;
+			if(woundedPopCount &lt;= healthyPopCount)
+			{
+				helpedPopCount += woundedPopCount;
+				woundedPopCount = 0;
+			}
+			else
+			{
+				helpedPopCount += healthyPopCount;
+				woundedPopCount -= healthyPopCount;
+			}
+			if(pregnantImmobilePopCount &lt;= healthyPopCount)
+			{
+				helpedPopCount += pregnantImmobilePopCount;
+				pregnantImmobilePopCount = 0;
+			}
+			else
+			{
+				helpedPopCount += healthyPopCount;
+				pregnantImmobilePopCount -= healthyPopCount;
+			}
+			if(illPopCount &lt;= healthyPopCount)
+			{
+				helpedPopCount += illPopCount;
+				illPopCount = 0;
+			}
+			else
+			{
+				helpedPopCount += healthyPopCount;
+				illPopCount -= healthyPopCount;
+			}
+			double totalSpeed = healthyPopCount + (helpedPopSpeed * helpedPopCount) + (illPopSpeed * illPopCount) + (woundedPopSpeed * woundedPopCount) + (pregnantImmobilePopSpeed * pregnantImmobilePopCount);
+			double partOfDaySpentTraveling = totalSpeed / inDelegation.getPopsInDelegation().Count;
+			if(partOfDaySpentTraveling &lt; 0.0d) partOfDaySpentTraveling = 0.0d;
+			addDebugMessage(inScriptInstance, "delegation " + inDelegation.getDebugName() + " spends only " + partOfDaySpentTraveling + " traveling due to illnesses and wounds.  " +
+				" totalSpeed=" + totalSpeed + " inDelegation.getPopsInDelegation().Count=" + inDelegation.getPopsInDelegation().Count + " healthyPopCount=" + healthyPopCount + " helpedPopCount=" + helpedPopCount + " illPopCount=" + illPopCount + " woundedPopCount=" + woundedPopCount
+				+ " pregnantImmobilePopSpeed=" + pregnantImmobilePopSpeed + " pregnantImmobilePopCount=" + pregnantImmobilePopCount);
+			
+			if(partOfDaySpentTraveling &lt; 1.0d)
+			{
+				inDelegation.addToReturnDate(1.0d - partOfDaySpentTraveling);
+			}
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;();
+			return toReturn;
+	</mDelegationDelayForOneDayTravel>
+	
+	<!-- delegation resource decay has one input: IFDelegation inDelegation.  There are no outputs -->
+	<!-- this script will be called at the beginning of a day that the delegation is traveling (i.e. it is not called while a war/raiding delegation is laying siege to a community) -->
+	<!-- (delegation resource decay is called directly by other custom scripts in that instance) -->
+	<mDelegationResourcesDegrade>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+			var customScripts = getAPI().getCustomScripts();
+			IFDelegation inDelegation = (IFDelegation)inArguments[0];
+			
+			//this is common to both travel and sieging, so it is in a custom script:
+			customScripts.runCustomScript("delegation_resourceDecay", new List&lt;object&gt;() { inDelegation }, out _);
+			
+			return null;
+	</mDelegationResourcesDegrade>
+  
+	<!-- delegation prisoner conversion has one input: IFDelegation inDelegation.  There are no outputs -->
+	<!-- this script will be called just before a loyal delegation returns to the player community, after the delegation has caused a simultaneous event -->
+	<!-- the intent of this script is to handle conversion of prisoners (AKA non-loyal pops) in the delegation, but since it's called every time it could do other things as well -->
+	<mDelegationReturnPrisonerConversion>
+		//input count check:
+		if (inArguments.Length &lt; 1)
+		{
+			return null;
+		}
+		
+		var customScripts = getAPI().getCustomScripts();
+		var customConsts = getAPI().getCustomConsts();
+		var consts = getAPI().getConsts();
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		Int64 countOfPrisonersConverted = 0;
+		Dictionary&lt;IFRace, int&gt; popsConvertedByRace = new Dictionary&lt;IFRace, int&gt;();
+		
+		foreach (IFPop pop in inDelegation.getPopsInDelegation())
+		{
+			if (!pop.isDead() &amp;&amp; (pop.getCommunity() != inDelegation.getSourceCommunity()))
+			{
+				customScripts.runCustomScript("hardcodedHistory_pop_abducted", new List&lt;object&gt;() { inDelegation.getSourceCommunity(), currentDate, IFHistoryActor.eActorKind.cCommunity, inDelegation.getSourceCommunity().getUID(), IFHistoryTarget.eTargetKind.cPop, pop.getUID(), -1L /*no impact override*/ }, out _);
+				pop.setCommunity(inDelegation.getSourceCommunity());
+				countOfPrisonersConverted++;
+				if(!popsConvertedByRace.ContainsKey(pop.getRace()))
+					popsConvertedByRace.Add(pop.getRace(), 0);
+				popsConvertedByRace[pop.getRace()]++;
+			}
+		}
+		if(countOfPrisonersConverted != 0)
+		{
+			customScripts.runCustomScript("hardcodedAlert_prisoners_converted", new List&lt;object&gt;() { countOfPrisonersConverted }, out _);
+			
+			//based on the count of newly converted pops to total pops, decrease happiness as a result of new ex-prisoners being unhappy with the situation:
+			double happinessProportionMax = customConsts.getDoubleConst("mDelegationReturnPrisonerConversion happiness_from_abduction proportion", out bool success);
+			if(!success) happinessProportionMax = 0.75d;
+			
+			double minHappiness = consts.getHappinessMin();
+			double maxHappiness = consts.getHappinessMax();
+			
+			foreach(var kvpair in popsConvertedByRace)
+			{
+				double happinessOfThisRace = ((maxHappiness - minHappiness) * kvpair.Value) / inDelegation.getSourceCommunity().getPopCountOfRace(kvpair.Key);
+				
+				string name = customConsts.getStringConst("mDelegationReturnPrisonerConversion happiness_from_abduction name before_replace_text", out success);
+				if(!success) name = "Ex-Abductees Became Community Members";
+				string text = customConsts.getStringConst("mDelegationReturnPrisonerConversion happiness_from_abduction text before_replace_text", out success);
+				if(!success) text = "Our community has abducted foreign pops and forced them to become members of the community.  They will be upset about this for a time, and more likely to cause trouble.";
+				
+				inDelegation.getSourceCommunity().getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(kvpair.Key, name, text, happinessOfThisRace, false);
+			}
+		}
+		
+		return null;
+	</mDelegationReturnPrisonerConversion>
+  
+  </gamescripts>
+  
+</core_data>

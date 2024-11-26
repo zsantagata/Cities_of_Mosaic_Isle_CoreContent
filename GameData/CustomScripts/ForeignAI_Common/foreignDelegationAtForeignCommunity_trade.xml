@@ -1,0 +1,416 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- the local community will only take trades that have more than a minimum margin.  The community has likely made plans for the resources it does have (since no community can predict when a trader comes), and coming up with new plans takes at least a bit of effort -->
+			<i1><a>foreignDelegationAtForeignCommunity_trade local_community required_margin econ_strength_max</a> <b>double</b> <c>1.02</c></i1>
+			<!-- as a community's economic strength wanes, flexibility becomes more difficult, so minimum margin will rise to the below value at minimum econ strength.  This is quadratic. -->
+			<i1><a>foreignDelegationAtForeignCommunity_trade local_community required_margin econ_strength_min</a> <b>double</b> <c>1.5</c></i1>
+			
+			<!-- most communities are at least slightly suspicious of others.  Masters are highly suspicious of other masters, and communities are suspicious of others' masters -->
+			<!-- This suspicion can be increased by foreignAI, and is a linear multiplier on the required margin -->
+			<i1><a>foreignDelegationAtForeignCommunity_trade local_community default suspicion</a> <b>double</b> <c>1.05</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_trade local_community master_to_master suspicion</a> <b>double</b> <c>1.75</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_trade local_community other_to_master suspicion</a> <b>double</b> <c>1.25</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_trade local_community servant_own_master_or_vice_versa suspicion</a> <b>double</b> <c>1.00</c></i1>
+			
+			<!-- (note that related servants and masters are not "suspicious" of each other per se, but the master will demand a higher margin, which the servant will also take into consideration; this happens no matter the side of each) -->
+			<i1><a>foreignDelegationAtForeignCommunity_trade margin_for_master_of_servant mult</a> <b>double</b> <c>1.67</c></i1>
+			
+			<!-- the visitors have been told to make a trade, so they will accept a slight loss but not a major one -->
+			<!-- visitors are the ones who propose a trade, so they will assemble a trade so that it meets their own requirement -->
+			<!-- as the number of proposable trades decreases, the desired margin will decrease from the below max to min.  At 1 (last proposal left), it will be min. -->
+			<i1><a>foreignDelegationAtForeignCommunity_trade visitors desired_margin max</a> <b>double</b> <c>1.07</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_trade visitors desired_margin min</a> <b>double</b> <c>0.95</c></i1>
+			
+			<!-- each trade will have a target of some amount of total value.  These limit the proportion of min(visitor total value, local total value) that the visitors could try to propose -->
+			<i1><a>foreignDelegationAtForeignCommunity_trade visitors target_total_value max</a> <b>double</b> <c>0.95</c></i1>
+			<i1><a>foreignDelegationAtForeignCommunity_trade visitors target_total_value min</a> <b>double</b> <c>0.25</c></i1>
+			
+			<!-- visitors will only be able to propose a certain count of trades.  As each one is proposed, if it is successful, it executes and the delegation leaves. -->
+			<i1><a>foreignDelegationAtForeignCommunity_trade visitors trade_proposal count</a> <b>int</b> <c>3</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script foreigndelegationatforeigncommunity_trade</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which handles trade (trade/diplomacy) delegations whose source and target are neither player controlled -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFDelegation inDelegation
+	-->
+	
+	<!-- output:
+	none
+	-->
+	<i1><a>foreignDelegationAtForeignCommunity_trade</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFDelegation)}
+	      }, out _))
+	    {
+		  throw new ArgumentException("foreignDelegationAtForeignCommunity_trade custom script received invalid arguments");
+		  return null;
+	    }
+		
+		//TODO: make foreignDelegationAtForeignCommunity_trade use proposeTradeBetweenTwoResourcePools
+	
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		if(inDelegation == null)
+		{
+		  throw new ArgumentException("foreignDelegationAtForeignCommunity_trade custom script received invalid arguments: inDelegation cannot be null");
+		  return null;
+		}
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		if((inDelegation.getSourceCommunity() == localCommunity) || (inDelegation.getTargetCommunity() == localCommunity))
+		{
+		  throw new ArgumentException("foreignDelegationAtForeignCommunity_trade custom script received invalid arguments: inDelegation's source or target community cannot be the local community");
+		  return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		//diplomatic delegations have no meaning between foreign communities because they do not maintain complex relationships
+		//(the only foreign-foreign relations are the possibilities of "master/servant to me/player")
+		//so treat them like trade delegations
+		//to perform a trade, both sides need to be getting something they care about.
+		//neither visitors or locals are rational actors with understanding of microeconomics.  They're tribespeople.  The delegation was sent out to make a trade, so the delegation will try to, even if it's not the best trade.  But they also won't like getting ripped off.
+		//locals will, based on their foreignAI and economic strength, either: accept any slightly beneficial trade, accept only good trades, or accept only absolutely great trades.
+		//the visitors will make N proposals, using their own resource desire values to determine which resources to ask for and provide.  As remaining proposals tends towards 0, their desired margin will decrease.
+		//each of these proposals will be evaluated by the locals, using their own resource desire values.  If the proposal is above the desired threshold, it is accepted, and the resources are swapped.  Otherwise, N is decreased, and possibly a new proposal happens.
+		//if no resources are traded so be it
+		//lastly, servant communities will provide more goods to master communities (who will expect such a thing)
+		
+		//get custom consts:
+		double localMarginEconMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade local_community required_margin econ_strength_max", out bool success);
+		if(!success) localMarginEconMax = 1.02d;
+		double localMarginEconMin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade local_community required_margin econ_strength_min", out success);
+		if(!success) localMarginEconMin = 1.5d;
+		
+		double suspicionDefault = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade local_community default suspicion", out success);
+		if(!success) suspicionDefault = 1.05d;
+		double suspicionMasterToMaster = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade local_community master_to_master suspicion", out success);
+		if(!success) suspicionMasterToMaster = 1.75d;
+		double suspicionOtherToMaster = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade local_community other_to_master suspicion", out success);
+		if(!success) suspicionOtherToMaster = 1.25d;
+		double suspicionDirectConnection = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade local_community servant_own_master_or_vice_versa suspicion", out success);
+		if(!success) suspicionDirectConnection = 1.0d;
+		
+		double masterOfServantMargin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade margin_for_master_of_servant mult", out success);
+		if(!success) masterOfServantMargin = 1.67d;
+		
+		double visitorsMarginMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade visitors desired_margin max", out success);
+		if(!success) visitorsMarginMax = 1.07d;
+		double visitorsMarginMin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade visitors desired_margin min", out success);
+		if(!success) visitorsMarginMin = 0.95d;
+		
+		//other setup variables:
+		Int64 total_count_of_resources = getAPI().getTotalCountOfMO("resources");
+		
+		List&lt;double&gt; localDesireValues = new List&lt;double&gt;(); //Size = count of resources
+		List&lt;double&gt; visitingDesireValues = new List&lt;double&gt;(); //Size = count of resources
+		List&lt;Tuple&lt;double, double&gt;&gt; proposedProvidedResources = new List&lt;Tuple&lt;double, double&gt;&gt;(); //Size = count of resources.  First=quan, second=qual
+		List&lt;Tuple&lt;double, double&gt;&gt; proposedRequestedResources = new List&lt;Tuple&lt;double, double&gt;&gt;(); //Size = count of resources.  First=quan, second=qual
+		
+		if(customScripts.runCustomScriptCheckTypes("getResourceDesireValues", new List&lt;object&gt;() { inDelegation.getTargetCommunity() },
+				out List&lt;object&gt; desireValues0, true, typeof(List&lt;double&gt;)))
+		{
+			localDesireValues = (List&lt;double&gt;)desireValues0[0];
+		}
+		if(customScripts.runCustomScriptCheckTypes("getResourceDesireValues", new List&lt;object&gt;() { inDelegation.getSourceCommunity() },
+				out List&lt;object&gt; desireValues1, true, typeof(List&lt;double&gt;)))
+		{
+			visitingDesireValues = (List&lt;double&gt;)desireValues1[0];
+		}
+		
+		if(localDesireValues.Count &lt; total_count_of_resources)
+		{
+			addDebugMessage(inScriptInstance, "something wrong has occurred in fetching desire values for delegation's target community, so setting desire values to 1.0d");
+			localDesireValues.Clear();
+			for(int i = 0; i &lt; total_count_of_resources; i++)
+				localDesireValues.Add(1.0d);
+		}
+		if(visitingDesireValues.Count &lt; total_count_of_resources)
+		{
+			addDebugMessage(inScriptInstance, "something wrong has occurred in fetching desire values for delegation's source community, so setting desire values to 1.0d");
+			visitingDesireValues.Clear();
+			for(int i = 0; i &lt; total_count_of_resources; i++)
+				visitingDesireValues.Add(1.0d);
+		}
+		
+		Int64 countOfProposalsLeft = customConsts.getIntConst("foreignDelegationAtForeignCommunity_trade visitors trade_proposal count", out success);
+		if(!success) countOfProposalsLeft = 3;
+		Int64 startingCountOfProposals = countOfProposalsLeft;
+		
+		double econStrengthLocalMarginMult = inDelegation.getTargetCommunity().getEconStrength() / consts.getEconStrengthMax();
+		econStrengthLocalMarginMult *= econStrengthLocalMarginMult;
+		econStrengthLocalMarginMult = (econStrengthLocalMarginMult * (localMarginEconMax - localMarginEconMin)) + localMarginEconMin;
+		
+		double localSuspicion = suspicionDefault;
+		bool visitorIsMaster = (inDelegation.getSourceCommunity() == inDelegation.getTargetCommunity().getMasterCommunity());
+		bool localIsMaster = (inDelegation.getSourceCommunity().getMasterCommunity() == inDelegation.getTargetCommunity());
+		if(visitorIsMaster || localIsMaster)
+		{
+			localSuspicion = suspicionDirectConnection;
+		}
+		else
+		{
+			bool targetIsMaster = inDelegation.getTargetCommunity().hasServantCommunities();
+			bool sourceIsMaster = inDelegation.getSourceCommunity().hasServantCommunities();
+			if(targetIsMaster &amp;&amp; sourceIsMaster)
+			{
+				localSuspicion = suspicionMasterToMaster;
+			}
+			else if(sourceIsMaster)
+			{
+				localSuspicion = suspicionOtherToMaster;
+			}
+		}
+		
+		//variables for proposal:
+		double maxQual = consts.getResourceQualityMax();
+		double minQual = consts.getResourceQualityMin();
+		
+		double resourceDesireMaxQual = customConsts.getDoubleConst("foreign_community resource_desire max_qual mult", out success);
+		if(!success) resourceDesireMaxQual = 2.25d;
+		double resourceDesireMinQual = customConsts.getDoubleConst("foreign_community resource_desire min_qual mult", out success);
+		if(!success) resourceDesireMinQual = 0.45d;
+		
+		double totalValueHeldByVisitors = 0.0d;
+		IFResourcePool visitorResPool = inDelegation.getResourcePool();
+		double totalValueHeldByLocals = 0.0d;
+		IFResourcePool localResPool = inDelegation.getTargetCommunity().getResourcePool();
+		for(int moid = 1; moid &lt; total_count_of_resources; moid++)
+		{
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res == null)
+				continue;
+				
+			double visitor_qual_mult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (visitorResPool.getResourceQuality(res) - minQual) / (maxQual - minQual));
+			totalValueHeldByVisitors += visitor_qual_mult * visitorResPool.getResourceQuantity(res) * visitingDesireValues[moid];
+			
+			double local_qual_mult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (localResPool.getResourceQuality(res) - minQual) / (maxQual - minQual));
+			totalValueHeldByLocals += local_qual_mult * localResPool.getResourceQuantity(res) * visitingDesireValues[moid]; //this should stay as visiting desire values because this variable is used in proposal
+		}
+		
+		if(totalValueHeldByVisitors &lt; 0.0d)
+		{
+			addDebugMessage(inScriptInstance, "something possibly wrong: total value held by visitors (in their view) is 0.0d or less; cannot trade: value=" + totalValueHeldByVisitors);
+			return null;
+		}
+		if(totalValueHeldByLocals &lt; 0.0d)
+		{
+			addDebugMessage(inScriptInstance, "something possibly wrong: total value held by locals (in the view of visitors) is 0.0d or less; cannot trade: value=" + totalValueHeldByLocals);
+			return null;
+		}
+		
+		double totalValueProportionMin = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade visitors target_total_value min", out success);
+		if(!success) totalValueProportionMin = 0.25d;
+		double totalValueProportionMax = customConsts.getDoubleConst("foreignDelegationAtForeignCommunity_trade visitors target_total_value max", out success);
+		if(!success) totalValueProportionMax = 0.95d;
+		
+		//proposal loop:
+		while(countOfProposalsLeft != 0)
+		{
+			//reset proposedProvidedResources and proposedRequestedResources:
+			proposedProvidedResources.Clear();
+			proposedRequestedResources.Clear();
+			for(int moid = 0; moid &lt; total_count_of_resources; moid++) //this starts at 0 deliberately
+			{
+				proposedProvidedResources.Add(Tuple.Create(0.0d, 0.0d));
+				proposedRequestedResources.Add(Tuple.Create(0.0d, 0.0d));
+			}
+		
+			double totalValueToProvide = (getAPI().calcRand() * (totalValueProportionMax - totalValueProportionMin)) + totalValueProportionMin;
+			totalValueToProvide *= Math.Min(totalValueHeldByLocals, totalValueHeldByVisitors);
+			
+			double totalValueToAskFor = totalValueToProvide;
+			if(visitorIsMaster)
+			{
+				totalValueToProvide /= masterOfServantMargin;
+			}
+			else if(localIsMaster)
+			{
+				totalValueToAskFor /= masterOfServantMargin;
+			}
+			
+			//visitor margin has only one factor: how many proposals are left
+			double visitorMargin = visitorsMarginMin;
+			if(startingCountOfProposals != 1)
+			{
+				visitorMargin += (((countOfProposalsLeft - 1) / (startingCountOfProposals - 1)) * (visitorsMarginMax - visitorsMarginMin));
+			}
+			if(visitorMargin &gt;= 1.0d)
+			{
+				totalValueToProvide /= visitorMargin;
+			}
+			else //less than one
+			{
+				totalValueToAskFor *= visitorMargin;
+			}
+			
+			//create a list of MOIDs to consider:
+			List&lt;int&gt; moids = new List&lt;int&gt;();
+			for(int moid = 1; moid &lt; total_count_of_resources; moid++)
+			{
+				moids.Add(moid);
+			}
+			//assemble provided resources:
+			double valueProvidedSoFar = 0.0d;
+			while((valueProvidedSoFar &lt; totalValueToProvide) &amp;&amp; (moids.Count != 0))
+			{
+				int index = (int)getAPI().calcRandIntUnder((Int64)moids.Count);
+				int moid = moids[index];
+				moids.RemoveAt(index);
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res == null)
+					continue;
+				
+				double quan = visitorResPool.getResourceQuantity(res);
+				if(quan == 0.0d)
+					continue;
+				
+				double qual = visitorResPool.getResourceQuality(res);
+				double qual_value_mult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (qual - minQual) / (maxQual - minQual));
+				
+				double thisResAllValue = quan * qual_value_mult * visitingDesireValues[moid];
+				double howMuchToAdd = 0.0d;
+				if(thisResAllValue &lt;= (totalValueToProvide - valueProvidedSoFar))
+				{
+					//add all of this resource:
+					valueProvidedSoFar += howMuchToAdd;
+					proposedProvidedResources[moid] = Tuple.Create(quan, qual);
+				}
+				else
+				{
+					//add only a portion of this resource:
+					double quan_to_add = (totalValueToProvide - valueProvidedSoFar) / (qual_value_mult * visitingDesireValues[moid]);
+					valueProvidedSoFar = totalValueToProvide;
+					proposedProvidedResources[moid] = Tuple.Create(quan_to_add, qual);
+				}
+			}
+			if(valueProvidedSoFar != totalValueToProvide)
+			{
+				//shift total value to ask for by the same ratio:
+				totalValueToAskFor *= valueProvidedSoFar / totalValueToProvide;
+			}
+			
+			//recreate the list of MOIDs:
+			moids.Clear();
+			for(int moid = 1; moid &lt; total_count_of_resources; moid++)
+			{
+				moids.Add(moid);
+			}
+			//assemble requested resources:
+			double valueRequestedSoFar = 0.0d;
+			while((valueRequestedSoFar &lt; totalValueToAskFor) &amp;&amp; (moids.Count != 0))
+			{
+				int index = (int)getAPI().calcRandIntUnder((Int64)moids.Count);
+				int moid = moids[index];
+				moids.RemoveAt(index);
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res == null)
+					continue;
+				
+				double quan = localResPool.getResourceQuantity(res);
+				if(quan == 0.0d)
+					continue;
+				
+				double qual = localResPool.getResourceQuality(res);
+				double qual_value_mult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (qual - minQual) / (maxQual - minQual));
+				
+				double thisResAllValue = quan * qual_value_mult * visitingDesireValues[moid]; //keep this as visiting desire values
+				double howMuchToAdd = 0.0d;
+				if(thisResAllValue &lt;= (totalValueToAskFor - valueRequestedSoFar))
+				{
+					//add all of this resource:
+					valueRequestedSoFar += howMuchToAdd;
+					proposedRequestedResources[moid] = Tuple.Create(quan, qual);
+				}
+				else
+				{
+					//add only a portion of this resource:
+					double quan_to_add = (totalValueToAskFor - valueRequestedSoFar) / (qual_value_mult * visitingDesireValues[moid]); //keep this as visiting desire values
+					valueRequestedSoFar = totalValueToAskFor;
+					proposedRequestedResources[moid] = Tuple.Create(quan_to_add, qual);
+				}
+			}
+			
+			//now that the requested and provided resources have been assembled, let the locals evaluate it
+			//the local margin:
+			double local_margin = econStrengthLocalMarginMult * localSuspicion; //above 1.0d means better for the locals
+			if(localIsMaster)
+			{
+				local_margin *= masterOfServantMargin;
+			}
+			else if(visitorIsMaster)
+			{
+				local_margin /= masterOfServantMargin;
+			}
+			
+			double totalValueGivenByLocals = 0.0d;
+			double totalValueGainedByLocals = 0.0d;
+			for(int moid = 1; moid &lt; proposedRequestedResources.Count; moid++)
+			{
+				double qual_value_mult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (proposedRequestedResources[moid].Item2 - minQual) / (maxQual - minQual));
+				double thisResAllValue = proposedRequestedResources[moid].Item1 * qual_value_mult * localDesireValues[moid]; //keep this as local desire values
+				
+				totalValueGivenByLocals += thisResAllValue;
+			}
+			for(int moid = 1; moid &lt; proposedProvidedResources.Count; moid++)
+			{
+				double qual_value_mult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (proposedProvidedResources[moid].Item2 - minQual) / (maxQual - minQual));
+				double thisResAllValue = proposedProvidedResources[moid].Item1 * qual_value_mult * localDesireValues[moid]; //keep this as local desire values
+				
+				totalValueGainedByLocals += thisResAllValue;
+			}
+			double proposal_actual_margin = (totalValueGivenByLocals &lt;= 0.0d ? double.MaxValue : totalValueGainedByLocals / totalValueGivenByLocals);
+			
+			if(proposal_actual_margin &gt;= local_margin)
+			{
+				//accept the proposal and swap the resources:
+				//(subtract all resources first, then add them, to make sure quality is handled correctly)
+				for(int moid = 1; moid &lt; proposedRequestedResources.Count; moid++)
+				{
+					localResPool.subtractResource((UInt64)moid, proposedRequestedResources[moid].Item1);
+				}
+				for(int moid = 1; moid &lt; proposedProvidedResources.Count; moid++)
+				{
+					visitorResPool.subtractResource((UInt64)moid, proposedProvidedResources[moid].Item1);
+				}
+				for(int moid = 1; moid &lt; proposedRequestedResources.Count; moid++)
+				{
+					visitorResPool.addResourcesOfQuality((UInt32)moid, proposedRequestedResources[moid].Item1, proposedRequestedResources[moid].Item2);
+				}
+				for(int moid = 1; moid &lt; proposedProvidedResources.Count; moid++)
+				{
+					localResPool.addResourcesOfQuality((UInt32)moid, proposedProvidedResources[moid].Item1, proposedProvidedResources[moid].Item2);
+				}
+				
+				return null;
+			}
+			
+			//if we have reached here, the proposal has been rejected; decrement proposal count:
+			countOfProposalsLeft--;
+		}
+		
+		//if we have reached here, no proposal has been accepted.
+		addDebugMessage(inScriptInstance, "delegation " + inDelegation.getDebugName() + " has proposed their maximum number of trades and none have been accepted.  Delegation will leave now.");
+	    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

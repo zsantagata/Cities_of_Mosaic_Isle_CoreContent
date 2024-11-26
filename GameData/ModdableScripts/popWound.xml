@@ -1,0 +1,181 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of a scripts related to pops getting wounded -->
+  
+  <!-- custom consts related to pop death: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	<!-- TODO: put all this file's custom consts here -->
+		<i1><a>popWound exposure days min</a> <b>int</b> <c>1</c></i1> <!-- this is the minimum days wounded from an exposure wound -->
+		<i1><a>popWound exposure days max</a> <b>int</b> <c>20</c></i1> <!-- this is the maximum days wounded from an exposure wound -->
+		
+		<i1><a>popWound illness days min</a> <b>int</b> <c>2</c></i1> <!-- this is the minimum days wounded from an illness wound -->
+		<i1><a>popWound illness days max</a> <b>int</b> <c>8</c></i1> <!-- this is the maximum days wounded from an illness wound -->
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <gamescripts name="default">
+	<!-- pops can get new wounds from their workplace, or from exposure to hostile conditions (heat/cold).  These scripts are called on all non-dead, not-in-delegation pops of the player community. -->
+  
+	<!-- the scripts are called in the following order: mPopWoundFromWorkplace, mPopWoundFromExposure -->
+	<!-- (that is the order in which they appear in this file) -->
+	<!-- all scripts are called for one pop, then the next pop is considered.  These scripts are called at midnight. -->
+  
+	<!-- pop wounds from others at workplace script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+  <mPopWoundFromWorkplace>
+	//input count check:
+	if(inArguments.Length &lt; 1)
+	{
+	    return null;
+	}
+	  
+	IFPop pop = (IFPop)inArguments[0];
+	var consts = getAPI().getConsts();
+	
+    //if the pop is not working, end the script:
+    if(!pop.hasWorkplaceBuilding())
+    {
+		addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + " does not have a workplace and therefore cannot become wounded from a workplace accident");
+		return null;
+    }
+
+    //TODO: race, industry, possibly buildingKind considerations
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("wound danger");
+
+    //the base rate of getting a wound from non-dangerous industries is zero, so only industries with specific tags need to be checked
+	//TODO implement this script
+
+    bool gets_wounded = false;
+    addDebugMessage(inScriptInstance, "pop " + pop.getDebugName() + (gets_wounded ? " gets wounded at workplace!" : " does not get wounded at workplace"));
+    if(gets_wounded)
+	{
+		pop.addWound(false, true);
+	}
+    return null;
+  </mPopWoundFromWorkplace>
+	
+  <!-- pop wounds from exposure script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+  <mPopWoundFromExposure>
+	  //input count check:
+	  if(inArguments.Length &lt; 1)
+	  {
+	    return null;
+	  }
+	  
+	  IFPop inPop = (IFPop)inArguments[0];
+	  
+	  //this is common to both pops on the local map and pops traveling, so it is in a custom script:
+	  var customScripts = getAPI().getCustomScripts();
+      customScripts.runCustomScript("popWoundFromExposure", new List&lt;object&gt;() { inPop }, out _);
+	  
+	  //the custom script adds the wound
+	  
+      return null;
+  </mPopWoundFromExposure>
+  
+	<!-- pops becoming wounded has six inputs: IFPop inPop, bool inSourceExposure, bool inSourceWorkplace, bool inSourceIllness, bool inSourceCombat, UInt64 inDaysWounded.  There are no outputs -->
+	<!-- this script SHOULD BE called in order to add a wound to a pop.  It is technically possible, but not recommended, to add a wound directly through calling setWoundedDayOver.  The IFPop function addWound is a passthrough to this script (so it must not be called in this script).  The last five inputs have priority ordering: if any of the bools are true, the remaining inputs don't matter. -->
+  <mPopAddWound>
+	//input count check:
+	if (inArguments.Length &lt; 6)
+	{
+		return null;
+	}
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
+	IFPop inPop = (IFPop)inArguments[0];
+	bool inSourceExposure = (bool)inArguments[1];
+	bool inSourceWorkplace = (bool)inArguments[2];
+	bool inSourceIllness = (bool)inArguments[3];
+	bool inSourceCombat = (bool)inArguments[4];
+	UInt64 inDaysWounded = (UInt64)inArguments[5]; //this is re-used as the number of days the pop will be wounded, if any of the above bools are true
+	
+	bool success = false;
+	if(inSourceExposure)
+	{
+		//an exposure wound could mean frostbite, heat stroke, or a wound from plant thorns/poisonous insects or snakes/etc.  As such, there is a wide range of possibilities of time for treatment.
+		Int64 minExposureDays = customConsts.getIntConst("popWound exposure days min", out success);//some cases of heatstroke could recover in a day
+		if(!success) minExposureDays = 1L;
+		Int64 maxExposureDays = customConsts.getIntConst("popWound exposure days max", out success); //bad cases of frostbite may take weeks to get someone back on their feet
+		if(!success) maxExposureDays = 20L;
+		inDaysWounded = (UInt64)(getAPI().calcRandIntUnder(maxExposureDays - minExposureDays + 1) + minExposureDays);
+	}
+	else if(inSourceWorkplace)
+	{
+		//workplace accidents tend to be more serious than exposure wounds: heavy objects, wild animals, lost fingers, long falls.  The people of Mosaic Isle don't take time off to recover from carpal tunnel syndrome -- aches and pains are an unfortunate part of life.
+		Int64 minWorkplaceDays = customConsts.getIntConst("popWound workplace days min", out success);//a crushed finger may recover quickly
+		if(!success) minWorkplaceDays = 3L;
+		Int64 maxWorkplaceDays = customConsts.getIntConst("popWound workplace days max", out success);//a broken limb may take long to recover enough to work again
+		if(!success) maxWorkplaceDays = 60L;
+		inDaysWounded = (UInt64)(getAPI().calcRandIntUnder(maxWorkplaceDays - minWorkplaceDays + 1) + minWorkplaceDays);
+	}
+	else if(inSourceIllness)
+	{
+		//a wound from illness means organ failure, open sores, etc.  Not pretty, but the patient will probably recover quickly, or die.
+		Int64 minIllnessDays = customConsts.getIntConst("popWound illness days min", out success);
+		if(!success) minIllnessDays = 2L;
+		Int64 maxIllnessDays = customConsts.getIntConst("popWound illness days max", out success);
+		if(!success) maxIllnessDays = 8L;
+		inDaysWounded = (UInt64)(getAPI().calcRandIntUnder(maxIllnessDays - minIllnessDays + 1) + minIllnessDays);
+	}
+	else if(inSourceCombat)
+	{
+		//combat (using this age's technology) on Earth historically resulted in heavy casualties.  This implies that people who are wounded, if they do not die outright, are likely badly wounded.  A kind of wound from hand-to-hand combat that would disable someone would disable them for a long time, in other words.
+		//while the low end of the range is fairly low, the distribution is uniform, meaning most wounds will take a good chunk of time to recover.  That's the danger of combat.
+		Int64 minCombatDays = customConsts.getIntConst("popWound combat days min", out success);
+		if(!success) minCombatDays = 10L;
+		Int64 maxCombatDays = customConsts.getIntConst("popWound combat days max", out success);
+		if(!success) maxCombatDays = 90L;
+		inDaysWounded = (UInt64)(getAPI().calcRandIntUnder(maxCombatDays - minCombatDays + 1) + minCombatDays);
+	}
+	
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("wound danger");
+	inDaysWounded = (UInt64)(inDaysWounded * difficulty);
+	
+	if(inDaysWounded != 0)
+	{
+		if(inPop.isWounded())
+		{
+			//if the pop is already wounded, add a "mortal wound" variable that indicates the pop has a high chance of dying each day.
+			//the length of the "mortal wound" is the shorter of the two wounds.  The total wound time is the longer of the two wounds.
+			Int64 newWoundTime = 0;
+			Int64 mortalWoundCount = 0;
+			
+			Int64 alreadyExistingMortalWoundCount = variableHandler.getInt("wound_mortalWound_pop" + inPop.getUID(), out success);
+			if(!success) alreadyExistingMortalWoundCount = 0;
+			Int64 existingWoundTime = inPop.getWoundedDayOver() - getAPI().getCalendar().getCurrentDate();
+			if(existingWoundTime &gt; (alreadyExistingMortalWoundCount + (Int64)inDaysWounded))
+			{
+				newWoundTime = inPop.getWoundedDayOver();
+				mortalWoundCount = alreadyExistingMortalWoundCount + (Int64)inDaysWounded;
+			}
+			else
+			{
+				newWoundTime = getAPI().getCalendar().getCurrentDate() + (Int64)inDaysWounded + alreadyExistingMortalWoundCount;
+				mortalWoundCount = existingWoundTime;
+			}
+
+			addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " wounded again, now has mortal wound for " + mortalWoundCount + " days and wounded status will end in " + (newWoundTime - getAPI().getCalendar().getCurrentDate()) + " days");
+			inPop.setWoundedDayOver(newWoundTime);
+			variableHandler.storeIntVariable(newWoundTime + 2, "wound_mortalWound_pop" + inPop.getUID(), mortalWoundCount);
+		}
+		else
+		{
+			//make the pop wounded:
+			addDebugMessage(inScriptInstance, "setting pop " + inPop.getDebugName() + " wounded for " + inDaysWounded + " days");
+			inPop.setWoundedDayOver(getAPI().getCalendar().getCurrentDate() + (Int64)inDaysWounded);
+		}
+    }
+
+    List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	return toReturn;
+	</mPopAddWound>
+	
+  </gamescripts>
+  
+</core_data>

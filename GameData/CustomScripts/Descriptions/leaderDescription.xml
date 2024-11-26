@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>leaderDescription industry_leader_title before_replace_text</a> <b>string</b>
+		<c>[0] Leader</c></i1>
+	  <i1><a>leaderDescription race_leader_title before_replace_text</a> <b>string</b>
+		<c>[0] Leader</c></i1>
+	  <i1><a>leaderDescription city_leader_title before_replace_text</a> <b>string</b>
+		<c>City Leader</c></i1>
+		
+	  <i1><a>leaderDescription foreign_adjective before_replace_text</a> <b>string</b>
+		<c>foreign</c></i1>
+		
+		<!-- for lore reasons, positive adjectives are focused around meeting obligations set forth by others (stability/dependability is rare and rareness means value) -->
+	  <i1><a>leaderDescription positive_adjective_list</a> <b>string</b>
+		<c>honorable,noble,respectable,trustworthy,dignified,dependable,loyal,dutiful</c></i1>
+		<!-- for lore reasons, negative adjectives are focused around danger and suspicion -->
+	  <i1><a>leaderDescription negative_adjective_list</a> <b>string</b>
+		<c>insidious,dishonorable,ignoble,honorless,deceitful,lying,slanderous,shameless,untrustworthy,shifty,cowardly,selfish,conniving</c></i1>
+	  
+	  <i1><a>leaderDescription industry_leader_positive happiness_threshold</a> <b>double</b><c>0.75</c></i1> <!-- proportion of the entire range -->
+	  
+	  <i1><a>leaderDescription race_leader_threat population_percentage_threshold</a> <b>double</b><c>0.2</c></i1> <!-- if a race leader leads a race different than the City Leader's race, and that race is higher than this proportion of pops, it will be considered a threat by this description -->
+	  <i1><a>leaderDescription race_leader_nonthreat_positive happiness_threshold</a> <b>double</b><c>0.85</c></i1> <!-- proportion of the entire range -->
+	  <i1><a>leaderDescription race_leader_threat_negative happiness_threshold</a> <b>double</b><c>0.45</c></i1> <!-- proportion of the entire range -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script leaderDescription</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which assembles the description of a leader pop (the leader may be a foreign one or a local one) -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop
+	
+	There is one output: string outDescription -->
+	<i1><a>leaderDescription</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("leaderDescription custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	//first, figure out the leader's title:
+	bool cityLeader = false;
+	bool raceLeader = false;
+	bool industryLeader = false;
+	
+	IFLeaderCollection leaders = inPop.getCommunity().getLeaderCollection();
+	if((leaders.getLeaderFlagsForPop(inPop) &amp; IFLeaderCollection.eLeaderFlags.cCityLeader) == IFLeaderCollection.eLeaderFlags.cCityLeader)
+	{
+		cityLeader = true;
+	}
+	else if((leaders.getLeaderFlagsForPop(inPop) &amp; IFLeaderCollection.eLeaderFlags.cRaceLeader) == IFLeaderCollection.eLeaderFlags.cRaceLeader)
+	{
+		raceLeader = true;
+	}
+	else if((leaders.getLeaderFlagsForPop(inPop) &amp; IFLeaderCollection.eLeaderFlags.cIndustryLeader) == IFLeaderCollection.eLeaderFlags.cIndustryLeader)
+	{
+		industryLeader = true;
+	}
+	else //not a leader at all
+	{
+		return new List&lt;object&gt;() { "" };
+	}
+	
+	//second, figure out if the leader should have a positive, negative, or no adjective:
+	
+	bool negativeAdjective = false;
+	bool positiveAdjective = false;
+	bool foreign = (inPop.getCommunity() != localCommunity);
+	
+	if(foreign)
+	{
+		//if the community is an enemy community right now, use a negative description.  Otherwise, neutral:
+		negativeAdjective = getAPI().isHostileCommunity(inPop.getCommunity());
+	}
+	else //local
+	{
+		if(cityLeader)
+		{
+			positiveAdjective = true; //the description will always praise the City Leader
+		}
+		else
+		{
+			double minHappiness = consts.getHappinessMin();
+			double maxHappiness = consts.getHappinessMax();
+			IFHappinessCollection happiness = localCommunity.getDomesticComponent().getHappinessCollection();
+			double happinessProportion = (happiness.getRaceHappiness(inPop.getRace()) - minHappiness) / (maxHappiness - minHappiness);
+			//industry leaders are generally neutral, unless they are from the City Leader's race and racial happiness is high:
+			if(industryLeader)
+			{
+				double happinessThreshold = customConsts.getDoubleConst("leaderDescription industry_leader_positive happiness_threshold", out success);
+				if(!success) happinessThreshold = 0.75d;
+				positiveAdjective = (happinessProportion &gt;= happinessThreshold);
+			}
+			else if(leaders.hasCityLeader()) //racial leader (don't bother with an adjective if there's no city leader)
+			{
+				//get the proportion of pops of the race:
+				Int64 sameRacePopCount = 0;
+				Int64 allPopCount = 0;
+				foreach(IFPop pop in localCommunity.getPopsLoyalToCommunity(true, false))
+				{
+					allPopCount++;
+					if(pop.getRace() == inPop.getRace())
+						sameRacePopCount++;
+				}
+				double raceProportion = ((double)sameRacePopCount) / allPopCount;
+				double raceProportionThreshold = customConsts.getDoubleConst("leaderDescription race_leader_threat population_percentage_threshold", out success);
+				if(!success) raceProportionThreshold = 0.2d;
+				if((raceProportion &gt;= raceProportionThreshold) &amp;&amp; (leaders.getCityLeader().getRace() != inPop.getRace())) //threat
+				{
+					double threatThreshold = customConsts.getDoubleConst("leaderDescription race_leader_threat_negative happiness_threshold", out success);
+					if(!success) threatThreshold = 0.45d;
+					negativeAdjective = (happinessProportion &lt;= threatThreshold);
+				}
+				else
+				{
+					double nonThreatThreshold = customConsts.getDoubleConst("leaderDescription race_leader_nonthreat_positive happiness_threshold", out success);
+					if(!success) nonThreatThreshold = 0.85d;
+					positiveAdjective = (happinessProportion &gt;= nonThreatThreshold);
+				}
+			}
+		}
+	}
+	
+	//adjective first:
+	if(positiveAdjective)
+	{
+		string posAdjList = customConsts.getStringConst("leaderDescription positive_adjective_list", out success);
+		if(!success) posAdjList = "honorable,noble,respectable,trustworthy,dignified,dependable,loyal,dutiful";
+		string[] split = posAdjList.Split(',');
+		if(split.Length != 0)
+		{
+			outDescription += split[(int)getAPI().calcRandIntUnder(split.Length)] + " ";
+		}
+	}
+	else if(negativeAdjective)
+	{
+		string negAdjList = customConsts.getStringConst("leaderDescription negative_adjective_list", out success);
+		if(!success) negAdjList = "insidious,dishonorable,ignoble,honorless,deceitful,lying,slanderous,shameless,untrustworthy,shifty,cowardly,selfish,conniving";
+		string[] split = negAdjList.Split(',');
+		if(split.Length != 0)
+		{
+			outDescription += split[(int)getAPI().calcRandIntUnder(split.Length)] + " ";
+		}
+	}
+	
+	//title second:
+	if(cityLeader)
+	{
+		string leaderTitle = customConsts.getStringConst("leaderDescription city_leader_title before_replace_text", out success);
+		if(!success) leaderTitle = "City Leader";
+		outDescription += leaderTitle;
+	}
+	else if(raceLeader)
+	{
+		string leaderTitle = customConsts.getStringConst("leaderDescription race_leader_title before_replace_text", out success);
+		if(!success) leaderTitle = "[0] Leader";
+		leaderTitle = leaderTitle.Replace("[0]", inPop.getRace().getAdjective());
+		outDescription += leaderTitle;
+	}
+	else //industry leader
+	{
+		string leaderTitle = customConsts.getStringConst("leaderDescription industry_leader_title before_replace_text", out success);
+		if(!success) leaderTitle = "[0] Leader";
+		leaderTitle = leaderTitle.Replace("[0]", leaders.getIndustryLedByPop(inPop).getDisplayName());
+		outDescription += leaderTitle;
+	}
+	  
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase default before_replace_text</a> <b>string</b> <c>no communities</c></i1> <!-- this is only used if there are no communities in the input list -->
+	  <i1><a>replaceDescriptionMarkupKind_mult_community list_of_options</a> <b>list</b> <c>servantrelationreduce_noun_phrase</c></i1> <!-- add this entry -->
+	  
+	  <!-- servant relation is: -->
+	  <!-- A) no masters, no servants -->
+	  <!-- B) no masters, servants not including player -->
+	  <!-- C) no masters, servants including player -->
+	  <!-- D) master is not player, no servants -->
+	  <!-- E) master is player, no servants -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase player before_replace_text</a>   	   <b>string</b> <c>home</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase servants_other before_replace_text</a>  <b>string</b> <c>domineering,conquering</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase servants_player before_replace_text</a> <b>string</b> <c>master,overlord</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase master_other before_replace_text</a>    <b>string</b> <c>servant,subject,minor</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase master_player before_replace_text</a>   <b>string</b> <c>loyal,servant,child</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase independent before_replace_text</a>     <b>string</b> <c>independent,solitary</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase singlenoun before_replace_text</a>   <b>string</b> <c>community</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase pluralnoun before_replace_text</a>   <b>string</b> <c>communities</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a list of communities and from it, returns a string that is a noun phrase relating to the count of communities -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	List<IFCommunity> inCommunitys, //cannot be null but can be empty
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(List&lt;IFCommunity&gt;)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	List&lt;IFCommunity&gt; inCommunitys = (List&lt;IFCommunity&gt;)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outDescription = "";
+	
+	if(inCommunitys == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase custom script received invalid arguments: inCommunitys cannot be null");
+		return null;
+	}
+	
+	if(inCommunitys.Count == 0)
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase default before_replace_text", out success);
+		if(!success) outDescription = "no communities";
+	}
+	else
+	{
+		int independentCount = 0;
+		int servants_otherCount = 0;
+		int servants_playerCount = 0; //should only be 0 or 1 if uniquify was used
+		int master_otherCount = 0;
+		int master_playerCount = 0;
+		int isPlayerCount = 0; //should only be 0 or 1 if uniquify was used
+		
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		foreach(IFCommunity comm in inCommunitys)
+		{
+			bool isPlayer = comm == localCommunity;
+			bool servantsIncludePlayer = comm.getServantCommunities().Contains(localCommunity);
+			bool servantsNotIncludePlayer = (comm.getServantCommunities().Count != 0) &amp;&amp; !servantsIncludePlayer;
+			bool masterIsPlayer = comm.getMasterCommunity() == localCommunity;
+			bool masterNotPlayer = comm.hasMasterCommunity() &amp;&amp; !masterIsPlayer;
+			
+			if(isPlayer) isPlayerCount++;
+			else if(servantsNotIncludePlayer) servants_otherCount++;
+			else if(servantsIncludePlayer) servants_playerCount++;
+			else if(masterNotPlayer) master_otherCount++;
+			else if(masterIsPlayer) master_playerCount++;
+			else independentCount++;
+		}
+		
+		List&lt;string&gt; presentCommunityElements = new List&lt;string&gt;();
+		if(isPlayerCount != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase player before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentCommunityElements.Add(isPlayerCount.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+		if(servants_otherCount != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase servants_other before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentCommunityElements.Add(servants_otherCount.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+		if(servants_playerCount != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase servants_player before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentCommunityElements.Add(servants_playerCount.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+		if(master_otherCount != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase master_other before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentCommunityElements.Add(master_otherCount.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+		if(master_playerCount != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase master_player before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentCommunityElements.Add(master_playerCount.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+		if(independentCount != 0)
+		{
+			string possibleAdjList = customConsts.getStringConst("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase independent before_replace_text", out success);
+			List&lt;string&gt; possibleAdjs = new List&lt;string&gt;(possibleAdjList.Split(','));
+		
+			if(possibleAdjs.Count != 0)
+			{
+				presentCommunityElements.Add(independentCount.ToString() + " " + possibleAdjs[(int)getAPI().calcRandIntUnder(possibleAdjs.Count)]);
+			}
+		}
+		
+		string language = customConsts.getStringConst("replaceDescriptionMarkups language_of_grammar_enforcer_script", out success);
+		if(!success) language = "english";
+		
+		string lastSeparator = customConsts.getStringConst(language + " multiple_item_separator last before_replace_text", out success);
+		if(!success) lastSeparator = "and";
+		
+		string notLastSeparator = customConsts.getStringConst(language + " multiple_item_separator notlast before_replace_text", out success);
+		if(!success) notLastSeparator = ",";
+		
+		Int64 useSpaceBeforeLastInt = customConsts.getIntConst(language + " multiple_item_separator use_space_before_last", out success);
+		if(!success) useSpaceBeforeLastInt = 1;
+		
+		Int64 useSpaceBeforeNotLastInt = customConsts.getIntConst(language + " multiple_item_separator use_space_before_notlast", out success);
+		if(!success) useSpaceBeforeNotLastInt = 0;
+		
+		string between_notlast = (useSpaceBeforeNotLastInt != 0 ? " " : "") + notLastSeparator + " ";
+		string between_last = (useSpaceBeforeLastInt != 0 ? " " : "") + lastSeparator + " ";
+		
+		for(int i = 0; i &lt; presentCommunityElements.Count; i++)
+		{
+			bool last = (i == (presentCommunityElements.Count - 1));
+			bool first = (i == 0);
+			
+			if(first)
+			{
+				outDescription += presentCommunityElements[i];
+			}
+			else if(last)
+			{
+				outDescription += between_last + presentCommunityElements[i];
+			}
+			else
+			{
+				outDescription += between_notlast + presentCommunityElements[i];
+			}
+		}
+		
+		outDescription += " ";
+		if(inCommunitys.Count == 1)
+		{
+			outDescription += customConsts.getStringConst("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase singlenoun before_replace_text", out success);
+		}
+		else
+		{
+			outDescription += customConsts.getStringConst("replaceDescriptionMarkupKind_mult_community_servantrelationreduce_noun_phrase pluralnoun before_replace_text", out success);
+		}
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

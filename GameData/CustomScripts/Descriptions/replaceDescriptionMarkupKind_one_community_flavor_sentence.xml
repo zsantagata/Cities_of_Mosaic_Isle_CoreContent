@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_community list_of_options</a> <b>list</b> <c>flavor_sentence</c></i1> <!-- add this entry -->
+	  
+	  <!-- if a replacement is blank it is unusable -->
+	  <!-- [0] = community name noun phrase -->
+	  <!-- [1] = location_adj_phrase -->
+	  <!-- [2] = servantrelations_adj_phrase -->
+	  <!-- [3] = strengths_adj_phrase -->
+	  <!-- [4] = race_adj_phrase -->
+	  <!-- [5] = biome far above noun phrase (land) --> <!-- blank if no land -->
+	  <!-- [6] = biome fluid noun phrase (land) --> <!-- blank if no land -->
+	  <!-- [7] = biome ground noun phrase (land) --> <!-- blank if no land -->
+	  <!-- [8] = biome far above noun phrase (water) --> <!-- blank if no water -->
+	  <!-- [9] = biome fluid noun phrase (water) --> <!-- blank if no water -->
+	  <!-- [10] = biome ground noun phrase (water) --> <!-- blank if no water -->
+	  <!-- [11] = foreign-AI-specific adj (about leaders) -->
+	  <!-- [12] = foreign-AI-specific structure single noun (about community structures (yurt, tent, cave, building, clearing) (the letter 's' will be appended for plural)) -->
+	  <!-- [13] = player community name -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_selection_count</a> <b>int</b> <c>23</c></i1> <!-- this many sentences possible -->
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel0 before_replace_text</a> <b>string</b> <c>Pops of [0] can be seen straying from the community center out to the wild in daytime, returning at night.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel1 before_replace_text</a> <b>string</b> <c>Any signs of a community are hidden from sight until [0]'s [12]s themselves come into view.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel2 before_replace_text</a> <b>string</b> <c>Tall places around [0] seem well-traveled by the [2] community's scouting pops.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel3 before_replace_text</a> <b>string</b> <c>The [6] here carries the voices of the [4] pops of [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel4 before_replace_text</a> <b>string</b> <c>The [9] here carries the voices of the [4] pops of [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel5 before_replace_text</a> <b>string</b> <c>By the grace of the Lady, [0] is under the same [5] as [1] [13].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel6 before_replace_text</a> <b>string</b> <c>By the grace of the Lady, all the [9] flow into one another, even between [0] and [1] [13].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel7 before_replace_text</a> <b>string</b> <c>The goods and [12] of [0] show the tale of how its [2] nature has also made the community [3].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel8 before_replace_text</a> <b>string</b> <c>The [4] pops of [0] rest for a moment where the [7] meets the [9].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel9 before_replace_text</a> <b>string</b> <c>Hidden messages in the [10] around [0] tell of doubts of the [4] community's [11] leadership.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel10 before_replace_text</a> <b>string</b> <c>Hidden messages in the [7] around [0] tell of doubts of the [4] community's [11] leadership.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel11 before_replace_text</a> <b>string</b> <c>The [5] above [0] reflects off the [8] during the beautiful, silent night.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel12 before_replace_text</a> <b>string</b> <c>Next to a [12] of [0] flies a cloth symbol, waving in the [6], showing support for [11] leadership.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel13 before_replace_text</a> <b>string</b> <c>Next to a [12] of [0] flies a cloth symbol, waving in the [9], showing support for [11] leadership.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel14 before_replace_text</a> <b>string</b> <c>[4] pops and leaders mingle in the center of the [0] community, today discussing their [2] diplomatic state.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel15 before_replace_text</a> <b>string</b> <c>A group of older [4] pops clean [7] off of their tools with unhurried motions, speculating about life outside [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel16 before_replace_text</a> <b>string</b> <c>A group of older [4] pops clean [10] off of their tools with unhurried motions, speculating about life outside [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel17 before_replace_text</a> <b>string</b> <c>[0] is clearly in mourning for a lost, well-loved pop who passed away.  [1] or not, [3] or not, death comes to all.</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel18 before_replace_text</a> <b>string</b> <c>The [8] lights up a damaged tool which sticks out of the [10], showing travelers the path to [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel19 before_replace_text</a> <b>string</b> <c>The [5] lights up a damaged tool which sticks out of the [7], showing travelers the path to [0].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel20 before_replace_text</a> <b>string</b> <c>[12] of [0], and the voices of the [4] pops within, show how [3] the community is against the standard of [13].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel21 before_replace_text</a> <b>string</b> <c>A group of wary Wanderers travel away from [0], keeping close to the [7] and watching the [5].</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel22 before_replace_text</a> <b>string</b> <c>A group of wary Wanderers travel away from [0], keeping close to the [10] and watching the [8].</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_community_flavor_sentence</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+  <!-- FOREIGNAI tag: description_leadership_adj -->
+  <!-- FOREIGNAI tag: description_structure_noun -->
+  
+  <!-- this file holds the implementation of a custom script which takes a foreign community and from it, returns a string that is a full sentence descibing the community from the perspective of a visitor from the player community. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFCommunity inCommunity, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_community_flavor_sentence</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFCommunity)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_community_flavor_sentence custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inCommunity == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_community_flavor_sentence custom script received invalid arguments: inCommunity cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	int countOfReplacers = 14; //max replacer index + 1
+	List&lt;string&gt; replacers = new List&lt;string&gt;();
+	for(int i = 0; i &lt; countOfReplacers; i++)
+	{
+		replacers.Add("");
+	}
+	
+	//[0] = community name noun phrase
+	replacers[0] = "[one_community|name_noun_phrase:" + inCommunity.getUID() + "]";
+	
+	//[1] = location_adj_phrase
+	replacers[1] = "[one_community|location_adj_phrase:" + inCommunity.getUID() + "]";
+	
+	//[2] = servantrelations_adj_phrase
+	replacers[2] = "[one_community|servantrelations_adj_phrase:" + inCommunity.getUID() + "]";
+	
+	//[3] = strengths_adj_phrase
+	replacers[3] = "[one_community|strengths_adj_phrase:" + inCommunity.getUID() + "]";
+	
+	//[4] = race_adj_phrase
+	replacers[4] = "[one_community|race_adj_phrase:" + inCommunity.getUID() + "]";
+	
+	if((inCommunity.getLandBiome() != null) &amp;&amp; (inCommunity.getWaterRatio() != 1.0d))
+	{
+		//[5] = biome far above noun phrase
+		replacers[5] = "[one_biome|farabove_noun_phrase:" + inCommunity.getLandBiome().getMOID() + "]";
+		
+		//[6] = biome fluid noun phrase
+		replacers[6] = "[one_biome|fluid_noun_phrase:" + inCommunity.getLandBiome().getMOID() + "]";
+		
+		//[7] = biome ground noun phrase
+		replacers[7] = "[one_biome|ground_noun_phrase:" + inCommunity.getLandBiome().getMOID() + "]";
+	}
+	if((inCommunity.getWaterBiome() != null) &amp;&amp; (inCommunity.getWaterRatio() != 0.0d))
+	{
+		//[8] = biome far above noun phrase
+		replacers[8] = "[one_biome|farabove_noun_phrase:" + inCommunity.getWaterBiome().getMOID() + "]";
+		
+		//[9] = biome fluid noun phrase
+		replacers[9] = "[one_biome|fluid_noun_phrase:" + inCommunity.getWaterBiome().getMOID() + "]";
+		
+		//[10] = biome ground noun phrase
+		replacers[10] = "[one_biome|ground_noun_phrase:" + inCommunity.getWaterBiome().getMOID() + "]";
+	}
+	
+	if(inCommunity.getCurrentAI() != null)
+	{
+		//[11] = foreign-AI-specific adj (about leaders)
+		List&lt;string&gt; leadersAdj = new List&lt;string&gt;();
+		foreach(string tag in inCommunity.getCurrentAI().getTagList())
+		{
+			if(tag.Contains("description_leadership_adj:"))
+			{
+				leadersAdj.Add(tag.Replace("description_leadership_adj:", ""));
+			}
+		}
+		if(leadersAdj.Count != 0)
+		{
+			replacers[11] = leadersAdj[(int)getAPI().calcRandIntUnder(leadersAdj.Count)].ToLower();
+		}
+		
+		//[12] = foreign-AI-specific structure single noun (about community structures (yurt, tent, cave, building, clearing) (the letter 's' will be appended for plural))
+		List&lt;string&gt; structureNoun = new List&lt;string&gt;();
+		foreach(string tag in inCommunity.getCurrentAI().getTagList())
+		{
+			if(tag.Contains("description_structure_noun:"))
+			{
+				structureNoun.Add(tag.Replace("description_structure_noun:", ""));
+			}
+		}
+		if(structureNoun.Count != 0)
+		{
+			replacers[12] = structureNoun[(int)getAPI().calcRandIntUnder(structureNoun.Count)].ToLower();
+		}
+	}
+	
+	//[13] = player community name
+	replacers[13] = getAPI().getLocalCommunity().getDisplayName();
+	
+	//now that all replacers are assembled, iterate over all possible sentences and only include the ones that have all replacers:
+	Int64 sentenceCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_community_flavor_sentence rand_selection_count", out success);
+	List&lt;string&gt; possibleSentences = new List&lt;string&gt;();
+	for(int i = 0; i &lt; sentenceCount; i++)
+	{
+		string sentence = customConsts.getStringConst("replaceDescriptionMarkupKind_one_community_flavor_sentence rand_sel" + i + " before_replace_text", out success);
+		if(success)
+		{
+			//iterate over all replacers and if they are present in the sentence, check that they can be replaced:
+			bool validSentence = true;
+			for(int j = 0; (j &lt; countOfReplacers) &amp;&amp; validSentence; j++)
+			{
+				if(sentence.Contains("[" + j + "]") &amp;&amp; (replacers[j] == ""))
+				{
+					validSentence = false;
+				}
+			}
+			
+			if(validSentence)
+			{
+				possibleSentences.Add(sentence);
+			}
+		}
+	}
+	
+	if(possibleSentences.Count &gt; 0)
+	{
+		outDescription = possibleSentences[(int)getAPI().calcRandIntUnder(possibleSentences.Count)];
+	}
+	else
+	{
+		outDescription = "";
+	}
+	
+	for(int i = 0; i &lt; countOfReplacers; i++)
+	{
+		outDescription = outDescription.Replace("[" + i + "]", replacers[i]);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

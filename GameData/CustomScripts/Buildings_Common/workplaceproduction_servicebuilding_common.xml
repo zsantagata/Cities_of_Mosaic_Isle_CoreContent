@@ -1,0 +1,254 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+		
+			<i1><a>workplaceproduction_servicebuilding_common log_debug_messages_when_just_predicting if_nonzero</a> <b>int</b> <c>0</c></i1>
+			
+			<!-- buildingkinds which have "isForceBestQualityService" false and have a workplace production script will store inProductionValue in variableHandler and return from this script with no real changes -->
+			
+			<!-- for service workplaces, only output quality matters (no goods are produced in any quantity).  Based on inProductionValue, the output quality is calculated on an asymptotical curve: -->
+			<!-- with inProductionValue less than or equal to 0, the workplace is off.  As inProductionValue approaches 0, output quality approaches minimum quality -->
+			<!-- as inProductionValue approaches infinity, output quality approaches ((maximum quality - minimum quality) times the overshoot ratio) + minimum quality -->
+			<!-- when inProductionValue is equal to the vertex_location value, output quality is ((maximum quality - minimum quality) times the vertex ratio) + minimum quality -->
+			<i1><a>workplaceproduction_servicebuilding_common overshoot ratio</a> <b>double</b> <c>1.15</c></i1>
+			<i1><a>workplaceproduction_servicebuilding_common vertex_location value</a> <b>double</b> <c>1.0</c></i1> <!-- this is multiplied by consts.getAverageInputFactor() before use.  So 1.0 represents a single unskilled worker with a single average input and a building multiplier of 1.0 from buildingkind and construction material -->
+			<i1><a>workplaceproduction_servicebuilding_common vertex ratio</a> <b>double</b> <c>0.2</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script workplaceproduction_servicebuilding_common</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script workplaceproduction_desolation_service_common</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which is determines output quality and quantity of goods for goods-producing buildingkinds that do not have a specific script -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community
+	double inProductionValue,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInputs,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise,
+	bool inJustPredicting
+	
+	outputs:
+	Dictionary<IFResource, double> outputResourcesCreated, //this will always be empty
+	double outputQuality,
+	bool outputQualityWasChanged //this will usually be true
+	bool outIsWorkplaceOn
+	 -->
+	<i1><a>workplaceproduction_servicebuilding_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(double), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(bool)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_servicebuilding_common custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  double inProductionValue = (double)inArguments[2];
+	  Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInputs = (Dictionary&lt;IFResource, double&gt;)inArguments[3];
+	  Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)inArguments[4];
+	  bool inJustPredicting = (bool)inArguments[5];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_servicebuilding_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_servicebuilding_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_servicebuilding_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_servicebuilding_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  
+	  //quick check:
+	  if(inResourcesConsumedAsInputs == null)
+		inResourcesConsumedAsInputs = new Dictionary&lt;IFResource, double&gt;();
+	  if(inResourcesConsumedOtherwise == null)
+		inResourcesConsumedOtherwise = new Dictionary&lt;IFResource, double&gt;();
+	  
+	  Dictionary&lt;IFResource, double&gt; outputResourcesCreated = new Dictionary&lt;IFResource, double&gt;();
+	  double outputQuality = consts.getResourceQualityMin();
+	  bool outputQualityWasChanged = false;
+	  bool outIsWorkplaceOn = false;
+	  
+	  Int64 logStuffAlwaysIfNonZero = customConsts.getIntConst("workplaceproduction_servicebuilding_common log_debug_messages_when_just_predicting if_nonzero", out bool success);
+	  if(!success) logStuffAlwaysIfNonZero = 0;
+	  bool logStuff = (!inJustPredicting || (logStuffAlwaysIfNonZero != 0));
+	  
+	  double difficultyMult = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("services quality");
+	  //before any limiting or other considerations, scale inProductionValue by the difficulty multiplier:
+	  inProductionValue *= difficultyMult;
+	  
+	  //certain buildingkinds with custom scripts want to have the quality dial available as an input, rather than quality set as an output.  Respect those wishes:
+	  if(!inWorkplace.getBuildingKind().isForceBestQualityService() &amp;&amp; inWorkplace.getBuildingKind().isHasWorkplaceScript())
+	  {
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		variableHandler.storeDoubleVariable(currentDate, "workplace" + inWorkplace.getUID().ToString() + "_inProductionValue", inProductionValue);
+	    double desiredQuality = inWorkplace.getWorkplaceComponent().getResourceQualityDesiredFromQualQuanDial();
+		outIsWorkplaceOn = (inProductionValue &gt; 0.0d); //the buildingkind's script will change this if necessary
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " has a workplace script and does not force best quality service; returning early (workplace on=" + outIsWorkplaceOn + ")");
+		return new List&lt;object&gt;() { outputResourcesCreated, desiredQuality, outputQualityWasChanged, outIsWorkplaceOn };
+	  }
+	  
+	  //regular service buildings try to provide the most quality possible:
+	  outputQualityWasChanged = true;
+	  if(inProductionValue &lt;= 0.0d)
+	  {
+		if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " in production value is less than or equal to zero; returning early");
+		return new List&lt;object&gt;() { outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn};
+	  }
+	  outIsWorkplaceOn = true;
+	  
+	  //fetch values:
+	  double minQual = consts.getResourceQualityMin();
+	  double maxQual = consts.getResourceQualityMax();
+	  double averageInputFactor = consts.getAverageInputFactor();
+	  
+	  double overshootRatio = customConsts.getDoubleConst("workplaceproduction_servicebuilding_common overshoot ratio", out success);
+	  if(!success) overshootRatio = 1.15d;
+	  double vertexLoc = customConsts.getDoubleConst("workplaceproduction_servicebuilding_common vertex_location value", out success);
+	  if(!success) vertexLoc = 1.0d;
+	  double vertexRatio = customConsts.getDoubleConst("workplaceproduction_servicebuilding_common vertex ratio", out success);
+	  if(!success) vertexRatio = 0.2d;
+	  
+	  //calculate the real vertex location:
+	  double realVertexLoc = averageInputFactor * vertexLoc;
+	  
+	  double qualityRatio = overshootRatio * inProductionValue / (inProductionValue + vertexLoc * ((overshootRatio / vertexRatio) - 1));
+	  outputQuality = qualityRatio * (maxQual - minQual) + minQual;
+	  if(logStuff) addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + " output quality ratio = " + qualityRatio + " from scaled inProductionValue = " + inProductionValue);
+	  
+	  //now that we have calculated the output quality, adjust desolation in the surrounding area if we are not just predicting:
+	  if(!inJustPredicting)
+	  {
+	    string buildingKindName = inWorkplace.getBuildingKind().getInternalName();
+		string scriptToRunName = "workplaceproduction_desolation_service_common";
+		if(customScripts.doesCustomScriptExistWithName("workplaceproduction_desolation_" + buildingKindName))
+		{
+			scriptToRunName = "workplaceproduction_desolation_" + buildingKindName;
+		}
+		//the script has no return values
+		customScripts.runCustomScript(scriptToRunName, new List&lt;object&gt;() { inWorkplace, inCommunity, outputResourcesCreated, outputQuality, inResourcesConsumedAsInputs, inResourcesConsumedOtherwise }, out _);
+	  }
+	  
+	  return new List&lt;object&gt;() { outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn };
+	</b>
+	</i1>
+	
+	
+    <!--
+	inputs:
+	IFBuilding inWorkplace,
+	IFCommunity inCommunity, //presumably the local community, but no matter what must have a domestic component and a map
+	Dictionary&lt;IFResource, double&gt; inResourcesExtractedFromLand,
+	//the following three are unused in this script but might be used in scripts that are specific to a buildingkind so they're staying as inputs
+	double inQuality,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedAsInputs,
+	Dictionary&lt;IFResource, double&gt; inResourcesConsumedOtherwise,
+	
+	outputs: none
+	 -->
+	<i1><a>workplaceproduction_desolation_service_common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(IFCommunity), typeof(Dictionary&lt;IFResource, double&gt;), typeof(double), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_service_common custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+	  IFCommunity inCommunity = (IFCommunity)inArguments[1];
+	  Dictionary&lt;IFResource, double&gt; inResourcesExtractedFromLand = (Dictionary&lt;IFResource, double&gt;)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inWorkplace == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_service_common custom script received invalid argument: the input inWorkplace should not be null");
+		  return null;
+	  }
+	  //sanity check: the input building should be a workplace
+	  if(!inWorkplace.isWorkplace())
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_service_common custom script received invalid argument: the input inWorkplace should be a workplace");
+		  return null;
+	  }
+	  //sanity check: the input building should be fully built and not destroyed
+	  if(inWorkplace.isBuildingDestroyed() || !inWorkplace.isBuildingFullyBuilt())
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_service_common custom script received invalid argument: the input inWorkplace should be fully built and not destroyed");
+		  return null;
+	  }
+	  //sanity check: the input community should not be null
+	  if(inCommunity == null)
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_service_common custom script received invalid argument: the input inCommunity should not be null");
+		  return null;
+	  }
+	  //sanity check: the input community must have a domestic component and a non-null map:
+	  if(!inCommunity.hasDomesticComponent() || (inCommunity.getDomesticComponent().getMap() == null))
+	  {
+		  throw new ArgumentException("workplaceproduction_desolation_service_common custom script received invalid argument: the input inCommunity must have a domestic component and a map");
+		  return null;
+	  }
+	
+	  IFMap map = inCommunity.getDomesticComponent().getMap();
+	  
+	  double deso_rate = inWorkplace.getBuildingKind().getDesolationRateInRadius() * inWorkplace.getWorkplaceComponent().getWorkerPops().Count / (double)(inWorkplace.getBuildingKind().getMaxWorkers());
+      if(deso_rate != 0.0d)
+	  {
+        addDebugMessage(inScriptInstance, inWorkplace.getDebugName() + "increasing desolation of tiles in radius by " + deso_rate);
+		ReadOnlyCollection&lt;IFMapTile&gt; list_of_tiles = map.getMapTilesInBuildingRadius(inWorkplace);
+		
+	    //for workplaces that are not land extraction, spread desolation equally across land in radius
+		foreach(IFMapTile tile in list_of_tiles)
+		{
+		  tile.setDesolation(tile.getDesolation() + (deso_rate / list_of_tiles.Count));
+		}
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

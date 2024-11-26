@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources:
+	TODO implement these custom consts: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igRace name="Shifter">
+    <Encyclopedia_Entry>
+	  <full_path>Races/Shifter</full_path>
+	  <body_text>Shifter.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSingleNoun>Shifter</mSingleNoun>
+	<mPluralNoun>Shifters</mPluralNoun>
+	<mCollectiveNoun>Shifter</mCollectiveNoun>
+	<mAdjective>Shifter</mAdjective>
+	<mSpecialAttributes>0xe81</mSpecialAttributes><!-- 0x1 = is unisex, 0x40 = can breathe underwater, 0x80 = can breathe overwater, 0x200 = can mother children, 0x400 = can father children, 0x800 = cross breed possible -->
+	
+	<mIndustryProductivities>
+	  <i1>
+	    <a>Companionship</a>
+		<b>1.3</b>
+		<c>0x0</c>
+	  </i1>
+	</mIndustryProductivities>
+	
+	<mChanceToBirthOtherRace>0.97</mChanceToBirthOtherRace>
+	
+	<mTotalPregnancyDays>30</mTotalPregnancyDays>
+	<mIncapablePregnancyDays>3</mIncapablePregnancyDays>
+	<mVisiblePregnancyDays>4</mVisiblePregnancyDays>
+	
+	<mSSIDs>
+		<i>Shifter neutral ss</i>
+		<i>Shifter local ss</i>
+		<i>Shifter thelady ss</i>
+		<i>Shifter rebels ss</i>
+		<i>Shifter genericenemies ss</i>
+		<i>Shifter wanderers ss</i>
+	</mSSIDs>
+	<mTagList>
+	  <i1>amorphous</i1>
+	  <i1>shapeshifter</i1>
+	  <i1>colorchanging</i1>
+	  
+		<!-- description tags: -->
+		<i1>general_adj:amorphous</i1>
+		<i1>general_adj:blobby</i1>
+		<i1>general_adj:strange</i1>
+		<i1>bodypart_vision:eyes</i1>
+		<i1>bodypart_hearing:earholes</i1>
+		<i1>bodypart_smelling:antennae</i1>
+		<i1>bodypart_taste:maw</i1>
+		<i1>bodypart_outer:outer layer</i1>
+		<i1>bodypart_graspsingle:tendril</i1>
+		<i1>bodypart_landtravel:underside</i1>
+		<i1>bodypart_watertravel:underside</i1>
+		<i1>bodypart_expression:manner</i1>
+		<i1>bodypart_decorative:markings</i1>
+	</mTagList>
+  </igRace>
+  
+  
+</core_data>

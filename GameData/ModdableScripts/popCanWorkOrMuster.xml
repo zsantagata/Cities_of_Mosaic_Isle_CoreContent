@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of scripts which determine if a pop can work or muster -->
+  <gamescripts name="default">
+	<!-- pop can work has one input: IFPop in question.  There is one output: bool outCanPopBeHired. -->
+	<!-- the IFPop function isCapableOfWorking() is a passthrough to this script and returns the value that this script returns -->
+	<mCanPopWork>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFPop inPop = (IFPop)inArguments[0];
+			
+			//TODO any individual considerations
+			//note that we don't consider 'does the pop already have a workplace' here because this is about working *at all* not being free to work somewhere else
+			if(           !inPop.isDead()
+			   &amp;&amp; !inPop.isWounded()
+			   &amp;&amp; !inPop.isPregnantImmobile()
+			   &amp;&amp; inPop.hasHomeBuilding() //only pops with homes can work in workplaces (pops without homes will contribute to construction though)
+			   &amp;&amp; (!inPop.isIll() || getAPI().canIllPopsOfRaceWorkInIndustry(inPop.getRace(), null)) //null means "any industry"; a specific building will have to check for its industry
+			  )
+			{
+				return new List&lt;object&gt;() { true };
+			}
+			
+			//don't be hasty and set the pop's workplace to null if the return value is false, as this script could be called by the function to set workplace and you'd cause a stack overflow (if I didn't have protections for that, that is, but it'll still cause an error)
+			return new List&lt;object&gt;() { false };
+    </mCanPopWork>
+	
+	<!-- can muster point has one input argument: IFPop in question.  There is one output: bool outCanPopMuster. -->
+	<!-- the IFPop function isCapableOfMustering() is a passthrough to this script and returns the value that this script returns -->
+	<!-- note that this is also called on non-loyal pops -->
+	<mCanPopMuster>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			IFPop inPop = (IFPop)inArguments[0];
+			
+			//TODO any individual considerations
+			//note that we don't consider 'is pop already mustered' here because this is about mustering *at all*
+			if(           !inPop.isDead()
+			   &amp;&amp; !inPop.isWounded()
+			   &amp;&amp; !inPop.isPregnantImmobile()
+			  )
+			{
+				return new List&lt;object&gt;() { true };
+			}
+			
+			//don't be hasty and unmuster the pop if the return value is false, as this script could be called by the function to muster and you'd cause a stack overflow (if I didn't have protections for that, that is, but it'll still cause an error)
+			return new List&lt;object&gt;() { false };
+    </mCanPopMuster>
+	
+  </gamescripts>
+  
+</core_data>

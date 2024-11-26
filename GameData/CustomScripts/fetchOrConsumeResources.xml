@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>fetchOrConsumeResources moreRandomQuantities use_all_quantity_available chance</a> <b>double</b> <c>0.2</c></i1> <!-- this is the chance that instead of randomly choosing quantity, this resource's full quantity is used -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script fetchOrConsumeResources</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which seeks resources, their quantity, and their quality from a resource pool given certain inputs.
+  These resources can either be subtracted from the resource pool or not.  Note that if they are subtracted from the resource pool, no building or pop is indicated as the consumer; if that is desired then the caller should fetch the resources and subtract them itself.
+  -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFResourcePool inResourcePool,
+	
+	//the following inputs indicate what the desired resource(s) to consider should be:
+	bool inOnlyIndicatedResources, //if this is true, only resources in the list of indicated resources are possible to fetch
+	bool inNeverIndicatedResources, //if this is true, only resources NOT in the list of indicated resources are possible to fetch
+	List<IFResource> inIndicatedResources, //if null, will be treated the same as empty list.  If both above bools are true or both false, ignored.
+	
+	//the following inputs indicate what is desired to do:
+	double inQuantityResourcesToSeekOrConsume, //if this is negative or zero the script will do nothing.  If this is more than the total quantity of indicated resources, all the resources will be used
+	bool inConsumeResources, //if false, this script just fetches resources
+	
+	//resources will be prioritized as indicated by the below bools.  if both below are true, resources will be prioritized based on their absolute quality distance from average
+	bool inPrioritizeLowQualResources,
+	bool inPrioritizeHiQualResources,
+	
+	//if both above are false, resources will be prioritized as indicated by the below bools.  if both are true, they will be ignored.
+	bool inPrioritizeLowQuanResources,
+	bool inPrioritizeHiQuanResources,
+	
+	//this only matters if all the above priorities are false/ignored
+	bool inSpreadOverAllResources, //if this is false no effect.  If true, all indicated resources are used, and the quantity resources sought/consumed will be spread over all of them
+	
+	//this only matters if all the above priorities (and inSpreadOverAllResources) are false
+	bool inMoreRandomQuantities //if this is false, resource types will be iterated over randomly, and the whole amount of that resource used, up until the total desired quantity.  If this is true, resource types will be iterated over randomly, but the quantities used have a chance to be below the whole amount available of that resource type.
+
+	//if all of the above prioritize are false, the quantities indicated will iterate randomly over valid resources and use as much as necessary/possible of each resource before moving on to the next
+	-->
+	
+	<!-- output:
+	double outQuantityResourcesActuallySoughtOrConsumed,
+	double outAverageQualityResourcesSoughtOrConsumed,
+	Dictionary<IFResource, Tuple<double, double>> outResourcesSoughtOrConsumed, //first double=quantity, second double=quality
+	-->
+	<i1><a>fetchOrConsumeResources</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {
+				typeof(IFResourcePool),
+				typeof(bool), typeof(bool), typeof(List&lt;IFResource&gt;),
+				typeof(double), typeof(bool),
+				typeof(bool), typeof(bool),
+				typeof(bool), typeof(bool),
+				typeof(bool), typeof(bool)
+			}
+	      }, out _))
+	    {
+		  throw new ArgumentException("fetchOrConsumeResources custom script received invalid arguments");
+		  return null;
+	    }
+	
+		IFResourcePool inResourcePool = (IFResourcePool)inArguments[0];
+		if(inResourcePool == null)
+		{
+		  throw new ArgumentException("fetchOrConsumeResources custom script received invalid arguments: inResourcePool cannot be null");
+		  return null;
+		}
+		
+		bool inOnlyIndicatedResources = (bool)inArguments[1];
+		bool inNeverIndicatedResources = (bool)inArguments[2];
+		List&lt;IFResource&gt; inIndicatedResources = (List&lt;IFResource&gt;)inArguments[3];
+		
+		double inQuantityResourcesToSeekOrConsume = (double)inArguments[4];
+		bool inConsumeResources = (bool)inArguments[5];
+		
+		bool inPrioritizeLowQualResources = (bool)inArguments[6];
+		bool inPrioritizeHiQualResources = (bool)inArguments[7];
+		bool inPrioritizeLowQuanResources = (bool)inArguments[8];
+		bool inPrioritizeHiQuanResources = (bool)inArguments[9];
+	
+		bool inSpreadOverAllResources = (bool)inArguments[10];
+		bool inMoreRandomQuantities = (bool)inArguments[11];
+	
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+
+		double qualMin = consts.getResourceQualityMin();
+		double qualMax = consts.getResourceQualityMax();
+		double qualAvg = (qualMax + qualMin) / 2;
+
+		double outQuantityResourcesActuallySoughtOrConsumed = 0.0d;
+		double outAverageQualityResourcesSoughtOrConsumed = 0.0d;
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; outResourcesSoughtOrConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+
+		if(inQuantityResourcesToSeekOrConsume &lt;= 0)
+		{
+			addDebugMessage(inScriptInstance, "inQuantityResourcesToSeekOrConsume = " + inQuantityResourcesToSeekOrConsume + ", returning no resources");
+			toReturn.Add(outQuantityResourcesActuallySoughtOrConsumed);
+			toReturn.Add(outAverageQualityResourcesSoughtOrConsumed);
+			toReturn.Add(outResourcesSoughtOrConsumed);
+			return toReturn;
+		}
+		
+		//first: gather a list of the resources which are allowed by the filter
+		if(inIndicatedResources == null)
+		{
+			inIndicatedResources = new List&lt;IFResource&gt;();
+		}
+		
+		HashSet&lt;IFResource&gt; resourcesPermitted = new HashSet&lt;IFResource&gt;();
+		int total_count_of_resources = (int)getAPI().getTotalCountOfMO("resources");
+		double sumOfAllPossibleResourceQuantities = 0.0d;
+		for(int moid = 1; moid &lt; total_count_of_resources; moid++)
+		{
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res != null)
+			{
+				if(!res.isNotInResourcePool())
+				{
+					double quan = inResourcePool.getResourceQuantity(res);
+					if(quan == 0.0d)
+						continue;
+					if(inOnlyIndicatedResources == inNeverIndicatedResources)
+					{
+						resourcesPermitted.Add(res);
+						sumOfAllPossibleResourceQuantities += quan;
+					}
+					else if(inOnlyIndicatedResources &amp;&amp; inIndicatedResources.Contains(res))
+					{
+						resourcesPermitted.Add(res);
+						sumOfAllPossibleResourceQuantities += quan;
+					}
+					else if(inNeverIndicatedResources &amp;&amp; !inIndicatedResources.Contains(res))
+					{
+						resourcesPermitted.Add(res);
+						sumOfAllPossibleResourceQuantities += quan;
+					}
+				}
+			}
+		}
+		
+		if((resourcesPermitted.Count == 0) || (sumOfAllPossibleResourceQuantities &lt;= 0.0d))
+		{
+			addDebugMessage(inScriptInstance, "filtered out all resources; returning no resources");
+			toReturn.Add(outQuantityResourcesActuallySoughtOrConsumed);
+			toReturn.Add(outAverageQualityResourcesSoughtOrConsumed);
+			toReturn.Add(outResourcesSoughtOrConsumed);
+			return toReturn;
+		}
+		addDebugMessage(inScriptInstance, resourcesPermitted.Count + " types of resources representing " + sumOfAllPossibleResourceQuantities + " unit quantity have matched filter and have quantity");
+		
+		//second: determine *how* to sort/prioritize resources:
+		List&lt;Tuple&lt;IFResource, double&gt;&gt; orderedListOfResources = new List&lt;Tuple&lt;IFResource, double&gt;&gt;(); //the double is used for ordering; it is ignored afterwards
+		if(inPrioritizeLowQualResources &amp;&amp; inPrioritizeHiQualResources)
+		{
+			//add in order of decreasing quality distance from average quality
+			addDebugMessage(inScriptInstance, "resource type higher priority is: furthest quality from average");
+			foreach(IFResource res in resourcesPermitted)
+			{
+				bool added = false;
+				double distFromAvg = Math.Abs(inResourcePool.getResourceQuality(res) - qualAvg);
+				for(int i = 0; !added &amp;&amp; (i &lt; orderedListOfResources.Count); i++)
+				{
+					if(distFromAvg &gt;= orderedListOfResources[i].Item2)
+					{
+						orderedListOfResources.Insert(i, Tuple.Create(res, distFromAvg));
+						added = true;
+					}
+				}
+				if(!added) orderedListOfResources.Add(Tuple.Create(res, distFromAvg));
+			}
+			inSpreadOverAllResources = false; //this can only be enabled when all prioritize inputs are not used
+			inMoreRandomQuantities = false; //this can only be enabled when all prioritize inputs are not used
+		}
+		else if(inPrioritizeLowQualResources)
+		{
+			//add in order of lowest quality resources first:
+			addDebugMessage(inScriptInstance, "resource type higher priority is: lowest quality");
+			foreach(IFResource res in resourcesPermitted)
+			{
+				bool added = false;
+				double resQual = inResourcePool.getResourceQuality(res);
+				for(int i = 0; !added &amp;&amp; (i &lt; orderedListOfResources.Count); i++)
+				{
+					if(resQual &lt;= orderedListOfResources[i].Item2)
+					{
+						orderedListOfResources.Insert(i, Tuple.Create(res, resQual));
+						added = true;
+					}
+				}
+				if(!added) orderedListOfResources.Add(Tuple.Create(res, resQual));
+			}
+			inSpreadOverAllResources = false; //this can only be enabled when all prioritize inputs are not used
+			inMoreRandomQuantities = false; //this can only be enabled when all prioritize inputs are not used
+		}
+		else if(inPrioritizeHiQualResources)
+		{
+			//add in order of highest quality resources first:
+			addDebugMessage(inScriptInstance, "resource type higher priority is: highest quality");
+			foreach(IFResource res in resourcesPermitted)
+			{
+				bool added = false;
+				double resQual = inResourcePool.getResourceQuality(res);
+				for(int i = 0; !added &amp;&amp; (i &lt; orderedListOfResources.Count); i++)
+				{
+					if(resQual &gt;= orderedListOfResources[i].Item2)
+					{
+						orderedListOfResources.Insert(i, Tuple.Create(res, resQual));
+						added = true;
+					}
+				}
+				if(!added) orderedListOfResources.Add(Tuple.Create(res, resQual));
+			}
+			inSpreadOverAllResources = false; //this can only be enabled when all prioritize inputs are not used
+			inMoreRandomQuantities = false; //this can only be enabled when all prioritize inputs are not used
+		}
+		else if(inPrioritizeLowQuanResources == inPrioritizeHiQuanResources)
+		{
+			//add in random order
+			addDebugMessage(inScriptInstance, "resource type higher priority is: random");
+			foreach(IFResource res in resourcesPermitted)
+			{
+				orderedListOfResources.Insert((int)getAPI().calcRandIntUnder(orderedListOfResources.Count + 1), Tuple.Create(res, 0.0d));
+			}
+			//allow inSpreadOverAllResources and inMoreRandomQuantities to stay as they are
+		}
+		else if(inPrioritizeLowQuanResources)
+		{
+			//add in order of lowest quantity resources first:
+			addDebugMessage(inScriptInstance, "resource type higher priority is: lowest quantity");
+			foreach(IFResource res in resourcesPermitted)
+			{
+				bool added = false;
+				double resQuan = inResourcePool.getResourceQuantity(res);
+				for(int i = 0; !added &amp;&amp; (i &lt; orderedListOfResources.Count); i++)
+				{
+					if(resQuan &lt;= orderedListOfResources[i].Item2)
+					{
+						orderedListOfResources.Insert(i, Tuple.Create(res, resQuan));
+						added = true;
+					}
+				}
+				if(!added) orderedListOfResources.Add(Tuple.Create(res, resQuan));
+			}
+			inSpreadOverAllResources = false; //this can only be enabled when all prioritize inputs are not used
+			inMoreRandomQuantities = false; //this can only be enabled when all prioritize inputs are not used
+		}
+		else if(inPrioritizeHiQuanResources)
+		{
+			//add in order of highest quantity resources first:
+			addDebugMessage(inScriptInstance, "resource type higher priority is: highest quantity");
+			foreach(IFResource res in resourcesPermitted)
+			{
+				bool added = false;
+				double resQuan = inResourcePool.getResourceQuantity(res);
+				for(int i = 0; !added &amp;&amp; (i &lt; orderedListOfResources.Count); i++)
+				{
+					if(resQuan &gt;= orderedListOfResources[i].Item2)
+					{
+						orderedListOfResources.Insert(i, Tuple.Create(res, resQuan));
+						added = true;
+					}
+				}
+				if(!added) orderedListOfResources.Add(Tuple.Create(res, resQuan));
+			}
+			inSpreadOverAllResources = false; //this can only be enabled when all prioritize inputs are not used
+			inMoreRandomQuantities = false; //this can only be enabled when all prioritize inputs are not used
+		}
+		//no need for else: "inPrioritizeLowQuanResources == inPrioritizeHiQuanResources" will capture the no-priority case
+		
+		//third: choose the resources and add up the quantities and qualities for the output variables:
+		double totalQualitySum = 0.0d; //this will be sum of (quality*quantity) per resource
+		if(inSpreadOverAllResources)
+		{
+			//split the request equally over all resources permitted:
+			double proportion_consumed = Math.Max(1.0d, inQuantityResourcesToSeekOrConsume / sumOfAllPossibleResourceQuantities);
+			addDebugMessage(inScriptInstance, "equally selecting from all post-filter resources");
+			foreach(IFResource res in resourcesPermitted)
+			{
+				double amount_avail = inResourcePool.getResourceQuantity(res);
+				double amount_consumed = amount_avail * proportion_consumed;
+				double qual = inResourcePool.getResourceQuality(res);
+				outResourcesSoughtOrConsumed.Add(res, Tuple.Create(amount_consumed, qual));
+				outQuantityResourcesActuallySoughtOrConsumed += amount_consumed;
+				totalQualitySum += amount_consumed * qual;
+			}
+		}
+		else if(inMoreRandomQuantities)
+		{
+			double chanceToUseAll = customConsts.getDoubleConst("fetchOrConsumeResources moreRandomQuantities use_all_quantity_available chance", out bool success);
+			if(!success) chanceToUseAll = 0.2d;
+			addDebugMessage(inScriptInstance, "selecting random quantities from post-filter resources");
+			
+			double quantityPassedBy = 0.0d;
+			foreach(var tpl in orderedListOfResources)
+			{
+				IFResource res = tpl.Item1;
+				double amount_avail = inResourcePool.getResourceQuantity(res);
+				double remaining_possible_to_choose = sumOfAllPossibleResourceQuantities - quantityPassedBy;
+				double amount_desired_remaining = inQuantityResourcesToSeekOrConsume - outQuantityResourcesActuallySoughtOrConsumed;
+				
+				//compare remaining_possible_to_choose and amount_desired_remaining. if (remaining_possible_to_choose - amount_avail) is less than amount_desired_remaining, the difference is the minimum amount that this resource can contribute
+				double minRand = Math.Max(0.0d, amount_desired_remaining - (remaining_possible_to_choose - amount_avail));
+				
+				double amount_consumed = 0.0d;
+				//there is a raw chance to try to use the max amount of this resource possible:
+				if(getAPI().calcProb(chanceToUseAll))
+				{
+					amount_consumed = amount_avail;
+				}
+				else
+				{
+					amount_consumed = getAPI().calcRand() * (amount_avail - minRand) + minRand;
+				}
+				amount_consumed = Math.Min(amount_consumed, amount_desired_remaining);
+				
+				quantityPassedBy += amount_avail;
+				
+				if(amount_consumed != 0.0d)
+				{
+					double qual = inResourcePool.getResourceQuality(res);
+					outResourcesSoughtOrConsumed.Add(res, Tuple.Create(amount_consumed, qual));
+					outQuantityResourcesActuallySoughtOrConsumed += amount_consumed;
+					totalQualitySum += amount_consumed * qual;
+					if(outQuantityResourcesActuallySoughtOrConsumed &gt;= inQuantityResourcesToSeekOrConsume)
+						break;
+				}
+			}
+		}
+		else
+		{
+			foreach(var tpl in orderedListOfResources)
+			{
+				IFResource res = tpl.Item1;
+				double amount_avail = inResourcePool.getResourceQuantity(res);
+				double amount_consumed = Math.Min(amount_avail, inQuantityResourcesToSeekOrConsume - outQuantityResourcesActuallySoughtOrConsumed);
+				double qual = inResourcePool.getResourceQuality(res);
+				outResourcesSoughtOrConsumed.Add(res, Tuple.Create(amount_consumed, qual));
+				outQuantityResourcesActuallySoughtOrConsumed += amount_consumed;
+				totalQualitySum += amount_consumed * qual;
+				if(outQuantityResourcesActuallySoughtOrConsumed &gt;= inQuantityResourcesToSeekOrConsume)
+					break;
+			}
+		}
+		outAverageQualityResourcesSoughtOrConsumed /= outQuantityResourcesActuallySoughtOrConsumed;
+		
+		addDebugMessage(inScriptInstance, outResourcesSoughtOrConsumed.Count + " types of resources selected, representing " + outQuantityResourcesActuallySoughtOrConsumed + " unit quantity of average quality " + outAverageQualityResourcesSoughtOrConsumed);
+
+		//fourth: if necessary, consume the resources from the resource pool:
+		if(inConsumeResources)
+		{
+			addDebugMessage(inScriptInstance, "removing resources from resource pool");
+			foreach(var kvpair in outResourcesSoughtOrConsumed)
+			{
+				inResourcePool.subtractResource(kvpair.Key, kvpair.Value.Item1);
+			}
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "not removing any resources from resource pool");
+		}
+		
+		toReturn.Add(outQuantityResourcesActuallySoughtOrConsumed);
+		toReturn.Add(outAverageQualityResourcesSoughtOrConsumed);
+		toReturn.Add(outResourcesSoughtOrConsumed);
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

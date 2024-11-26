@@ -1,0 +1,7 @@
+This repository is a collection of XML data related to a city building game (with monsters) in development called Cities of Mosaic Isle.  The data is loaded by the game on startup and used to declare game elements such as building kinds, terrain biomes, and events.
+
+Certain XML elements are expected by the game to be in the form of compilable C# code.  The C# code will be compiled by a version of the C# Roslyn compiler embedded in the game's closed-source engine.  The resulting compiled "script" (in the form of a class with a single function) will be called at the appropriate time during gameplay.
+
+This repository is provided as a reference for potential modders.  The data here is called the "core data" of the game, and will be distributed with the game, but aside from being loaded first is no different in form than any potential mod would be.  The game is still in development and this "core data", as well as its form, will almost certainly change.
+
+By the time the game is released this will have a license.  It's currently useful to nobody so all rights reserved is fine for now.  If you want to see the C# interfaces declared for the game (used almost all of the C# scripts), that repo is here: (LINK)

@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <!-- note: for this english-language implementation, it is assumed adjectives come before the noun they modify. [0] and [1] and so on are just different individual adjective phrases -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase default before_replace_text</a> <b>string</b> <c></c></i1> <!-- this is only used if there is no appropriate rand_sel -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building list_of_options</a> <b>list</b> <c>status_adj_phrase</c></i1> <!-- add this entry -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase rand_selection_count</a> <b>int</b> <c>6</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase rand_sel0 before_replace_text</a> <b>string</b> <c>[0]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase rand_sel1 before_replace_text</a> <b>string</b> <c>[0] [1]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase rand_sel2 before_replace_text</a> <b>string</b> <c>[0], [1]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase rand_sel3 before_replace_text</a> <b>string</b> <c>[0] and [1]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase rand_sel4 before_replace_text</a> <b>string</b> <c>[0], [1], [2]</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase rand_sel5 before_replace_text</a> <b>string</b> <c>[0], [1], and [2]</c></i1>
+	  
+	  <!-- these are the individual adjective phrases: -->
+	  <!-- empty strings will not be used -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase durability selection_count</a> <b>int</b> <c>5</c></i1> <!-- durability is split this many ways -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase durability value_sel0 before_replace_text</a> <b>string</b> <c>crumbling</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase durability value_sel1 before_replace_text</a> <b>string</b> <c>greatly damaged</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase durability value_sel2 before_replace_text</a> <b>string</b> <c>damaged</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase durability value_sel3 before_replace_text</a> <b>string</b> <c></c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase durability value_sel4 before_replace_text</a> <b>string</b> <c>well-maintained</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase building_materials rand_selection_count</a> <b>int</b> <c>3</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase building_materials rand_sel0 before_replace_text</a> <b>string</b> <c>[0]</c></i1> <!-- [0] is the name of the resource -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase building_materials rand_sel1 before_replace_text</a> <b>string</b> <c>[0]-built</c></i1> <!-- [0] is the name of the resource -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase building_materials rand_sel2 before_replace_text</a> <b>string</b> <c>made-from-[0]</c></i1> <!-- [0] is the name of the resource -->
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_fullness selection_count</a> <b>int</b> <c>7</c></i1> <!-- housing fullness is split this many ways -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_fullness value_sel0 before_replace_text</a> <b>string</b> <c>uninhabited</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_fullness value_sel1 before_replace_text</a> <b>string</b> <c>near-empty</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_fullness value_sel2 before_replace_text</a> <b>string</b> <c></c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_fullness value_sel3 before_replace_text</a> <b>string</b> <c></c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_fullness value_sel4 before_replace_text</a> <b>string</b> <c></c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_fullness value_sel5 before_replace_text</a> <b>string</b> <c>cramped</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_fullness value_sel6 before_replace_text</a> <b>string</b> <c>full</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_quality selection_count</a> <b>int</b> <c>7</c></i1> <!-- housing quality is split this many ways -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_quality value_sel0 before_replace_text</a> <b>string</b> <c>wretched</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_quality value_sel1 before_replace_text</a> <b>string</b> <c>hovel-like</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_quality value_sel2 before_replace_text</a> <b>string</b> <c>meager</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_quality value_sel3 before_replace_text</a> <b>string</b> <c>basic</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_quality value_sel4 before_replace_text</a> <b>string</b> <c>cozy</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_quality value_sel5 before_replace_text</a> <b>string</b> <c>impressive</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_quality value_sel6 before_replace_text</a> <b>string</b> <c>palatial</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase workplace_fullness selection_count</a> <b>int</b> <c>7</c></i1> <!-- housing fullness is split this many ways -->
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase workplace_fullness value_sel0 before_replace_text</a> <b>string</b> <c>unstaffed</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase workplace_fullness value_sel1 before_replace_text</a> <b>string</b> <c>skeleton-crewed</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase workplace_fullness value_sel2 before_replace_text</a> <b>string</b> <c></c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase workplace_fullness value_sel3 before_replace_text</a> <b>string</b> <c></c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase workplace_fullness value_sel4 before_replace_text</a> <b>string</b> <c>productive</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase workplace_fullness value_sel5 before_replace_text</a> <b>string</b> <c>industrious</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase workplace_fullness value_sel6 before_replace_text</a> <b>string</b> <c>fully staffed</c></i1>
+	  
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase destroyed before_replace_text</a> <b>string</b> <c>destroyed</c></i1>
+	  <i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase under_construction before_replace_text</a> <b>string</b> <c>under-construction</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_one_building_status_adj_phrase</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which takes a building and from it, returns a string that is an adjective phrase indicating the building's state -->
+  <!-- state can include durability, building materials, housing fullness, housing quality, and workplace fullness -->
+  <!-- note that not all of these can or will be included at once, and they will be ordered randomly -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFBuilding inBuilding, //cannot be null
+	
+	There is one output: string outDescription -->
+	<i1><a>replaceDescriptionMarkupKind_one_building_status_adj_phrase</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFBuilding)   }
+	  }, out _))
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_building_status_adj_phrase custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	if(inBuilding == null)
+	{
+		throw new ArgumentException("replaceDescriptionMarkupKind_one_building_status_adj_phrase custom script received invalid arguments: inBuilding cannot be null");
+		return null;
+	}
+	
+	string outDescription = "";
+	List&lt;string&gt; possibleAdjectives = new List&lt;string&gt;();
+	
+	//durability:
+	Int64 maxDurability = inBuilding.getMaxBuildingDurability();
+	Int64 currentDurability = inBuilding.getCurrentBuildingDurability();
+	double durabilityRatio = (currentDurability) / ((double)maxDurability);
+	Int64 durabilityCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase durability selection_count", out success);
+	if(!success) durabilityCount = 5;
+	if(durabilityCount != 0)
+	{
+		Int64 durabilitySel = (Int64)(durabilityRatio * durabilityCount);
+		if(durabilitySel == durabilityCount) durabilitySel--;
+		string durabilityAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase durability value_sel" + durabilitySel + " before_replace_text", out success);
+		if(success &amp;&amp; durabilityAdj != "")
+		{
+			possibleAdjectives.Add(durabilityAdj);
+		}
+	}
+	
+	//building materials:
+	IFResource constructionResource = inBuilding.getMadeOfResource();
+	if(constructionResource != null)
+	{
+		Int64 constructionRandSelMax = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase building_materials rand_selection_count", out success);
+		if(success)
+		{
+			Int64 randSel = getAPI().calcRandIntUnder(constructionRandSelMax);
+			string constructionString = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase building_materials rand_sel" + randSel + " before_replace_text", out success);
+			if(success)
+			{
+				constructionString = constructionString.Replace("[0]", constructionResource.getDisplayName());
+				possibleAdjectives.Add(constructionString);
+			}
+		}
+	}
+	
+	if(inBuilding.isHousing())
+	{
+		//housing fullness:
+		Int64 maxPopCount = inBuilding.getBuildingKind().getHousingCapacity();
+		Int64 currentPopCount = inBuilding.getHousingComponent().getHousedPops().Count;
+		double popCountRatio = (currentPopCount) / ((double)maxPopCount);
+		Int64 popCountCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_fullness selection_count", out success);
+		if(!success) popCountCount = 7;
+		if(popCountCount != 0)
+		{
+			Int64 popCountSel = (Int64)(popCountRatio * popCountCount);
+			if(popCountSel == popCountCount) popCountSel--;
+			string popCountAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_fullness value_sel" + popCountSel + " before_replace_text", out success);
+			if(success &amp;&amp; popCountAdj != "")
+			{
+				possibleAdjectives.Add(popCountAdj);
+			}
+		}
+		
+		//housing quality:
+		double housingQuality = inBuilding.getHousingComponent().getHousingQuality();
+		double minQual = consts.getResourceQualityMin();
+		double maxQual = consts.getResourceQualityMax();
+		double housingQualityRatio = (housingQuality - minQual) / (maxQual - minQual);
+		Int64 housingQualityCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_quality selection_count", out success);
+		if(!success) housingQualityCount = 7;
+		if(housingQualityCount != 0)
+		{
+			Int64 housingQualitySel = (Int64)(housingQualityRatio * housingQualityCount);
+			if(housingQualitySel == housingQualityCount) housingQualitySel--;
+			string housingQualityAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase housing_quality value_sel" + housingQualitySel + " before_replace_text", out success);
+			if(success &amp;&amp; housingQualityAdj != "")
+			{
+				possibleAdjectives.Add(housingQualityAdj);
+			}
+		}
+	}
+	
+	if(inBuilding.isWorkplace())
+	{
+		//workplace fullness:
+		Int64 maxPopCount = inBuilding.getBuildingKind().getMaxWorkers();
+		Int64 currentPopCount = inBuilding.getWorkplaceComponent().getWorkerPops().Count;
+		double popCountRatio = (currentPopCount) / ((double)maxPopCount);
+		Int64 popCountCount = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase workplace_fullness selection_count", out success);
+		if(!success) popCountCount = 7;
+		if(popCountCount != 0)
+		{
+			Int64 popCountSel = (Int64)(popCountRatio * popCountCount);
+			if(popCountSel == popCountCount) popCountSel--;
+			string popCountAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase workplace_fullness value_sel" + popCountSel + " before_replace_text", out success);
+			if(success &amp;&amp; popCountAdj != "")
+			{
+				possibleAdjectives.Add(popCountAdj);
+			}
+		}
+	}
+	
+	if(inBuilding.isBuildingDestroyed())
+	{
+		//destroyed adjective:
+		string destroyedAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase destroyed before_replace_text", out success);
+		if(success &amp;&amp; destroyedAdj != "")
+		{
+			possibleAdjectives.Add(destroyedAdj);
+		}
+	}
+	
+	if(!inBuilding.isBuildingFullyBuilt())
+	{
+		//under construction adjective:
+		string underConstructionAdj = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase under_construction before_replace_text", out success);
+		if(success &amp;&amp; underConstructionAdj != "")
+		{
+			possibleAdjectives.Add(underConstructionAdj);
+		}
+	}
+	
+	Int64 randCountTotal = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase rand_selection_count", out success);
+	if(!success) randCountTotal = 6;
+	List&lt;string&gt; possibleSelections = new List&lt;string&gt;();
+	
+	for(int i = 0; i &lt; randCountTotal; i++)
+	{
+		string randSel = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase rand_sel" + i + " before_replace_text", out success);
+		if(!success) continue;
+		
+		if(randSel.Contains("[0]") &amp;&amp; possibleAdjectives.Count == 0)
+		{
+			continue;
+		}
+		if(randSel.Contains("[1]") &amp;&amp; possibleAdjectives.Count &lt;= 1)
+		{
+			continue;
+		}
+		if(randSel.Contains("[2]") &amp;&amp; possibleAdjectives.Count &lt;= 2)
+		{
+			continue;
+		}
+		
+		possibleSelections.Add(randSel);
+	}
+	
+	if(possibleSelections.Count &gt; 0)
+	{
+		outDescription = possibleSelections[(int)getAPI().calcRandIntUnder(possibleSelections.Count)];
+	}
+	else
+	{
+		outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase default before_replace_text", out success);
+		if(!success) outDescription = "";
+	}
+	
+	for(int i = 0; i &lt; 3; i++)
+	{
+		if(possibleAdjectives.Count == 0)
+			break;
+		int index = (int)getAPI().calcRandIntUnder(possibleAdjectives.Count);
+		string toSlotIn = possibleAdjectives[index];
+		possibleAdjectives.RemoveAt(index);
+		outDescription = outDescription.Replace("[" + i + "]", toSlotIn);
+	}
+	
+    return new List&lt;object&gt;() { outDescription };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources:
+	TODO implement these custom consts: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igRace name="Mermaid">
+    <Encyclopedia_Entry>
+	  <full_path>Races/Mermaid</full_path>
+	  <body_text>Mermaid.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mSingleNoun>Mermaid</mSingleNoun>
+	<mPluralNoun>Mermaids</mPluralNoun>
+	<mCollectiveNoun>Merfolk</mCollectiveNoun>
+	<mAdjective>Merfolk</mAdjective>
+	<mSpecialAttributes>0x2c1</mSpecialAttributes><!--0x1 = unisex, 0x40 = can breathe underwater, 0x80 = can breathe overwater, 0x200 = can mother children -->
+	
+	<mIndustryProductivities>
+	  <i1>
+	    <a>Logging</a>
+		<b>1.0</b>
+		<c>0x400a</c> <!-- 0x2 = overwater nerf, 0x8 = underwater buff, 0x4000 = dislike industry -->
+	  </i1>
+	  <i1>
+	    <a>*</a>
+		<b>1.0</b>
+		<c>0xa</c> <!-- 0x2 = overwater nerf, 0x8 = underwater buff -->
+	  </i1>
+	</mIndustryProductivities>
+	
+	<mSSIDs>
+		<i>Shifter neutral ss</i>
+		<i>Shifter local ss</i>
+		<i>Shifter thelady ss</i>
+		<i>Shifter rebels ss</i>
+		<i>Shifter genericenemies ss</i>
+		<i>Shifter wanderers ss</i>
+	</mSSIDs>
+    <mLandSpeed>0.4</mLandSpeed>
+    <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+    <mWaterSpeed>4.0</mWaterSpeed>
+    <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
+    <mTagList>
+	  <i1>two limbs</i1>
+	  <i1>humanoid torso</i1>
+	  <i1>tail</i1>
+	  <i1>fishlike</i1>
+	  <i1>aquatic</i1>
+	  
+		<!-- description tags: -->
+		<i1>general_adj:aquatic</i1>
+		<i1>general_adj:fishy</i1>
+		<i1>general_adj:scaly</i1>
+		<i1>bodypart_vision:eyes</i1>
+		<i1>bodypart_hearing:ears</i1>
+		<i1>bodypart_smelling:nose</i1>
+		<i1>bodypart_taste:tongue</i1>
+		<i1>bodypart_outer:skin</i1>
+		<i1>bodypart_graspsingle:hand</i1>
+		<i1>bodypart_landtravel:tail</i1>
+		<i1>bodypart_watertravel:tail</i1>
+		<i1>bodypart_expression:face</i1>
+		<i1>bodypart_decorative:spines</i1>
+	</mTagList>
+  </igRace>
+  
+</core_data>

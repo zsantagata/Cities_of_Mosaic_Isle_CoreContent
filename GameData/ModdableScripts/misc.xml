@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- this file holds the implementation of a few miscellaneous scripts -->
+  <gamescripts name="default">
+	<!-- music script has one input argument: a string related to the current game stage.  There are no outputs. -->
+	<!-- this script is called when it has been a long enough time since the last music track played, or when an in-game transition (of various kinds) happens (for example, military action begins, a delegation is being resolved, or the save-game menu is entered) -->
+	<mMusicToPlayNext>
+            //input count check:
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+			
+	  string gameStageDescription = (string)inArguments[0];
+	  
+	  //the possible game stage descriptions, and their meanings, are these:
+	  //InGame : we are either on the City View, the Info View, or the Diplo View (or a sub-view like delegation handling)
+	  //MainLoading : we are loading mod info before the Main Menu
+	  //MainMenu : we are looking at the Main Menu
+	  //Credits : we are looking at the Credits
+	  //Options : we are looking at the Options
+	  //ModsMenu : we are looking at the Mods Menu
+	  //Encyclopedia : we are looking at the Encyclopedia
+	  //LoadSaveMenu : we are looking at the Load/Save Menu
+	  //ScenarioMenu : we are looking at the Scenario Menu
+	  //SandboxWorldMap : we are looking at the world map in the Sandbox scenario
+	  //SandboxLocalMap : we are looking at the screen to generate a local map in the Sandbox scenario
+	  
+	  var musicNames = getAPI().getMusicGroupNames();
+	  if(musicNames.Count != 0)
+	  {
+		getAPI().playMusicFromSoundGroup(musicNames[(int)getAPI().calcRandIntUnder(musicNames.Count)]);
+	  }
+	  
+	  if((gameStageDescription == "Credits") || (gameStageDescription == "Encyclopedia"))
+	  {
+		getAPI().setMusicContextualLoudnessMultiplier(0.6d);
+	  }
+	  else
+	  {
+		getAPI().setMusicContextualLoudnessMultiplier(1.0d);
+	  }
+	  
+	  return null;
+    </mMusicToPlayNext>
+  
+	<!-- resource pool description has one input: IFResourcePool inResourcePoolToDescript, bool inUseQualities.  There is one output: string outTextToDisplay. -->
+	<!-- this script is called whenever a C# menu wants to list out resources as text -->
+	<mResourcePoolDescription>
+		//input count check:
+		if (inArguments.Length &lt; 2)
+		{
+			return null;
+		}
+		
+		IFResourcePool inResourcePoolToDescript = (IFResourcePool)inArguments[0];
+		bool inUseQualities = (bool)inArguments[1];
+		
+		var customScripts = getAPI().getCustomScripts();
+		
+		string toReturn = "";
+		
+		//call the markup description code:
+		if(customScripts.runCustomScriptCheckTypes(inUseQualities ? "replaceDescriptionMarkupKind_one_resourcepool_yes_qualities_list"
+		 : "replaceDescriptionMarkupKind_one_resourcepool_no_qualities_list", new List&lt;object&gt;() { inResourcePoolToDescript }, out List&lt;object&gt; outList, false, typeof(string)))
+		{
+			toReturn = (string)outList[0];
+		}
+		
+		return new List&lt;object&gt;() { toReturn };
+    </mResourcePoolDescription>
+  
+  
+  </gamescripts>
+  
+</core_data>

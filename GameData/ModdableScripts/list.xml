@@ -1,0 +1,562 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- note: scripts are provided with two inputs: int inScriptInstance, object[] inArguments.  inScriptInstance is an int which is unique per each run of the script, and is only necessary for logging purposes (in other words: don't change it; nothing interesting will happen if you do).  The arguments actually useful to the script are stored in inArguments -->
+  <!-- note: all scripts must return some sort of List (of type object), but the return value can be null for those scripts in which the return value count is zero.  Otherwise, a null return value will cause an error. -->
+  <!-- note: if the script's return values are used, they must be the correct type (although double/Int64 will be converted correctly) and in the correct order. -->
+  
+  <!-- this file lists the names of all moddable game scripts.  A moddable game script is a script which is called somehow during game processing, but is not directly associated with any moddable object (like an igEvent's scripts would be). -->
+  <!-- comments here list inputs and outputs -->
+  <!-- other files will overwrite the "scripts" provided in this file with *actual* scripts; this isn't strictly necessary, but I'm doing it to make scripts easier to develop -->
+  
+  <!-- only one gamescripts should exist and its name should be "default" -->
+  <gamescripts name="default">
+  
+    <!-- music script has no input arguments.  There are no outputs. -->
+	<!-- this script is called when it has been a long enough time since the last music track played, or when an in-game transition happens (for example, military action begins, or a delegation is being resolved). It calculates which music track should play next. -->
+	<mMusicToPlayNext>
+	return null;
+	</mMusicToPlayNext>
+	
+	
+	<!-- housing quality service bonus has one input argument: the building in question.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of available services on housing quality -->
+	<mHousingQualityServiceBonus>
+	return null;
+	</mHousingQualityServiceBonus>
+	
+	<!-- housing quality goods bonus has four input arguments: the building in question, a resource pool, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of available goods on housing quality -->
+	<mHousingQualityGoodsBonus>
+	return null;
+	</mHousingQualityGoodsBonus>
+	
+	<!-- housing quality beauty bonus has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of surrounding beauty on housing quality -->
+	<mHousingQualityBeautyBonus>
+	return null;
+	</mHousingQualityBeautyBonus>
+	
+	<!-- housing quality water penalty has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of not having water on housing quality -->
+	<mHousingQualityWaterPenalty>
+	return null;
+	</mHousingQualityWaterPenalty>
+	
+	<!-- housing quality food penalty has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of not having food on housing quality -->
+	<mHousingQualityFoodPenalty>
+	return null;
+	</mHousingQualityFoodPenalty>
+	
+	<!-- housing quality hstasis penalty has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of not having hstasis-recovering-items on housing quality -->
+	<mHousingQualityHStasisPenalty>
+	return null;
+	</mHousingQualityHStasisPenalty>
+	
+	<!-- housing quality durability penalty has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There are two outputs: double quality_bonus, double quality_penalty. -->
+	<!-- This segment calculates the impact of damage on housing quality -->
+	<mHousingQualityDurabilityPenalty>
+	return null;
+	</mHousingQualityDurabilityPenalty>
+	
+	<!-- housing quality finalize has three input arguments: the building in question, previously existing bonus, previously existing penalty.  There is one output: building quality. -->
+	<!-- This segment calculates the housing quality based on previous bonuses/penalties and the inherent housing quality. -->
+	<mHousingQualityFinalize>
+	return null;
+	</mHousingQualityFinalize>
+	
+	
+    <!-- pop death from illness script has one input argument: IFPop upon which we are performing operations.  The output is a bool, and is true if the pop dies from illness. -->
+	<mPopDeathFromIllness>
+	return null;
+	</mPopDeathFromIllness>
+	
+	<!-- pop death from wounds script has one input argument: IFPop upon which we are performing operations.  The output is a bool, and is true if the pop dies from its wound. -->
+	<mPopDeathFromWound>
+	return null;
+	</mPopDeathFromWound>
+	
+	<!-- pop death from old age script has one input argument: IFPop upon which we are performing operations.  The output is a bool, and is true if the pop dies from old age. -->
+	<mPopDeathFromOldAge>
+	return null;
+	</mPopDeathFromOldAge>
+	
+	
+    <!-- pop illness from environment script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopIllnessFromEnvironment>
+	return null;
+	</mPopIllnessFromEnvironment>
+	
+    <!-- pop illness from others in housing script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopIllnessFromOthersInHousing>
+	return null;
+	</mPopIllnessFromOthersInHousing>
+  
+	<!-- pop illness from others in workplace script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopIllnessFromOthersInWorkplace>
+	return null;
+	</mPopIllnessFromOthersInWorkplace>
+	
+	<!-- pops becoming ill has four inputs: IFPop inPop, bool inSourceEnvironment, IFPop inOtherPopSource, UInt64 inDaysIll.  There are no outputs -->
+	<mPopAddIllness>
+	return null;
+	</mPopAddIllness>
+  
+	
+	<!-- pop wounds from others at workplace script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopWoundFromWorkplace>
+	return null;
+	</mPopWoundFromWorkplace>
+	
+    <!-- pop wounds from exposure script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopWoundFromExposure>
+	return null;
+	</mPopWoundFromExposure>
+	
+	<!-- pops becoming wounded has six inputs: IFPop inPop, bool inSourceExposure, bool inSourceWorkplace, bool inSourceIllness, bool inSourceCombat, UInt64 inDaysWounded.  There are no outputs -->
+	<mPopAddWound>
+	return null;
+	</mPopAddWound>
+	
+	
+	<!-- pops consuming resources each day has two inputs: IFPop inPop, IFResourcePool inResPool.  There are eleven outputs: bool outRoughingIt, double outProteinConsumed, double outProteinMult, double outMCalConsumed, double outMCalMult, UInt32 outHStasisMOID, double outQualOfHStasisItem, UInt32 outWoundCureMOID, double outQualOfWoundCureItem, UInt32 outIllCureMOID, double outQualOfIllCureItem -->
+	<!-- This script must determine what resources the pop consumes, and actually consume (FOOD ONLY) resources by subtracting them from the resourcePool (other resources being consumed has a gate in other PopHealth* scripts, so don't jump the gun here; those scripts return a bool to indicate something should be consumed, and C# code takes care of it).  This script must also determine the inputs for the other popHealth* scripts.  -->
+	<mPopConsumeDaily>
+	return null;
+	</mPopConsumeDaily>
+	
+	
+	<!-- pop health from protein script has four input arguments: IFPop upon which we are performing operations, protein consumed (a value similar to "getProteinValueEven"), protein quality multiplier (already weighted by average input quality), bool are_we_roughing_it.  There is no output. -->
+	<mPopHealthProtein>
+	return null;
+	</mPopHealthProtein>
+	
+	<!-- pop health from mcal script has four input arguments: IFPop upon which we are performing operations, MCal consumed, MCal quality multiplier (already weighted by average input quality), bool are_we_roughing_it.  There is no output. -->
+	<mPopHealthMCal>
+	return null;
+	</mPopHealthMCal>
+	
+	<!-- pop health from water script has two input arguments: IFPop upon which we are performing operations, bool are_we_roughing_it.  There is no output. -->
+	<mPopHealthWater>
+	return null;
+	</mPopHealthWater>
+	
+	<!-- pop health from hstasis script has three input arguments: IFPop upon which we are performing operations, item quality of potential item consumed, bool are_we_roughing_it.  There is one output, false if no item has been consumed, and true if one has. -->
+	<mPopHealthHStasis>
+	return null;
+	</mPopHealthHStasis>
+	
+	<!-- pop health from wound cure item script has three input arguments: IFPop upon which we are performing operations, item quality of potential item consumed, bool are_we_roughing_it.  There is one output, false if no item has been consumed, and true if one has. -->
+	<mPopHealthWoundCureItem>
+	return null;
+	</mPopHealthWoundCureItem>
+	
+	<!-- pop health from illness cure item script has three input arguments: IFPop upon which we are performing operations, item quality of potential item consumed, bool are_we_roughing_it.  There is one output, false if no item has been consumed, and true if it has. -->
+	<mPopHealthIllCureItem>
+	return null;
+	</mPopHealthIllCureItem>
+	
+	<!-- pop health overall script has one input arguments: IFPop upon which we are performing operations.  There are no outputs. -->
+	<mPopHealthOverall>
+	return null;
+	</mPopHealthOverall>
+	
+	
+	<!-- workplace production script has two inputs: IFBuilding inWorkplace, bool inJustPredicting.
+	There are six outputs:
+	Dictionary<IFResource, double> outResourcesConsumedAsInputs, //"which should/would be" consumed as inputs; this script does not do it
+	Dictionary<IFResource, double> outResourcesConsumedOtherwise, //"which should/would be" consumed additionally; this script does not do it
+	Dictionary<IFResource, double> outputResourcesCreated, //"which should/would be" added to the pool; this script does not do it
+	double outputQuality,
+	bool outputQualityWasChanged //this is only true if outputQuality should override what the player possibly chose in the qual/quan dial (does nothing if the workplace does not have one)
+	bool outIsWorkplaceOn
+	-->
+	<mWorkplaceProduction>
+	return null;
+	</mWorkplaceProduction>
+  
+	
+	<!-- building durability daily script has one input: the building in question.  There are no outputs. -->
+	<mBuildingDurabilityDaily>
+	return null;
+	</mBuildingDurabilityDaily>
+	
+	<!-- desolation restoration daily script has one input: the local map.  There are no outputs. -->
+	<mDesolationRestorationDaily>
+	return null;
+	</mDesolationRestorationDaily>
+	
+	<!-- resource decay daily has two inputs: Dictionary<IFBuildingKind, List<bool>> buildingKindToEnabledResourceList (index of the list is resource MOID), Dictionary<IFBuilding, Dictionary<UInt32, double>> distributionBuildingToResourceChangeMap (key of the inner dictionary is resource MOID).  There are no outputs. -->
+	<mResourceDecayDaily>
+	return null;
+	</mResourceDecayDaily>
+	
+	<!-- finding a house for a pop has two inputs: IFPop inPop, List<IFBuilding> inHousingBuildings.  There are no outputs -->
+	<mFindHouseForPop>
+	return null;
+	</mFindHouseForPop>
+	
+	<!-- calculating a distribution network has one input: IFMap inMap (the local map; technically this could be gathered from a comiAPISpace call but may as well pass it in).  There are no outputs -->
+	<!-- this script is called once at the end of each day -->
+	<mCalculateDistributionNetwork>
+	return null;
+	</mCalculateDistributionNetwork>
+	
+	
+	<!-- map generation assignment of water has three inputs: Int64 inWidth, Int64 inHeight, bool inHasCoastline.  There are two outputs: double outWaterRatio (between 0.0 and 1.0 inclusive), List<List<bool>> outWater (the outer list must be of size inWidth, and the inner lists must be of size inHeight). -->
+	<mMapGenAssignWater>
+	return null;
+	</mMapGenAssignWater>
+	
+	<!-- map generation assignment of passability and buildability has two inputs: Int64 inWidth, Int64 inHeight.  There are two outputs: List<List<bool>> outPassable, List<List<bool>> outBuildable (the outer lists must be of size inWidth, and the inner lists must be of size inHeight). -->
+	<mMapGenAssignPassBuild>
+	return null;
+	</mMapGenAssignPassBuild>
+	
+	<!-- this script is called once during an attempt to generate a map, and is meant to determine which tiles have which resources (tiles can, of course, not have resources) -->
+	<mMapGenDistributeResources>
+	return null;
+	</mMapGenDistributeResources>
+	
+	<!-- map generation assignment of parcels has seven inputs: IFTerrainBiome inBiome, int inWidth, int inHeight, Type inType, bool inUnpassable, bool inUnbuildable, IFTerrainSource inTerrainSource.  There is one output: IFMapTileObject outParcelChosen (this must be the type indicated by inType, and will be null if there has been an error/no matching parcel exists) -->
+	<mMapGenGetParcel>
+	return null;
+	</mMapGenGetParcel>
+	
+	<!-- map generation assignment of parcels has five inputs: List<List<Tuple<IFMapTileObject, bool, IFMapTileObject.eMapItemOrientation>>> inDoodads, List<List<bool>> inIsWater, IFTerrainBiome inLandBiome, IFTerrainBiome inWaterBiome, List<List<Tuple<IFMapTileObject, bool, IFMapTileObject.eMapItemOrientation>>> inResources.  There is one output: List<List<Tuple<IFMapTileObject, bool, IFMapTileObject.eMapItemOrientation>>> outDoodads (probably a modified version of the input doodads) -->
+	<mMapGenCullDoodads>
+	return null;
+	</mMapGenCullDoodads>
+	
+	<!-- map generation checking has six inputs: List<List<bool>> inIsWater, List<List<bool>> inIsPassable, List<List<bool>> inIsBuildable, List<List<IFTerrainSource>> inMapResources, bool inWantWater, bool inIsOnlyWater.  There is one output: bool isMapOkay (true if the map should be presented to the player and map generation ends (until the player requests a new map), false if the map should be thrown out and a new one generated) -->
+	<mMapGenCheckMap>
+	return null;
+	</mMapGenCheckMap>
+	
+  
+	<!-- housing pregnancy check script has one input: the housing building in question.  There are no outputs. -->
+	<mHousingPregnancyCheck>
+	return null;
+	</mHousingPregnancyCheck>
+	
+	<!-- calculating if two pops can make a baby together has two inputs: IFPop inPopOne, IFPop inPopTwo.  (The code of this function should be written so that the order of the inputs should not matter.)  There is one output: bool outCanPopsMakeBaby -->
+	<mCanPopsMakeBaby>
+	return null;
+	</mCanPopsMakeBaby>
+	
+	<!-- letting two pops make a baby together has two inputs: IFPop inPopOne, IFPop inPopTwo.  (The code of this function should be written so that the order of the inputs should not matter.)  There are no outputs -->
+	<mLetPopsMakeBaby>
+	return null;
+	</mLetPopsMakeBaby>
+	
+	<!-- letting a pregnant pop give birth has one input: IFPop inPop.  There is one output: IFPop outNewbornPop -->
+	<!-- this script is called once every time the IFPop function giveBirth is called (that function is a passthrough), as long as this pop is pregnant and past the due date.  This script takes care of creating the new pop with the correct race/other parameters, and calculates stillbirth/wound from childbirth probabilities -->
+    <mPopGiveBirth>
+	return null;
+    </mPopGiveBirth>
+	
+	
+	<!-- delegation health changes has one input: IFDelegation inDelegation.  There are no outputs -->
+	<mDelegationHealthChangeForOneDayTravel>
+	return null;
+	</mDelegationHealthChangeForOneDayTravel>
+	
+	<!-- delegation new wounds has one input: IFDelegation inDelegation.  There is one output: count of new wounds -->
+	<mDelegationNewWoundsForOneDayTravel>
+	return null;
+	</mDelegationNewWoundsForOneDayTravel>
+	
+	<!-- delegation new illness has one input: IFDelegation inDelegation.  There is one output: count of new illnesses -->
+	<mDelegationNewIllnessForOneDayTravel>
+	return null;
+	</mDelegationNewIllnessForOneDayTravel>
+	
+	<!-- delegation births has one input: IFDelegation inDelegation.  There are three outputs: Int64 outCountOfBirths, Int64 outCountDeadMothers, Int64 outCountStillbirths -->
+	<mDelegationBirthsForOneDayTravel>
+	return null;
+	</mDelegationBirthsForOneDayTravel>
+	
+	<!-- delegation deaths has one input: IFDelegation inDelegation.  There is one output: count of deaths -->
+	<mDelegationDeathForOneDayTravel>
+	return null;
+	</mDelegationDeathForOneDayTravel>
+	
+	<!-- delegation delay has one input: IFDelegation inDelegation.  There are no outputs (the inDelegation should have the function called directly) -->
+	<mDelegationDelayForOneDayTravel>
+	return null;
+	</mDelegationDelayForOneDayTravel>
+	
+	
+	<!-- happiness individual combination has three inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation, and a Dictionary<IFResource,double> of resources those pops consume -->
+	<!-- there is one output: the new value for individual combination's contribution to happiness -->
+	<mHappinessIndividualCombinationBase>
+	return null;
+	</mHappinessIndividualCombinationBase>
+	
+	<!-- happiness employment factor has two inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation -->
+	<!-- there is one output: the new value for employment's contribution to happiness -->
+	<mHappinessEmploymentFactor>
+	return null;
+	</mHappinessEmploymentFactor>
+	
+	<!-- happiness kin factor has two inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation -->
+	<!-- there is one output: the new value for kin's contribution to happiness -->
+	<mHappinessKinFactor>
+	return null;
+	</mHappinessKinFactor>
+	
+	<!-- happiness mates factor has two inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation -->
+	<!-- there is one output: the new value for mates's contribution to happiness -->
+	<mHappinessMatesFactor>
+	return null;
+	</mHappinessMatesFactor>
+	
+	<!-- happiness jealousy factor has two inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation -->
+	<!-- there is one output: the new value for jealousy's contribution to happiness -->
+	<mHappinessJealousyFactor>
+	return null;
+	</mHappinessJealousyFactor>
+	
+	<!-- happiness industry leader count factor has three inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation, List<IFPop> industry leaders of this race (included in the previous List<IFPop> as well) -->
+	<!-- there is one output: the new value for industry leader count's contribution to happiness -->
+	<mHappinessIndustryLeaderCountFactor>
+	return null;
+	</mHappinessIndustryLeaderCountFactor>
+	
+	<!-- happiness community illness factor has four inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation, List<IFPop> all ill pops in the community, List<IFPop> all ill pops of this race (included in the second and third arguments as well) -->
+	<!-- there is one output: the new value for community illness's contribution to happiness -->
+	<mHappinessIllnessCommunityFactor>
+	return null;
+	</mHappinessIllnessCommunityFactor>
+	
+	<!-- happiness deaths of pops has one inputs: the List<IFPop> of pops that have died in the community since yesterday -->
+	<!-- there is no output; this script instead should create happiness causes related to pop deaths -->
+	<mHappinessDeathsOfPops>
+	return null;
+	</mHappinessDeathsOfPops>
+	
+	<!-- happiness cause decay has two inputs: the IFRace which the cause is attached to, and the IFHappinessCause itself -->
+	<!-- there is no output; this script instead should change the happiness cause's value directly -->
+	<mHappinessSpecificCauseDecay>
+	return null;
+	</mHappinessSpecificCauseDecay>
+	
+	
+	<!-- can hire pop at workplace has two input arguments: IFBuilding in question, IFPop in question.  There is one output: bool outCanPopBeHired. -->
+	<!-- this script is called when the pop selector needs to determine if a pop in its list is selected for possible hiring or skipped over -->
+	<mCanHirePopAtWorkplace>
+	return null;
+	</mCanHirePopAtWorkplace>
+	
+	<!-- fire pop at workplace has two input arguments: IFBuilding in question, IFPop in question.  There are no outputs. -->
+	<!-- this script is called when the button is clicked on a building's selection menu -->
+	<mFirePopAtWorkplace>
+	return null;
+	</mFirePopAtWorkplace>
+	
+	<!-- rotate output at workplace has one input arguments: IFBuilding in question.  There are no outputs. -->
+	<!-- this script is called when the button is clicked on a building's selection menu -->
+	<mRotateOutputResource>
+	return null;
+	</mRotateOutputResource>
+  
+  
+	<!-- industry skill increase daily has two input arguments: IFIndustry in question, List<IFPop> of pops working in that industry.  There are no outputs. -->
+	<!-- this script is called once daily at midnight -->
+    <mIndustrySkillIncreaseDaily>
+	return null;
+    </mIndustrySkillIncreaseDaily>
+	
+	<!-- industry skill decrease daily has two input arguments: IFIndustry in question, List<IFPop> of pops who were born yesterday.  There are no outputs. -->
+	<!-- this script is called once daily at midnight -->
+    <mIndustrySkillDecreaseDaily>
+	return null;
+    </mIndustrySkillDecreaseDaily>
+	
+	<!-- soldier skill decrease daily has no input arguments.  There are no outputs. -->
+	<!-- this script is called once daily at midnight -->
+    <mSoldierSkillDecreaseDaily>
+	return null;
+    </mSoldierSkillDecreaseDaily>
+	
+	<!-- choose new city leader for local community has no input arguments.  There is one output: IFPop outNewCityLeader. -->
+	<!-- this script is called on the first non-military frame there is no City Leader.  If this script returns null, it will not be called again this day. -->
+    <mChooseNewCityLeaderLocalCommunity>
+	return null;
+    </mChooseNewCityLeaderLocalCommunity>
+	
+	
+	<!-- can assign pop to mustering point has two input arguments: IFBuilding in question, IFPop in question.  There is one output: bool outCanPopBeAssigned. -->
+	<!-- this script is called when the pop selector needs to determine if a pop in its list is selected for possible assignment or skipped over -->
+	<mCanAssignPopToMusteringPoint>
+	return null;
+	</mCanAssignPopToMusteringPoint>
+	
+	
+	<!-- battle entry script has no inputs.  There are no outputs. -->
+	<!-- this script is called whenever actual enemies appear on the local map -->
+	<mEntryToActualBattle>
+	  return null;
+    </mEntryToActualBattle>
+  
+	<!-- battle exit script has no inputs.  There are no outputs. -->
+	<!-- this script is called whenever there are no longer hostile pops on the local map, or all loyal pops on the local map are dead.  In the second situation, if none of the hostiles are Rebels (who are automatically converted back to loyal pops), the game will be lost. -->
+	<mExitFromActualBattle>
+	  return null;
+    </mExitFromActualBattle>
+	
+	<!-- delegation attacking has four inputs: IFDelegation inDelegation, double inDelegationMorale, double inCommunityMorale, string inWarTarget.  There are three outputs: string outTextToDisplay, double outNewDelegationMorale, double outNewCommunityMorale -->
+	<!-- this script will be called when the Attack option is selected -->
+	<mWarOrRaidingDelegationAttack>
+	  return null;
+	</mWarOrRaidingDelegationAttack>
+	
+	<!-- delegation waiting one day has four inputs: IFDelegation inDelegation, double inDelegationMorale, double inCommunityMorale, string inWarTarget.  There are three outputs: string outTextToDisplay, double outNewDelegationMorale, double outNewCommunityMorale -->
+	<!-- this script will be called when the Wait One Day option is selected -->
+	<mWarOrRaidingDelegationWaitOneDay>
+	  return null;
+	</mWarOrRaidingDelegationWaitOneDay>
+	
+	<!-- alert script has two input arguments: string inAlertIdentifier and List<object> inDetailsToReplace.  inDetailsToReplace can be empty but it will not be null; it will be sized and typed appropriately for the associated alert.  There are no outputs. -->
+	<!-- this script is called whenever the C# code has encountered something which I, the dev, think should possibly be told to the player in the form of an alert.  This script and the consts exist because players and modders might disagree and want to customize their alerts :) -->
+	<mHardcodedAlert>
+	  return null;
+	</mHardcodedAlert>
+	
+	<!-- building construction script has two inputs: List<IFBuilding> inAllUnfinishedBuildings, bool inJustPredicting.  There is one output: string outTextToDisplayInInfoView. -->
+	<!-- this script is called whenever Info View is refreshed (with inJustPredicting=true), and once early on in each midnight processing. Note that this script is called BEFORE regular workplaces add to constructionAdditionalEffort, which is why they all impact *tomorrow's* efforts -->
+	<mBuildingConstruction>
+	  return null;
+	</mBuildingConstruction>
+	
+	<!-- foreign delegation at foreign community has one input: IFDelegation inDelegationInQuestion.  There are no outputs. -->
+	<!-- this script is called during midnight processing on each foreign-sourced delegation that arrives at its foreign destination, and handles destination-community and delegation changes as a result -->
+	<mForeignDelegationAtForeignCommunityEvaluation>
+	  return null;
+	</mForeignDelegationAtForeignCommunityEvaluation>
+	
+	<!-- history script has two input arguments: string inHistoryIdentifier, List<object> inDetails
+		inDetailsToReplace will hold all the following, in order:
+		IFCommunity inCommunityToHoldHistory
+		Int64 inDate, IFHistoryActor.eActorKind inActorKind, UInt64 inActorID,
+		IFHistoryTarget.eTargetKind inTargetKind, UInt64 inTargetID,
+		Int64 inImpactOverride //this can be provided by other custom scripts sometimes
+		-->
+	<!-- there are no outputs. -->
+	<!-- the other parts of the historical event will be provided by subscripts and their access to custom consts (which are translatable) -->
+	<!-- this script is called whenever the C# code has encountered something which I, the dev, think should possibly be told to the player and stored as history that other scripts (events, etc.) can "remember".  This script and the consts exist because players and modders might disagree and want to customize their historical events -->
+	<mHardcodedHistory>
+	  return null;
+    </mHardcodedHistory>
+	
+	<!-- resource pool description has one input: IFResourcePool inResourcePoolToDescript.  There is one output: string outTextToDisplay. -->
+	<!-- this script is called whenever a C# menu wants to list out resources as text -->
+	<mResourcePoolDescription>
+	  return null;
+    </mResourcePoolDescription>
+	
+	<!-- canPopJoinDelegation has three inputs: IFPop inPop, IFDelegation.eDelegationType inDelegationType, ReadOnlyCollection<IFPop> inOtherPopsOnProposedDelegation.  It has one output: bool outCanPopJoinDelegation -->
+	<!-- this script will be called for each pop that could possibly join a delegation.  C# filters out pops which are dead, which are not loyal, which are not on the local map, and which are already proposed to be on the delegation -->
+	<mCanPopJoinDelegation>
+	  return null;
+	</mCanPopJoinDelegation>
+	
+	<!-- canDelegationLaunch has four inputs: IFCommunity inCommunityTarget, IFDelegation.eDelegationType inDelegationType, ReadOnlyCollection<IFPop> inProposedPops, IFResourcePool inProposedResourcePool.
+		It has two outputs: bool outCanDelegationBeSent, string outReasonDelegationCannotBeSent -->
+	<!-- this script will be called when the player is on the delegation summary screen (preparing a delegation to launch).  C# code does not allow delegations to launch if it cannot find a path to the destination, or during non-regular time such as military time -->
+	<mCanDelegationLaunch>
+	  return null;
+	</mCanDelegationLaunch>
+	
+	<!-- prediction strength script has one input: IFCommunity inLocalCommunity.  There is one output: double outPredictionStrength. -->
+	<!-- this script is called once at the end of each day, on the local community only. -->
+	<mCalculateLocalPredictionStrength>
+	  return null;
+	</mCalculateLocalPredictionStrength>
+	
+	<!-- does pop look for home script has one input: IFPop inPop.  There is one output: bool outPopLooksForNewHome -->
+	<!-- this script is called at the end of each day, once for each alive, non-hostile pop on the local map -->
+	<mDoesPopLookForNewHome>
+	  return null;
+	</mDoesPopLookForNewHome>
+	
+	<!-- delegation resource decay has one input: IFDelegation inDelegation.  There are no outputs -->
+	<!-- this script will be called at the beginning of a day that the delegation is traveling (i.e. it is not called while a war/raiding delegation is laying siege to a community) -->
+	<!-- (delegation resource decay is called directly by other custom scripts in that instance) -->
+	<mDelegationResourcesDegrade>
+	  return null;
+	</mDelegationResourcesDegrade>
+	
+	<!-- generate pop resources has no inputs.  There are no outputs. -->
+	<!-- this script will be called once during midnight processing, and is meant to generate the resource that all pops in the community harvest from their own bodies when they have the time to sit down and do so -->
+	<!-- i.e. when they are housed -->
+	<mGeneratePopResources>
+	  return null;
+	</mGeneratePopResources>
+	
+    <!-- pop deletion has one input argument: IFPop which we are deleting.  There is no output. -->
+	<mPopDeletionDelay>
+	  return null;
+	</mPopDeletionDelay>
+    <!-- building deletion has one input argument: IFBuilding which we are deleting.  There is no output. -->
+	<mBuildingDeletionDelay>
+	  return null;
+	</mBuildingDeletionDelay>
+    <!-- community deletion has one input argument: IFCommunity which we are deleting.  There is no output. -->
+	<mCommunityDeletionDelay>
+	  return null;
+	</mCommunityDeletionDelay>
+	
+    <!-- pop death from irrelevance script has one input argument: IFPop upon which we are performing operations.  There is no output. -->
+	<mPopDeathFromIrrelevance>
+	  return null;
+	</mPopDeathFromIrrelevance>
+	
+	<!-- leader stepdown has no input arguments.  There is no output. -->
+	<!-- this script is called once during midnight processing. -->
+    <mLeaderStepdown>
+	  return null;
+    </mLeaderStepdown>
+	
+	<!-- delegation prisoner conversion has one input: IFDelegation inDelegation.  There are no outputs -->
+	<!-- this script will be called just before a loyal delegation returns to the player community, after the delegation has caused a simultaneous event -->
+	<!-- the intent of this script is to handle conversion of prisoners (AKA non-loyal pops) in the delegation, but since it's called every time it could do other things as well -->
+	<mDelegationReturnPrisonerConversion>
+		return null;
+	</mDelegationReturnPrisonerConversion>
+	
+	<!-- housing quality specific pop has two input arguments: IFBuilding inBuilding, IFPop inPop.  There is one output: building quality for the pop in question. -->
+	<!-- This segment calculates the housing quality based seen by the pop (which can be different than base housing quality). -->
+	<mHousingQualitySpecificPop>
+		return null;
+	</mHousingQualitySpecificPop>
+	
+	<!-- get service quality of building has two input arguments: IFBuilding inBuilding, IFIndustry inIndustryInQuestion.  There is one output: service quality for the building and industry in question. -->
+	<!-- This segment calculates the service quality seen by the building as a result of contributions from zero, one, or multiple buildings from that industry (and possibly even of the same buildingkind as another)  -->
+	<mCalcServiceQualityOfBuilding>
+		return null;
+	</mCalcServiceQualityOfBuilding>
+	
+	<!-- recover goods from dead body script has three input arguments: IFPop which is now dead, IFDelegation (which will be null unless the pop is off-map and traveling in a delegation), and IFCommunity (which will be null unless the pop is off-map in a delegation AND that delegation is visiting a foreign (i.e. not the player) community when the pop dies)  -->
+	<!-- there is no output -->
+	<mRecoverGoodsFromDeadBody>
+		return null;
+	</mRecoverGoodsFromDeadBody>
+	
+	<!-- pop can work has one input: IFPop in question.  There is one output: bool outCanPopBeHired. -->
+	<!-- the IFPop function isCapableOfWorking() is a passthrough to this script and returns the value that this script returns -->
+	<mCanPopWork>
+		return null;
+	</mCanPopWork>
+	
+	<!-- can muster point has one input argument: IFPop in question.  There is one output: bool outCanPopMuster. -->
+	<!-- the IFPop function isCapableOfMustering() is a passthrough to this script and returns the value that this script returns -->
+	<mCanPopMuster>
+		return null;
+	</mCanPopMuster>
+	
+  </gamescripts>
+  
+</core_data>

@@ -1,0 +1,331 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script proposeTradeBetweenTwoResourcePools</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which attempts to propose a trade between two resource pools, using the resource desire values provided -->
+  <!-- this script will return dictionaries of the resources coming from each pool.  These dictionaries will not be null but may be empty if there was no possible trade. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+		IFResourcePool inFirstResourcePool,
+		IFResourcePool inSecondResourcePool,
+		List<double> inResourceDesireValues,
+		double inDesireMultForFirstPool, //must be greater than 0.  If 1, that means equal values are the target.  The resource desire values are multiplied by this when being applied to the first pool.  (<1 means the first pool's resources are less valuable compared to the second's, and >1 means the opposite)
+		//note that inDesireMultForFirstPool should be the *proposer's* desire to emphasize resources in the first pool.  The evaluator (if they are not the player) can use a different value to judge the proposal.
+		double inMinimumProportionFirstPool, //ignored if double.MaxValue
+		double inMaximumProportionFirstPool, //ignored if double.MaxValue
+		double inMinimumProportionSecondPool, //ignored if double.MaxValue
+		double inMaximumProportionSecondPool, //ignored if double.MaxValue
+	-->
+	
+	<!-- output:
+		Dictionary<IFResource, double> outResourcesFromFirstPool,
+		Dictionary<IFResource, double> outResourcesFromSecondPool,
+		bool outValidProposal //if the output dictionaries have values in them, this is true; otherwise it is false
+	-->
+	<i1><a>proposeTradeBetweenTwoResourcePools</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFResourcePool), typeof(IFResourcePool), typeof(List&lt;double&gt;), typeof(double),
+			 typeof(double), typeof(double), typeof(double), typeof(double)
+			}
+	      }, out _))
+	    {
+			throw new ArgumentException("proposeTradeBetweenTwoResourcePools custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFResourcePool inFirstResourcePool = (IFResourcePool)inArguments[0];
+		IFResourcePool inSecondResourcePool = (IFResourcePool)inArguments[1];
+		List&lt;double&gt; inResourceDesireValues = (List&lt;double&gt;)inArguments[2];
+		double inDesireMultForFirstPool = (double)inArguments[3];
+		double inMinimumProportionFirstPool = (double)inArguments[4];
+		double inMaximumProportionFirstPool = (double)inArguments[5];
+		double inMinimumProportionSecondPool = (double)inArguments[6];
+		double inMaximumProportionSecondPool = (double)inArguments[7];
+		
+		if(inFirstResourcePool == null)
+		{
+			throw new ArgumentException("proposeTradeBetweenTwoResourcePools custom script received invalid arguments: inFirstResourcePool cannot be null");
+			return null;
+		}
+		if(inSecondResourcePool == null)
+		{
+			throw new ArgumentException("proposeTradeBetweenTwoResourcePools custom script received invalid arguments: inSecondResourcePool cannot be null");
+			return null;
+		}
+		if(inResourceDesireValues == null)
+		{
+			throw new ArgumentException("proposeTradeBetweenTwoResourcePools custom script received invalid arguments: inResourceDesireValues cannot be null");
+			return null;
+		}
+		if(inDesireMultForFirstPool &lt;= 0.0d)
+		{
+			throw new ArgumentException("proposeTradeBetweenTwoResourcePools custom script received invalid arguments: inDesireMultForFirstPool cannot be zero or negative; inDesireMultForFirstPool=" + inDesireMultForFirstPool);
+			return null;
+		}
+		if(inMinimumProportionFirstPool == double.MaxValue)
+			inMinimumProportionFirstPool = 0.0d;
+		if(inMaximumProportionFirstPool == double.MaxValue)
+			inMaximumProportionFirstPool = 1.0d;
+		if(inMinimumProportionSecondPool == double.MaxValue)
+			inMinimumProportionSecondPool = 0.0d;
+		if(inMaximumProportionSecondPool == double.MaxValue)
+			inMaximumProportionSecondPool = 1.0d;
+		
+		if((inMinimumProportionFirstPool &lt; 0.0d) || (inMinimumProportionFirstPool &gt; 1.0d))
+		{
+			throw new ArgumentException("proposeTradeBetweenTwoResourcePools custom script received invalid arguments: inMinimumProportionFirstPool must be double.MaxValue or between 0.0d and 1.0d inclusive; inMinimumProportionFirstPool=" + inMinimumProportionFirstPool);
+			return null;
+		}
+		if((inMaximumProportionFirstPool &lt; 0.0d) || (inMaximumProportionFirstPool &gt; 1.0d))
+		{
+			throw new ArgumentException("proposeTradeBetweenTwoResourcePools custom script received invalid arguments: inMaximumProportionFirstPool must be double.MaxValue or between 0.0d and 1.0d inclusive; inMaximumProportionFirstPool=" + inMaximumProportionFirstPool);
+			return null;
+		}
+		if((inMinimumProportionSecondPool &lt; 0.0d) || (inMinimumProportionSecondPool &gt; 1.0d))
+		{
+			throw new ArgumentException("proposeTradeBetweenTwoResourcePools custom script received invalid arguments: inMinimumProportionSecondPool must be double.MaxValue or between 0.0d and 1.0d inclusive; inMinimumProportionSecondPool=" + inMinimumProportionSecondPool);
+			return null;
+		}
+		if((inMaximumProportionSecondPool &lt; 0.0d) || (inMaximumProportionSecondPool &gt; 1.0d))
+		{
+			throw new ArgumentException("proposeTradeBetweenTwoResourcePools custom script received invalid arguments: inMaximumProportionSecondPool must be double.MaxValue or between 0.0d and 1.0d inclusive; inMaximumProportionSecondPool=" + inMaximumProportionSecondPool);
+			return null;
+		}
+		
+		//prepare the resource desire values if they aren't up to snuff:
+		Int64 total_count_of_resources = getAPI().getTotalCountOfMO("resources");
+		while(inResourceDesireValues.Count &lt; total_count_of_resources)
+		{
+			inResourceDesireValues.Add(1.0d);
+		}
+		
+		if(inMinimumProportionFirstPool &gt; inMaximumProportionFirstPool)
+		{
+			addDebugMessage(inScriptInstance, "inMinimumProportionFirstPool is greater than inMaximumProportionFirstPool; swapping them (inMinimumProportionFirstPool=" + inMinimumProportionFirstPool + " inMaximumProportionFirstPool = " + inMaximumProportionFirstPool + ")");
+			double temp = inMinimumProportionFirstPool;
+			inMinimumProportionFirstPool = inMaximumProportionFirstPool;
+			inMaximumProportionFirstPool = temp;
+		}
+		if(inMinimumProportionSecondPool &gt; inMaximumProportionSecondPool)
+		{
+			addDebugMessage(inScriptInstance, "inMinimumProportionSecondPool is greater than inMaximumProportionSecondPool; swapping them (inMinimumProportionSecondPool=" + inMinimumProportionSecondPool + " inMaximumProportionSecondPool = " + inMaximumProportionSecondPool + ")");
+			double temp = inMinimumProportionSecondPool;
+			inMinimumProportionSecondPool = inMaximumProportionSecondPool;
+			inMaximumProportionSecondPool = temp;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		Dictionary&lt;IFResource, double&gt; outResourcesFromFirstPool = new Dictionary&lt;IFResource, double&gt;();
+		Dictionary&lt;IFResource, double&gt; outResourcesFromSecondPool = new Dictionary&lt;IFResource, double&gt;();
+		bool outValidProposal = false;
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		
+		double maxQual = consts.getResourceQualityMax();
+		double minQual = consts.getResourceQualityMin();
+		
+		double resourceDesireMaxQual = customConsts.getDoubleConst("foreign_community resource_desire max_qual mult", out bool success);
+		if(!success) resourceDesireMaxQual = 2.25d;
+		double resourceDesireMinQual = customConsts.getDoubleConst("foreign_community resource_desire min_qual mult", out success);
+		if(!success) resourceDesireMinQual = 0.45d;
+		
+		//get the total values of each pool:
+		double totalValueInFirstPool = 0.0d;
+		double totalValueInSecondPool = 0.0d;
+		for(int moid = 1; moid &lt; total_count_of_resources; moid++)
+		{
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res == null)
+				continue;
+			if(res.isNotInResourcePool())
+				continue;
+				
+			double firstQualMult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (inFirstResourcePool.getResourceQuality(res) - minQual) / (maxQual - minQual));
+			double firstValueAdded = firstQualMult * inFirstResourcePool.getResourceQuantity(res) * inResourceDesireValues[moid];
+			if(firstValueAdded &gt; 0.0d)
+				totalValueInFirstPool += firstValueAdded;
+			
+			double secondQualMult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (inSecondResourcePool.getResourceQuality(res) - minQual) / (maxQual - minQual));
+			double secondValueAdded = secondQualMult * inSecondResourcePool.getResourceQuantity(res) * inResourceDesireValues[moid];;
+			if(secondValueAdded &gt; 0.0d)
+				totalValueInSecondPool += secondValueAdded;
+		}
+		
+		if(totalValueInFirstPool &lt;= 0.0d)
+		{
+			addDebugMessage(inScriptInstance, "something possibly wrong: total value held by first pool is 0.0d or less; cannot trade: value=" + totalValueInFirstPool);
+			toReturn.Add(outResourcesFromFirstPool);
+			toReturn.Add(outResourcesFromSecondPool);
+			toReturn.Add(outValidProposal);
+			return toReturn;
+		}
+		if(totalValueInSecondPool &lt;= 0.0d)
+		{
+			addDebugMessage(inScriptInstance, "something possibly wrong: total value held by second pool is 0.0d or less; cannot trade: value=" + totalValueInSecondPool);
+			toReturn.Add(outResourcesFromFirstPool);
+			toReturn.Add(outResourcesFromSecondPool);
+			toReturn.Add(outValidProposal);
+			return toReturn;
+		}
+		
+		//modify the first pool's total value:
+		double modifiedTotalValueInFirstPool = totalValueInFirstPool * inDesireMultForFirstPool;
+		double valueCap = Math.Min(modifiedTotalValueInFirstPool, totalValueInSecondPool);
+		
+		//start the proposal ranges:
+		double minValueFromFirstPool = modifiedTotalValueInFirstPool * inMinimumProportionFirstPool;
+		double maxValueFromFirstPool = modifiedTotalValueInFirstPool * inMaximumProportionFirstPool;
+		double minValueFromSecondPool = totalValueInSecondPool * inMinimumProportionSecondPool;
+		double maxValueFromSecondPool = totalValueInSecondPool * inMaximumProportionSecondPool;
+		
+		double minValueTarget = Math.Max(minValueFromFirstPool, minValueFromSecondPool);
+		double maxValueTarget = Math.Min(maxValueFromFirstPool, maxValueFromSecondPool);
+		
+		//for a valid proposal, the ranges should overlap.  That means maxValueFromFirstPool should be greater than minValueFromSecondPool and maxValueFromSecondPool should be greater than minValueFromFirstPool
+		if(minValueTarget &gt;= maxValueTarget)
+		{
+			addDebugMessage(inScriptInstance, "desired proportional ranges for first pool and second pool do not overlap; trade impossible.  First pool desires to provide " + minValueFromFirstPool + "-" + maxValueFromFirstPool + 
+				" of value, second pool desires to provide " + minValueFromSecondPool + "-" + maxValueFromSecondPool + " of value.  inMinimumProportionFirstPool=" + inMinimumProportionFirstPool + " inMaximumProportionFirstPool=" + inMaximumProportionFirstPool
+				+ " inMinimumProportionSecondPool=" + inMinimumProportionSecondPool + " inMaximumProportionSecondPool=" + inMaximumProportionSecondPool);
+			toReturn.Add(outResourcesFromFirstPool);
+			toReturn.Add(outResourcesFromSecondPool);
+			toReturn.Add(outValidProposal);
+			return toReturn;
+		}
+		
+		double valueTarget = getAPI().calcRand() * (maxValueTarget - minValueTarget) + minValueTarget;
+		
+		//now, from the first and the second pools each, gather resources up to the valueTarget:
+		List&lt;int&gt; moids = new List&lt;int&gt;();
+		for(int moid = 1; moid &lt; total_count_of_resources; moid++)
+		{
+			moids.Add(moid);
+		}
+		//assemble first resources:
+		double valueSoFar = 0.0d;
+		while((valueSoFar &lt; valueTarget) &amp;&amp; (moids.Count != 0))
+		{
+			int index = (int)getAPI().calcRandIntUnder((Int64)moids.Count);
+			int moid = moids[index];
+			moids.RemoveAt(index);
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res == null)
+				continue;
+			
+			double quan = inFirstResourcePool.getResourceQuantity(res);
+			if(quan == 0.0d)
+				continue;
+			
+			double qual = inFirstResourcePool.getResourceQuality(res);
+			double qual_value_mult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (qual - minQual) / (maxQual - minQual));
+			
+			double thisResAllValue = quan * qual_value_mult * inResourceDesireValues[moid] * inDesireMultForFirstPool;
+			if(thisResAllValue &lt;= 0.0d)
+				continue;
+			if(thisResAllValue &lt;= (valueTarget - valueSoFar))
+			{
+				//add all of this resource:
+				valueSoFar += thisResAllValue;
+				outResourcesFromFirstPool.Add(res, quan);
+			}
+			else
+			{
+				//add only a portion of this resource:
+				double quan_to_add = (valueTarget - valueSoFar) / (qual_value_mult * inResourceDesireValues[moid]);
+				valueSoFar = valueTarget;
+				outResourcesFromFirstPool.Add(res, quan_to_add);
+			}
+		}
+		if(valueSoFar != valueTarget)
+		{
+			//shift total value to ask for by the same ratio:
+			valueTarget *= valueSoFar / valueTarget;
+		}
+		
+		//assemble second resources:
+		moids.Clear();
+		for(int moid = 1; moid &lt; total_count_of_resources; moid++)
+		{
+			moids.Add(moid);
+		}
+		valueSoFar = 0.0d;
+		while((valueSoFar &lt; valueTarget) &amp;&amp; (moids.Count != 0))
+		{
+			int index = (int)getAPI().calcRandIntUnder((Int64)moids.Count);
+			int moid = moids[index];
+			moids.RemoveAt(index);
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(res == null)
+				continue;
+			
+			double quan = inSecondResourcePool.getResourceQuantity(res);
+			if(quan == 0.0d)
+				continue;
+			
+			double qual = inSecondResourcePool.getResourceQuality(res);
+			double qual_value_mult = resourceDesireMinQual + ((resourceDesireMaxQual - resourceDesireMinQual) * (qual - minQual) / (maxQual - minQual));
+			
+			double thisResAllValue = quan * qual_value_mult * inResourceDesireValues[moid];
+			if(thisResAllValue &lt;= 0.0d)
+				continue;
+			if(thisResAllValue &lt;= (valueTarget - valueSoFar))
+			{
+				//add all of this resource:
+				valueSoFar += thisResAllValue;
+				outResourcesFromSecondPool.Add(res, quan);
+			}
+			else
+			{
+				//add only a portion of this resource:
+				double quan_to_add = (valueTarget - valueSoFar) / (qual_value_mult * inResourceDesireValues[moid]);
+				valueSoFar = valueTarget;
+				outResourcesFromSecondPool.Add(res, quan_to_add);
+			}
+		}
+		
+		bool anythingFromFirstPool = false;
+		bool anythingFromSecondPool = false;
+		foreach(var kvpair in outResourcesFromFirstPool)
+		{
+			if((kvpair.Key != null) &amp;&amp; (kvpair.Value &gt; 0.0d))
+			{
+				anythingFromFirstPool = true;
+				break;
+			}
+		}
+		foreach(var kvpair in outResourcesFromSecondPool)
+		{
+			if((kvpair.Key != null) &amp;&amp; (kvpair.Value &gt; 0.0d))
+			{
+				anythingFromSecondPool = true;
+				break;
+			}
+		}
+		
+		outValidProposal = anythingFromFirstPool &amp;&amp; anythingFromSecondPool;
+		toReturn.Add(outResourcesFromFirstPool);
+		toReturn.Add(outResourcesFromSecondPool);
+		toReturn.Add(outValidProposal);
+		return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

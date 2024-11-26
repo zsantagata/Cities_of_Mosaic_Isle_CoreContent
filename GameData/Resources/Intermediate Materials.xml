@@ -1,0 +1,246 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- custom consts related to these resources: -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	</mCustomVariableList>
+  </customconsts>
+  
+  <igResource name="Bone">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Materials/Bone</full_path>
+	  <body_text>Bone.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0006125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>6</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>boney</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:unrefined</i1>
+		<i1>use_noun:material</i1>
+		<i1>qual_low_adj:broken</i1>
+		<i1>qual_low_adj:weak</i1>
+		<i1>qual_high_adj:whole</i1>
+		<i1>qual_high_adj:strong</i1>
+		<i1>property_adj:dry</i1>
+		<i1>property_adj:white</i1>
+		<i1>degrade_noun:bone dust</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Dragon Scales">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Materials/Dragon Scales</full_path>
+	  <body_text>Dragon Scales.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0</mResourceQualities>
+	<mDecaySpeed>0.0</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>12</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>leathery</i1>
+		<i1>only from pops</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:hard</i1>
+		<i1>use_noun:material</i1>
+		<i1>qual_low_adj:worn</i1>
+		<i1>qual_low_adj:cracked</i1>
+		<i1>qual_high_adj:sturdy</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>property_adj:layered</i1>
+		<i1>degrade_noun:shards</i1>
+	</mTagList>
+  </igResource>
+  
+  <!-- "ERROR" has a spriteID of 14 in the resource icon spritesheet -->
+  
+  <igResource name="Feathers">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Materials/Feathers</full_path>
+	  <body_text>Feathers.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.01</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>15</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>fibrous</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_noun:decoration</i1>
+		<i1>qual_low_adj:broken</i1>
+		<i1>qual_low_adj:thin</i1>
+		<i1>qual_high_adj:large</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>qual_high_adj:colorful</i1>
+		<i1>property_adj:light</i1>
+		<i1>degrade_noun:broken feathers</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Leather">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Materials/Leather</full_path>
+	  <body_text>Leather.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.00125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>26</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>leathery</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:tanned</i1>
+		<i1>use_noun:hide</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:holey</i1>
+		<i1>qual_high_adj:whole</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>property_adj:brown</i1>
+		<i1>degrade_noun:scraps</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Metal">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Materials/Metal</full_path>
+	  <body_text>Metal.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0x100</mResourceQualities><!--trade-->
+	<mDecaySpeed>0.0006125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>31</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>metallic</i1>
+		<i1>trade good</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:workable</i1>
+		<i1>use_adj:smithable</i1>
+		<i1>use_noun:material</i1>
+		<i1>qual_low_adj:tarnished</i1>
+		<i1>qual_low_adj:brittle</i1>
+		<i1>qual_low_adj:weak</i1>
+		<i1>qual_high_adj:strong</i1>
+		<i1>qual_high_adj:pure</i1>
+		<i1>qual_high_adj:shiny</i1>
+		<i1>property_adj:heavy</i1>
+		<i1>degrade_noun:pebbles</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Salt">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Materials/Salt</full_path>
+	  <body_text>Salt.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.0006125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>40</mSpriteID><!-- sprite for icon -->
+	
+	<mTagList>
+		<!-- description tags: -->
+		<i1>use_adj:preserving</i1>
+		<i1>use_noun:ingredient</i1>
+		<i1>qual_low_adj:dirty</i1>
+		<i1>qual_high_adj:pure</i1>
+		<i1>property_adj:crystal</i1>
+		<i1>degrade_noun:powder</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Spider Silk">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Materials/Spider Silk</full_path>
+	  <body_text>Spider Silk.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mResourceQualities>0</mResourceQualities>
+	<mDecaySpeed>0.01</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>44</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>fibrous</i1>
+		<i1>only from pops</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_noun:fiber</i1>
+		<i1>qual_low_adj:shriveled</i1>
+		<i1>qual_low_adj:dirty</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>property_adj:white</i1>
+		<i1>property_adj:sticky</i1>
+		<i1>degrade_noun:wisps</i1>
+	</mTagList>
+  </igResource>
+  
+  <igResource name="Wool">
+    <Encyclopedia_Entry>
+	  <full_path>Resources/Materials/Wool</full_path>
+	  <body_text>Wool.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mDecaySpeed>0.00125</mDecaySpeed>
+	<mSSID>Resource Icons</mSSID>
+	<mSpriteID>51</mSpriteID><!-- sprite for icon -->
+	<mTagList>
+		<i1>cannot be made in a building</i1>
+		<i1>fibrous</i1>
+		<i1>flammable</i1>
+		
+		<!-- description tags: -->
+		<i1>use_adj:raw</i1>
+		<i1>use_noun:fiber</i1>
+		<i1>qual_low_adj:rotten</i1>
+		<i1>qual_low_adj:moldy</i1>
+		<i1>qual_high_adj:clean</i1>
+		<i1>qual_high_adj:thick</i1>
+		<i1>property_adj:off-white</i1>
+		<i1>degrade_noun:wisps</i1>
+	</mTagList>
+  </igResource>
+  
+</core_data>

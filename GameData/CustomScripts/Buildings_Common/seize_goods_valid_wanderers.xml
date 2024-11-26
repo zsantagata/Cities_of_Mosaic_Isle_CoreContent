@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script seize_goods_valid_wanderers</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which checks if goods can be seized from any wanderer pops within -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has one input: IFBuilding inBuilding.  It has one output: bool outCanGoodsBeSeized. -->
+	<!-- this script is called by Delegation Hall and Inn custom button validAndName scripts (through other custom scripts) -->
+	<i1><a>seize_goods_valid_wanderers</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("seize_goods_valid_wanderers custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  //sanity check: the input building should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("seize_goods_valid_wanderers custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  
+	  bool outCanGoodsBeSeized = false;
+	  
+	  //if any housed pop is wanderers, has an event associated with it, and that event has unmarked resources associated with it (meaning the associated label is just ""), then goods can be seized:
+	  if(inBuilding.isHousing())
+	  {
+		foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+		{
+			if(pop.getCommunity().isWanderers())
+			{
+				IFConnectedVariable popToEventList = variableHandler.getConnectedVariable("eventsassociatedwith_pop" + pop.getUID());
+				if(popToEventList != null)
+				{
+					//fetch the event status UID and event report UID:
+					foreach(IFConnectedVariable lower in popToEventList.getLowers())
+					{
+						Int64 eventReportUID = lower.getVariableAsInt();
+						
+						//the name is of the form: "event" + event status uid + "_assocationToPop_pop" + pop uid
+						string name = lower.getInternalName();
+						name = name.Replace("event", "");
+						name = name[..^(name.IndexOf("_assocationtopop_pop"))]; //variable names are stored lower case
+						name = name.Replace("_assocationtopop_pop", "");
+						Int64 eventStatusUID = 0;
+						if(Int64.TryParse(name, out eventStatusUID))
+						{
+							IFEventStatus evtStatus = (IFEventStatus)getAPI().getSO("eventstatuses", eventStatusUID);
+							if(evtStatus != null)
+							{
+								//check if there are resources associated with the event:
+								if(customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { evtStatus, eventReportUID, false, null, "", 0L, false }, out List&lt;object&gt; returnVals,
+									false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+								{
+									Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
+									foreach(var kvpair in resources)
+									{
+										if(kvpair.Value.Item1 &gt; 0.0d)
+										{
+											outCanGoodsBeSeized = true;
+											break;
+										}
+									}
+									if(outCanGoodsBeSeized)
+									{
+										break;
+									}
+								}
+								else
+								{
+									addDebugMessage(inScriptInstance, "unable to fetch resources associated with event moid=" + eventStatusUID + " report uid=" + eventReportUID);
+								}
+							}
+							else
+							{
+								addDebugMessage(inScriptInstance, "unable to parse event status UID from named variable " + lower.getInternalName());
+							}
+						}
+						else
+						{
+							addDebugMessage(inScriptInstance, "unable to parse event status UID from named variable " + lower.getInternalName());
+						}
+					}
+				}
+				
+				if(outCanGoodsBeSeized)
+				{
+					break;
+				}
+			}
+		}
+	  }
+	  
+	  List&lt;object&gt; toReturn = new List&lt;object&gt;() { outCanGoodsBeSeized };
+	  return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

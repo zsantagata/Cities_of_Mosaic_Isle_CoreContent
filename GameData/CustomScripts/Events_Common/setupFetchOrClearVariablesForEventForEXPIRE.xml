@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script setupFetchOrClearVariablesForEventForEXPIRE</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which sets up or clears variables related to an event's connected EXPIRE event, using the variableHandler -->
+  <!-- EXPIRE events commonly deal with pops getting impatient, so those common situations are handled here.  However, if there are other things that need to be associated with the EXPIRE event, storing/clearing must be done outside this script -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFEventStatus inEventStatus, //this should be the event status of the non-EXPIRE event
+	Int64 inEventReportUID, //this can only be negative if inSetup and inClear are false.  Should be the event report uid of the non-EXPIRE event.
+	bool inSetup, //if false, this is fetch or clear
+	bool inClear, //if false, this is fetch
+	List<IFPop> inAssociatedPopsToStore, //this can be null if there are no associated pops with the EXPIRE event, and is ignored if inSetup is false
+	-->
+	
+	<!-- output: 
+	Dictionary<Int64, List<IFPop>> outPopsAssociated, //this will be empty unless fetching, and may be empty if there is no associated pops found.  Key = UID of the inEventReportUID that was stored
+	-->
+	<i1><a>setupFetchOrClearVariablesForEventForEXPIRE</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64), typeof(bool), typeof(bool), typeof(List&lt;IFPop&gt;)}
+	      }, out _))
+	    {
+			throw new ArgumentException("setupFetchOrClearVariablesForEventForEXPIRE custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+		bool inSetup = (bool)inArguments[2];
+		bool inClear = (bool)inArguments[3];
+		List&lt;IFPop&gt; inAssociatedPopsToStore = (List&lt;IFPop&gt;)inArguments[4];
+		
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("setupFetchOrClearVariablesForEventForEXPIRE custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if((inEventReportUID &lt; 0) &amp;&amp; (inSetup || inClear))
+		{
+			throw new ArgumentException("setupFetchOrClearVariablesForEventForEXPIRE custom script received invalid arguments: inEventReportUID cannot be negative unless we are fetching");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		Dictionary&lt;Int64, List&lt;IFPop&gt;&gt; outPopsAssociated = new Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;();
+		bool success = false;
+		
+        Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		Int64 evtMOID = (Int64)inEventStatus.getUID();
+			
+		IFEvent nonExpireEvt = (IFEvent)getAPI().getMOFromMOID("events", evtMOID);
+		if(nonExpireEvt != null)
+		{
+			string expireName = nonExpireEvt.getInternalName() + " EXPIRE";
+			addDebugMessage(inScriptInstance, "looking for event with internal name " + expireName);
+			IFEvent expireEvt = (IFEvent)getAPI().getMOFromInternalName("events", expireName);
+			if(expireEvt != null)
+			{
+				addDebugMessage(inScriptInstance, "expire event found");
+				if(inSetup)
+				{
+					IFEventStatus expireEvtStatus = (IFEventStatus)getAPI().getSO("eventstatuses", expireEvt.getMOID());
+					if(expireEvtStatus != null)
+					{
+						expireEvtStatus.setEnabled(true);
+						expireEvtStatus.setForceDate(currentDate + 1);
+						
+						string listName = "evt_" + expireEvt.getInternalName() + "_listOfEventReportUIDsActive";
+						IFConnectedVariable listOfUIDs = null;
+						if(!variableHandler.connectedVariableExists(listName))
+						{
+							variableHandler.addConnectedInt(listName, 0, out listOfUIDs, Int64.MaxValue, IFConnectedVariable.eCombinationType.cLIST);
+						}
+						else
+						{
+							listOfUIDs = variableHandler.getConnectedVariable(listName);
+						}
+
+						//add to the list:
+						variableHandler.addConnectedInt("evt_" + expireEvt.getInternalName() + "_UID" + inEventReportUID, (Int64)inEventReportUID, out IFConnectedVariable lowerAdded, Int64.MaxValue);
+						variableHandler.connectVariables(lowerAdded, listOfUIDs);
+						
+						//pops:
+						if(inAssociatedPopsToStore != null)
+						{
+							variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_associatedPopsCount" + inEventReportUID, inAssociatedPopsToStore.Count);
+							for(int index = 0; index &lt; inAssociatedPopsToStore.Count; index++)
+							{
+								variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_associatedPop" + inEventReportUID + "index" + index, (Int64)inAssociatedPopsToStore[index].getUID());
+							}
+						}
+					}
+				}
+				else if(inClear)
+				{
+					string lowerName = "evt_" + expireEvt.getInternalName() + "_UID" + inEventReportUID;
+					IFConnectedVariable cv = variableHandler.getConnectedVariable(lowerName);
+					if(cv != null)
+					{
+						variableHandler.clearConnectedVariable(cv);
+					}
+					
+					//pops:
+					Int64 countOfAssociatedPops = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_associatedPopsCount" + inEventReportUID, out success);
+					if(!success) countOfAssociatedPops = 0;
+					
+					variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_associatedPopsCount" + inEventReportUID, 0);
+					for(int index = 0; index &lt; countOfAssociatedPops; index++)
+					{
+						variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_associatedPop" + inEventReportUID + "index" + index, 0);
+					}
+				}
+				else //fetching
+				{
+					//first, get all event report uids associated with the expire event:
+					string listName = "evt_" + expireEvt.getInternalName() + "_listOfEventReportUIDsActive";
+					IFConnectedVariable listOfUIDs = null;
+					if(variableHandler.connectedVariableExists(listName))
+					{
+						listOfUIDs = variableHandler.getConnectedVariable(listName);
+						foreach(var lower in listOfUIDs.getLowers())
+						{
+							if(lower.getVariableKind() == APIconsts.eVariableKind.cInt)
+							{
+								Int64 eventReportUID = lower.getVariableAsInt();
+							
+								//pops:
+								Int64 countOfAssociatedPops = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_associatedPopsCount" + eventReportUID, out success);
+								if(!success) countOfAssociatedPops = 0;
+								
+								List&lt;IFPop&gt; popsToAdd = new List&lt;IFPop&gt;();
+								for(int index = 0; index &lt; countOfAssociatedPops; index++)
+								{
+									Int64 popUID = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_associatedPop" + eventReportUID + "index" + index, out success);
+									if(success)
+									{
+										IFPop popToAdd = (IFPop)getAPI().getSO("pops", popUID);
+										if(popToAdd != null)
+										{
+											popsToAdd.Add(popToAdd);
+										}
+									}
+								}
+								if(popsToAdd.Count != 0)
+								{
+									outPopsAssociated.Add(eventReportUID, popsToAdd);
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		return new List&lt;object&gt;() { outPopsAssociated };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

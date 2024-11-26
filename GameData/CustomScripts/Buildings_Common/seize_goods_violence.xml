@@ -1,0 +1,175 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script seize_goods_violence</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which initiates a battle for goods that the player tried to seize -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has inputs:
+	IFBuilding inBuilding,
+	List<IFDelegation> inDelegationsToSeizeFrom,
+	Dictionary<Int64, Tuple<List<IFPop>, Dictionary<IFResource, Tuple<double, double>>>> inWandererPopGroupsAndAssociatedResources
+	
+	It has no outputs. -->
+	<!-- this script is called by Delegation Hall and Inn custom button scripts (through other custom scripts) -->
+	<i1><a>seize_goods_violence</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding), typeof(List&lt;IFDelegation&gt;), typeof(Dictionary&lt;Int64, Tuple&lt;List&lt;IFPop&gt;, Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;&gt;)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("seize_goods_violence custom script received invalid arguments");
+		  return null;
+	  }
+	
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  List&lt;IFDelegation&gt; inDelegationsToSeizeFrom = (List&lt;IFDelegation&gt;)inArguments[1];
+	  Dictionary&lt;Int64, Tuple&lt;List&lt;IFPop&gt;, Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;&gt; inWandererPopGroupsAndAssociatedResources
+		= (Dictionary&lt;Int64, Tuple&lt;List&lt;IFPop&gt;, Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;&gt;)inArguments[2];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  bool success = false;
+	  
+	  //sanity check: the inputs should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("seize_goods_success custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  if(inDelegationsToSeizeFrom == null)
+	  {
+		  throw new ArgumentException("seize_goods_success custom script received invalid argument: the input inDelegationsToSeizeFrom should not be null");
+		  return null;
+	  }
+	  if(inWandererPopGroupsAndAssociatedResources == null)
+	  {
+		  throw new ArgumentException("seize_goods_success custom script received invalid argument: the input inWandererPopGroupsAndAssociatedResources should not be null");
+		  return null;
+	  }
+	  
+	  //first, collect the set of communities to make hostile:
+	  HashSet&lt;IFCommunity&gt; communitiesNowHostile = new HashSet&lt;IFCommunity&gt;();
+	  foreach(IFDelegation del in inDelegationsToSeizeFrom)
+	  {
+		communitiesNowHostile.Add(del.getSourceCommunity());
+	  }
+	  if(inWandererPopGroupsAndAssociatedResources.Count != 0)
+	  {
+		communitiesNowHostile.Add(getAPI().getWandererCommunity());
+	  }
+	  foreach(IFCommunity comm in communitiesNowHostile)
+	  {
+		addDebugMessage(inScriptInstance, "setting " + comm.getDebugName() + " hostile due to goods seizure");
+		getAPI().makePopsOnLocalMapHostile(comm);
+		//because the goal of the pops is to escape, it is okay not to set up a wargoal for them, but set it abandoned so they flee immediately (no goal and not abandoning means "cause chaos"):
+		variableHandler.storeIntVariable(0, "battleAI_abandonedBattleGoal_community" + comm.getUID(), 1L);
+	  }
+	  
+	  //then, assign (and store) the set of resources associated with each pop:
+	  Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+	  IFEvent hostilesDropGoodsEvent = (IFEvent)getAPI().getMOFromInternalName("events", "Hostiles Dropped Goods Event");
+	  addDebugMessage(inScriptInstance, "hostilesDropGoodsEvent " + (hostilesDropGoodsEvent != null ? "found" : "not found"));
+	  if(hostilesDropGoodsEvent != null)
+	  {
+		  IFEventStatus eventStatus = (IFEventStatus)getAPI().getSO("eventstatuses", hostilesDropGoodsEvent.getMOID());
+		  addDebugMessage(inScriptInstance, "hostilesDropGoodsEventStatus " + (eventStatus != null ? "found" : "not found"));
+		  if(eventStatus != null)
+		  {
+			  IFConnectedVariable popsToConsiderList = variableHandler.getConnectedVariable("Hostiles Dropped Goods Event_popsToConsiderList");
+			  if(popsToConsiderList == null)
+			  {
+				variableHandler.addConnectedInt("Hostiles Dropped Goods Event_popsToConsiderList", 0L, out popsToConsiderList, currentDate + 2, IFConnectedVariable.eCombinationType.cLIST);
+			  }
+			  
+			  foreach(IFDelegation del in inDelegationsToSeizeFrom)
+			  {
+				double totalGoods = 0.0d;
+				for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+				{
+					IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+					if(res != null)
+					{
+						totalGoods += del.getResourcePool().getResourceQuantity(res);
+					}
+				}
+				addDebugMessage(inScriptInstance, "total goods count of delegation " + del.getDebugName() + " = " + totalGoods + ".  1/" + del.getPopsInDelegation().Count + " of this will be assigned to each of " + del.getPopsInDelegation().Intersect(getAPI().getPopsWithinLocalCommunityMap()).Count() + " threatened pops");
+			  
+				foreach(IFPop pop in del.getPopsInDelegation().Intersect(getAPI().getPopsWithinLocalCommunityMap()))
+				{
+					if(!pop.isDead())
+					{
+						if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;() { del.getResourcePool(), false, false, null, totalGoods / del.getPopsInDelegation().Count, true, false, false, false, false, false, true },
+							out List&lt;object&gt; goodsOfThisPopReturn, false, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+						{
+							Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; goodsCarriedByThisPop = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)goodsOfThisPopReturn[2];
+							
+							variableHandler.addConnectedInt("Hostiles Dropped Goods Event_pop" + pop.getUID(), (Int64)pop.getUID(), out IFConnectedVariable popLower, currentDate + 2);
+							variableHandler.connectVariables(popLower, popsToConsiderList);
+							
+							customScripts.runCustomScript("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { eventStatus, 0L, true, goodsCarriedByThisPop, pop.getUID().ToString(), currentDate + 2, false },
+								out _);
+						}
+					}
+				}
+			  }
+		  
+			  //for wanderers, to keep things simple, only assign each pop the first time we see it (in case a single Wanderer pop is associated with multiple events with multiple resources, the player won't be able to retrieve those resources with violence; oh well)
+			  HashSet&lt;IFPop&gt; wandererPopsAssigned = new HashSet&lt;IFPop&gt;();
+			  foreach(var tuple in inWandererPopGroupsAndAssociatedResources.Values)
+			  {
+			    addDebugMessage(inScriptInstance, "assigning 1/" + tuple.Item1.Count + " of wanderer-associated resources to each of " + tuple.Item1.Intersect(getAPI().getPopsWithinLocalCommunityMap()).Count() + " threatened wanderer pops");
+				foreach(IFPop pop in tuple.Item1.Intersect(getAPI().getPopsWithinLocalCommunityMap()))
+				{
+					if(!pop.isDead() &amp;&amp; !wandererPopsAssigned.Contains(pop))
+					{
+						Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; goodsCarriedByThisPop = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+						foreach(var kvpair in tuple.Item2)
+						{
+							goodsCarriedByThisPop.Add(kvpair.Key, Tuple.Create(kvpair.Value.Item1 / tuple.Item1.Count, kvpair.Value.Item2));
+						}
+						
+						variableHandler.addConnectedInt("Hostiles Dropped Goods Event_pop" + pop.getUID(), (Int64)(pop.getUID()), out IFConnectedVariable popLower, currentDate + 2);
+						variableHandler.connectVariables(popLower, popsToConsiderList);
+						
+						customScripts.runCustomScript("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { eventStatus, 0L, true, goodsCarriedByThisPop, pop.getUID().ToString(), currentDate + 2, false },
+							out _);
+							
+						wandererPopsAssigned.Add(pop);
+					}
+				}
+			  }
+			  
+			  //then, force the "hostiles dropped goods" event for tomorrow:
+			  eventStatus.setForceDate(currentDate + 1); //setForceDate sets the event enabled if it isn't
+		  }
+	  }
+	  
+	  //lastly, store the building UID and evoke the "seize goods failure" event:
+	  IFEvent seizeGoodsFailureEvent = (IFEvent)getAPI().getMOFromInternalName("events", "Seize Goods Failure Event");
+	  addDebugMessage(inScriptInstance, "seizeGoodsFailureEvent " + (seizeGoodsFailureEvent != null ? "found" : "not found"));
+	  if(seizeGoodsFailureEvent != null)
+	  {
+	    variableHandler.storeIntVariable(currentDate, "Seize Goods Failure Event_buildingSeizedFromUID", (Int64)inBuilding.getUID());
+		seizeGoodsFailureEvent.evokeEventImmediately(true, true); //evoke-only events start disabled (and should remain disabled) and in this case we know not to gate the event (it doesn't have a real gating script anyway)
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

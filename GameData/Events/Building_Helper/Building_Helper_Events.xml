@@ -1,0 +1,915 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igEvent name="Seize Goods Success Event" display_name="Goods Seized From Visitors">
+    <mTagList>
+      <i>Foundational</i>
+      <i>Foreign</i>
+      <i>Wanderers</i>
+      <i>Informational</i>
+      <i>Evoked</i>
+    </mTagList>
+
+    <mTypeOfEvent>0</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>0</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultMTTH>1000000</mDefaultMTTH>
+
+    <mScriptWhichGatesHappening>
+return new List&lt;object&gt;() { true };
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //calculations:
+            Int64 buildingSeizedFromUID = variableHandler.getInt(&quot;Seize Goods Success Event_buildingSeizedFromUID&quot;, out bool success);
+            if (!success) buildingSeizedFromUID = Int64.MaxValue;
+            IFBuilding buildingSeizedFrom = (IFBuilding)getAPI().getSO(&quot;buildings&quot;, buildingSeizedFromUID);
+
+            //calculations complete.  Store necessary variables:
+
+            //internal logic complete.  Assemble the report text:
+            string reportText = &quot;&quot;;
+
+            string storedSeizedGoodsText = variableHandler.getString(&quot;Seize Goods Success Event_storedSeizedGoodsText&quot;, out success);
+            if (!success) storedSeizedGoodsText = &quot;&quot;;
+
+            reportText = customConsts.getStringConst(&quot;Seize Goods Success Event report_text before_replace_text&quot;, out success);
+            if (!success) reportText = &quot;On your order, all foreign goods stored in [0] have been seized.\n\nThe following goods have been added to our stockpiles:\n[1]&quot;;
+
+            string nullBuildingText = customConsts.getStringConst(&quot;Seize Goods Success Event building_null before_replace_text&quot;, out success);
+            if (!success) nullBuildingText = &quot;a building&quot;;
+
+            reportText = reportText.Replace(&quot;[0]&quot;, buildingSeizedFrom != null ? buildingSeizedFrom.getDisplayName() : nullBuildingText);
+            reportText = reportText.Replace(&quot;[1]&quot;, storedSeizedGoodsText);
+
+            inEventReport.setReportTextOverride(reportText);
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+On your order, all foreign goods stored in a building have been seized.
+
+The goods have been added to our stockpiles.
+    </mDefaultMenuText>
+    <mInvisible>0</mInvisible>
+    <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+      <i>
+        <name>We will use these resources wisely.</name>
+        <appears_script>
+return new List&lt;object&gt;() { true };
+        </appears_script>
+        <selection_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //calculations:
+            //fetch the communities that were seized from:
+            bool wanderersTakenFrom = false;
+            List&lt;IFCommunity&gt; communitiesSeizedFrom = new List&lt;IFCommunity&gt;();
+            IFConnectedVariable listOfCommunities = variableHandler.getConnectedVariable(&quot;Seize Goods Success Event_listOfCommunities&quot;);
+            if(listOfCommunities != null)
+            {
+                List&lt;IFConnectedVariable&gt; toClear = new List&lt;IFConnectedVariable&gt;();
+                foreach(IFConnectedVariable lower in listOfCommunities.getLowers())
+                {
+                    Int64 communityUID = lower.getVariableAsInt();
+                    IFCommunity community = (IFCommunity)getAPI().getSO(&quot;communities&quot;, communityUID);
+                    if (community != null)
+                    {
+                        if(community.isWanderers())
+                        {
+                            wanderersTakenFrom = true;
+                        }
+                        else if(community.isNormalCommunity() &amp;&amp; (community != getAPI().getLocalCommunity()))
+                        {
+                            communitiesSeizedFrom.Add(community);
+                        }
+                    }
+                    toClear.Add(lower);
+                }
+                variableHandler.clearConnectedVariable(listOfCommunities);
+                foreach(IFConnectedVariable lower in toClear)
+                {
+                    variableHandler.clearConnectedVariable(lower);
+                }
+            }
+
+            //calculations complete.  Store necessary variables:
+
+            //internal logic complete.  Assemble the report text:
+            string reportText = &quot;&quot;;
+
+            reportText = customConsts.getStringConst(&quot;Seize Goods Success Event resolution_text before_replace_text&quot;, out bool success);
+            if (!success) reportText = &quot;[0]\n\n[1]&quot;;
+
+            string communitiesOffendedText = customConsts.getStringConst(&quot;Seize Goods Success Event communities_offended before_replace_text&quot;, out success);
+            if (!success) communitiesOffendedText = &quot;The following communities have taken offence to the seizure of their delegations&apos; goods:\n[0]\nFurthermore, we should expect other communities to learn of this and possibly send fewer delegations to our community.\n\n&quot;;
+
+            string communitiesOffendedList = &quot;&quot;;
+            foreach(IFCommunity community in communitiesSeizedFrom)
+            {
+                communitiesOffendedList += community.getDisplayName() + &quot;, &quot;;
+            }
+            if(communitiesOffendedList != &quot;&quot;)
+            {
+                communitiesOffendedList = communitiesOffendedList[..^2];
+            }
+            communitiesOffendedText = communitiesOffendedText.Replace(&quot;[0]&quot;, communitiesOffendedList);
+
+            string wanderersOffendedText = customConsts.getStringConst(&quot;Seize Goods Success Event wanderers_offended before_replace_text&quot;, out success);
+            if (!success) wanderersOffendedText = &quot;We should expect that Wanderers may hear of this seizure and avoid our community in the future.&quot;;
+
+            reportText = reportText.Replace(&quot;[0]&quot;, communitiesSeizedFrom.Count != 0 ? communitiesOffendedText : &quot;&quot;);
+            reportText = reportText.Replace(&quot;[1]&quot;, wanderersTakenFrom ? wanderersOffendedText : &quot;&quot;);
+
+            inEventReport.setResolutionTextOverride(reportText);
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+Those who share the communities of these wanderers will likely take offence.
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  </igEvent>
+
+  <igEvent name="Seize Goods Failure Event" display_name="Failure to Seize Goods From Visitors">
+    <mTagList>
+      <i>Foundational</i>
+      <i>Foreign</i>
+      <i>Wanderers</i>
+      <i>Informational</i>
+      <i>Evoked</i>
+    </mTagList>
+
+    <mTypeOfEvent>0</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>0</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultMTTH>1000000</mDefaultMTTH>
+
+    <mScriptWhichGatesHappening>
+return new List&lt;object&gt;() { true };
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //calculations:
+            Int64 buildingSeizedFromUID = variableHandler.getInt(&quot;Seize Goods Failure Event_buildingSeizedFromUID&quot;, out bool success);
+            if (!success) buildingSeizedFromUID = Int64.MaxValue;
+            IFBuilding buildingSeizedFrom = (IFBuilding)getAPI().getSO(&quot;buildings&quot;, buildingSeizedFromUID);
+
+            //calculations complete.  Store necessary variables:
+
+            //internal logic complete.  Assemble the report text:
+            string reportText = &quot;&quot;;
+
+            reportText = customConsts.getStringConst(&quot;Seize Goods Failure Event report_text before_replace_text&quot;, out success);
+            if (!success) reportText = &quot;The foreign goods stored in [0] were to be seized, but the inhabitants of the building have chosen to resist!  They, and any of their fellow community members visiting us, are now hostile, and will attempt to fight their way out!&quot;;
+
+            string nullBuildingText = customConsts.getStringConst(&quot;Seize Goods Failure Event building_null before_replace_text&quot;, out success);
+            if (!success) nullBuildingText = &quot;a building&quot;;
+
+            reportText = reportText.Replace(&quot;[0]&quot;, buildingSeizedFrom != null ? buildingSeizedFrom.getDisplayName() : nullBuildingText);
+
+            inEventReport.setReportTextOverride(reportText);
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+The foreign goods stored in a building were to be seized, but the inhabitants of the building have chosen to resist!  They, and any of their fellow community members visiting us, are now hostile, and will attempt to fight their way out while carrying their goods!
+    </mDefaultMenuText>
+    <mInvisible>0</mInvisible>
+    <mStopTimeAndForceEvaluate>1</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+      <i>
+        <name>To arms!</name>
+        <appears_script>
+return new List&lt;object&gt;() { true };
+        </appears_script>
+        <selection_script>
+return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+The fleeing pops will drop their goods if the are wounded or killed in combat.  If you wish to have these goods, City Leader, muster our soldiers quickly!
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  </igEvent>
+
+  <igEvent name="Hostiles Dropped Goods Event" display_name="">
+    <mTagList>
+      <i>Foundational</i>
+    </mTagList>
+
+    <mTypeOfEvent>0</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>0</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultMTTH>1000000</mDefaultMTTH>
+
+    <mScriptWhichGatesHappening>
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            List&lt;object&gt; toReturn = new List&lt;object&gt;();
+
+            bool anyPopsToRecoverGoodsFrom = false;
+            //check if the necessary CV exists, has lower variables, and some of those pops are now wounded or dead:
+            IFConnectedVariable popsToConsiderList = variableHandler.getConnectedVariable(&quot;Hostiles Dropped Goods Event_popsToConsiderList&quot;);
+            if(popsToConsiderList != null)
+            {
+                foreach(IFConnectedVariable lower in popsToConsiderList.getLowers())
+                {
+                    if (lower.getVariableKind() == APIconsts.eVariableKind.cInt)
+                    {
+                        Int64 popUID = lower.getVariableAsInt();
+                        IFPop pop = (IFPop)getAPI().getSO(&quot;pops&quot;, popUID);
+                        if(pop != null)
+                        {
+                            if(pop.isWounded() || pop.isDead())
+                            {
+                                anyPopsToRecoverGoodsFrom = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            toReturn.Add(anyPopsToRecoverGoodsFrom);
+            return toReturn;
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+            bool success = false;
+
+            //calculations:
+            //we need to assemble a list of pops which were wounded or dead, from those fetch the appropriate resources, and add those resources to the player community
+            //we also need to assemble a list of pops which were not wounded or killed, from those fetch the appropriate resources, and add those resources to the pop&apos;s delegation or community (or for Wanderers/Rebels/GenericEnemy/TheLady, do nothing)
+            //we also need to clear all the stored variables
+            //lastly, we need to disable this event
+            HashSet&lt;IFPop&gt; popsWoundedOrDead = new HashSet&lt;IFPop&gt;();
+            HashSet&lt;IFPop&gt; popsNotWoundedOrDead = new HashSet&lt;IFPop&gt;();
+            Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesToAddToPlayer = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+
+            IFConnectedVariable popsToConsiderList = variableHandler.getConnectedVariable(&quot;Hostiles Dropped Goods Event_popsToConsiderList&quot;);
+            List&lt;IFConnectedVariable&gt; lowersToClear = new List&lt;IFConnectedVariable&gt;();
+            if (popsToConsiderList != null)
+            {
+                foreach (IFConnectedVariable lower in popsToConsiderList.getLowers())
+                {
+                    if (lower.getVariableKind() == APIconsts.eVariableKind.cInt)
+                    {
+                        Int64 popUID = lower.getVariableAsInt();
+                        IFPop pop = (IFPop)getAPI().getSO(&quot;pops&quot;, popUID);
+                        if (pop != null)
+                        {
+                            if (pop.isWounded() || pop.isDead())
+                            {
+                                popsWoundedOrDead.Add(pop);
+                            }
+                            else
+                            {
+                                popsNotWoundedOrDead.Add(pop);
+                            }
+                        }
+                    }
+                    lowersToClear.Add(lower);
+                }
+            }
+            variableHandler.clearConnectedVariable(popsToConsiderList);
+            foreach(IFConnectedVariable lower in lowersToClear)
+            {
+                variableHandler.clearConnectedVariable(lower);
+            }
+
+            List&lt;object&gt; inputsForFetchResourcesScript = new List&lt;object&gt;() { inEventStatus, 0L, false, null, &quot;&quot;, 0L, false};
+            List&lt;object&gt; inputsForClearResourcesScript = new List&lt;object&gt;() { inEventStatus, 0L, &quot;&quot; };
+            foreach (IFPop pop in popsWoundedOrDead)
+            {
+                inputsForFetchResourcesScript[4] = pop.getUID().ToString();
+                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, inputsForFetchResourcesScript, out List&lt;object&gt; fetchedResources, false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+                {
+                    Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesHeldByPop = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchedResources[0];
+
+                    foreach (var kvpair in resourcesHeldByPop)
+                    {
+                        if (!resourcesToAddToPlayer.ContainsKey(kvpair.Key))
+                        {
+                            resourcesToAddToPlayer.Add(kvpair.Key, kvpair.Value);
+                        }
+                        else
+                        {
+                            resourcesToAddToPlayer[kvpair.Key] = Tuple.Create(resourcesToAddToPlayer[kvpair.Key].Item1 + kvpair.Value.Item1,
+                                (resourcesToAddToPlayer[kvpair.Key].Item1 * resourcesToAddToPlayer[kvpair.Key].Item2 + kvpair.Value.Item1 * kvpair.Value.Item2) / (resourcesToAddToPlayer[kvpair.Key].Item1 + kvpair.Value.Item1));
+                        }
+                    }
+                }
+
+                inputsForClearResourcesScript[2] = pop.getUID().ToString();
+                customScripts.runCustomScript(&quot;clearResourcesStoredVariablesForEvent&quot;, inputsForClearResourcesScript, out _);
+            }
+
+            IFCommunity localCommunity = getAPI().getLocalCommunity();
+            IFResourcePool localCommunityPool = localCommunity.getResourcePool();
+            foreach(var kvpair in resourcesToAddToPlayer)
+            {
+                localCommunityPool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+            }
+
+            foreach (IFPop pop in popsNotWoundedOrDead)
+            {
+                if (pop.getCommunity().isWanderers() || pop.getCommunity().isGenericEnemy() || pop.getCommunity().isRebels() || pop.getCommunity().isTheLady())
+                    continue;
+
+                inputsForFetchResourcesScript[4] = pop.getUID().ToString();
+                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, inputsForFetchResourcesScript, out List&lt;object&gt; fetchedResources, false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+                {
+                    Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesHeldByPop = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchedResources[0];
+
+                    if (pop.hasDelegation())
+                    {
+                        foreach (var kvpair in resourcesHeldByPop)
+                        {
+                            pop.getDelegation().getResourcePool().addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+                        }
+                    }
+                    else
+                    {
+                        foreach (var kvpair in resourcesHeldByPop)
+                        {
+                            pop.getCommunity().getResourcePool().addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+                        }
+                    }
+                }
+
+                inputsForClearResourcesScript[2] = pop.getUID().ToString();
+                customScripts.runCustomScript(&quot;clearResourcesStoredVariablesForEvent&quot;, inputsForClearResourcesScript, out _);
+            }
+
+            inEventStatus.setEnabled(false);
+
+            //calculations complete.  Store necessary variables:
+
+            //internal logic complete.  Assemble the report text:
+            string reportText = customConsts.getStringConst(&quot;Hostiles Dropped Goods Event report_text before_replace_text&quot;, out success);
+            if (!success)
+            {
+                reportText = &quot;After yesterday&apos;s combat, pops of our community gathered the following goods from fallen enemies:\n\n[one_listofresources|yes_qualities_list:0]&quot;;
+            }
+
+            if(customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { reportText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { resourcesToAddToPlayer } },
+                out List&lt;object&gt; returnText, false, typeof(string)))
+            {
+                reportText = (string)returnText[0];
+            }
+            inEventReport.setReportTextOverride(reportText);
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+After yesterday&apos;s combat, pops of our community gathered goods from fallen enemies.
+    </mDefaultMenuText>
+    <mInvisible>0</mInvisible>
+    <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+      <i>
+        <name>Dismiss report.</name>
+        <appears_script>
+return new List&lt;object&gt;() { true };
+        </appears_script>
+        <selection_script>
+return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+These resources have been added to our community&apos;s resource pool.
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  </igEvent>
+
+  <igEvent name="Requested Trade Proposal Event" display_name="">
+    <mTagList>
+      <i>Foundational</i>
+      <i>Foreign</i>
+      <i>Trade</i>
+      <i>Evoked</i>
+    </mTagList>
+
+    <mTypeOfEvent>0</mTypeOfEvent>
+    <mSimultaneousWithOccurrence>0</mSimultaneousWithOccurrence>
+    <mDefaultEnabled>0</mDefaultEnabled>
+    <mDelegationType>0</mDelegationType>
+    <mDefaultMTTH>1000000</mDefaultMTTH>
+
+    <mScriptWhichGatesHappening>
+
+            if (inArguments.Length &lt; 1)
+            {
+                return null;
+            }
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var variableHandler = getAPI().getVariableHandler();
+            var customScripts = getAPI().getCustomScripts();
+
+            List&lt;object&gt; toReturn = new List&lt;object&gt;();
+
+            bool storedVariablesExist = false;
+            //check if the necessary stored resources exist:
+            //the building in question could not have known what event report UID this event (if it occurs) would have.  It has stored the resources using its own UID.  Fetch that here:
+            Int64 buildingUID = variableHandler.getInt(&quot;Requested Trade Proposal Event_buildingUID&quot;, out bool buildingUIDExists);
+            if(buildingUIDExists)
+            {
+                Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesOffered = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+                Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID, false, null, &quot;requested&quot;, 0L, false }, out List&lt;object&gt; requestedResourceReturnVal,
+                        false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+                {
+                    resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)requestedResourceReturnVal[0];
+                }
+                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID, false, null, &quot;offered&quot;, 0L, false }, out List&lt;object&gt; offeredResourceReturnVal,
+                        false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+                {
+                    resourcesOffered = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)offeredResourceReturnVal[0];
+                }
+
+                if((resourcesRequested.Count != 0) &amp;&amp; (resourcesOffered.Count != 0))
+                {
+                    storedVariablesExist = true;
+                }
+            }
+
+            toReturn.Add(storedVariablesExist);
+            return toReturn;
+    </mScriptWhichGatesHappening>
+
+    <mScriptUponHappening>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+            bool success = false;
+
+            //calculations:
+
+            //calculations complete.  Store necessary variables:
+            //right now the resources are only accessible by having the building UID.  If another building proposes a trade, the building UID will be overwritten.  Store it now:
+            Int64 buildingUID = variableHandler.getInt(&quot;Requested Trade Proposal Event_buildingUID&quot;, out bool buildingUIDExists);
+            variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate() + 1, &quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_buildingUID&quot;, buildingUID);
+            //right now the delegation is only accessible by having the building UID.  If another building proposes a trade, the delegation UID will be overwritten.  Store it now:
+            Int64 delegationUID = variableHandler.getInt(&quot;Requested Trade Proposal Event_delegationUID&quot;, out bool delegationUIDExists);
+            variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate() + 1, &quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, delegationUID);
+
+            //internal logic complete.  Assemble the report text:
+            string reportText = customConsts.getStringConst(&quot;Requested Trade Proposal Event report_text before_replace_text&quot;, out success);
+            if (!success)
+            {
+                reportText = &quot;The pops of [one_delegation:[0]], housing in [one_building:[1]], have heard the City Leader&apos;s request for a trade proposal and offer the following exchange:&quot;
+                    + &quot;\n\nPops from [one_community:[2]] will offer these goods:&quot;
+                    + &quot;\n[one_listofresources|yes_qualities_list:0]&quot;
+                    + &quot;\n\nWe will give the visiting pops these resources from our stockpiles:&quot;
+                    + &quot;\n[one_listofresources|yes_qualities_list:1]&quot;;
+            }
+
+            reportText = reportText.Replace(&quot;[0]&quot;, delegationUID.ToString());
+            reportText = reportText.Replace(&quot;[1]&quot;, buildingUID.ToString());
+
+            IFDelegation del = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delegationUID);
+            if(del != null)
+            {
+                reportText = reportText.Replace(&quot;[2]&quot;, del.getSourceCommunity().getUID().ToString());
+            }
+
+            Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesOffered = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+            Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID, false, null, &quot;requested&quot;, 0L, false }, out List&lt;object&gt; requestedResourceReturnVal,
+                    false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+            {
+                resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)requestedResourceReturnVal[0];
+            }
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID, false, null, &quot;offered&quot;, 0L, false }, out List&lt;object&gt; offeredResourceReturnVal,
+                    false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+            {
+                resourcesOffered = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)offeredResourceReturnVal[0];
+            }
+
+            if (customScripts.runCustomScriptCheckTypes(&quot;replaceDescriptionMarkups&quot;, new List&lt;object&gt;() { reportText, new List&lt;Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;() { resourcesOffered, resourcesRequested } },
+                out List&lt;object&gt; returnText, false, typeof(string)))
+            {
+                reportText = (string)returnText[0];
+            }
+            inEventReport.setReportTextOverride(reportText);
+            return null;
+    </mScriptUponHappening>
+
+    <mDefaultMenuText>
+The pops of a delegation, housing in one of our buildings, have heard the City Leader&apos;s request for a trade proposal and offer an exchange.
+    </mDefaultMenuText>
+    <mInvisible>0</mInvisible>
+    <mStopTimeAndForceEvaluate>0</mStopTimeAndForceEvaluate>
+    <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+
+    <mChoiceCombo>
+      <i>
+        <name>Accept Trade</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+
+            //calculate if the option can be chosen:
+            //three things must be true: the delegation must be willing and able to trade, the delegation must have the offered goods, and the player must have the requested goods
+            Int64 buildingUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_buildingUID&quot;, out bool buildingUIDExists); //this must be used in fetching resources instead of event report UID
+            Int64 delegationUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool delegationUIDExists);
+            IFDelegation del = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delegationUID);
+            if (del != null)
+            {
+                if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event delegation_will_trade&quot;, new List&lt;object&gt;() { del }, out List&lt;object&gt; outputs1, false, typeof(bool)))
+                {
+                    if((bool)outputs1[0])
+                    {
+                        if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event player_has_resources&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID }, out List&lt;object&gt; outputs2, false, typeof(bool)))
+                        {
+                            if ((bool)outputs2[0])
+                            {
+                                if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event delegation_has_resources&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID, del }, out List&lt;object&gt; outputs3, false, typeof(bool)))
+                                {
+                                    outCanChooseOption = ((bool)outputs3[0]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            //calculations:
+            //make the trade:
+            Int64 buildingUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_buildingUID&quot;, out bool buildingUIDExists); //this must be used in fetching resources instead of event report UID
+            Int64 delegationUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool delegationUIDExists);
+            IFDelegation del = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delegationUID);
+            if(del != null)
+            {
+                Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesOffered = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+                Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID, false, null, &quot;requested&quot;, 0L, false }, out List&lt;object&gt; requestedResourceReturnVal,
+                        false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+                {
+                    resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)requestedResourceReturnVal[0];
+                }
+                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID, false, null, &quot;offered&quot;, 0L, false }, out List&lt;object&gt; offeredResourceReturnVal,
+                        false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+                {
+                    resourcesOffered = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)offeredResourceReturnVal[0];
+                }
+
+                customScripts.runCustomScript(&quot;executeTradeBetweenTwoResourcePools&quot;, new List&lt;object&gt;() { del.getResourcePool(), getAPI().getLocalCommunity().getResourcePool(), resourcesOffered, resourcesRequested }, out _);
+            }
+
+            //calculations complete.  Store necessary variables:
+
+            //internal logic complete.  Assemble the report text:
+            //no special report text for this choice
+            return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Accept the offer and exchange goods.
+        </prechoice>
+        <resolution>
+We have accepted the trade delegation&apos;s proposal to exchange goods.  We may request another trade proposal tomorrow.
+        </resolution>
+      </i>
+      <i>
+        <name>Reject Trade</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+
+            //calculate if the option can be chosen:
+            //three things must be true: the delegation must be willing and able to trade, the delegation must have the offered goods, and the player must have the requested goods
+            Int64 buildingUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_buildingUID&quot;, out bool buildingUIDExists); //this must be used in fetching resources instead of event report UID
+            Int64 delegationUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool delegationUIDExists);
+            IFDelegation del = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delegationUID);
+            if (del != null)
+            {
+                if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event delegation_will_trade&quot;, new List&lt;object&gt;() { del }, out List&lt;object&gt; outputs1, false, typeof(bool)))
+                {
+                    if((bool)outputs1[0])
+                    {
+                        if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event player_has_resources&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID }, out List&lt;object&gt; outputs2, false, typeof(bool)))
+                        {
+                            if ((bool)outputs2[0])
+                            {
+                                if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event delegation_has_resources&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID, del }, out List&lt;object&gt; outputs3, false, typeof(bool)))
+                                {
+                                    outCanChooseOption = ((bool)outputs3[0]);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Reject the proposal.
+        </prechoice>
+        <resolution>
+We have rejected the trade delegation&apos;s proposal.  We may request another trade proposal tomorrow.
+        </resolution>
+      </i>
+      <i>
+        <name>This trade is no longer offered.</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = true;
+
+            //calculate if the option can be chosen:
+            //three things must be true: the delegation must be willing and able to trade, the delegation must have the offered goods, and the player must have the requested goods
+            Int64 buildingUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_buildingUID&quot;, out bool buildingUIDExists); //this must be used in fetching resources instead of event report UID
+            Int64 delegationUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool delegationUIDExists);
+            IFDelegation del = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delegationUID);
+            if (del != null)
+            {
+                if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event delegation_will_trade&quot;, new List&lt;object&gt;() { del }, out List&lt;object&gt; outputs1, false, typeof(bool)))
+                {
+                    outCanChooseOption = !(bool)outputs1[0];
+                }
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+This delegation may propose another trade if they are still housed in the community.
+        </resolution>
+      </i>
+      <i>
+        <name>We no longer have the requested resources.</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+
+            //calculate if the option can be chosen:
+            //three things must be true: the delegation must be willing and able to trade, the delegation must have the offered goods, and the player must have the requested goods
+            Int64 buildingUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_buildingUID&quot;, out bool buildingUIDExists); //this must be used in fetching resources instead of event report UID
+            Int64 delegationUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool delegationUIDExists);
+            IFDelegation del = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delegationUID);
+            if (del != null)
+            {
+                if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event delegation_will_trade&quot;, new List&lt;object&gt;() { del }, out List&lt;object&gt; outputs1, false, typeof(bool)))
+                {
+                    if((bool)outputs1[0])
+                    {
+                        if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event player_has_resources&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID }, out List&lt;object&gt; outputs2, false, typeof(bool)))
+                        {
+                            outCanChooseOption = !(bool)outputs2[0];
+                        }
+                    }
+                }
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+We are unable to accept the trade delegation&apos;s proposal.  We may request another trade proposal tomorrow.
+        </resolution>
+      </i>
+      <i>
+        <name>The delegation no longer has the proposed resources.</name>
+        <appears_script>
+
+            //input count check:
+            if (inArguments.Length &lt; 2)
+            {
+                return null;
+            }
+
+            var consts = getAPI().getConsts();
+            var customConsts = getAPI().getCustomConsts();
+            var customScripts = getAPI().getCustomScripts();
+            var variableHandler = getAPI().getVariableHandler();
+
+            IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+            IFEventReport inEventReport = (IFEventReport)inArguments[1];
+
+            bool outCanChooseOption = false;
+
+            //calculate if the option can be chosen:
+            //three things must be true: the delegation must be willing and able to trade, the delegation must have the offered goods, and the player must have the requested goods
+            Int64 buildingUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_buildingUID&quot;, out bool buildingUIDExists); //this must be used in fetching resources instead of event report UID
+            Int64 delegationUID = variableHandler.getInt(&quot;Requested Trade Proposal Event&quot; + inEventReport.getUID() + &quot;_delegationUID&quot;, out bool delegationUIDExists);
+            IFDelegation del = (IFDelegation)getAPI().getSO(&quot;delegations&quot;, delegationUID);
+            if (del != null)
+            {
+                if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event delegation_will_trade&quot;, new List&lt;object&gt;() { del }, out List&lt;object&gt; outputs1, false, typeof(bool)))
+                {
+                    if((bool)outputs1[0])
+                    {
+                        if (customScripts.runCustomScriptCheckTypes(&quot;Requested Trade Proposal Event delegation_has_resources&quot;, new List&lt;object&gt;() { inEventStatus, buildingUID, del }, out List&lt;object&gt; outputs3, false, typeof(bool)))
+                        {
+                            outCanChooseOption = !(bool)outputs3[0];
+                        }
+                    }
+                }
+            }
+
+            return new List&lt;object&gt;() { outCanChooseOption };
+        </appears_script>
+        <selection_script>
+return null;
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+Dismiss report.
+        </prechoice>
+        <resolution>
+The trade delegation is unable to honor its proposal.  We may request another trade proposal tomorrow.
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  </igEvent>
+
+</core_data>

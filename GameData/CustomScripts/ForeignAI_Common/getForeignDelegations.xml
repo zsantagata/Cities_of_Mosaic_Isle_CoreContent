@@ -1,0 +1,184 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script getforeigndelegations</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which returns foreign delegations, given other input conditions.  This is used by events and foreign AI -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	bool inUsePlayerFocused, //if this is false, inPlayerFocused will be ignored and inTargetCommunity will be used instead.  If true, the opposite.
+	bool inPlayerFocused, //if this is true, only include delegations whose target is the player community.  If this is false, the opposite.
+	IFCommunity inTargetCommunity, //if this is non-null, only include delegations whose target is this.
+	
+	IFCommunity inSourceCommunity, //if this is non-null, only include delegations whose source is this.
+	IFDelegation.eDelegationType inDelegationType //if this is different than cNone, only include delegations whose type is this
+	IFDelegation.eDelegationState inDelegationState //if this is not a player-delegation-only value (such as cHasReturnedHome), only include delegations whose type is this
+	
+	IFTerrainBiome inBiomeOfCurrentLocation //if this is non-null, only include delegations whose current biome is this
+	bool inUseBeforeLaunchDate, //if this is true, inBeforeLaunchDate and inLaunchDate will be used
+	bool inBeforeLaunchDate, //if this is true, only delegations with launch date before or on inLaunchDate will be included.  If false, delegations after or on inLaunchDate
+	Int64 inLaunchDate,
+	
+	bool inUseBeforeExpectedArrivalDate, //if this is true, inBeforeExpectedArrivalDate and inExpectedArrivalDate will be used
+	bool inBeforeExpectedArrivalDate, //if this is true, only delegations with expected arrival date before or on inExpectedArrivalDate will be included.  If false, delegations after or on inExpectedArrivalDate
+	double inExpectedArrivalDate,
+	
+	bool inUseBeforeExpectedReturnDate, //if this is true, inBeforeExpectedReturnDate and inExpectedReturnDate will be used
+	bool inBeforeExpectedReturnDate, //if this is true, only delegations with expected return date before or on inExpectedReturnDate will be included.  If false, delegations after or on inExpectedReturnDate
+	double inExpectedReturnDate
+	
+	bool inAllowTotallyLost //if this is false, delegations that have no alive loyal pops will be filtered out
+	-->
+	
+	<!-- output:
+	List<IFDelegation> outDelegations //this may be empty but will not be null.  This is all foreign-sourced delegations which match the input conditions
+	-->
+	<i1><a>getForeignDelegations</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(bool), typeof(bool), typeof(IFCommunity),
+		    typeof(IFCommunity), typeof(IFDelegation.eDelegationType), typeof(IFDelegation.eDelegationState),
+		    typeof(IFTerrainBiome), typeof(bool), typeof(bool), typeof(Int64),
+		    typeof(bool), typeof(bool), typeof(double),
+		    typeof(bool), typeof(bool), typeof(double), typeof(bool)
+		    }
+	      }, out _))
+	    {
+		  throw new ArgumentException("getForeignDelegations custom script received invalid arguments");
+		  return null;
+	    }
+	
+		bool inUsePlayerFocused = (bool)inArguments[0];
+		bool inPlayerFocused = (bool)inArguments[1];
+		IFCommunity inTargetCommunity = (IFCommunity)inArguments[2];
+		
+		IFCommunity inSourceCommunity = (IFCommunity)inArguments[3];
+		IFDelegation.eDelegationType inDelegationType = (IFDelegation.eDelegationType)inArguments[4];
+		IFDelegation.eDelegationState inDelegationState = (IFDelegation.eDelegationState)inArguments[5];
+		
+		IFTerrainBiome inBiomeOfCurrentLocation = (IFTerrainBiome)inArguments[6];
+		bool inUseBeforeLaunchDate = (bool)inArguments[7];
+		bool inBeforeLaunchDate = (bool)inArguments[8];
+		Int64 inLaunchDate = (Int64)inArguments[9];
+		
+		bool inUseBeforeExpectedArrivalDate = (bool)inArguments[10];
+		bool inBeforeExpectedArrivalDate = (bool)inArguments[11];
+		double inExpectedArrivalDate = (double)inArguments[12];
+		
+		bool inUseBeforeExpectedReturnDate = (bool)inArguments[13];
+		bool inBeforeExpectedReturnDate = (bool)inArguments[14];
+		double inExpectedReturnDate = (double)inArguments[15];
+		
+		bool inAllowTotallyLost = (bool)inArguments[16];
+		
+		bool useSourceCommunity = (inSourceCommunity != null);
+		bool useDelegationType = (inDelegationType != IFDelegation.eDelegationType.cNone);
+		bool useDelegationState = (inDelegationState == IFDelegation.eDelegationState.cTravelingOnMap) || 
+									(inDelegationState == IFDelegation.eDelegationState.cForeignSourcedDelegationHangingOutOnPlayerMap) ||
+									(inDelegationState == IFDelegation.eDelegationState.cForeignSourcedDelegationTravelingHome);						
+		bool useBiome = (inBiomeOfCurrentLocation != null);
+		
+		List&lt;IFDelegation&gt; outDelegations = new List&lt;IFDelegation&gt;();
+		
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		string uidsString = "";
+		foreach(UInt64 moid in getAPI().getUIDsOfAllSO("delegations"))
+		{
+			IFDelegation delToCheck = (IFDelegation)getAPI().getSO("delegations", moid);
+			if(inUsePlayerFocused)
+			{
+				if(inPlayerFocused != (delToCheck.getTargetCommunity() == localCommunity))
+					continue;
+			}
+			else
+			{
+				if(inTargetCommunity != null)
+				{
+					if(inTargetCommunity != delToCheck.getTargetCommunity())
+						continue;
+				}
+			}
+			if(useSourceCommunity)
+			{
+				if(inSourceCommunity != delToCheck.getSourceCommunity())
+					continue;
+			}
+			if(useDelegationType)
+			{
+				if(inDelegationType != delToCheck.getDelegationType())
+					continue;
+			}
+			if(useDelegationState)
+			{
+				if(inDelegationState != delToCheck.getState())
+					continue;
+			}
+			if(useBiome)
+			{
+				if(inBiomeOfCurrentLocation != delToCheck.getBiomeOfCurrentLocation())
+					continue;
+			}
+			if(inUseBeforeLaunchDate)
+			{
+				if(inBeforeLaunchDate ? (inLaunchDate &gt;= delToCheck.getLaunchDate()) : (inLaunchDate &lt;= delToCheck.getLaunchDate()))
+					continue;
+			}
+			if(inUseBeforeExpectedArrivalDate)
+			{
+				if(inBeforeExpectedArrivalDate ? (inExpectedArrivalDate &gt; delToCheck.getExpectedArrivalDate()) : (inExpectedArrivalDate &lt; delToCheck.getExpectedArrivalDate()))
+					continue;
+			}
+			if(inUseBeforeExpectedReturnDate)
+			{
+				if(inBeforeExpectedReturnDate ? (inExpectedReturnDate &gt; delToCheck.getExpectedReturnDate()) : (inExpectedReturnDate &lt; delToCheck.getExpectedReturnDate()))
+					continue;
+			}
+			if(!inAllowTotallyLost &amp;&amp; delToCheck.isTotalLoss())
+				continue;
+			
+			outDelegations.Add(delToCheck);
+			uidsString += delToCheck.getDebugName() + " ";
+		}
+		
+		string conditionsString = "";
+		conditionsString += "inUsePlayerFocused = " + inUsePlayerFocused + " ";
+		conditionsString += "inPlayerFocused = " + inPlayerFocused + " ";
+		conditionsString += "inTargetCommunity = " + (inTargetCommunity == null ? "null" : inTargetCommunity.getDebugName()) + " ";
+		conditionsString += "inSourceCommunity = " + (inSourceCommunity == null ? "null" : inSourceCommunity.getDebugName()) + " ";
+		conditionsString += "inDelegationType = " + inDelegationType.ToString() + " ";
+		conditionsString += "inDelegationState = " + inDelegationState.ToString() + " ";
+		conditionsString += "inBiomeOfCurrentLocation = " + (inBiomeOfCurrentLocation == null ? "null" : inBiomeOfCurrentLocation.getDisplayName()) + " ";
+		conditionsString += "inUseBeforeLaunchDate = " + inUseBeforeLaunchDate + " ";
+		conditionsString += "inBeforeLaunchDate = " + inBeforeLaunchDate + " ";
+		conditionsString += "inLaunchDate = " + inLaunchDate + " ";
+		conditionsString += "inUseBeforeExpectedArrivalDate = " + inUseBeforeExpectedArrivalDate + " ";
+		conditionsString += "inBeforeExpectedArrivalDate = " + inBeforeExpectedArrivalDate + " ";
+		conditionsString += "inExpectedArrivalDate = " + inExpectedArrivalDate + " ";
+		conditionsString += "inUseBeforeExpectedReturnDate = " + inUseBeforeExpectedReturnDate + " ";
+		conditionsString += "inBeforeExpectedReturnDate = " + inBeforeExpectedReturnDate + " ";
+		conditionsString += "inExpectedReturnDate = " + inExpectedReturnDate + " ";
+		conditionsString += "inAllowTotallyLost = " + inAllowTotallyLost;
+		
+		addDebugMessage(inScriptInstance, outDelegations.Count + " delegations found under desired conditions: " + conditionsString + ".  Delegations: " + uidsString);
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	    toReturn.Add(outDelegations);
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

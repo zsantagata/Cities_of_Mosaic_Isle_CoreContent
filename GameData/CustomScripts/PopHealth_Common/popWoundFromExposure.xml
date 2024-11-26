@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+		<i1><a>popWoundFromExposure hstasis threshold</a> <b>int</b> <c>0x7FFF</c></i1> <!-- pops can only get an exposure wound if their hstasis health is less than this -->
+		<i1><a>popWoundFromExposure hstasis rate</a> <b>double</b> <c>0.2</c></i1> <!-- this is the base chance that a pop will get an exposure wound at minimum hstasis health -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script popwoundfromexposure</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which checks if a pop should get a wound due to lack of hstasis need being met, and adds a wound to the pop if so -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	IFPop inPop
+	
+	There is no output -->
+	<i1><a>popWoundFromExposure</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(IFPop)   }
+	  }, out _))
+	{
+		throw new ArgumentException("popWoundFromExposure custom script received invalid arguments");
+		return null;
+	}
+	  
+	IFPop inPop = (IFPop)inArguments[0];
+	
+	var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	  
+	//TODO any race or other non-standard considerations
+	  
+	double threshold_health = customConsts.getIntConst("popWoundFromExposure hstasis threshold", out bool success);
+	if(!success) threshold_health = (double)0x7FFF;
+	double min_health = consts.getHealthMin();
+	double current_health = inPop.getHStasisHealth();
+	  
+    if(current_health == min_health)
+	{
+		addDebugMessage(inScriptInstance, "forcing pop " + inPop.getDebugName() + " wound from exposure because current hstasis health at minimum");
+		return null;
+    }
+
+    if(current_health &gt; threshold_health)
+	{
+		addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + " cannot get a wound from exposure because current hstasis health above threshold");
+		return null;
+    }
+
+    double rate = customConsts.getDoubleConst("popWoundFromExposure hstasis rate", out success);
+    if(!success) rate = 0.2d;
+    double prob = rate * (threshold_health - current_health) / (threshold_health - min_health);
+	double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("wound danger");
+	prob *= difficulty;
+    addDebugMessage(inScriptInstance, "prob of pop getting wounded from exposure = " + prob);
+
+    bool gets_wounded = getAPI().calcProb(prob);
+    addDebugMessage(inScriptInstance, "pop " + inPop.getDebugName() + (gets_wounded ? " gets wounded from exposure!" : " does not get wounded from exposure"));
+	if(gets_wounded) inPop.addWound(true);
+	
+    return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

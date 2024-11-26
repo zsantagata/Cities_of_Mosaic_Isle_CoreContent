@@ -1,0 +1,374 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			
+			<i1><a>seize_goods_action violence base prob</a> <b>double</b> <c>0.1</c></i1> <!-- -->
+			
+			<i1><a>seize_goods_action violence milstrength mult max</a> <b>double</b> <c>3.5</c></i1> <!-- as milstrength goes from min to 50%, a mult on violence probability goes from this to the below -->
+			<i1><a>seize_goods_action violence milstrength mult middle</a> <b>double</b> <c>0.75</c></i1>
+			<i1><a>seize_goods_action violence milstrength mult min</a> <b>double</b> <c>0.25</c></i1> <!-- as milstrength goes from 50% to max, a mult on violence probability goes from the above to this -->
+			
+			<!-- if there are multiple communities involved in the seizure, communities with less probability to fight will copy the actions of other communities -->
+			<!-- in-lore, this is smart for their benefit -->
+			<!-- gameplay-wise, the probability numbers here are balanced for "per seizure", not "per community being seized from" -->
+			<!-- note that wanderers will always have a special pop count mult, as they are not a community in a regular sense -->
+			
+			<!-- as the count of pops of a single community goes from 0 to infinity, a mult on violence probability goes from 0 to the asymptote value, passing through the vertex -->
+			<!-- note that this is non-wounded pops only, as wounded pops can't fight -->
+			<i1><a>seize_goods_action violence popcount vertex value</a> <b>double</b> <c>4.0</c></i1>
+			<i1><a>seize_goods_action violence popcount vertex location</a> <b>int</b> <c>30</c></i1>
+			<i1><a>seize_goods_action violence popcount asymptote value</a> <b>double</b> <c>10.0</c></i1>
+			<i1><a>seize_goods_action violence popcount wanderers fixed value</a> <b>double</b> <c>2.0</c></i1>
+			
+			<!-- as the resource value per pop (uses resource desire values of the pops' communities) -->
+			<!-- this includes all alive pops, not just non-wounded -->
+			<i1><a>seize_goods_action violence resourcedesireperpoponmap vertex value</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>seize_goods_action violence resourcedesireperpoponmap vertex location</a> <b>int</b> <c>50</c></i1>
+			<i1><a>seize_goods_action violence resourcedesireperpoponmap asymptote value</a> <b>double</b> <c>3.0</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script seize_goods_action</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which resolves the attempt to seize goods from pops stored within a building -->
+  <!-- pops will either become violent and try to fight their way out of the community, dropping their goods if wounded/killed, or accept the seizure and leave immediately -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- this script has one input: IFBuilding inBuilding.  It has no outputs. -->
+	<!-- this script is called by Delegation Hall and Inn custom button scripts -->
+	<i1><a>seize_goods_action</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("seize_goods_action custom script received invalid arguments");
+		  return null;
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  
+      var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  bool success = false;
+	  
+	  //sanity check: the input building should not be null
+	  if(inBuilding == null)
+	  {
+		  throw new ArgumentException("seize_goods_action custom script received invalid argument: the input inBuilding should not be null");
+		  return null;
+	  }
+	  
+	  //as with any building custom buttons, the action script is only called if the button valid script returns true.
+	  //therefore these checks should not be necessary, but I keep them here just in case this script should be called directly by an event's choice
+	  if(!inBuilding.isHousing())
+	  {
+	    addDebugMessage(inScriptInstance, "the provided building " + inBuilding.getDebugName() + " is not housing");
+		return null;
+	  }
+	  if(inBuilding.getHousingComponent().getHousedPops().Count == 0)
+	  {
+	    addDebugMessage(inScriptInstance, "the provided building " + inBuilding.getDebugName() + " has no housed pops");
+		return null;
+	  }
+	  Dictionary&lt;IFCommunity, List&lt;IFPop&gt;&gt; neutralPopsAffectedBySeizure = new Dictionary&lt;IFCommunity, List&lt;IFPop&gt;&gt;();
+	  IFCommunity localCommunity = getAPI().getLocalCommunity();
+	  foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+	  {
+		if(pop.isDead())
+			continue;
+	  
+		if(           (pop.getCommunity() != localCommunity)
+		   &amp;&amp; (!getAPI().isHostileCommunity(pop.getCommunity()))
+		   &amp;&amp; (pop.hasDelegation())
+		  )
+		{
+			if(!neutralPopsAffectedBySeizure.ContainsKey(pop.getCommunity()))
+			{
+				neutralPopsAffectedBySeizure.Add(pop.getCommunity(), new List&lt;IFPop&gt;());
+			}
+		}
+		else if(pop.getCommunity().isWanderers())
+		{
+			if(!neutralPopsAffectedBySeizure.ContainsKey(pop.getCommunity()))
+			{
+				neutralPopsAffectedBySeizure.Add(pop.getCommunity(), new List&lt;IFPop&gt;());
+			}
+		}
+	  }
+	  if(neutralPopsAffectedBySeizure.Count == 0)
+	  {
+	    addDebugMessage(inScriptInstance, "the provided building " + inBuilding.getDebugName() + " has no housed pops who will be impacted by the seizure of goods");
+		return null;
+	  }
+	  
+	  //there is a probability that the pops housed here, whose goods are being stolen, will resist with violence.  Determine this and then call one of two scripts: violence or not violence
+	  double milStrength = localCommunity.getMilStrength() / consts.getMilStrengthMax();
+	  
+	  //determine probability from local mil strength:
+	  double milStrengthMiddleMult = customConsts.getDoubleConst("seize_goods_action violence milstrength mult middle", out success);
+	  if(!success) milStrengthMiddleMult = 0.75d;
+	  double milStrengthMult = milStrengthMiddleMult;
+	  if(milStrength &lt; 0.5d)
+	  {
+		double milStrengthMaxMult = customConsts.getDoubleConst("seize_goods_action violence milstrength mult max", out success);
+		if(!success) milStrengthMaxMult = 3.5d;
+		
+		milStrengthMult = milStrengthMaxMult + (milStrengthMiddleMult - milStrengthMaxMult) * (2 * milStrength);
+	  }
+	  else if(milStrength &gt; 0.5d)
+	  {
+		double milStrengthMinMult = customConsts.getDoubleConst("seize_goods_action violence milstrength mult min", out success);
+		if(!success) milStrengthMinMult = 0.25d;
+		
+		milStrengthMult = milStrengthMinMult + (milStrengthMiddleMult - milStrengthMinMult) * (2 * (1.0d - milStrength));
+	  }
+	  
+	  //determine probability from count of pops:
+	  Dictionary&lt;IFCommunity, int&gt; countsOfUnwoundedPops = new Dictionary&lt;IFCommunity, int&gt;();
+	  
+	  //gather all pops:
+	  foreach(IFPop pop in getAPI().getPopsWithinLocalCommunityMap())
+	  {
+		if(pop.isDead())
+			continue;
+			
+		if(neutralPopsAffectedBySeizure.ContainsKey(pop.getCommunity()))
+		{
+			neutralPopsAffectedBySeizure[pop.getCommunity()].Add(pop);
+			
+			if(!countsOfUnwoundedPops.ContainsKey(pop.getCommunity()))
+			{
+				countsOfUnwoundedPops.Add(pop.getCommunity(), 0);
+			}
+			if(!pop.isWounded())
+			{
+				countsOfUnwoundedPops[pop.getCommunity()]++;
+			}
+		}
+	  }
+	  
+	  double popCountVertexVal = customConsts.getDoubleConst("seize_goods_action violence popcount vertex value", out success);
+	  if(!success) popCountVertexVal = 4.0d;
+	  double popCountVertexLocation = customConsts.getIntConst("seize_goods_action violence popcount vertex location", out success);
+	  if(!success) popCountVertexLocation = 30;
+	  double popCountAsymptoteVal = customConsts.getDoubleConst("seize_goods_action violence popcount asymptote value", out success);
+	  if(!success) popCountAsymptoteVal = 10.0d;
+	  double popCountWanderersFixed = customConsts.getDoubleConst("seize_goods_action violence popcount wanderers fixed value", out success);
+	  popCountWanderersFixed = 2.0d;
+	  Dictionary&lt;IFCommunity, double&gt; countMults = new Dictionary&lt;IFCommunity, double&gt;();
+	  foreach(var kvpair in countsOfUnwoundedPops)
+	  {
+		countMults.Add(kvpair.Key, kvpair.Key.isWanderers() &amp;&amp; (kvpair.Value != 0) ? popCountWanderersFixed : popCountAsymptoteVal * kvpair.Value / (kvpair.Value + popCountVertexLocation * ((popCountAsymptoteVal / popCountVertexVal) - 1)));
+	  }
+	  
+	  //determine probability from resource counts:
+	  //the goods seized are just those in the local building.  So only look at those pops
+	  //neutrals must be associated with delegations with resource pools.  The actual goods seized will be the whole resource pool * (pops of delegation in this building) / (pops of delegation total) so use that
+	  List&lt;IFDelegation&gt; delsToSeizeFrom = new List&lt;IFDelegation&gt;();
+	  //wanderers are less easy because they are not specifically in delegations.  We must look up their event and associated event resources:
+	  Dictionary&lt;Int64, Tuple&lt;List&lt;IFPop&gt;, Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;&gt; wandererPopGroupsAndAssociatedResources = new Dictionary&lt;Int64, Tuple&lt;List&lt;IFPop&gt;, Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;&gt;&gt;();
+	  
+	  foreach(IFPop pop in inBuilding.getHousingComponent().getHousedPops())
+	  {
+		if(pop.isDead())
+			continue;
+	  
+		if(           (pop.getCommunity() != localCommunity)
+		   &amp;&amp; (!getAPI().isHostileCommunity(pop.getCommunity()))
+		   &amp;&amp; (pop.hasDelegation())
+		  )
+		{
+			delsToSeizeFrom.Add(pop.getDelegation());
+		}
+		else if(pop.getCommunity().isWanderers())
+		{
+			IFConnectedVariable popToEventList = variableHandler.getConnectedVariable("eventsassociatedwith_pop" + pop.getUID());
+			if(popToEventList != null)
+			{
+				//fetch the event status UID and event report UID:
+				foreach(IFConnectedVariable lower in popToEventList.getLowers())
+				{
+					Int64 eventReportUID = lower.getVariableAsInt();
+					
+					//the name is of the form: "event" + event status uid + "_assocationToPop_pop" + pop uid
+					string name = lower.getInternalName();
+					name = name.Replace("event", "");
+					name = name[..^(name.IndexOf("_assocationtopop_pop"))]; //variable names are stored lower case
+					name = name.Replace("_assocationtopop_pop", "");
+					Int64 eventStatusUID = 0;
+					if(Int64.TryParse(name, out eventStatusUID))
+					{
+						IFEventStatus evtStatus = (IFEventStatus)getAPI().getSO("eventstatuses", eventStatusUID);
+						if(evtStatus != null)
+						{
+							//check if there are resources associated with the event:
+							if(customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object&gt;() { evtStatus, eventReportUID, false, null, "", 0L, false }, out List&lt;object&gt; returnVals,
+								false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
+							{
+								Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resources = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
+								
+								bool addToBigDictionary = false;
+								foreach(var kvpair in resources)
+								{
+									if(kvpair.Value.Item1 &gt; 0.0d)
+									{
+										addToBigDictionary = true;
+										break;
+									}
+								}
+								if(addToBigDictionary)
+								{
+									if(!wandererPopGroupsAndAssociatedResources.ContainsKey(eventReportUID))
+									{
+										//fetch all associated pops:
+										List&lt;IFPop&gt; associatedPops = new List&lt;IFPop&gt;() { pop };
+										if(customScripts.runCustomScriptCheckTypes("storeOrFetchPopsForEvent", new List&lt;object&gt;() { evtStatus, eventReportUID, false, null, "", 0L, 0L, 0.0d }, out List&lt;object&gt; returnVals2,
+											false, typeof(List&lt;IFPop&gt;)))
+										{
+											associatedPops = (List&lt;IFPop&gt;)returnVals2[0];
+										}
+										
+										wandererPopGroupsAndAssociatedResources.Add(eventReportUID, Tuple.Create(associatedPops, resources));
+									}
+									else if(!wandererPopGroupsAndAssociatedResources[eventReportUID].Item1.Contains(pop))
+									{
+										wandererPopGroupsAndAssociatedResources[eventReportUID].Item1.Add(pop);
+									}
+								}
+							}
+							else
+							{
+								addDebugMessage(inScriptInstance, "unable to fetch resources associated with event moid=" + eventStatusUID + " report uid=" + eventReportUID);
+							}
+						}
+						else
+						{
+							addDebugMessage(inScriptInstance, "unable to parse event status UID from named variable " + lower.getInternalName());
+						}
+					}
+					else
+					{
+						addDebugMessage(inScriptInstance, "unable to parse event status UID from named variable " + lower.getInternalName());
+					}
+				}
+			}
+		}
+	  }
+	  
+	  //make delsToSeizeFrom unique:
+	  delsToSeizeFrom = (new HashSet&lt;IFDelegation&gt;(delsToSeizeFrom)).ToList();
+	  
+	  Dictionary&lt;IFCommunity, double&gt; resourceValueFromDelegations = new Dictionary&lt;IFCommunity, double&gt;();
+	  //for each visiting community, calculate the resource value that would be taken:
+	  foreach(IFDelegation del in delsToSeizeFrom)
+	  {
+		double resourceVal = 0.0d;
+		if(customScripts.runCustomScriptCheckTypes("getDesireTotalOfResourceCollection", new List&lt;object&gt;() { del.getSourceCommunity(), del.getResourcePool(), null }, out List&lt;object&gt; resultDesireValue,
+			true, typeof(double)))
+		{
+			resourceVal = (double)resultDesireValue[0];
+		}
+		
+		resourceVal *= (del.getPopsInDelegation().Intersect(inBuilding.getHousingComponent().getHousedPops()).Count()) / (del.getPopsInDelegation().Count);
+		if(!resourceValueFromDelegations.ContainsKey(del.getSourceCommunity()))
+		{
+			resourceValueFromDelegations.Add(del.getSourceCommunity(), resourceVal);
+		}
+		else
+		{
+			resourceValueFromDelegations[del.getSourceCommunity()] += resourceVal;
+		}
+	  }
+	  
+	  //for each wanderers group, calculate the resource value that would be taken:
+	  double highestWanderersResourceValuePerPopsInGroup = 0.0d;
+	  foreach(var kvpair in wandererPopGroupsAndAssociatedResources)
+	  {
+		double resourceVal = 0.0d;
+		if(customScripts.runCustomScriptCheckTypes("getDesireTotalOfResourceCollection", new List&lt;object&gt;() { getAPI().getWandererCommunity(), null, kvpair.Value.Item2 }, out List&lt;object&gt; resultDesireValue,
+			true, typeof(double)))
+		{
+			resourceVal = (double)resultDesireValue[0];
+		}
+		
+		resourceVal *= (kvpair.Value.Item1.Intersect(inBuilding.getHousingComponent().getHousedPops()).Count()) / (kvpair.Value.Item1.Count);
+		double resourceValPerPop = resourceVal / (kvpair.Value.Item1.Count); //yes, this division again.  Remember that resources *brought* are likely calculated per pop
+		if(highestWanderersResourceValuePerPopsInGroup &lt; resourceValPerPop)
+		{
+			highestWanderersResourceValuePerPopsInGroup = resourceValPerPop;
+		}
+	  }
+	  
+	  double resourceVertexVal = customConsts.getDoubleConst("seize_goods_action violence resourcedesireperpoponmap vertex value", out success);
+	  if(!success) resourceVertexVal = 1.0d;
+	  double resourceVertexLocation = customConsts.getIntConst("seize_goods_action violence resourcedesireperpoponmap vertex location", out success);
+	  if(!success) resourceVertexLocation = 50;
+	  double resourceAsymptoteVal = customConsts.getDoubleConst("seize_goods_action violence resourcedesireperpoponmap asymptote value", out success);
+	  if(!success) resourceAsymptoteVal = 3.0d;
+	  Dictionary&lt;IFCommunity, double&gt; resourceMults = new Dictionary&lt;IFCommunity, double&gt;();
+	  foreach(var kvpair in resourceValueFromDelegations)
+	  {
+		double resourcesTakenPerPopsOnMap = kvpair.Value / kvpair.Key.getPopsLoyalToCommunity(true, false).Intersect(getAPI().getPopsWithinLocalCommunityMap()).Count();
+		resourceMults.Add(kvpair.Key, resourceAsymptoteVal * resourcesTakenPerPopsOnMap / (resourcesTakenPerPopsOnMap + resourceVertexLocation * ((resourceAsymptoteVal / resourceVertexVal) - 1)));
+	  }
+	  
+	  resourceMults.Add(getAPI().getWandererCommunity(), resourceAsymptoteVal * highestWanderersResourceValuePerPopsInGroup / (highestWanderersResourceValuePerPopsInGroup + resourceVertexLocation * ((resourceAsymptoteVal / resourceVertexVal) - 1)));
+	  
+	  double maxMultForACommunity = 0.0d;
+	  foreach(IFCommunity targetedCommunity in resourceMults.Keys)
+	  {
+		if(countMults.ContainsKey(targetedCommunity))
+		{
+			double communityMult = resourceMults[targetedCommunity] * countMults[targetedCommunity];
+			addDebugMessage(inScriptInstance, "community multiplier to violence chance for community " + targetedCommunity.getDebugName() + " = " + communityMult + " from resourceMult=" + resourceMults[targetedCommunity]
+				+ " and countMult=" + countMults[targetedCommunity]);
+				
+			if(maxMultForACommunity &lt; communityMult)
+			{
+				maxMultForACommunity = communityMult;
+			}
+		}
+	  }
+	  if(maxMultForACommunity == 0.0d) //this can occur if only seizing from Wanderers
+		maxMultForACommunity = 1.0d;
+	  
+	  //calculate violence chance:
+	  double violenceChanceBase = customConsts.getDoubleConst("seize_goods_action violence base prob", out success);
+	  if(!success) violenceChanceBase = 0.1d;
+	  
+	  double violenceChance = violenceChanceBase * milStrengthMult * maxMultForACommunity;
+	  addDebugMessage(inScriptInstance, "violence chance = " + violenceChance + " from base = " + violenceChanceBase + ", milStrengthMult = " + milStrengthMult + ", maxMultForACommunity = " + maxMultForACommunity);
+	  double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("non-hostile delegation danger");
+	  violenceChance *= difficulty;
+	  violenceChance = Math.Min(1.0d, Math.Max(0.0d, violenceChance));
+	  bool violence = getAPI().calcProb(violenceChance);
+	  
+	  if(violence)
+	  {
+		addDebugMessage(inScriptInstance, "pops will resist the seizure of their goods with violence");
+		
+		customScripts.runCustomScript("seize_goods_violence", new List&lt;object&gt;() { inBuilding, delsToSeizeFrom, wandererPopGroupsAndAssociatedResources }, out _);
+	  }
+	  else
+	  {
+		addDebugMessage(inScriptInstance, "pops will not resist the seizure of their goods");
+		
+		customScripts.runCustomScript("seize_goods_success", new List&lt;object&gt;() { inBuilding, delsToSeizeFrom, wandererPopGroupsAndAssociatedResources }, out _);
+	  }
+	  
+	  return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

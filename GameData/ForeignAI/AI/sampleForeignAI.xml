@@ -1,0 +1,611 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<!-- TODO explain each bit of the xml files and mod loading and how it works -->
+<!-- attributes: a moddableObject delcaration NEEDS name= attribute.  If and only if kind= attribute is "remove", the moddableObject is deleted.  This shifts the ordering of moddableObjects of that type (no in-game effect).  The default object cannot be removed.  When the kind=attribute is "remove", none of the declared elements matter. -->
+<!-- however note that spritesheets cannot be deleted, or have their list elements deleted/replaced/added to; they can only have their information overwritten by redeclaring the spritesheet -->
+<!-- lists: for list-type (including lists of tuples) moddable qualities, if the kind= attribute does not exist, or is "overwrite", previous items/default items in the list are discarded and new items added.  If the kind= attribute is "remove", then items are being removed from previous items/default items in the list (exact match for the first tuple-item).  If the kind= attribute is "add", then items are appended to the previously-declared/default-declared list.  If the kind= attribute is "replace", then the first item in the tuple list which has the same first inner-element (always a name or a reference to an MO) will have its other inner-elements replaced with the values provided.  When a non-tuple list is marked "replace", no action is taken (rethink what you're trying to do). -->
+<!-- default: if the name of an object is default, as are all objects in this file, then the object is not one that should exist during play.  Instead, the object is a fallback object.  Furthermore, when declaring a non-default object, if any element is not declared, the value contained by the default object is used. -->
+<!-- this means a modder could change the default values if they wanted to speed up the declaration of a group of similar objects.  However, remember: unless and until the default values in this file are restored, the changes will continue to other objects declared in the future if they do not declare all elements.  If this is not desired behavior, then it is the modder's responsibility to re-establish the values here in this file at the end of their files or mod. -->
+<core_data>
+	<!-- if these custom consts are 0, then the debug messages from these scripts are not logged.  Otherwise, they are logged. -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- logging consts related to this file's foreign AI must have this format or they won't work: -->
+			<!-- log_script_foreignai [type]script [ai name] -->
+			<i1><a>log_script_foreignai gatingscript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_foreignai firsttimescript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_foreignai dailyvariablescript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_foreignai dailynonvariablescript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_foreignai transitionoutscript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_foreignai dailystartdelegationtoforeignscript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_foreignai dailystartdelegationtoplayerscript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			
+			<i1><a>log_script_foreignai del_diplomacyGiftGivenScript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_foreignai del_diplomacyGiftTextScript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_foreignai del_tradeAttemptsScript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_foreignai del_tradeProbAndDescriptionScript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_foreignai del_emigrationAcceptanceScript sampleforeignai</a> <b>int</b> <c>1</c></i1>
+			
+			<!-- other consts related to this file's foreign AI can have any name (though they probably shouldn't overwrite other consts) -->
+			<!-- following this format will prevent name collisions: -->
+			<!-- foreignai [ai name] [variable] -->
+			<i1><a>foreignai sampleforeignai buildingCount max</a> <b>int</b> <c>40</c></i1> <!-- a community at max econ strength, with the resources to build buildings, will tend to this buildingCount -->
+			<i1><a>foreignai sampleforeignai buildingCount price</a> <b>int</b> <c>200</c></i1> <!-- a community must pay this amount of a single resource to build a building -->
+			<i1><a>foreignai sampleforeignai workersPerBuilding start</a> <b>int</b> <c>8</c></i1> <!-- changing this value can have a big impact on normalEconCalc, depending on buildingCount, so this value should probably change slowly/rarely -->
+			<i1><a>foreignai sampleforeignai decisionmakingFactor start std_dev</a> <b>double</b> <c>0.2</c></i1> <!-- decisionmakingFactor is (mostly) set when a community's foreign AI is assigned; this is the standard deviation of decisionmakingFactor -->
+			<i1><a>foreignai sampleforeignai trainingFactor start std_dev</a> <b>double</b> <c>0.2</c></i1> <!-- trainingFactor is changed day to day, but a change of leadership/power structures implies a shift of military power.  this is the standard deviation that trainingFactor changes by -->
+			<i1><a>foreignai sampleforeignai trainingFactor start empty</a> <b>double</b> <c>0.2</c></i1> <!-- this is the value trainingFactor starts at if the previous AI did not use trainingFactor -->
+			<i1><a>foreignai sampleforeignai trainingFactor per_day rate</a> <b>double</b> <c>0.0005</c></i1> <!-- (in this AI) a community at max econ strength will increase training rate by this per building it has -->
+			<i1><a>foreignai sampleforeignai trainingFactor per_day fall rate</a> <b>double</b> <c>0.0005</c></i1> <!-- (in this AI) day by day, trainingFactor will fall by this value -->
+		
+			<!-- note to self: variable names for ai should follow the form: ai[UID of community]_[variable name]_[target type][UID of target] -->
+			<!-- that way, other scripts don't need to know exactly what foreignAI a community has, or had previously, to check its ai-associated variables -->
+		</mCustomVariableList>
+	</customconsts>
+
+  <igForeignAI name="sampleForeignAI" display_name="Normal"> <!-- display name is used in info view menus -->
+	<mWeight>1.0</mWeight>
+	<mGeneralEnable>1</mGeneralEnable>
+	
+	<mTagList>
+	</mTagList>
+	
+	<mDefaultMilStrengthCalculation>normalMilCalc</mDefaultMilStrengthCalculation>
+	<mDefaultEconStrengthCalculation>normalEconCalc</mDefaultEconStrengthCalculation>
+	
+	<mGatingScript>return new List&lt;object&gt;() { true };</mGatingScript>
+	
+	<mFirstTimeVariableScript>
+	//input count check:
+	if(inArguments.Length &lt; 4)
+	{
+	  return null;
+	}
+	
+	IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	Dictionary&lt;string, Int64&gt; intVars = (Dictionary&lt;string, Int64&gt;)inArguments[1]; //TODO use this
+	Dictionary&lt;string, string&gt; stringVars = (Dictionary&lt;string, string&gt;)inArguments[2]; //TODO use this
+	Dictionary&lt;string, double&gt; doubleVars = (Dictionary&lt;string, double&gt;)inArguments[3]; //TODO use this
+    var consts = getAPI().getConsts();
+    var customConsts = getAPI().getCustomConsts();
+    var variableHandler = getAPI().getVariableHandler();
+
+    //buildingCount: estimate, based on the previous econ strength of the community:
+    double econStrength = inCommunity.getEconStrength();
+    Int64 buildingCountAtMaxEconStrength = customConsts.getIntConst("foreignai sampleforeignai buildingCount max", out bool success);
+    if(!success) buildingCountAtMaxEconStrength = 40;
+    Int64 buildingCount = (Int64)(econStrength * buildingCountAtMaxEconStrength / consts.getEconStrengthMax());
+	variableHandler.storeIntVariable(Int64.MaxValue, "ai" + inCommunity.getUID() + "_buildingCount", buildingCount);
+    addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " buildingCount starting at " + buildingCount);
+
+    //workers per building: start at default
+    Int64 workersPerBuilding = customConsts.getIntConst("foreignai sampleforeignai workersPerBuilding start", out success);
+    if(!success) workersPerBuilding = 8;
+	variableHandler.storeIntVariable(Int64.MaxValue, "ai" + inCommunity.getUID() + "_workersPerBuilding", workersPerBuilding);
+    addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " workersPerBuilding starting at " + workersPerBuilding);
+
+    //workers assigned total: start at 0
+	variableHandler.storeIntVariable(Int64.MaxValue, "ai" + inCommunity.getUID() + "_workersAssignedTotal", 0);
+
+    //decisionmakingFactor: initialize here using a normally-distributed variable
+    //Box-Muller transform:
+    double uniform0 = 1.0d - getAPI().calcRand();
+    double uniform1 = 1.0d - getAPI().calcRand();
+    double z0 = Math.Sqrt(-2 * Math.Log(uniform0)) * Math.Cos(2 * Math.PI * uniform1);
+    double z1 = Math.Sqrt(-2 * Math.Log(uniform0)) * Math.Sin(2 * Math.PI * uniform1);
+    double decisionmakingStdDev = customConsts.getDoubleConst("foreignai sampleforeignai decisionmakingFactor start std_dev", out success);
+    if(!success) decisionmakingStdDev = 0.2d;
+    double randomFactor = Math.Max(1.0d + (z0 * decisionmakingStdDev), 0.0d);
+	variableHandler.storeDoubleVariable(Int64.MaxValue, "ai" + inCommunity.getUID() + "_decisionmakingFactor", randomFactor);
+    addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " decisionmakingFactor starting at " + randomFactor);
+
+    //trainingFactor: initialize here using a normally-distributed variable
+    //TODO once we have variable hand-off between AIs change this
+    double trainingFactorStdDev = customConsts.getDoubleConst("foreignAI sampleforeignai trainingFactor start std_dev", out success);
+    if(!success) trainingFactorStdDev = 0.2d;
+    double trainingFactorStart = customConsts.getDoubleConst("foreignAI sampleforeignai trainingFactor start empty", out success);
+    if(!success) trainingFactorStart = 0.2d;
+    double trainingFactor = Math.Max((trainingFactorStdDev * z1) + trainingFactorStart, 0.0d);
+    trainingFactor = Math.Min(trainingFactor, 1.0d);
+	variableHandler.storeDoubleVariable(Int64.MaxValue, "ai" + inCommunity.getUID() + "_trainingFactor", trainingFactor);
+    addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " trainingFactor starting at " + trainingFactor);
+
+    return null;
+  </mFirstTimeVariableScript>
+	
+	<mDailyNonVariableScript>
+		//input count check:
+		if(inArguments.Length &lt; 1)
+		{
+		  return null;
+		}
+		
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//TODO this script is also responsible for forming the "opinion" of the foreign community
+		
+		return null;
+	</mDailyNonVariableScript>
+	
+	<mDailyVariableScript>
+		//input count check:
+		if(inArguments.Length &lt; 1)
+		{
+		  return null;
+		}
+		
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//buildingCount:
+		//TODO a long-term economic decline should cause buildings to become unusable, but that requires storing a lot of data and that hasn't been done yet
+		//otherwise, if econ strength is higher than a certain value (based on existing buildingCount), and there are a certain count of resources, a new building can be built
+		Int64 buildingCount = variableHandler.getInt("ai" + inCommunity.getUID() + "_buildingCount", out bool success);
+		if(!success) buildingCount = 0;
+		double econStrength = inCommunity.getEconStrength();
+		Int64 buildingCountAtMaxEconStrength = customConsts.getIntConst("foreignai sampleforeignai buildingCount max", out  success);
+		if(!success) buildingCountAtMaxEconStrength = 40;
+		Int64 expectedBuildingCount = (Int64)(econStrength * buildingCountAtMaxEconStrength / consts.getEconStrengthMax());
+		if(expectedBuildingCount &gt; buildingCount)
+		{
+			//look for a resource which this community has a large stockpile of.  Presume that they trade/substitute resources as appropriate to get the new building's resources; therefore the const relating to this is higher than the average of what the player would pay.
+			double price = customConsts.getIntConst("foreignai sampleforeignai buildingCount price", out success);
+			if(!success) price = 200;
+			IFResourcePool resPool = inCommunity.getResourcePool();
+			
+			List&lt;IFResource&gt; possiblyExpendableResources = new List&lt;IFResource&gt;();
+			for(int i = 1; i &lt; getAPI().getTotalCountOfMO("resources"); i++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+				if(res.isFood() || res.isHStasis() || res.isWoundHeal() || res.isDiseaseHeal() || res.isMilEquip())
+				{
+					//TODO maybe change this in the future, but for now, a foreign community will only invest trade goods or capital to make a new building
+					continue;
+				}
+				if(resPool.getResourceQuantity(res) &gt; price)
+				{
+					possiblyExpendableResources.Add(res);
+				}
+			}
+			if(possiblyExpendableResources.Count != 0)
+			{
+				IFResource expendedRes = possiblyExpendableResources[(int)getAPI().calcRandIntUnder(possiblyExpendableResources.Count)];
+				addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " building a new building using " + price + " of resource " + expendedRes.getDisplayName());
+				resPool.subtractResource(expendedRes, price);
+				variableHandler.storeIntVariable(Int64.MaxValue, "ai" + inCommunity.getUID() + "_buildingCount", buildingCount + 1);
+				buildingCount++; //update this because it may be used to calculate other variables
+			}
+		}
+
+		//workers per building:
+		//TODO will this change?
+
+		//workers assigned total:
+		//normalEconCalc deals with this, no need to change here
+
+		//decisionmakingFactor:
+		//this is a "constant" for a community's leadership/power structures
+
+		//trainingFactor:
+		//change based on the previous value of training factor, buildingCount, econ strength, and fall off
+		double fallOff = customConsts.getDoubleConst("foreignai sampleforeignai trainingFactor per_day fall rate", out success);
+		if(!success) fallOff = 0.0005d;
+		double econStrengthFactor = inCommunity.getEconStrength() / consts.getEconStrengthMax();
+		double yesterdayTrainingFactor = variableHandler.getDouble("ai" + inCommunity.getUID() + "_trainingFactor", out bool _);
+		double trainingPerDay = customConsts.getDoubleConst("foreignai sampleforeignai trainingFactor per_day rate", out success);
+		if(!success) trainingPerDay = 0.0005d;
+		double todayTrainingFactor = (yesterdayTrainingFactor - fallOff) + (econStrengthFactor * buildingCount * trainingPerDay);
+		todayTrainingFactor = Math.Min(1.0d, Math.Max(0.0d, todayTrainingFactor));
+		variableHandler.storeDoubleVariable(Int64.MaxValue, "ai" + inCommunity.getUID() + "_trainingFactor", todayTrainingFactor);
+		addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " trainingFactor changing to " + todayTrainingFactor + " from " + yesterdayTrainingFactor);
+
+		//delegation impacts and variables TODO:
+		//1) if pops are dying due to lack of food/HStasis/woundHeal/illHeal, chance of sourcing an emigration delegation is greatly increased, and chance of accepting an emigration delegation is much more dependent on their goods
+		//
+		
+		//
+
+		return null;
+  </mDailyVariableScript>
+	
+	<mTransitionOutScript>
+		//input count check:
+		if(inArguments.Length &lt; 1)
+		{
+		  return null;
+		}
+		
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//TODO: cleanup related to this AI, if any
+		
+		return null;
+	</mTransitionOutScript>
+	
+	<mDailyStartDelegationToForeign>
+		//input count check:
+		if(inArguments.Length &lt; 1)
+		{
+		  return null;
+		}
+		
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+	    var customScripts = getAPI().getCustomScripts();
+		
+		//for each delegation type (war/raiding/trade/emigration), determine whether conditions allow for sending, then choose only one to possibly send
+		////diplomacy is not included because between foreign communities because it is equivalent to trade
+		List&lt;IFDelegation.eDelegationType&gt; delegationTypesAllowed = new List&lt;IFDelegation.eDelegationType&gt;();
+		
+		//the function canForeignDelegationBeSent does many sanity checks and checks all blockers, so this function doesn't *need* to re-check them
+		//but some are re-checked in dailyStartFFDelegation_delTypeBlocker to make sure we're doing work for a reason
+		
+		//check type-specific conditions:
+		List&lt;IFDelegation.eDelegationType&gt; possibleDelTypes = new List&lt;IFDelegation.eDelegationType&gt;() { IFDelegation.eDelegationType.cWar, IFDelegation.eDelegationType.cRaiding, IFDelegation.eDelegationType.cTrade, IFDelegation.eDelegationType.cEmigration };
+		foreach(IFDelegation.eDelegationType delType in possibleDelTypes)
+		{
+			bool delTypeBlock = false;
+			if(customScripts.runCustomScriptCheckTypes("dailyStartFFDelegation_delTypeBlocker", new List&lt;object&gt;() { inCommunity, delType }, out List&lt;object&gt; outputs1, false, typeof(bool)))
+			{
+				delTypeBlock = (bool)outputs1[0];
+			}
+			if(delTypeBlock)
+			{
+				addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " is blocked from sending foreign-foreign delegations of type " + delType.ToString());
+			}
+			else
+			{
+				delegationTypesAllowed.Add(delType);
+			}
+		}
+		
+		//if no delegation type is enabled to be sent, return early:
+		if(delegationTypesAllowed.Count == 0)
+		{
+			addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " is blocked from sending each possible delegation type of foreign-foreign delegations");
+			return null;
+		}
+		IFDelegation.eDelegationType delTypeToSend = delegationTypesAllowed[(int)getAPI().calcRandIntUnder(delegationTypesAllowed.Count)];
+		
+		//even if a delegation type is enabled to be sent, it may not be.  There is a probability it is sent, which is modified by certain variables.
+		//calc type-specific multiplier (these scripts calculate common multipliers and include them in the output as well):
+		double typeSpecificMult = 0.0d;
+		if(customScripts.runCustomScriptCheckTypes("dailyStartFFDelegation_delTypeProbability", new List&lt;object&gt;() { inCommunity, delTypeToSend }, out List&lt;object&gt; outputs2, false, typeof(double)))
+		{
+			typeSpecificMult = (double)outputs2[0];
+		}
+		
+		double outFAISpecificMult = 1.0d;
+		if(customScripts.runCustomScriptCheckTypes("sampleForeignAI_delegationProb", new List&lt;object&gt;() { inCommunity, delTypeToSend }, out List&lt;object&gt; outputs3, false, typeof(double)))
+		{
+			outFAISpecificMult *= (double)outputs3[0];
+		}
+			
+		//determine whether the probability is hit or missed today:
+		double totalProb = outFAISpecificMult * typeSpecificMult;
+		totalProb = Math.Min(1.0d, Math.Max(0.0d, totalProb));
+		addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " has " + totalProb + " probability to send " + delTypeToSend.ToString() + " delegation. typeSpecificMult=" + typeSpecificMult + " outFAISpecificMult=" + outFAISpecificMult);
+		if(!getAPI().calcProb(totalProb))
+		{
+			return null;
+		}
+		addDebugMessage(inScriptInstance, "chance succeeded");
+		
+		//if we have reached here, determine target:
+		//iterate over all foreign communities and select those that are normal, not this community, and have pops alive
+		List&lt;IFCommunity&gt; possibleTargets = new List&lt;IFCommunity&gt;();
+		foreach(UInt64 uid in getAPI().getUIDsOfAllSO("communities"))
+		{
+			IFCommunity possibleTgt = (IFCommunity)getAPI().getSO("communities", uid);
+			if(possibleTgt != null)
+			{
+				bool hasPops = (possibleTgt.getPopsLoyalToCommunity(true, false).Count != 0);
+				if(!hasPops)
+				{
+					foreach(var kvpair in possibleTgt.getAdditionalUndeclaredPopCounts())
+					{
+						if(kvpair.Value > 0)
+						{
+							hasPops = true;
+							break;
+						}
+					}
+				}
+			
+				if((possibleTgt != inCommunity) &amp;&amp; possibleTgt.isNormalCommunity() &amp;&amp; hasPops &amp;&amp; (possibleTgt != getAPI().getLocalCommunity()))
+				{
+					//a normal servant community will only ever send war delegations to their master
+					if((delTypeToSend == IFDelegation.eDelegationType.cWar) &amp;&amp; inCommunity.hasMasterCommunity() &amp;&amp; (inCommunity.getMasterCommunity() != possibleTgt))
+					{
+						continue;
+					}
+					//a normal servant community will never send raiding delegations to their master
+					if((delTypeToSend == IFDelegation.eDelegationType.cRaiding) &amp;&amp; inCommunity.hasMasterCommunity() &amp;&amp; (inCommunity.getMasterCommunity() == possibleTgt))
+					{
+						continue;
+					}
+					//a normal servant community will never send raiding delegations to other servants of their master
+					if((delTypeToSend == IFDelegation.eDelegationType.cRaiding) &amp;&amp; inCommunity.hasMasterCommunity() &amp;&amp; possibleTgt.hasMasterCommunity() &amp;&amp; (inCommunity.getMasterCommunity() == possibleTgt.getMasterCommunity()))
+					{
+						continue;
+					}
+					//a normal master community will never send raiding delegations to their servants
+					if((delTypeToSend == IFDelegation.eDelegationType.cRaiding) &amp;&amp; possibleTgt.hasMasterCommunity() &amp;&amp; (inCommunity == possibleTgt.getMasterCommunity()))
+					{
+						continue;
+					}
+					//a normal master community will not send war delegations to their servants (this only applies to foreign-foreign, not player)
+					if((delTypeToSend == IFDelegation.eDelegationType.cWar) &amp;&amp; possibleTgt.hasMasterCommunity() &amp;&amp; (inCommunity == possibleTgt.getMasterCommunity()))
+					{
+						continue;
+					}
+					//a normal community will change the rate at which they send violent delegations to a servant of the player community, in the same way they would change that rate towards the player community: based on the opinion of the player community
+					if(   (   (delTypeToSend == IFDelegation.eDelegationType.cWar)
+					       || (delTypeToSend == IFDelegation.eDelegationType.cRaiding)
+						  )
+					  &amp;&amp;
+						  (
+							  (possibleTgt.getMasterCommunity() == getAPI().getLocalCommunity())
+						  )
+					  )
+					{
+						double opinionChance = 1.0d;
+						if(customScripts.runCustomScriptCheckTypes("sampleForeignAI_opinion_delegationProb", new List&lt;object&gt;() { inCommunity }, out List&lt;object&gt; outputsOpinion, false,
+							typeof(double), typeof(double), typeof(double), typeof(double), typeof(double)))
+						{
+							opinionChance = (double)outputsOpinion[((int)delTypeToSend) - 1]; //remember that cNone is 0, and cWar is 1
+						}
+						if(opinionChance &lt; 1.0d)
+						{
+							if(!getAPI().calcProb(opinionChance))
+							{
+								continue;
+							}
+						}
+					}
+					possibleTargets.Add(possibleTgt);
+				}
+			}
+		}
+		if(possibleTargets.Count == 0)
+		{
+			addDebugMessage(inScriptInstance, "no valid targets found for delegation");
+			return null;
+		}
+		IFCommunity targetCommunity = possibleTargets[(int)getAPI().calcRandIntUnder(possibleTargets.Count)];
+		
+		//if we have reached here, send the delegation (using a common custom script which calls canForeignDelegationBeSent as part of itself):
+		if(customScripts.runCustomScriptCheckTypes("startDelegation", new List&lt;object&gt;() { inCommunity, targetCommunity, delTypeToSend, null, (Int64)0, null, true, true, false },
+				out _, true, typeof(IFDelegation)))
+		{
+			//TODO anything?
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "startDelegation script failed to send a delegation");
+		}
+		
+		return null;
+	</mDailyStartDelegationToForeign>
+	
+	<mDailyStartDelegationToPlayer>
+		//input count check:
+		if(inArguments.Length &lt; 1)
+		{
+		  return null;
+		}
+		
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+	    var customScripts = getAPI().getCustomScripts();
+				
+		//first, check blockers:
+		//for each delegation type (war/raiding/trade/diplomacy/emigration), determine whether conditions allow for sending, then choose only one to possibly send
+		List&lt;IFDelegation.eDelegationType&gt; delegationTypesAllowed = new List&lt;IFDelegation.eDelegationType&gt;();
+		
+		//the function canForeignDelegationBeSent does many sanity checks and checks all blockers, so this function doesn't *need* to re-check them
+		//but some are re-checked in dailyStartF2PDelegation_delTypeBlocker to make sure we're doing work for a reason
+		
+		//check type-specific conditions:
+		List&lt;IFDelegation.eDelegationType&gt; possibleDelTypes = new List&lt;IFDelegation.eDelegationType&gt;() { IFDelegation.eDelegationType.cWar, IFDelegation.eDelegationType.cRaiding, IFDelegation.eDelegationType.cDiplomacy, IFDelegation.eDelegationType.cTrade, IFDelegation.eDelegationType.cEmigration };
+		foreach(IFDelegation.eDelegationType delType in possibleDelTypes)
+		{
+			bool delTypeBlock = false;
+			if(customScripts.runCustomScriptCheckTypes("dailyStartF2PDelegation_delTypeBlocker", new List&lt;object&gt;() { inCommunity, delType, true }, out List&lt;object&gt; outputs1, false, typeof(bool)))
+			{
+				delTypeBlock = (bool)outputs1[0];
+			}
+			if(delTypeBlock)
+			{
+				addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " is blocked from sending foreign-to-player delegations of type " + delType.ToString());
+			}
+			else
+			{
+				delegationTypesAllowed.Add(delType);
+			}
+		}
+		
+		//if no delegation type is enabled to be sent, return early:
+		if(delegationTypesAllowed.Count == 0)
+		{
+			addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " is blocked from sending each possible delegation type of foreign-to-player delegations");
+			return null;
+		}
+		IFDelegation.eDelegationType delTypeToSend = delegationTypesAllowed[(int)getAPI().calcRandIntUnder(delegationTypesAllowed.Count)];
+		
+		//even if a delegation type is enabled to be sent, it may not be.  There is a probability it is sent, which is modified by certain variables.
+		//calc type-specific multiplier (these scripts calculate common multipliers and include them in the output as well):
+		double typeSpecificMult = 0.0d;
+		if(customScripts.runCustomScriptCheckTypes("dailyStartF2PDelegation_delTypeProbability", new List&lt;object&gt;() { inCommunity, delTypeToSend }, out List&lt;object&gt; outputs2, false, typeof(double)))
+		{
+			typeSpecificMult = (double)outputs2[0];
+		}
+		
+		//furthermore, because communities maintain an opinion towards the player, probability and possibility of sending certain delegations may change based on the home community's opinion
+		List&lt;double&gt; opinionProbMults = new List&lt;double&gt;();
+		if(customScripts.runCustomScriptCheckTypes("sampleForeignAI_opinion_delegationProb", new List&lt;object&gt;() { inCommunity }, out List&lt;object&gt; outputs3, false,
+			typeof(double), typeof(double), typeof(double), typeof(double), typeof(double)))
+		{
+			opinionProbMults.Add((double)outputs3[0]);
+			opinionProbMults.Add((double)outputs3[1]);
+			opinionProbMults.Add((double)outputs3[2]);
+			opinionProbMults.Add((double)outputs3[3]);
+			opinionProbMults.Add((double)outputs3[4]);
+		}
+		
+		//calc multiplier specific to this foreign AI:
+		double outFAISpecificMult = opinionProbMults.Count &gt; (int)delTypeToSend ? opinionProbMults[(int)delTypeToSend] : 1.0d;
+		if(outFAISpecificMult != 0.0d)
+		{
+			if(customScripts.runCustomScriptCheckTypes("sampleForeignAI_delegationProb", new List&lt;object&gt;() { inCommunity, delTypeToSend }, out List&lt;object&gt; outputs4, false, typeof(double)))
+			{
+				outFAISpecificMult *= (double)outputs4[0];
+			}
+		}
+		
+		//determine whether the probability is hit or missed today:
+		double totalProb = outFAISpecificMult * typeSpecificMult;
+		totalProb = Math.Min(1.0d, Math.Max(0.0d, totalProb));
+		addDebugMessage(inScriptInstance, "community " + inCommunity.getDebugName() + " has " + totalProb + " probability to send " + delTypeToSend.ToString() + " delegation. typeSpecificMult=" + typeSpecificMult + " outFAISpecificMult=" + outFAISpecificMult);
+		if(!getAPI().calcProb(totalProb))
+		{
+			return null;
+		}
+		addDebugMessage(inScriptInstance, "chance succeeded");
+		
+		//if we have reached here, send the delegation (using a common custom script which calls canForeignDelegationBeSent as part of itself):
+		if(customScripts.runCustomScriptCheckTypes("startDelegation", new List&lt;object&gt;() { inCommunity, getAPI().getLocalCommunity(), delTypeToSend, null, (Int64)0, null, true, true, false },
+				out _, true, typeof(IFDelegation)))
+		{
+			//TODO anything?
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "startDelegation script failed to send a delegation");
+		}
+		
+		return null;
+	</mDailyStartDelegationToPlayer>
+	
+	<mDiplomacyGiftGivenScript>
+		//input count check:
+		if(inArguments.Length &lt; 4)
+		{
+		  return null;
+		}
+		
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		IFCommunity inCommunity = inDelegation.getTargetCommunity();
+		string targetDescriptor = (string)inArguments[1]; //will be one of "Populace", "Leadership", or "Race"
+		List&lt;Int64&gt; resourcesGiven = (List&lt;Int64&gt;)inArguments[2]; //index = MOID, all values non-negative
+		IFRace raceTgt = (IFRace)inArguments[3]; //will be null if targetDescriptor is "Populace" or "Leadership"; will not be null otherwise
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//TODO: have some impact
+		
+		return null;
+	</mDiplomacyGiftGivenScript>
+	
+	<mDiplomacyGiftTextScript>
+		//input count check:
+		if(inArguments.Length &lt; 4)
+		{
+		  return null;
+		}
+		
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		IFCommunity inCommunity = inDelegation.getTargetCommunity();
+		string targetDescriptor = (string)inArguments[1]; //will be one of "Populace", "Leadership", or "Race"
+		List&lt;Int64&gt; resourcesGiven = (List&lt;Int64&gt;)inArguments[2]; //index = MOID, all values non-negative
+		IFRace raceTgt = (IFRace)inArguments[3]; //will be null if targetDescriptor is "Populace" or "Leadership"; will not be null otherwise
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//TODO: with possible symmetry to mDiplomacyGiftGivenScript, calculate a text that will be displayed to the player regarding the effect of their gift
+		
+		return new List&lt;object&gt;() { "TODO there will be some sort of diplomatic impact of this gift" };
+	</mDiplomacyGiftTextScript>
+	
+	<mTradeAttemptsScript>
+		//input count check:
+		if(inArguments.Length &lt; 1)
+		{
+		  return null;
+		}
+		
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		IFCommunity inCommunity = inDelegation.getTargetCommunity();
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//TODO: based on the community's opinion of the player community, their current resource pool, their current economic strength, and possible other factors (including randomness),
+		//  calculate how many proposals the player can make.  If the player exhausts all proposals, they must leave without making a trade.
+		
+		return new List&lt;object&gt;() { 3L };
+	</mTradeAttemptsScript>
+	
+	<mTradeProbAndDescriptionScript>
+		//input count check:
+		if(inArguments.Length &lt; 2)
+		{
+		  return null;
+		}
+		
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		IFCommunity inCommunity = inDelegation.getTargetCommunity();
+		List&lt;Int64&gt; resourcesTraded = (List&lt;Int64&gt;)inArguments[1]; //index = MOID, values are positive if they are going TO the foreign community, and values are negative if they are going AWAY from the foreign community (AKA in this script, positive is (likely) viewed as good, negative is (likely) viewed as bad)
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//TODO: based on various things -- the community's opinion of the player community, their current resource pool, their current economic strength, and possible other factors,
+		//  calculate the probability that the foreign community will accept this trade proposal.
+		//TODO allow this script to access how many proposals are left
+		//note: this script will be recalculated each time the player changes any amount of resources on the trade menu.  Therefore, if randomness is included here, and if this randomness is recalculated each time this script is called, the player may see inconsistent behavior.  I recommend using the variableHandler to store a random result the first time and check it in this script if you're going to do that.
+		
+		//TODO: based on probability, and possible other factors, calculate a text that will be displayed to the player regarding the trade's chance of acceptance
+		
+		return new List&lt;object&gt;() { 0.5d, "TODO the community will flip a coin and choose whether to accept this proposal." };
+	</mTradeProbAndDescriptionScript>
+	
+	<mEmigrationAcceptanceScript>
+		//input count check:
+		if(inArguments.Length &lt; 1)
+		{
+		  return null;
+		}
+		
+		IFDelegation inDelegation = (IFDelegation)inArguments[0];
+		IFCommunity inCommunity = inDelegation.getTargetCommunity();
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//TODO: based on various things, almost definitely including the pop count and makeup of the delegation, decide whether or not the target community will accept the emigrants
+		
+		return new List&lt;object&gt;() { true };
+	</mEmigrationAcceptanceScript>
+	
+  </igForeignAI>
+</core_data>

@@ -1,0 +1,301 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<i1><a>setupHealthOfWanderersOrEmigrants travel_difficulty per_day</a> <b>double</b> <c>0.015</c></i1>
+			
+			<i1><a>setupHealthOfWanderersOrEmigrants mcal_health difficulty_min min</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants mcal_health difficulty_min max</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants mcal_health difficulty_max min</a> <b>double</b> <c>0.1</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants mcal_health difficulty_max max</a> <b>double</b> <c>0.8</c></i1>
+			
+			<i1><a>setupHealthOfWanderersOrEmigrants protein_health difficulty_min min</a> <b>double</b> <c>0.5</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants protein_health difficulty_min max</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants protein_health difficulty_max min</a> <b>double</b> <c>0.0</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants protein_health difficulty_max max</a> <b>double</b> <c>0.25</c></i1>
+			
+			<i1><a>setupHealthOfWanderersOrEmigrants water_health difficulty_min min</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants water_health difficulty_min max</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants water_health difficulty_max min</a> <b>double</b> <c>0.5</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants water_health difficulty_max max</a> <b>double</b> <c>1.0</c></i1>
+			
+			<i1><a>setupHealthOfWanderersOrEmigrants hstasis_health difficulty_min min</a> <b>double</b> <c>0.8</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants hstasis_health difficulty_min max</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants hstasis_health difficulty_max min</a> <b>double</b> <c>0.1</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants hstasis_health difficulty_max max</a> <b>double</b> <c>0.6</c></i1>
+			
+			<i1><a>setupHealthOfWanderersOrEmigrants pregnancy_chance difficulty_min min</a> <b>double</b> <c>0.02</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants pregnancy_chance difficulty_min max</a> <b>double</b> <c>0.15</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants pregnancy_chance difficulty_max min</a> <b>double</b> <c>0.00</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants pregnancy_chance difficulty_max max</a> <b>double</b> <c>0.01</c></i1>
+			
+			<!-- remember that if too many of the pops are wounded, they wouldn't have made it here (they all would have died, stopped traveling until they were better, or disbanded) -->
+			<i1><a>setupHealthOfWanderersOrEmigrants wound_chance difficulty_min min</a> <b>double</b> <c>0.0</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants wound_chance difficulty_min max</a> <b>double</b> <c>0.01</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants wound_chance difficulty_max min</a> <b>double</b> <c>0.03</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants wound_chance difficulty_max max</a> <b>double</b> <c>0.4</c></i1>
+			
+			<!-- remember that if too many of the pops are ill, they wouldn't have made it here (they all would have died, stopped traveling until they were better, or disbanded) -->
+			<i1><a>setupHealthOfWanderersOrEmigrants illness_chance difficulty_min min</a> <b>double</b> <c>0.005</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants illness_chance difficulty_min max</a> <b>double</b> <c>0.02</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants illness_chance difficulty_max min</a> <b>double</b> <c>0.04</c></i1>
+			<i1><a>setupHealthOfWanderersOrEmigrants illness_chance difficulty_max max</a> <b>double</b> <c>0.4</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script setupHealthOfWanderersOrEmigrants</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which calculates initial healths (MCal/protein/water/HStasis) and health issues (wounds/illnesses/pregnancies) of pops that have roughed the wildnerness to arrive at the player community. -->
+  <!-- these could be Wanderers, or emigrants from a foreign community -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	List<IFPop> inPopsInQuestion, //cannot be null.  If empty or all pops dead, no effect.
+	IFCommunity inSourceCommunity, //if null or the Wanderers community, will be unused.  Otherwise, the distance between them (and the source biome) will be used for calculation of travel difficulty.
+	double inForcedTravelDifficulty //if between 0.0d and 1.0d, this bypasses the travel difficulty calculation.
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>setupHealthOfWanderersOrEmigrants</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(List&lt;IFPop&gt;), typeof(IFCommunity), typeof(double)}
+	      }, out _))
+	    {
+			throw new ArgumentException("setupHealthOfWanderersOrEmigrants custom script received invalid arguments");
+			return null;
+	    }
+		
+		List&lt;IFPop&gt; inPopsInQuestion = (List&lt;IFPop&gt;)inArguments[0];
+		IFCommunity inSourceCommunity = (IFCommunity)inArguments[1];
+		double inForcedTravelDifficulty = (double)inArguments[2];
+		
+		if(inPopsInQuestion == null)
+		{
+			throw new ArgumentException("setupHealthOfWanderersOrEmigrants custom script received invalid arguments: inPopsInQuestion cannot be null or empty");
+			return null;
+		}
+		
+		bool anyAlivePops = false;
+		foreach(IFPop pop in inPopsInQuestion)
+		{
+			if(!pop.isDead())
+			{
+				anyAlivePops = true;
+				break;
+			}
+		}
+		if(!anyAlivePops)
+		{
+			addDebugMessage(inScriptInstance, "no alive pops in inPopsInQuestion. Returning early");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		//calculate travel difficulty:
+		double travelDifficulty = 0.0d;
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		if((inForcedTravelDifficulty &gt;= 0.0d) &amp;&amp; (inForcedTravelDifficulty &lt;= 1.0d))
+		{
+			travelDifficulty = inForcedTravelDifficulty;
+		}
+		else if((inSourceCommunity == null) || (inSourceCommunity.isWanderers()))
+		{
+			travelDifficulty = getAPI().calcRand(); //each group of Wanderers has their own circumstances
+		}
+		else
+		{
+			double travelDifficultyPerDay = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants travel_difficulty per_day", out success);
+			if(!success) travelDifficultyPerDay = 0.015d;
+			
+			//calculate the (as-the-bird-flies) distance between the source community and the player community, and the overland speed of the set of pops, calculate an estimated day count for the pops to have traveled here
+			//and set travel difficulty based on that
+			double xDiff = localCommunity.getDiploMapLocationX() - inSourceCommunity.getDiploMapLocationX();
+			double yDiff = localCommunity.getDiploMapLocationY() - inSourceCommunity.getDiploMapLocationY();
+			double worldMapDistance = Math.Sqrt(xDiff * xDiff + yDiff * yDiff) / getAPI().getDiploMapUpscaleFromSandboxSelectionMapRatio();
+			
+			double lowestLandSpeed = double.MaxValue;
+			double lowestWaterSpeed = double.MaxValue;
+			
+			foreach(IFPop pop in inPopsInQuestion)
+			{
+				if(pop.getRace().getLandSpeed() &lt; lowestLandSpeed)
+					lowestLandSpeed = pop.getRace().getLandSpeed();
+				if(pop.getRace().getWaterSpeed() &lt; lowestWaterSpeed)
+					lowestWaterSpeed = pop.getRace().getWaterSpeed();
+			}
+			
+			double avgLowestSpeed = (lowestLandSpeed + lowestWaterSpeed) / 2;
+			double speed = avgLowestSpeed * consts.getDelegationVelocityBase();
+			
+			double dayEstimate = worldMapDistance / Math.Max(0.01, speed); //prevent possible div by 0
+			travelDifficulty = Math.Min(1.0d, Math.Max(0.0d, travelDifficultyPerDay * dayEstimate));
+			addDebugMessage(inScriptInstance, "travelDifficulty=" + travelDifficulty + " from dayEstimate=" + dayEstimate + " and worldMapDistance=" + worldMapDistance);
+		}
+		
+		//based on travel difficulty, assign health, wounds, illnesses, and pregnancies:
+		//pregnancy, unlike others, is less likely as travel difficulty goes up
+		//wounds, illnesses, and pregnancies have a percentage chance based on travel difficulty, while healths have ranges:
+		
+		//if the player community has other than 100% land, set water health of visitors to max
+		bool anyWaterInLocalCommunity = (localCommunity.getWaterRatio() != 0.0d);
+		
+		//fetch custom consts:
+		double mcalDiffMinMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants mcal_health difficulty_min min", out success);
+		if(!success) mcalDiffMinMin = 1.0d;
+		double mcalDiffMinMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants mcal_health difficulty_min max", out success);
+		if(!success) mcalDiffMinMax = 1.0d;
+		double mcalDiffMaxMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants mcal_health difficulty_max min", out success);
+		if(!success) mcalDiffMaxMin = 0.1d;
+		double mcalDiffMaxMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants mcal_health difficulty_max max", out success);
+		if(!success) mcalDiffMaxMax = 0.8d;
+		
+		double proteinDiffMinMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants protein_health difficulty_min min", out success);
+		if(!success) proteinDiffMinMin = 0.5d;
+		double proteinDiffMinMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants protein_health difficulty_min max", out success);
+		if(!success) proteinDiffMinMax = 1.0d;
+		double proteinDiffMaxMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants protein_health difficulty_max min", out success);
+		if(!success) proteinDiffMaxMin = 0.0d;
+		double proteinDiffMaxMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants protein_health difficulty_max max", out success);
+		if(!success) proteinDiffMaxMax = 0.25d;
+		
+		double waterDiffMinMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants water_health difficulty_min min", out success);
+		if(!success) waterDiffMinMin = 1.0d;
+		double waterDiffMinMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants water_health difficulty_min max", out success);
+		if(!success) waterDiffMinMax = 1.0d;
+		double waterDiffMaxMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants water_health difficulty_max min", out success);
+		if(!success) waterDiffMaxMin = 0.5d;
+		double waterDiffMaxMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants water_health difficulty_max max", out success);
+		if(!success) waterDiffMaxMax = 1.0d;
+		
+		double hstasisDiffMinMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants hstasis_health difficulty_min min", out success);
+		if(!success) hstasisDiffMinMin = 0.8d;
+		double hstasisDiffMinMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants hstasis_health difficulty_min max", out success);
+		if(!success) hstasisDiffMinMax = 1.0d;
+		double hstasisDiffMaxMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants hstasis_health difficulty_max min", out success);
+		if(!success) hstasisDiffMaxMin = 0.1d;
+		double hstasisDiffMaxMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants hstasis_health difficulty_max max", out success);
+		if(!success) hstasisDiffMaxMax = 0.6d;
+		
+		double pregnancyDiffMinMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants pregnancy_chance difficulty_min min", out success);
+		if(!success) pregnancyDiffMinMin = 0.02d;
+		double pregnancyDiffMinMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants pregnancy_chance difficulty_min max", out success);
+		if(!success) pregnancyDiffMinMax = 0.15d;
+		double pregnancyDiffMaxMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants pregnancy_chance difficulty_max min", out success);
+		if(!success) pregnancyDiffMaxMin = 0.00d;
+		double pregnancyDiffMaxMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants pregnancy_chance difficulty_max max", out success);
+		if(!success) pregnancyDiffMaxMax = 0.01d;
+		
+		double woundDiffMinMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants wound_chance difficulty_min min", out success);
+		if(!success) woundDiffMinMin = 0.00d;
+		double woundDiffMinMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants wound_chance difficulty_min max", out success);
+		if(!success) woundDiffMinMax = 0.01d;
+		double woundDiffMaxMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants wound_chance difficulty_max min", out success);
+		if(!success) woundDiffMaxMin = 0.03d;
+		double woundDiffMaxMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants wound_chance difficulty_max max", out success);
+		if(!success) woundDiffMaxMax = 0.40d;
+		
+		double illnessDiffMinMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants illness_chance difficulty_min min", out success);
+		if(!success) illnessDiffMinMin = 0.005d;
+		double illnessDiffMinMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants illness_chance difficulty_min max", out success);
+		if(!success) illnessDiffMinMax = 0.02d;
+		double illnessDiffMaxMin = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants illness_chance difficulty_max min", out success);
+		if(!success) illnessDiffMaxMin = 0.04d;
+		double illnessDiffMaxMax = customConsts.getDoubleConst("setupHealthOfWanderersOrEmigrants illness_chance difficulty_max max", out success);
+		if(!success) illnessDiffMaxMax = 0.4d;
+
+		double mcalMin = travelDifficulty * (mcalDiffMaxMin - mcalDiffMinMin) + mcalDiffMaxMin;
+		double mcalMax = travelDifficulty * (mcalDiffMaxMax - mcalDiffMinMax) + mcalDiffMaxMax;
+		double proteinMin = travelDifficulty * (proteinDiffMaxMin - proteinDiffMinMin) + proteinDiffMaxMin;
+		double proteinMax = travelDifficulty * (proteinDiffMaxMax - proteinDiffMinMax) + proteinDiffMaxMax;
+		double waterMin = travelDifficulty * (waterDiffMaxMin - waterDiffMinMin) + waterDiffMaxMin;
+		double waterMax = travelDifficulty * (waterDiffMaxMax - waterDiffMinMax) + waterDiffMaxMax;
+		double hstasisMin = travelDifficulty * (hstasisDiffMaxMin - hstasisDiffMinMin) + hstasisDiffMaxMin;
+		double hstasisMax = travelDifficulty * (hstasisDiffMaxMax - hstasisDiffMinMax) + hstasisDiffMaxMax;
+		
+		double pregnancyChanceMin = travelDifficulty * (pregnancyDiffMaxMin - pregnancyDiffMinMin) + pregnancyDiffMaxMin;
+		double pregnancyChanceMax = travelDifficulty * (pregnancyDiffMaxMax - pregnancyDiffMinMax) + pregnancyDiffMaxMax;
+		double pregnancyChance = getAPI().calcRand() * (pregnancyChanceMax - pregnancyChanceMin) + pregnancyChanceMin;
+		pregnancyChance = Math.Max(0.0d, Math.Min(1.0d, pregnancyChance));
+		
+		double woundChanceMin = travelDifficulty * (woundDiffMaxMin - woundDiffMinMin) + woundDiffMaxMin;
+		double woundChanceMax = travelDifficulty * (woundDiffMaxMax - woundDiffMinMax) + woundDiffMaxMax;
+		double woundChance = getAPI().calcRand() * (woundChanceMax - woundChanceMin) + woundChanceMin;
+		woundChance = Math.Max(0.0d, Math.Min(1.0d, woundChance));
+		
+		double illnessChanceMin = travelDifficulty * (illnessDiffMaxMin - illnessDiffMinMin) + illnessDiffMaxMin;
+		double illnessChanceMax = travelDifficulty * (illnessDiffMaxMax - illnessDiffMinMax) + illnessDiffMaxMax;
+		double illnessChance = getAPI().calcRand() * (illnessChanceMax - illnessChanceMin) + illnessChanceMin;
+		illnessChance = Math.Max(0.0d, Math.Min(1.0d, illnessChance));
+		
+		addDebugMessage(inScriptInstance, "setting healths and health issues for " + inPopsInQuestion.Count + " arriving pops." + 
+			" travelDifficulty=" + travelDifficulty +
+			" anyWaterInLocalCommunity=" + anyWaterInLocalCommunity +
+			" mcalMin=" + mcalMin +
+			" mcalMax=" + mcalMax +
+			" proteinMin=" + proteinMin +
+			" proteinMax=" + proteinMax +
+			" waterMin=" + waterMin +
+			" waterMax=" + waterMax +
+			" hstasisMin=" + hstasisMin +
+			" hstasisMax=" + hstasisMax +
+			" pregnancyChanceMin=" + pregnancyChanceMin +
+			" pregnancyChanceMax=" + pregnancyChanceMax +
+			" pregnancyChance=" + pregnancyChance +
+			" woundChanceMin=" + woundChanceMin +
+			" woundChanceMax=" + woundChanceMax +
+			" woundChance=" + woundChance +
+			" illnessChanceMin=" + illnessChanceMin +
+			" illnessChanceMax=" + illnessChanceMax +
+			" illnessChance=" + illnessChance);
+		
+		//fetch the health mins and maxes so that the healths can be correctly set:
+		double healthMin = consts.getHealthMin();
+		double healthMax = consts.getHealthMax();
+		
+		Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+		
+		foreach(IFPop pop in inPopsInQuestion)
+		{
+			pop.setMCalHealth((getAPI().calcRand() * (mcalMax - mcalMin) + mcalMin) * (healthMax - healthMin) + healthMin);
+			pop.setProteinHealth((getAPI().calcRand() * (proteinMax - proteinMin) + proteinMin) * (healthMax - healthMin) + healthMin);
+			pop.setWaterHealth(anyWaterInLocalCommunity ? healthMax : (getAPI().calcRand() * (waterMax - waterMin) + waterMin) * (healthMax - healthMin) + healthMin);
+			pop.setHStasisHealth((getAPI().calcRand() * (hstasisMax - hstasisMin) + hstasisMin) * (healthMax - healthMin) + healthMin);
+			
+			bool isPregnant = getAPI().calcProb(pregnancyChance);
+			bool isWounded = getAPI().calcProb(woundChance);
+			bool isIll = getAPI().calcProb(illnessChance);
+			
+			if(isPregnant)
+			{
+				Int64 totalPregDays = pop.getRace().getTotalPregnancyDays();
+				Int64 dayOfPregEnd = (Int64)(1 + currentDate + (totalPregDays * getAPI().calcRand())); //1+ to make sure the date is at least tomorrow
+				pop.setPregnantBabyRace(pop.getRace());
+				pop.setPregnantDayOver(dayOfPregEnd);
+			}
+			if(isWounded)
+				pop.addWound(true); //exposure
+			if(isIll)
+				pop.addIllness(true); //exposure
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

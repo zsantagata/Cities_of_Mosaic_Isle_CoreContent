@@ -1,0 +1,308 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- the City Leader rejecting pops is considered the "default" option by members of the community, so community members will only be disappointed if: -->
+			<!-- A) the race mix of pops to join (claimed if lying was not detected; actual if lying was) is valued by the race in question -->
+			<!-- B) the resources of pops to join (claimed if lying was not detected; actual if lying was) is greatly valued -->
+			<!-- community members will only be happy if: -->
+			<!-- C) the race mix of pops to join (claimed if lying was not detected; actual if lying was) is greatly disliked by the race in question -->
+			<!-- D) the health conditions of pops to join (claimed if lying was not detected; actual if lying was) are high -->
+			<!-- E) the sheer count of pops to join (claimed if lying was not detected; actual if lying was) is high in comparison to the count of pops in the community -->
+			
+			<!-- lying status of A) and C) and E) are taken care of by the inputs to this script: the input pops should be the pops under consideration -->
+			<!-- lying status of B) is taken care of by the inputs to this script: the input resources should be the resources under consideration -->
+			<!-- lying status of C) is taken care of by the ordering of this script with the applyHiddenHealthProblemsForJoiners script: if lying was detected, applyHiddenHealthProblemsForJoiners should run before this script; otherwise after -->
+			
+			<!-- relief for not accepting wounded and pregnant pops is based on both the ratio of wounded+pregnant pops to total pops added, and the absolute count.  This is because wounds and pregnancy do not spread, and simply represent a pop that can't work right now to contribute to the community. -->
+			<!-- in contrast, ill pop disappointment is just based on absolute count.  This is because any illness can spread to others, including other races. -->
+			<i1><a>addRaceHappinessForRejectingNewPops wound_or_pregnancy relief per_pop</a> <b>double</b> <c>0.5</c></i1> <!-- the effect is pretty weak -->
+			<i1><a>addRaceHappinessForRejectingNewPops wound_or_pregnancy relief all_pop_and_ratio max</a> <b>double</b> <c>30.0</c></i1> <!-- as the ratio of wounded/pregnant pops rejected to total pops rejected reaches 100%, the max total wounded/pregnant relief approaches this -->
+			<i1><a>addRaceHappinessForRejectingNewPops illness relief per_pop</a> <b>double</b> <c>1.0</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops illness relief max</a> <b>double</b> <c>25.0</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops health_conditions strength min</a> <b>double</b> <c>4.0</c></i1> <!-- if the strength of the happiness impact is less than this, it won't appear -->
+			
+			<i1><a>addRaceHappinessForRejectingNewPops burdens relief name before_replace_text</a> <b>string</b> <c>Rejected Burden Pops</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops burdens relief description before_replace_text</a> <b>string</b>
+			<c>Our City Leader has rejected outside pops that could not work due to wounds or advanced pregnancy, and chosen instead to look after the existing pops of the community.</c></i1>
+			
+			<i1><a>addRaceHappinessForRejectingNewPops illness relief name before_replace_text</a> <b>string</b> <c>Rejected Diseased Pops</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops illness relief description before_replace_text</a> <b>string</b>
+			<c>Our City Leader has turned away outside pops who carried disease, to protect the community.</c></i1>
+			
+			<!-- as the ratio of pops rejected : pops currently loyal to local community rises from 0 to the max here, the happiness of existing races rises from 0 to the max here -->
+			<!-- the effect only occurs if the ratio is above the min -->
+			<i1><a>addRaceHappinessForRejectingNewPops too_many_joiners relief ratio min</a> <b>double</b> <c>0.45</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops too_many_joiners relief ratio max</a> <b>double</b> <c>3.5</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops too_many_joiners relief happiness max</a> <b>double</b> <c>40.0</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops too_many_joiners relief name before_replace_text</a> <b>string</b> <c>Rejected Oversized Refugee Group</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops too_many_joiners relief description before_replace_text</a> <b>string</b>
+			<c>Our City Leader has rejected outside pops whose count in number was too great.  Pops already in the community would lose their power over the community if such a large group were accepted.</c></i1>
+			
+			<!-- when the City Leader takes in pops, some resources are expected to come with them: -->
+			<i1><a>addRaceHappinessForRejectingNewPops resources desire_value_per_pop vertex</a> <b>double</b> <c>10.0</c></i1> <!-- if resource desire / total number of pops joining is this, the happiness mod for resources is 0 -->
+			<i1><a>addRaceHappinessForRejectingNewPops resources desire_value_per_pop vertex_value</a> <b>double</b> <c>20.0</c></i1> <!-- this value is also subtracted from the total at the end, making the function from -(this) to 0 at the vertex to (asymptote - this) at infinity -->
+			<i1><a>addRaceHappinessForRejectingNewPops resources desire_value_per_pop asymptote</a> <b>double</b> <c>50.0</c></i1> <!-- as resource desire / total number of pops joining approaches infinity, the happiness mod for resources approaches (this - vertex value) -->
+			<i1><a>addRaceHappinessForRejectingNewPops resources happiness name before_replace_text</a> <b>string</b> <c>Turned Away Pops With Goods</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops resources happiness description before_replace_text</a> <b>string</b>
+			<c>Our City Leader has rejected outside pops, and their carried resources, who wished to join our community.  The resources they could have brought are now gone.</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops resources happiness strength min</a> <b>double</b> <c>7.5</c></i1> <!-- if the strength of the happiness impact is less than this, it won't appear -->
+			
+			<!-- when the City Leader takes in pops, races of the community judge the pops based on their own race care values: -->
+			<i1><a>addRaceHappinessForRejectingNewPops happiness_per_1p0_racecare_per_pop default</a> <b>double</b> <c>1.5</c></i1> <!-- this is per pop joining -->
+			<i1><a>addRaceHappinessForRejectingNewPops racecare_threshold_average default</a> <b>double</b> <c>0.65</c></i1> <!-- the real race care average subtracts this and is then multiplied by the above (and total pop count) to find the total happiness -->
+			<i1><a>addRaceHappinessForRejectingNewPops race_mix happiness name before_replace_text</a> <b>string</b> <c>Rejected Pops Of Certain Races</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops race_mix happiness description before_replace_text</a> <b>string</b>
+			<c>Our City Leader has rejected outside pops who wished to join our community.  This prevented changes to the racial balance of the community.</c></i1>
+			<i1><a>addRaceHappinessForRejectingNewPops race_mix happiness strength min</a> <b>double</b> <c>5.0</c></i1> <!-- if the strength of the happiness impact is less than this, it won't appear -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script addRaceHappinessForRejectingNewPops</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which determines how happy each race in the player community is about the City Leader rejecting new pops from joining the community.  This script then (possibly, depending on input) adds this happiness cause to the specified race -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+		List<IFPop> inPopsRejectedFromCommunity, //cannot be null.  Nothing will happen if empty.  Dead pops skipped.
+		IFRace inRaceUnderConsideration, //cannot be null.  If no pops of this race exist in the player community or in inPopsWelcomedToCommunity, this script has no impact
+		Dictionary<IFResource, Tuple<double, double>> inResourcesRejectedFromCommunity, //can be null or empty
+		bool inAddHappinessCauseToRace //if false, the value of happiness impact is returned but no happiness cause is added to the player community
+	-->
+	
+	<!-- output:
+		double outHappinessImpactStrengthTotal
+	-->
+	<i1><a>addRaceHappinessForRejectingNewPops</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(List&lt;IFPop&gt;), typeof(IFRace), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(bool) }
+	      }, out _))
+	    {
+			throw new ArgumentException("addRaceHappinessForRejectingNewPops custom script received invalid arguments");
+			return null;
+	    }
+		
+		List&lt;IFPop&gt; inPopsWelcomedToCommunity = (List&lt;IFPop&gt;)inArguments[0];
+		IFRace inRaceUnderConsideration = (IFRace)inArguments[1];
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inResourcesRejectedFromCommunity = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)inArguments[2];
+		bool inAddHappinessCauseToRace = (bool)inArguments[3];
+		
+		if(inPopsWelcomedToCommunity == null)
+		{
+			throw new ArgumentException("addRaceHappinessForRejectingNewPops custom script received invalid arguments: inPopsWelcomedToCommunity cannot be null");
+			return null;
+		}
+		if(inRaceUnderConsideration == null)
+		{
+			throw new ArgumentException("addRaceHappinessForRejectingNewPops custom script received invalid arguments: inRaceUnderConsideration cannot be null");
+			return null;
+		}
+		if(inResourcesRejectedFromCommunity == null)
+		{
+			inResourcesRejectedFromCommunity = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		}
+		
+		var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		//strip inPopsWelcomedToCommunity of dead pops:
+		Dictionary&lt;IFRace, List&lt;IFPop&gt;&gt; popsJoiningByRace = new Dictionary&lt;IFRace, List&lt;IFPop&gt;&gt;();
+		Int64 countUnableToWorkJoining = 0;
+		Int64 countOfIllPopsJoining = 0;
+		Int64 countOfPopsJoining = 0;
+		foreach(IFPop pop in inPopsWelcomedToCommunity)
+		{
+			if(pop.isDead())
+				continue;
+			if(pop.isWounded() || pop.isPregnantImmobile())
+				countUnableToWorkJoining++;
+			if(pop.isIll())
+				countOfIllPopsJoining++;
+			if(!popsJoiningByRace.ContainsKey(pop.getRace()))
+				popsJoiningByRace.Add(pop.getRace(), new List&lt;IFPop&gt;());
+			popsJoiningByRace[pop.getRace()].Add(pop);
+			countOfPopsJoining++;
+		}
+		
+		double outHappinessImpactStrengthTotal = 0.0d;
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		if(popsJoiningByRace.Count == 0)
+		{
+			addDebugMessage(inScriptInstance, "no live pops joining community; happiness result = 0");
+			toReturn.Add(outHappinessImpactStrengthTotal);
+			return toReturn;
+		}
+		
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		//the existing pops of the race have four considerations: wounds/illnesses/pregnancies of the pops rejected, total count rejected, resources not being added, and racial distribution of the pops rejected
+		//wounds/illnesses/pregnancies are only positive (and zero if the count of them is zero), total count is only positive, resources has a positive offset but as more resources are added it trends negative, and racial distribution is based on count * race care values
+		
+		double unableToWorkReliefMax = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops wound_or_pregnancy relief all_pop_and_ratio max", out success);
+		if(!success) unableToWorkReliefMax = 25.0d;
+		unableToWorkReliefMax *= countUnableToWorkJoining;
+		unableToWorkReliefMax /= countOfPopsJoining;
+		double unableToWorkReliefPerPop = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops wound_or_pregnancy relief per_pop", out success);
+		if(!success) unableToWorkReliefPerPop = 0.5d;
+		double healthConditionThreshold = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops health_conditions strength min", out success);
+		if(!success) healthConditionThreshold = 4.0d;
+		
+		double unableToWorkRelief = Math.Min(unableToWorkReliefMax, unableToWorkReliefPerPop * countUnableToWorkJoining);
+		if(unableToWorkRelief &gt;= healthConditionThreshold)
+		{
+			addDebugMessage(inScriptInstance, "wounded/pregnant immobile pop count of " + countUnableToWorkJoining + " out of total " + countOfPopsJoining + " causes racial relief of " + unableToWorkRelief);
+			outHappinessImpactStrengthTotal += unableToWorkRelief;
+			
+			if(inAddHappinessCauseToRace)
+			{
+				string reliefName = customConsts.getStringConst("addRaceHappinessForRejectingNewPops burdens relief name before_replace_text", out success);
+				if(!success) reliefName = "Rejected Burden Pops";
+				string reliefDescription = customConsts.getStringConst("addRaceHappinessForRejectingNewPops burdens relief description before_replace_text", out success);
+				if(!success) reliefDescription = "Our City Leader has rejected outside pops that could not work due to wounds or advanced pregnancy, and chosen instead to look after the existing pops of the community.";
+				
+				localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(inRaceUnderConsideration, reliefName, reliefDescription, unableToWorkRelief, false);
+			}
+		}
+		
+		double illnessPerPopRelief = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops illness relief per_pop", out success);
+		if(!success) illnessPerPopRelief = 1.0d;
+		double illnessReliefMax = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops illness relief max", out success);
+		if(!success) illnessReliefMax = 25.0d;
+		
+		double illnessRelief = Math.Min(illnessReliefMax, illnessPerPopRelief * countOfIllPopsJoining);
+		if(illnessRelief &gt;= healthConditionThreshold)
+		{
+			addDebugMessage(inScriptInstance, "ill pop count of " + countOfIllPopsJoining + " out of total " + countOfPopsJoining + " causes racial relief of " + illnessRelief);
+			outHappinessImpactStrengthTotal += illnessRelief;
+			
+			if(inAddHappinessCauseToRace)
+			{
+				string reliefName = customConsts.getStringConst("addRaceHappinessForRejectingNewPops illness relief name before_replace_text", out success);
+				if(!success) reliefName = "Rejected Diseased Pops";
+				string reliefDescription = customConsts.getStringConst("addRaceHappinessForRejectingNewPops illness relief description before_replace_text", out success);
+				if(!success) reliefDescription = "Our City Leader has turned away outside pops who carried disease, to protect the community.";
+				
+				localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(inRaceUnderConsideration, reliefName, reliefDescription, illnessRelief, false);
+			}
+		}
+		
+		double popsRejectedToTotalRatio = ((double)countOfPopsJoining) / localCommunity.getPopsLoyalToCommunity(true, false).Count;
+		double ratioMin = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops too_many_joiners relief ratio min", out success);
+		if(!success) ratioMin = 0.45d;
+		double ratioMax = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops too_many_joiners relief ratio max", out success);
+		if(!success) ratioMax = 3.5d;
+		double ratioHappinessMax = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops too_many_joiners relief happiness max", out success);
+		if(!success) ratioHappinessMax = 40.0d;
+		if(popsRejectedToTotalRatio &gt;= ratioMin)
+		{
+			double happinessDueToRatio = popsRejectedToTotalRatio * ratioMax;
+			addDebugMessage(inScriptInstance, "rejected pop count of " + countOfPopsJoining + " causes racial relief of " + popsRejectedToTotalRatio);
+			outHappinessImpactStrengthTotal += happinessDueToRatio;
+			
+			if(inAddHappinessCauseToRace)
+			{
+				string reliefName = customConsts.getStringConst("addRaceHappinessForRejectingNewPops too_many_joiners relief name before_replace_text", out success);
+				if(!success) reliefName = "Rejected Oversized Refugee Group";
+				string reliefDescription = customConsts.getStringConst("addRaceHappinessForRejectingNewPops too_many_joiners relief description before_replace_text", out success);
+				if(!success) reliefDescription = "Our City Leader has rejected outside pops whose count in number was too great.  Pops already in the community would lose their power over the community if such a large group were accepted.";
+				
+				localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(inRaceUnderConsideration, reliefName, reliefDescription, happinessDueToRatio, false);
+			}
+		}
+		
+		//calculate total resource desire value and happiness from it:
+		if(customScripts.runCustomScriptCheckTypes("getDesireTotalOfResourceCollection", new List&lt;object&gt;() { localCommunity, null, inResourcesRejectedFromCommunity }, out List&lt;object&gt; resultDesireValue,
+			true, typeof(double)))
+		{
+			double totalResourceDesire = (double)resultDesireValue[0];
+			double resDesirePerPop = totalResourceDesire / countOfPopsJoining;
+			
+			double resourcesVertex = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops resources desire_value_per_pop vertex", out success);
+			if(!success) resourcesVertex = 10.0d;
+			double resourcesVertexValue = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops resources desire_value_per_pop vertex_value", out success);
+			if(!success) resourcesVertexValue = 20.0d;
+			double resourcesAsymptote = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops resources desire_value_per_pop asymptote", out success);
+			if(!success) resourcesAsymptote = 50.0d;
+			
+			double happinessFromResources = resourcesAsymptote * resDesirePerPop / (resDesirePerPop + resourcesVertex * ((resourcesAsymptote / resourcesVertexValue) - 1));
+			happinessFromResources -= resourcesVertexValue;
+			
+			double resourceDisappointmentThreshold = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops resources happiness strength min", out success);
+			if(!success) resourceDisappointmentThreshold = 7.5d;
+			
+			if(happinessFromResources &gt;= resourceDisappointmentThreshold)
+			{
+				happinessFromResources *= -1; //all the above calculations are based on *getting* the resources, so disappointment is the opposite
+				addDebugMessage(inScriptInstance, "resources desire total held by rejected pops of " + totalResourceDesire + " causes racial disappointment of " + happinessFromResources);
+				outHappinessImpactStrengthTotal += happinessFromResources;
+				
+				if(inAddHappinessCauseToRace)
+				{
+					string resourcesHappinessName = customConsts.getStringConst("addRaceHappinessForRejectingNewPops resources happiness name before_replace_text", out success);
+					if(!success) resourcesHappinessName = "Turned Away Pops With Goods";
+					string resourcesHappinessDescription = customConsts.getStringConst("addRaceHappinessForRejectingNewPops resources happiness description before_replace_text", out success);
+					if(!success) resourcesHappinessDescription = "Our City Leader has rejected outside pops, and their carried resources, who wished to join our community.  The resources they could have brought are now gone.";
+					
+					localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(inRaceUnderConsideration, resourcesHappinessName, resourcesHappinessDescription, happinessFromResources, false);
+				}
+			}
+		}
+		
+		//fetch race care values:
+		if(customScripts.runCustomScriptCheckTypes("getRaceCareValues", new List&lt;object&gt;() { localCommunity, inRaceUnderConsideration }, out List&lt;object&gt; resultRaceCareValues, true, typeof(List&lt;double&gt;)))
+		{
+			List&lt;double&gt; raceCareValues = (List&lt;double&gt;)resultRaceCareValues[0];
+			
+			double raceCareThreshold = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops racecare_threshold_average default", out success);
+			if(!success) raceCareThreshold = 0.65d;
+			double happinessPer1p0RaceCare = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops happiness_per_1p0_racecare_per_pop default", out success);
+			if(!success) happinessPer1p0RaceCare = 1.5d;
+			
+			double raceCareSum = 0.0d;
+			foreach(var kvpair in popsJoiningByRace)
+			{
+				double raceCareValue = raceCareValues.Count &gt; kvpair.Key.getMOID() ? raceCareValues[(int)kvpair.Key.getMOID()] : raceCareThreshold;
+				raceCareSum += (raceCareValue - raceCareThreshold) * kvpair.Value.Count;
+			}
+			double happinessFromRacialMix = raceCareSum * happinessPer1p0RaceCare;
+			happinessFromRacialMix *= -1; //the above is for if the pops join, so disappointment is the opposite
+			
+			double happinessRacialMixMin = customConsts.getDoubleConst("addRaceHappinessForRejectingNewPops race_mix happiness strength min", out success);
+			if(!success) happinessRacialMixMin = 5.0d;
+			
+			if(Math.Abs(happinessFromRacialMix) &gt;= happinessRacialMixMin)
+			{
+				addDebugMessage(inScriptInstance, "race care sum of " + raceCareSum + " causes racial happiness of " + happinessFromRacialMix);
+				outHappinessImpactStrengthTotal += happinessFromRacialMix;
+				
+				if(inAddHappinessCauseToRace)
+				{
+					string raceHappinessName = customConsts.getStringConst("addRaceHappinessForRejectingNewPops race_mix happiness name before_replace_text", out success);
+					if(!success) raceHappinessName = "Rejected Pops Of Certain Races";
+					string raceHappinessDescription = customConsts.getStringConst("addRaceHappinessForRejectingNewPops race_mix happiness description before_replace_text", out success);
+					if(!success) raceHappinessDescription = "Our City Leader has rejected outside pops who wished to join our community.  This prevented changes to the racial balance of the community.";
+					
+					localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(inRaceUnderConsideration, raceHappinessName, raceHappinessDescription, happinessFromRacialMix, false);
+				}
+			}
+		}
+		
+		toReturn.Add(outHappinessImpactStrengthTotal);
+		return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

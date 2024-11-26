@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!--
+workplace production works like this:
+
+0) in each part, if there is a custom script defined with the buildingkind's name in it, use that custom script instead of the common custom scripts which implement the below:
+1) in economics 101, they teach you that production has four factors: land, labor, capital, and entrepreneurship.  Discarding the last for ease of understanding, we have land, labor, and capital.  Using these, calculate a "production" value (non-negative).
+1a) land is the effects of: resource inputs/their quantity and quality/their fitness for this purpose, and degradation in the surroundings if this building extracts from the land
+1b) labor is the count of workers
+1c) capital includes "human capital" or skill, so it is the effects of: worker skill (or leader skill if the building is being led and the buildingkind does not do something else with that), buildingkind factor, building material multiplier
+2) once we have the production value, determine quality and quantity as a result
+2a) if the production value is zero (or less for some reason), then the building is off.
+2b) else, service buildings without quantity output calculate output quality as an asymptote
+2c) else, goods and land-extraction workplaces have quality as an input controlled by the player, but have restrictions on the possible quality that can be produced.  These are:
+2ci) there is a minimum quantity of goods that can be produced, and if goods could not be produced above this quantity for any quality input, then goods will be produced at this quantity with minimum-chooseable-quality
+2cii) there is a tag that indicates buildings cannot produce more output than their inputs in terms of total count.  If the buildingkind has this tag, then quality will be restricted to only the range where quantity output is less than or equal to the input.  If for any chooseable quality there would be more output, then output quality is set to maximum-chooseable-quality
+2d) after restrictions are applied, goods workplaces calculate the quality and quantity of the one output good they are creating
+2e) else, after restrictions are applied, land-extraction workplaces calculate the quality and quantity of the output goods they are creating, and weight the outputs based on the counts of resource parcels in their radius
+3) if the buildingkind has a script that runs after normal workplace scripts, it runs now (this is done by C# code right after step 2 returns)
+4) afterwards, the resources to be consumed (input and otherwise), the quality and quantity of resources to be created if this is midnight processing, and prediction text, are all returned to the appropriate C# code
+5) note that if any resources are created by the workplace (determined by the return dictionary being non-empty), then the workplace is NOT considered to be a service workplace by C# code.  If no resources are created by the workplace (AKA the return dictionary is empty), AND the buildingkind has the "isServiceWorkplace" flag, then the workplace is considered a service workplace by C# code.
+
+detail:
+1) the production factor is a direct multiplication of the land, labor, and capital values.  These three values should be non-negative.  It is desirable that quantity output scales linearly with count of workers working, so since production~labor, quantity output should ~production as well to keep this relationship linear.  Land and capital can therefore be considered multipliers on labor.
+1a) the calculation which resolves resource inputs into a singular output value is as follows:
+1ai) first, determine elasticity: this is an exponential parameter relating to how the availability of separate resources helps the output.  The inputs can be complements, substitutes, or neither.
+1aii) if there is no resource input, and the building can operate without inputs, add a fake input with a constant quality
+1aiii) else, for each input, calculate: minimum factor * ((average factor) ^ (2 * (range of quality from 0 to 1)))
+1aiv) calculate the proportion multiplier as 1 / count of resource types input, adding a bonus for complements (and a different bonus for substitutes)
+1av) sum over all inputs: input quantity * proportion mult * ((value in 1aiii) ^ elasticity)
+1avi) lastly, raise the sum to the power of (1 / elasticity)
+1avii) note that IMO it's not super easy to determine how the change of a parameter would impact the wide range of possible inputs.  I have a spreadsheet.  Getting this right is VERY important for game balance
+2) the production possibilities frontier (PPF) between quantity and quality is a line for goods and land-extraction workplaces.  A more complicated PPF was attempted, but it was too difficult to implement while maintaining the below desires, so it was scrapped in favor of a "good-enough" line.
+2a) the PPF should always be downward sloping
+2b) the slope of the PPF (representing opportunity cost between quality and quantity) should not be "too high" or "too low" at any point (i.e. the player should always see a real tradeoff to make)
+2c) it must be easy to calculate quality/quantity from one another so that restrictions can be applied
+2d) the PPF should not have an unwieldy number of parameters
+	-->
+	
+  <!-- this file holds the implementation of a scripts relating to a workplace producing goods or services -->
+  <gamescripts name="default">
+	<!-- all workplaces might consume resources and/or produce resources.  During midnight transition, this script is called on all fully-built, not-destroyed workplaces on the local map. -->
+	<!-- If a building is selected in the City View and an output prediction is necessary, this script may also be called, if the workplace is fully-built and not-destroyed. -->
+	<!-- After the script returns, C# code feeds this script's outputs into the buildingkind-specific script that runs after workplace production, if the buildingkind has one. -->
+	<!-- After *that* script returns, C# code will consume input resources and add output resources if (and only if) the script hasn't been called because the building is selected and the menu needs a prediction -->
+
+	<!-- workplace production script has two inputs: IFBuilding inWorkplace, bool inJustPredicting.
+	There are six outputs:
+	Dictionary<IFResource, double> outResourcesConsumedAsInputs, //"which should/would be" consumed as inputs; this script does not do it
+	Dictionary<IFResource, double> outResourcesConsumedOtherwise, //"which should/would be" consumed additionally; this script does not do it
+	Dictionary<IFResource, double> outputResourcesCreated, //"which should/would be" added to the pool; this script does not do it
+	double outputQuality,
+	bool outputQualityWasChanged //this is only true if outputQuality should override what the player possibly chose in the qual/quan dial (does nothing if the workplace does not have one)
+	bool outIsWorkplaceOn
+	-->
+	<mWorkplaceProduction>
+	//input count check:
+	if(inArguments.Length &lt; 2)
+    {
+		return null;
+    }
+	
+    IFBuilding inWorkplace = (IFBuilding)inArguments[0];
+    bool inJustPredicting = (bool)inArguments[1];
+	
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+	var customScripts = getAPI().getCustomScripts();
+	
+	//check if the buildingkind has a unique production script declared (modders might find this useful in addition to mScriptCalledBetweenOutputCalculationAndResolution)
+	string scriptToRunName = "workplaceproduction_common";
+	if(customScripts.doesCustomScriptExistWithName("workplaceproduction_" + inWorkplace.getBuildingKind().getInternalName()))
+	{
+		scriptToRunName = "workplaceproduction_" + inWorkplace.getBuildingKind().getInternalName();
+	}
+	
+	Dictionary&lt;IFResource, double&gt; outResourcesConsumedAsInputs = new Dictionary&lt;IFResource, double&gt;();
+	Dictionary&lt;IFResource, double&gt; outResourcesConsumedOtherwise = new Dictionary&lt;IFResource, double&gt;();
+	Dictionary&lt;IFResource, double&gt; outputResourcesCreated = new Dictionary&lt;IFResource, double&gt;();
+	double outputQuality = getAPI().getConsts().getResourceQualityMin();
+	bool outputQualityWasChanged = false;
+	bool outIsWorkplaceOn = false;
+	  
+	if(customScripts.runCustomScriptCheckTypes(scriptToRunName, new List&lt;object&gt;() { inWorkplace, localCommunity, inJustPredicting }, out List&lt;object&gt; productionOutputs, false, 
+		typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(Dictionary&lt;IFResource, double&gt;), typeof(double), typeof(bool), typeof(bool)))
+	{
+		outResourcesConsumedAsInputs = (Dictionary&lt;IFResource, double&gt;)productionOutputs[0];
+		outResourcesConsumedOtherwise = (Dictionary&lt;IFResource, double&gt;)productionOutputs[1];
+		outputResourcesCreated = (Dictionary&lt;IFResource, double&gt;)productionOutputs[2];
+		outputQuality = (double)productionOutputs[3];
+		outputQualityWasChanged = (bool)productionOutputs[4];
+		outIsWorkplaceOn = (bool)productionOutputs[5];
+	}
+	
+	return new List&lt;object&gt;() { outResourcesConsumedAsInputs, outResourcesConsumedOtherwise, outputResourcesCreated, outputQuality, outputQualityWasChanged, outIsWorkplaceOn };
+	</mWorkplaceProduction>
+  </gamescripts>
+  
+</core_data>

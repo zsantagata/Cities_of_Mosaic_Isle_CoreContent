@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- TODO DOUBLE CHECK displayed, translatable text strings are stored as follows: -->
+	  <i1><a>assembleTextBasedOnSiegeHappenings before_replace_text 1</a> <b>string</b>
+<c>[0] pops heeded the order to attack the enemy today.  The attackers targeted [18].  The attackers [20] [19] of their targets.[newline]</c></i1>
+	  <i1><a>assembleTextBasedOnSiegeHappenings before_replace_text alt 1</a> <b>string</b>
+<c>The order was given to attack, but no pops heeded the order.[newline]</c></i1>
+	  <i1><a>assembleTextBasedOnSiegeHappenings before_replace_text 2</a> <b>string</b>
+<c>[7] pops from the enemy community raided the siege camp today.  In total, [13] resources were destroyed.[newline]</c></i1>
+	  <i1><a>assembleTextBasedOnSiegeHappenings before_replace_text 3</a> <b>string</b>
+<c>The siege camp has [14] food resources left, at quality [15], and [16] HStasis resources left, at quality [17].[newline]</c></i1>
+	  <i1><a>assembleTextBasedOnSiegeHappenings before_replace_text 4</a> <b>string</b>
+<c>In the attacker's camp, [1] pops have died, [2] pops have been wounded, [3] pops have recovered from wounds, [4] pops have caught illnesses, [5] pops have recovered from illnesses, and [6] new pops have arrived since yesterday.[newline]In the defender's community, [8] pops have died, [9] pops have been wounded, [10] pops have recovered from wounds, [11] pops have caught illnesses, and [12] pops have recovered from illnesses.</c></i1>
+	  
+	  <i1><a>assembleTextBasedOnSiegeHappenings text verb stole</a> <b>string</b> <c>stole</c></i1>
+	  <i1><a>assembleTextBasedOnSiegeHappenings text verb destroyed</a> <b>string</b> <c>destroyed</c></i1>
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script assembletextbasedonsiegehappenings</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which assembles the display text on a war/raiding delegation's base occurrence resolution menu, based on what happened that day -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	//attackers that used to exist:
+	Int64 inHowManyAttackers,
+	Int64 inNewlyDeadAttackers, //not dead->dead
+	Int64 inNewlyWoundedAttackers, //not dead, not wounded->not dead, wounded
+	Int64 inNewlyUnwoundedAttackers, //not dead, wounded->not dead, not wounded
+	Int64 inNewlyIllAttackers, //not dead, not ill->not dead, ill
+	Int64 inNewlyNotIllAttackers, //not dead, ill->not dead, not ill
+	Int64 inNewlyArrivedAttackers, //did not exist yesterday->not dead
+	
+	Int64 inHowManyDefenderCampRaiders,
+	Int64 inNewlyDeadDefenders, //not dead->dead
+	Int64 inNewlyWoundedDefenders, //not dead, not wounded->not dead, wounded
+	Int64 inNewlyUnwoundedDefenders, //not dead, wounded->not dead, not wounded
+	Int64 inNewlyIllDefenders, //not dead, not ill->not dead, ill
+	Int64 inNewlyNotIllAttackers, //not dead, ill->not dead, not ill
+	//newly arrived defenders does not exist because A) the player would not know that information and B) reified pops, pops in other locations, etc. make it annoying to calculate
+	
+	double inQuantityCampResourcesDestroyed,
+	double inQuantityAttackerFoodLeft,
+	double inQualityAttackerFoodLeft,
+	double inQuantityAttackerHStasisLeft,
+	double inQualityAttackerHStasisLeft,
+	
+	string inTargetString,
+	double inTargetAccomplishCount,
+	bool inTargetAccomplishCountIsInt, //such as for pops or buildings
+	
+	bool inRaiding,
+	bool inWaitOneDay
+	
+	There is one output: string outputText -->
+	<i1><a>assembleTextBasedOnSiegeHappenings</a>
+	<b>
+	//input count and type check:
+	var customScripts = getAPI().getCustomScripts();
+	if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		{   typeof(Int64), typeof(Int64), typeof(Int64), typeof(Int64), typeof(Int64), typeof(Int64), typeof(Int64),
+			typeof(Int64), typeof(Int64), typeof(Int64), typeof(Int64), typeof(Int64), typeof(Int64),
+			typeof(double), typeof(double), typeof(double), typeof(double), typeof(double),
+			typeof(string), typeof(double), typeof(bool), typeof(bool), typeof(bool)
+		}
+	  }, out _))
+	{
+		throw new ArgumentException("assembleTextBasedOnSiegeHappenings custom script received invalid arguments");
+		return null;
+	}
+	
+	var customConsts = getAPI().getCustomConsts();
+	
+	Int64 inHowManyAttackers = (Int64)inArguments[0];
+	Int64 inNewlyDeadAttackers = (Int64)inArguments[1];
+	Int64 inNewlyWoundedAttackers = (Int64)inArguments[2];
+	Int64 inNewlyUnwoundedAttackers = (Int64)inArguments[3];
+	Int64 inNewlyIllAttackers = (Int64)inArguments[4];
+	Int64 inNewlyNotIllAttackers = (Int64)inArguments[5];
+	Int64 inNewlyArrivedAttackers = (Int64)inArguments[6];
+	
+	Int64 inHowManyDefenderCampRaiders = (Int64)inArguments[7];
+	Int64 inNewlyDeadDefenders = (Int64)inArguments[8];
+	Int64 inNewlyWoundedDefenders = (Int64)inArguments[9];
+	Int64 inNewlyUnwoundedDefenders = (Int64)inArguments[10];
+	Int64 inNewlyIllDefenders = (Int64)inArguments[11];
+	Int64 inNewlyNotIllDefenders = (Int64)inArguments[12];
+	
+	double inQuantityCampResourcesDestroyed = (double)inArguments[13];
+	double inQuantityAttackerFoodLeft = (double)inArguments[14];
+	double inQualityAttackerFoodLeft = (double)inArguments[15];
+	double inQuantityAttackerHStasisLeft = (double)inArguments[16];
+	double inQualityAttackerHStasisLeft = (double)inArguments[17];
+	
+	string inTargetString = (string)inArguments[18];
+	double inTargetAccomplishCount = (double)inArguments[19];
+	bool inTargetAccomplishCountIsInt = (bool)inArguments[20];
+	bool inRaiding = (bool)inArguments[21];
+	bool inWaitOneDay = (bool)inArguments[22];
+	
+	if(inTargetAccomplishCount &lt; 0.0d) inTargetAccomplishCount = 0.0d;
+	
+	bool success = false;
+	string before_replace_text1 = customConsts.getStringConst("assembleTextBasedOnSiegeHappenings before_replace_text 1", out success);
+	if(!success) before_replace_text1 = "[0] pops heeded the order to attack the enemy today.  The attackers targeted [18].  The attackers [20] [19] of their targets.[newline]";
+	string before_replace_text2 = customConsts.getStringConst("assembleTextBasedOnSiegeHappenings before_replace_text 2", out success);
+	if(!success) before_replace_text2 = "[7] pops from the enemy community raided the siege camp today.  In total, [13] resources were destroyed.[newline]";
+	string before_replace_text3 = customConsts.getStringConst("assembleTextBasedOnSiegeHappenings before_replace_text 3", out success);
+	if(!success) before_replace_text3 = "The siege camp has [14] food resources left, at quality [15], and [16] HStasis resources left, at quality [17].[newline]";
+	string before_replace_text4 = customConsts.getStringConst("assembleTextBasedOnSiegeHappenings before_replace_text 4", out success);
+	if(!success) before_replace_text4 = "In the attacker's camp, [1] pops have died, [2] pops have been wounded, [3] pops have recovered from wounds, [4] pops have caught illnesses, [5] pops have recovered from illnesses, and [6] new pops have arrived since yesterday.[newline]In the defender's community, [8] pops have died, [9] pops have been wounded, [10] pops have recovered from wounds, [11] pops have caught illnesses, and [12] pops have recovered from illnesses.";
+	
+	string before_replace_text_alt1 = customConsts.getStringConst("assembleTextBasedOnSiegeHappenings before_replace_text alt 1", out success);
+	if(!success) before_replace_text_alt1 = "The order was given to attack, but no pops heeded the order.[newline]";
+	
+	string text_verb_stole = customConsts.getStringConst("assembleTextBasedOnSiegeHappenings text verb stole", out success);
+	if(!success) text_verb_stole = "stole";
+	string text_verb_destroyed = customConsts.getStringConst("assembleTextBasedOnSiegeHappenings text verb destroyed", out success);
+	if(!success) text_verb_destroyed = "destroyed";
+	
+	string before_replace_text = "";
+	if(inHowManyAttackers &gt; 0)
+	{
+		before_replace_text += before_replace_text1;
+	}
+	else if(!inWaitOneDay) //if no pops attacked but the order was given to attack, indicate that the pops chose not to:
+	{
+		before_replace_text += before_replace_text_alt1;
+	}
+	if(inHowManyDefenderCampRaiders &gt; 0)
+	{
+		before_replace_text += before_replace_text2;
+	}
+	before_replace_text += before_replace_text3;
+	before_replace_text += before_replace_text4;
+
+	before_replace_text = before_replace_text.Replace("[0]", inHowManyAttackers.ToString());
+	before_replace_text = before_replace_text.Replace("[1]", inNewlyDeadAttackers.ToString());
+	before_replace_text = before_replace_text.Replace("[2]", inNewlyWoundedAttackers.ToString());
+	before_replace_text = before_replace_text.Replace("[3]", inNewlyUnwoundedAttackers.ToString());
+	before_replace_text = before_replace_text.Replace("[4]", inNewlyIllAttackers.ToString());
+	before_replace_text = before_replace_text.Replace("[5]", inNewlyNotIllAttackers.ToString());
+	before_replace_text = before_replace_text.Replace("[6]", inNewlyArrivedAttackers.ToString());
+	
+	before_replace_text = before_replace_text.Replace("[7]", inHowManyDefenderCampRaiders.ToString());
+	before_replace_text = before_replace_text.Replace("[8]", inNewlyDeadDefenders.ToString());
+	before_replace_text = before_replace_text.Replace("[9]", inNewlyWoundedDefenders.ToString());
+	before_replace_text = before_replace_text.Replace("[10]", inNewlyUnwoundedDefenders.ToString());
+	before_replace_text = before_replace_text.Replace("[11]", inNewlyIllDefenders.ToString());
+	before_replace_text = before_replace_text.Replace("[12]", inNewlyNotIllDefenders.ToString());
+	
+	before_replace_text = before_replace_text.Replace("[13]", inQuantityCampResourcesDestroyed.ToString());
+	before_replace_text = before_replace_text.Replace("[14]", inQuantityAttackerFoodLeft.ToString());
+	before_replace_text = before_replace_text.Replace("[15]", getAPI().getDisplayStringForQuality(inQualityAttackerFoodLeft));
+	before_replace_text = before_replace_text.Replace("[16]", inQuantityAttackerHStasisLeft.ToString());
+	before_replace_text = before_replace_text.Replace("[17]", getAPI().getDisplayStringForQuality(inQualityAttackerHStasisLeft));
+	
+	before_replace_text = before_replace_text.Replace("[18]", inTargetString);
+	before_replace_text = before_replace_text.Replace("[19]", inTargetAccomplishCountIsInt ? ((Int64)inTargetAccomplishCount).ToString() : inTargetAccomplishCount.ToString());
+	before_replace_text = before_replace_text.Replace("[20]", inRaiding ? text_verb_stole : text_verb_destroyed);
+	
+    return new List&lt;object&gt;() { before_replace_text };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

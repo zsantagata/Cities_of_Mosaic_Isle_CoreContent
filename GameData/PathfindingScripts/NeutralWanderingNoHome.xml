@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<!-- this file implements the pathfinding information and scripts necessary for pathfinding of pops in the NeutralWanderingNoHome state -->
+	<!-- for this purpose, we use custom consts, custom scripts, and pathfinding scripts -->
+	<!-- you can think of the custom scripts as help transitioning *into* a state, and the pathfinding script as help transitioning *out of* a state (though the next state might be the same as the current) -->
+	<Pathfinding name="default">
+		<mListOfPathfindingStatesAndTimings kind="add">
+		<!-- intent: A pop is NeutralWanderingNoHome when it is a neutral pop during peacetime, and it has no designated location it homes in: an Inn, a Trade Depot, or a Delegation Hall.  It is moving somewhere for aesthetics reasons but has no real goal or desire in mind. -->
+		<i1><a>NeutralWanderingNoHome</a>
+		<b>3.5</b><c>60.0</c></i1>
+		</mListOfPathfindingStatesAndTimings>
+	</Pathfinding>
+
+	<!-- custom consts related to NeutralWanderingNoHome: -->
+	<!-- to prevent collision with other custom consts, the custom consts here will be prepended with pathfinding_state_NeutralWanderingNoHome -->
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<i1><a>pathfinding_state_NeutralWanderingNoHome reached_destination radius</a> <b>double</b> <c>1.5</c></i1> <!-- if a pop is closer than this to its destination when pathfinding occurs, it will transition to Idle -->
+			
+			<i1><a>pathfinding_state_NeutralWanderingNoHome random_enable chance</a> <b>double</b> <c>0.6</c></i1> <!-- this is the chance an otherwise acceptable transition can happen -->
+			
+			<i1><a>pathfinding_state_NeutralWanderingNoHome choose_destination cityLeader weight</a> <b>double</b> <c>60.0</c></i1> <!-- this is the default weight for a pop in this state choosing to target the City Leader's home -->
+			<i1><a>pathfinding_state_NeutralWanderingNoHome choose_destination raceLeader weight</a> <b>double</b> <c>30.0</c></i1> <!-- this is the default weight for a pop in this state choosing to target a random Race Leader's home -->
+			<i1><a>pathfinding_state_NeutralWanderingNoHome choose_destination random_home weight</a> <b>double</b> <c>10.0</c></i1> <!-- this is the default weight for a pop in this state choosing to target a random home -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script pathfinding_state_NeutralWanderingNoHome_hasvalidtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script pathfinding_state_NeutralWanderingNoHome_findtargetfortransitionin</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_mscriptsdeterminingstateandtarget state_neutralwanderingnohome</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+	<!-- custom scripts related to NeutralWanderingNoHome: -->
+	<!-- to prevent collision with other custom consts, the custom scripts here will be prepended with pathfinding_state_NeutralWanderingNoHome -->
+	<!-- furthermore, in order to ease detection by other scripts, I will name custom scripts associated with pathfinding states in a consistent manner: -->
+	<!-- _hasValidTargetForTransitionIn is a script called to check if a pop can transition *into* this pathfinding state, from any other state.  It will check if any appropriate target exists. -->
+	<!-- _findTargetForTransitionIn is a script called when a pop transitions *into* this pathfinding state, from any other state.  It will find an appropriate target for the pop. -->
+	<customscripts name="default">
+		<mCustomScriptsList kind="add">
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns one value: bool outSuccess.  If there is at least one valid target for the pop to target as it transitions into this state, outSuccess will be true; otherwise it will be false. -->
+			<!-- note that this script doesn't have to find *the* target, just *a* target -->
+			<i1><a>pathfinding_state_NeutralWanderingNoHome_hasValidTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_NeutralWanderingNoHome_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+
+				addDebugMessage(inScriptInstance, "script pathfinding_state_NeutralWanderingNoHome_hasValidTargetForTransitionIn is checking if target exists for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//the following conditions are necessary for transition into this state:
+				//A) the pop must be neutral (AKA neither loyal to the player community or an enemy)
+				//B) the pop must not have a home that is on the map
+				//C) there must be at least one building on the map which is a home to some pops
+				//D) the pop must desire to stay on the map (AKA it has not spent too long on the map)
+				//E) random chance
+				bool neutral = (inPop.getCommunity() != getAPI().getLocalCommunity()) &amp;&amp; !getAPI().isHostileCommunity(inPop.getCommunity());
+				bool homeOnMap = (inPop.hasHomeBuilding() &amp;&amp; inLocalMap.isBuildingOnThisMap(inPop.getHomeBuilding()));
+				bool anyHomeBuildingOnMap = false;
+				foreach(IFBuilding blding in inLocalMap.getAllBuildingsOnMap())
+				{
+					if(blding.isHousing() &amp;&amp; (blding.getHousingComponent().getHousedPops().Count != 0) &amp;&amp; getAPI().isBuildingAccessibleByPop(inPop, blding))
+					{
+						anyHomeBuildingOnMap = true;
+						break;
+					}
+				}
+				bool desireToStay = false;
+				if(neutral &amp;&amp; !homeOnMap &amp;&amp; anyHomeBuildingOnMap)
+				{
+					if(customScripts.runCustomScriptCheckTypes("doesNeutralPopDesireToStay", new List&lt;object&gt;() {inPop},
+						out List&lt;object&gt; desiresToStay, false, typeof(bool)))
+					{
+						desireToStay = (bool)desiresToStay[0];
+					}
+				}
+				double randomChance = customConsts.getDoubleConst("pathfinding_state_NeutralWanderingNoHome random_enable chance", out bool success);
+				if(!success) randomChance = 0.6d;
+				bool chanceAllows = (getAPI().calcRand() &lt; randomChance);
+				
+				toReturn.Add(neutral &amp;&amp; !homeOnMap &amp;&amp; anyHomeBuildingOnMap &amp;&amp; desireToStay &amp;&amp; chanceAllows);
+				
+				addDebugMessage(inScriptInstance, "return value=" + (bool)toReturn[0]);
+				return toReturn;
+			</b></i1>
+		
+			<!-- this script has three input arguments: IFPop inPop, IFMap inLocalMap, and bool inBattleOngoing -->
+			<!-- this script returns five values: IFBuilding outBuildingToMoveTo, IFPop outPopToChase, bool outShouldPopTryToLeaveMap, double outPopTargetOnMapX, double outPopTargetOnMapX.  These values are acceptable to return as the final five return values of a script in mScriptsDeterminingStateAndTarget -->
+			<i1><a>pathfinding_state_NeutralWanderingNoHome_findTargetForTransitionIn</a>
+			<b>
+				//input count and type check:
+				var customScripts = getAPI().getCustomScripts();
+				if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+					{typeof(IFPop), typeof(IFMap), typeof(bool)}
+				  }, out _))
+				{
+					throw new ArgumentException("pathfinding_state_NeutralWanderingNoHome_hasValidTargetForTransitionIn custom script received invalid arguments");
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				
+				addDebugMessage(inScriptInstance, "script pathfinding_state_NeutralWanderingNoHome_findTargetForTransitionIn finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//check for saved destination for this pop:
+				Int64 targetBuildingUIDOverride = variableHandler.getInt("pathfinding_state_NeutralWanderingNoHome target override pop" + inPop.getUID(), out bool success);
+				if(success)
+				{
+					IFBuilding tgt = (IFBuilding)getAPI().getSO("buildings", (UInt64)targetBuildingUIDOverride);
+					if((tgt != null) &amp;&amp; inLocalMap.isBuildingOnThisMap(tgt))
+					{
+						addDebugMessage(inScriptInstance, inPop.getDebugName() + " targeting saved target building: " + tgt.getDebugName());
+						toReturn.Add(tgt);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+					//if the saved destination is invalid/does not exist, continue
+				}
+				
+				//three possible categories of target:
+				//City Leader's home, some Race Leader's home, some random home
+				//the default weights of these are 60/30/10 but based on what event spawned these neutrals, the Race Leader targeted could be specific, and the weights might be different
+				double cityLeaderWeight = customConsts.getDoubleConst("pathfinding_state_NeutralWanderingNoHome choose_destination cityLeader weight", out success);
+				if(!success) cityLeaderWeight = 60.0d;
+				double raceLeaderWeight = customConsts.getDoubleConst("pathfinding_state_NeutralWanderingNoHome choose_destination raceLeader weight", out success);
+				if(!success) raceLeaderWeight = 30.0d;
+				double randomHomeWeight = customConsts.getDoubleConst("pathfinding_state_NeutralWanderingNoHome choose_destination random_home weight", out success);
+				if(!success) randomHomeWeight = 10.0d;
+				
+				double overrideDbl = variableHandler.getDouble("pathfinding_state_NeutralWanderingNoHome cityLeader weight override pop" + inPop.getUID(), out success);
+				if(success) cityLeaderWeight = overrideDbl;
+				overrideDbl = variableHandler.getDouble("pathfinding_state_NeutralWanderingNoHome raceLeader weight override pop" + inPop.getUID(), out success);
+				if(success) raceLeaderWeight = overrideDbl;
+				overrideDbl = variableHandler.getDouble("pathfinding_state_NeutralWanderingNoHome random_home weight override pop" + inPop.getUID(), out success);
+				if(success) randomHomeWeight = overrideDbl;
+				
+				Int64 raceLeaderMOIDOverride = variableHandler.getInt("pathfinding_state_NeutralWanderingNoHome raceLeader raceMOID override pop" + inPop.getUID(), out success);
+				if(!success) raceLeaderMOIDOverride = -1;
+				
+				IFPop cityLeader = getAPI().getLocalCommunity().getLeaderCollection().getCityLeader();
+				List&lt;IFPop&gt; raceLeaders = new List&lt;IFPop&gt;(getAPI().getLocalCommunity().getLeaderCollection().getRaceLeaders());
+				for(int i = 0; i &lt; raceLeaders.Count; i++) //cannot use a foreach loop because raceLeaders is modified here
+				{
+					if(raceLeaders[i].getRace().getMOID() == raceLeaderMOIDOverride) //-1 will never be a valid MOID
+					{
+						if(raceLeaders[i].hasHomeBuilding())
+						{
+							raceLeaders = new List&lt;IFPop&gt;() { raceLeaders[i] };
+						}
+						else
+						{
+							raceLeaders = new List&lt;IFPop&gt;();
+						}
+						break;
+					}
+					else if(!raceLeaders[i].hasHomeBuilding())
+					{
+						raceLeaders.RemoveAt(i);
+						i--;
+						continue;
+					}
+				}
+				
+				if((cityLeaderWeight &lt; 0.0d) || (cityLeader == null) || (!cityLeader.hasHomeBuilding()))
+					cityLeaderWeight = 0.0d;
+				if((raceLeaderWeight &lt; 0.0d) || (raceLeaders.Count == 0))
+					raceLeaderWeight = 0.0d;
+				if(randomHomeWeight &lt; 0.0d)
+					randomHomeWeight = 0.0d;
+				
+				double weightSum = cityLeaderWeight + raceLeaderWeight + randomHomeWeight;
+				if(weightSum == 0.0d)
+				{
+					randomHomeWeight = 1.0d;
+					weightSum = 1.0d;
+				}
+				
+				//now that the weights have been set up, find an/the appropriate building:
+				double randVal = getAPI().calcRand() * weightSum;
+				bool targetCityLeader = (randVal &lt; cityLeaderWeight);
+				bool targetRaceLeader = (randVal &lt; raceLeaderWeight) &amp;&amp; !targetCityLeader;
+				bool targetRandomHome = !(targetCityLeader || targetRaceLeader);
+				
+				IFBuilding buildingTarget = null;
+				if(targetCityLeader)
+				{
+					buildingTarget = cityLeader.getHomeBuilding();
+					addDebugMessage(inScriptInstance, "with cityLeader/raceLeader/randomHome weights of " + cityLeaderWeight + "/" + raceLeaderWeight + "/" + randomHomeWeight + ", city leader home targeted: " + buildingTarget.getDebugName());
+				}
+				else if(targetRaceLeader)
+				{
+					IFPop targetedPop = raceLeaders[(int)getAPI().calcRandIntUnder(raceLeaders.Count)];
+					buildingTarget = targetedPop.getHomeBuilding();
+					addDebugMessage(inScriptInstance, "with cityLeader/raceLeader/randomHome weights of " + cityLeaderWeight + "/" + raceLeaderWeight + "/" + randomHomeWeight + ", race leader " + targetedPop.getDebugName() + " home targeted: " + buildingTarget.getDebugName());
+				}
+				else //if(targetRandomHome)
+				{
+					List&lt;IFBuilding&gt; potentialBuildings = new List&lt;IFBuilding&gt;();
+					foreach(IFBuilding blding in inLocalMap.getAllBuildingsOnMap())
+					{
+						if(blding.isHousing() &amp;&amp; (blding.getHousingComponent().getHousedPops().Count != 0))
+						{
+							potentialBuildings.Add(blding);
+						}
+					}
+					if(potentialBuildings.Count != 0)
+					{
+						buildingTarget = potentialBuildings[(int)getAPI().calcRandIntUnder(potentialBuildings.Count)];
+						addDebugMessage(inScriptInstance, "with cityLeader/raceLeader/randomHome weights of " + cityLeaderWeight + "/" + raceLeaderWeight + "/" + randomHomeWeight + ", random home targeted: " + buildingTarget.getDebugName());
+					}
+				}
+				
+				//let's estimate two days of travel max
+				if(buildingTarget != null)
+				{
+					variableHandler.storeIntVariable(getAPI().getCalendar().getCurrentDate() + 2, "pathfinding_state_NeutralWanderingNoHome cityLeader weight override pop" + inPop.getUID(), (Int64)buildingTarget.getUID());
+				}
+				
+				toReturn.Add(buildingTarget);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</b></i1>
+		</mCustomScriptsList>
+	</customscripts>
+	
+	<!-- this script is part of the pathfinding scripts called when a pop needs a destination.  This is the default pathfinding script for the category "state_NeutralWanderingNoHome" -->
+	<Pathfinding name="default">
+		<mScriptsDeterminingStateAndTarget kind="add">
+		<i1>
+			<a>
+				//input count check:
+				if(inArguments.Length &lt; 3)
+				{
+					return null;
+				}
+
+				IFPop inPop = (IFPop)inArguments[0];
+				IFMap inLocalMap = (IFMap)inArguments[1];
+				bool inBattleOngoing = (bool)inArguments[2];
+
+				var consts = getAPI().getConsts();
+				var customConsts = getAPI().getCustomConsts();
+				var variableHandler = getAPI().getVariableHandler();
+				var customScripts = getAPI().getCustomScripts();
+
+				addDebugMessage(inScriptInstance, "default state_NeutralWanderingNoHome script is finding target for " + inPop.getDebugName());
+				List&lt;object&gt; toReturn = new List&lt;object&gt;();
+				
+				//if we are somehow in battle unexpectedly, transition this pop based on its loyalty and mustered status:
+				if(inBattleOngoing)
+				{
+					string newState = "";
+					if(inPop.getCommunity() == getAPI().getLocalCommunity())
+					{
+						if(inPop.isMustered())
+						{
+							newState = "Idle";
+						}
+						else
+						{
+							newState = "UnmusteredInBattle";
+						}
+					}
+					else if(getAPI().getHostileCommunities().Contains(inPop.getCommunity()))
+					{
+						newState = "EnemyIdleEval";
+					}
+					else
+					{
+						newState = "UnmusteredInBattle";
+					}
+					//construct toReturn as necessary:
+					toReturn.Add(newState);
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if this pop has been assigned a home, go there instead: transition to NeutralWanderingNearHome
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"NeutralWanderingNearHome", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt3, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt3[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the NeutralWanderingNearHome state due to: " + " pop is neutral and now has a home to wander near");
+						toReturn.Add("NeutralWanderingNearHome");
+						toReturn.Add((IFBuilding)validTgt3[1]);
+						toReturn.Add((IFPop)validTgt3[2]);
+						toReturn.Add((bool)validTgt3[3]);
+						toReturn.Add((double)validTgt3[4]);
+						toReturn.Add((double)validTgt3[5]);
+						return toReturn;
+					}
+				}
+				else
+				{
+					//we failed to call a script correctly somehow.  Transition to Idle instead:
+					addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the NeutralWanderingNearHome state so pop is transitioning directly to Idle state");
+					toReturn.Add("Idle");
+					toReturn.Add(null);
+					toReturn.Add(null);
+					toReturn.Add(false);
+					toReturn.Add(-1.0d);
+					toReturn.Add(-1.0d);
+					return toReturn;
+				}
+				
+				//if the pop's target is now invalid, the pop should now be Idle:
+				Int64 targetMOID = variableHandler.getInt("pathfinding_state_NeutralWanderingNoHome target override pop" + inPop.getUID(), out bool success);
+				IFBuilding tgt = (IFBuilding)getAPI().getSO("buildings", (UInt64)targetMOID);
+				if(success)
+				{
+					if(tgt == null)
+					{
+						success = false;
+					}
+					else
+					{
+						//even if the building no longer houses pops, or houses the pop that was the reason this pop chose the target (such as City Leader or a Race Leader), keep moving there because why would a neutral pop know immediately?
+						success = inLocalMap.isBuildingOnThisMap(tgt);
+						if(!success) tgt = null;
+					}
+				}
+				if(!success)
+				{
+					//yeah it's just the Idle state but call the appropriate custom scripts anyway:
+					if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Idle", inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+					{
+						//this should always be true because we should always be able to transition to the Idle state
+						if((bool)validTgt[0])
+						{
+							addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the Idle state due to: " + " pop is neutral and previous building target is now invalid");
+							toReturn.Add("Idle");
+							toReturn.Add((IFBuilding)validTgt[1]);
+							toReturn.Add((IFPop)validTgt[2]);
+							toReturn.Add((bool)validTgt[3]);
+							toReturn.Add((double)validTgt[4]);
+							toReturn.Add((double)validTgt[5]);
+							return toReturn;
+						}
+					}
+					else
+					{
+						//we failed to call a script correctly somehow.  Transition to Idle instead:
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the Idle state so pop is transitioning directly to Idle state");
+						toReturn.Add("Idle");
+						toReturn.Add(null);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+				}
+				
+				//if the pop is near enough to its target, it should now be Idle:
+				double radiusToIdleNearTarget = customConsts.getDoubleConst("pathfinding_state_NeutralWanderingNoHome reached_destination radius", out success);
+				if(!success) radiusToIdleNearTarget = 1.5d;
+				if((tgt != null) &amp;&amp; (getAPI().calcDistanceBetweenPopAndBuildingOnMap(inPop, tgt, inLocalMap) &lt; radiusToIdleNearTarget))
+				{
+					//yeah it's just the Idle state but call the appropriate custom scripts anyway:
+					if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"Idle", inPop, inLocalMap, inBattleOngoing},
+						out List&lt;object&gt; validTgt, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+					{
+						//this should always be true because we should always be able to transition to the Idle state
+						if((bool)validTgt[0])
+						{
+							addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the Idle state due to: " + " pop is neutral and has reached near target building");
+							toReturn.Add("Idle");
+							toReturn.Add((IFBuilding)validTgt[1]);
+							toReturn.Add((IFPop)validTgt[2]);
+							toReturn.Add((bool)validTgt[3]);
+							toReturn.Add((double)validTgt[4]);
+							toReturn.Add((double)validTgt[5]);
+							return toReturn;
+						}
+					}
+					else
+					{
+						//we failed to call a script correctly somehow.  Transition to Idle instead:
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop could not transition to the Idle state so pop is transitioning directly to Idle state");
+						toReturn.Add("Idle");
+						toReturn.Add(null);
+						toReturn.Add(null);
+						toReturn.Add(false);
+						toReturn.Add(-1.0d);
+						toReturn.Add(-1.0d);
+						return toReturn;
+					}
+				}
+				
+				//we're here because the pop has a target but is too far from it; stay in this state and keep moving (pathfinding_state_NeutralWanderingNoHome_findTargetForTransitionIn takes care of keeping the target the same)
+				if(customScripts.runCustomScriptCheckTypes("attemptPathfindStateTransition", new List&lt;object&gt;() {"NeutralWanderingNoHome", inPop, inLocalMap, inBattleOngoing},
+					out List&lt;object&gt; validTgt2, true, typeof(bool), typeof(IFBuilding), typeof(IFPop), typeof(bool), typeof(double), typeof(double)))
+				{
+					if((bool)validTgt2[0])
+					{
+						addDebugMessage(inScriptInstance, "custom scripts indicated pop can and should transition to the NeutralWanderingNoHome state due to: " + " pop is neutral and has not reached target yet");
+						toReturn.Add("NeutralWanderingNoHome");
+						toReturn.Add((IFBuilding)validTgt2[1]);
+						toReturn.Add((IFPop)validTgt2[2]);
+						toReturn.Add((bool)validTgt2[3]);
+						toReturn.Add((double)validTgt2[4]);
+						toReturn.Add((double)validTgt2[5]);
+						return toReturn;
+					}
+				}
+				//we failed to call a script correctly somehow.  Transition to Idle instead:
+				addDebugMessage(inScriptInstance, "custom scripts indicated pop could not stay in the NeutralWanderingNoHome state so pop is transitioning directly to Idle state");
+				toReturn.Add("Idle");
+				toReturn.Add(null);
+				toReturn.Add(null);
+				toReturn.Add(false);
+				toReturn.Add(-1.0d);
+				toReturn.Add(-1.0d);
+				return toReturn;
+			</a>
+			<b>state_NeutralWanderingNoHome</b> <!-- category names can be anything but the empty string (also they are trimmed of whitespace).  In this case, it is just the state name.  Note that only scripts in the exact same category will fall through to the next script.  Category names are trimmed of whitespace and not case-sensitive. -->
+			<c>0x7FFFFFFFFFFFFFFF</c> <!-- priority int is "lower value gets executed first".  Value cannot be negative.  If values are tied, the scripts are not necessarily executed in any guaranteed order (this means you can't be sure that making the value '0' will cause your script to be executed before all others, so plan around that). --> <!-- the value 0x7FFFFFFFFFFFFFFF means this script, which is the default behavior, should come after everything else. -->
+		</i1>
+		</mScriptsDeterminingStateAndTarget>
+	</Pathfinding>
+
+</core_data>

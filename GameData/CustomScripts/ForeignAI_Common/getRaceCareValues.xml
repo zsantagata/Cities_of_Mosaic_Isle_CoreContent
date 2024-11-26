@@ -1,0 +1,466 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- the upper connected variable names for race by MOID is: raceCareValue[MOID of source race]_moid[MOID of target race]_all and raceCareValue[MOID of source race]_moid[MOID of race]_uid[UID of community] -->
+			<!-- the combination type is an addition, because some contributors will be negative while others may be positive -->
+			<!-- if the connected variable does not exist, the value of 0.0 will be used -->
+			<!-- if an igEvent or something else wants to shift these values by groups (such as "all unisex none"), they need to iterate over all appropriate MOIDs -->
+			
+			<!-- in addition to the above variable modifiers, foreign communities can have care values decided by their foreign AI (hardcoded or not depends on the foreign AI) -->
+			<!-- the name of the function that will be checked for existence (and expected return value of List<double> of same size as outCareValues) is: getRaceCareValues_[name of foreign AI] -->
+			<!-- these values will be added to this function's outCareValues -->
+			
+			<!-- in addition to the above specific modifiers, foreign communities have common care values.  That is taken care of in this function. -->
+			
+			<!-- the common care value for each race is: 1.0d for themselves, and 0.0d for others. -->
+			<!-- however, some of the qualities of races make them more or less amenable to one another: -->
+			<!-- if two races have different breathability (such as land only vs either), increase their care for each other because (in the mind of the races in question) they aren't directly competing for some resources -->
+			<!-- if a race is a crossbreeding race, increase their care for all other races if this race cannot reproduce on its own, and decrease if it can. -->
+			  <!-- otherwise, if a race is incapable of reproducing without crossbreeders, increase their care for crossbreeding races.  Otherwise, decrease their care for crossbreeding races. -->
+			<!-- TODO certain tags will also decrease/increase outgoing/incoming care values -->
+			<i1><a>foreign_community race_care different_breathable addition</a> <b>double</b> <c>0.25</c></i1>
+			<i1><a>foreign_community race_care crossbreed_to_necessary addition</a> <b>double</b> <c>0.2</c></i1>
+			<i1><a>foreign_community race_care crossbreed_to_unnecessary addition</a> <b>double</b> <c>-0.2</c></i1>
+			<!-- if a race can both mother and father pops, but can only do so with a crossbreeding race and are not crossbreeders themselves, min(mother only, father only) is used -->
+			<i1><a>foreign_community race_care motheronly_to_crossbreed addition</a> <b>double</b> <c>0.45</c></i1> <!-- mother only and father only to crossbreed is different because of how babies are made and the population pressures that creates -->
+			<i1><a>foreign_community race_care fatheronly_to_crossbreed addition</a> <b>double</b> <c>2.5</c></i1> <!-- mother only and father only to crossbreed is different because of how babies are made and the population pressures that creates -->
+			<i1><a>foreign_community race_care reproducing_to_crossbreed addition</a> <b>double</b> <c>-0.75</c></i1>
+			
+			<!-- the comments below describe the general attitudes of communities and their constituents and leaders in COMI; specific events or scenarios can bypass this with the "ignore common race care attitude" variable -->
+			<!-- if more than half of the pops of a community are one race, the community's decisionmaking is dominated by that race, so it mostly advances that race's interests.  A more minor impact is had from the other races. -->
+			<!-- if the most populous race is less than half, but more than one third of the community, the community's inner factions are split between the most populous race on one side, and all other races on the other side.  The other races don't necessarily have all that much in common besides their desire not to see the first racial group dominate. -->
+			<!-- otherwise, the community's inner factions are specific to the community and its individual racial interests, so race care values are just added together (weighted by population) -->
+			<!-- lastly, as the most populous race falls from 3/4 to 1/3 of the population, it feels its position of dominance is being threatened, so it will contribute negatively to race care values of other races in the community (trying to keep them down to maintain their own status) -->
+			<i1><a>foreign_community race_care dominant_race mult</a> <b>double</b> <c>1.65</c></i1> <!-- in addition to multiplication by population proportion, a dominant race has its contribution to total race care multiplied by this -->
+			<i1><a>foreign_community race_care dominance_threatened low_threshold</a> <b>double</b> <c>0.33333</c></i1>
+			<i1><a>foreign_community race_care dominance_threatened high_threshold</a> <b>double</b> <c>0.75</c></i1>
+			<i1><a>foreign_community race_care dominance_threatened addition max</a> <b>double</b> <c>-1.0</c></i1> <!-- races trying to achieve or hold onto dominance will add this to their care for other races in the community.  (Technically, this is the value at 1/3 of population and linearly decreases to 0.0 as proportion approaches 3/4) -->
+			<i1><a>foreign_community race_care opposing_populous addition</a> <b>double</b> <c>-1.0</c></i1> <!-- races opposing the potential dominance of another race will add this to their care for the other race -->
+			
+			<!-- for races in the local community that are not the same race as the City Leader, their approval of the City Leader leaks over into how much they care about members of the City Leader's race -->
+			<!-- as race happiness goes from min (0) to max the care shift goes from the first value below to the second -->
+			<i1><a>foreign_community race_care local_happiness shift min</a> <b>double</b> <c>-0.4</c></i1>
+			<i1><a>foreign_community race_care local_happiness shift max</a> <b>double</b> <c>0.4</c></i1>
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script getracecarevalues</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- foreign communities need to decide how much they care about the wellbeing of, and maintaining the loyalty of, various races. -->
+  <!-- this is necessary because, in the context of COMI, many pops as individuals and almost all groups/communities will treat pops as members of a race/community rather than as individuals -->
+  <!-- (opinion of other communities is either player-opinion, master/servant, or no particular opinion; foreign communities don't maintain complex opinions of one another) -->
+  <!-- this file holds the implementation of a custom script which returns the relative values a foreign community cares about the wellbeing/loyalty of races.  The base value is 0.0d (apathy); positive means the foreign community likes pops of the race; negative means they dislike pops of the race. -->
+  <!-- note that unlike getResourceDesireValues, this function can be called on the local community and, if inRaceIfLocalCommunity is a race in the local community, will return the race care values for that race in the local community -->
+  <!-- inRaceIfLocalCommunity is otherwise ignored -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunity,
+	IFRace inRaceIfLocalCommunity
+	-->
+	
+	<!-- output:
+	List<double> outCareValues //the index of this list will be the MOID of the race in question; therefore MOID=0 will always return 0.0d and the size of this will always be the total count of races declared, even if they are invisible
+	-->
+	<i1><a>getRaceCareValues</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity), typeof(IFRace)}
+	      }, out _))
+	    {
+			throw new ArgumentException("getRaceCareValues custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFCommunity inCommunity = (IFCommunity)inArguments[0];
+		IFRace inRaceIfLocalCommunity = (IFRace)inArguments[1];
+		
+		if(inCommunity == null)
+		{
+			throw new ArgumentException("getRaceCareValues custom script received invalid arguments: inCommunity cannot be null");
+			return null;
+		}
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		if((inCommunity == localCommunity) &amp;&amp; (inRaceIfLocalCommunity == null))
+		{
+			throw new ArgumentException("getRaceCareValues custom script received invalid arguments: inRaceIfLocalCommunity cannot be null when inCommunity is the local community");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		Int64 countOfRaces = getAPI().getTotalCountOfMO("races");
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;();
+		List&lt;double&gt; outCareValues = new List&lt;double&gt;();
+		outCareValues.Add(0.0d);
+		
+		//special communities (Wanderers, Rebels, GenericEnemy, and TheLady) should have all race care values set to 1.0d:
+		if(inCommunity.isWanderers() || inCommunity.isRebels() || inCommunity.isGenericEnemy() || inCommunity.isTheLady())
+		{
+			for(int moid = 1; moid &lt; countOfRaces; moid++)
+			{
+				outCareValues.Add(1.0d);
+			}
+			toReturn.Add(outCareValues);
+			return toReturn;
+		}
+		
+		//get the total count of pops in the community first, and per race:
+		Int64 totalPopsInCommunity = 0;
+		Dictionary&lt;IFRace, Int64&gt; countOfPopsByRace = new Dictionary&lt;IFRace, Int64&gt;();
+		for(int moid = 1; moid &lt; countOfRaces; moid++)
+		{
+			IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+			UInt64 count = inCommunity.getPopCountOfRace(race);
+			totalPopsInCommunity += (Int64)count;
+			countOfPopsByRace.Add(race, (Int64)count);
+			outCareValues.Add(0.0d);
+		}
+		
+		//if there are no pops in the community, return all 0.0d:
+		if(totalPopsInCommunity == 0)
+		{
+			addDebugMessage(inScriptInstance, "no pops in community so all race care values == 0");
+			toReturn.Add(outCareValues);
+			return toReturn;
+		}
+		
+		List&lt;double&gt; foreignAICareValues = new List&lt;double&gt;();
+		
+		//look for the custom script that provides foreign AI care values for this foreign AI:
+		string foreignAIName = inCommunity.getCurrentAI() != null ? inCommunity.getCurrentAI().getInternalName() : "null";
+		if(customScripts.doesCustomScriptExistWithName("getRaceCareValues_" + foreignAIName))
+		{
+			//TODO: have these scripts return a second value, a bool that says "totally override all common considerations" (i.e. all the below calculations)
+			if(customScripts.runCustomScriptCheckTypes("getRaceCareValues_" + foreignAIName, new List&lt;object&gt;() { inCommunity }, out List&lt;object&gt; outputs, false, typeof(List&lt;double&gt;)))
+			{
+				foreignAICareValues = (List&lt;double&gt;)outputs[0];
+			}
+			else
+			{
+				addDebugMessage(inScriptInstance, "custom script with name getRaceCareValues_" + foreignAIName + " did not execute successfully");
+			}
+		}
+		else
+		{
+			addDebugMessage(inScriptInstance, "could not find custom script with name getRaceCareValues_" + foreignAIName);
+		}
+		
+		double proportionOfMostPopulousRace = 0.0d;
+		IFRace mostPopulousRace = null;
+		foreach(var kvpair in countOfPopsByRace)
+		{
+			double proportion = (double)kvpair.Value / totalPopsInCommunity;
+			if(proportion &gt; proportionOfMostPopulousRace)
+			{
+				proportionOfMostPopulousRace = proportion;
+				mostPopulousRace = kvpair.Key;
+			}
+		}
+		
+		double differentBreathableAddition = customConsts.getDoubleConst("foreign_community race_care different_breathable addition", out bool success);
+		if(!success) differentBreathableAddition = 0.25d;
+		double crossbreedToNecessaryAddition = customConsts.getDoubleConst("foreign_community race_care crossbreed_to_necessary addition", out success);
+		if(!success) crossbreedToNecessaryAddition = 0.2d;
+		double crossbreedToUnnecessaryAddition = customConsts.getDoubleConst("foreign_community race_care crossbreed_to_unnecessary addition", out success);
+		if(!success) crossbreedToUnnecessaryAddition = -0.2d;
+		double motherOnlyToCrossbreed = customConsts.getDoubleConst("foreign_community race_care motheronly_to_crossbreed addition", out success);
+		if(!success) motherOnlyToCrossbreed = 0.45d;
+		double fatherOnlyToCrossbreed = customConsts.getDoubleConst("foreign_community race_care fatheronly_to_crossbreed addition", out success);
+		if(!success) fatherOnlyToCrossbreed = 2.5d;
+		double reproducingToCrossbreed = customConsts.getDoubleConst("foreign_community race_care reproducing_to_crossbreed addition", out success);
+		if(!success) reproducingToCrossbreed = -0.75d;
+		double motherAndFatherToNecessaryCrossbreed = Math.Min(motherOnlyToCrossbreed, fatherOnlyToCrossbreed);
+		
+		double dominantMult = customConsts.getDoubleConst("foreign_community race_care dominant_race mult", out success);
+		if(!success) dominantMult = 1.65d;
+		double dominanceThreatenedAdditionMax = customConsts.getDoubleConst("foreign_community race_care dominance_threatened addition max", out success);
+		if(!success) dominanceThreatenedAdditionMax = -1.0d;
+		double opposingPopulousAddition = customConsts.getDoubleConst("foreign_community race_care opposing_populous addition", out success);
+		if(!success) opposingPopulousAddition = -1.0d;
+		
+		double dominanceThreatenedThresholdMin = customConsts.getDoubleConst("foreign_community race_care dominance_threatened low_threshold", out success);
+		if(!success) dominanceThreatenedThresholdMin = 0.33333d;
+		double dominanceThreatenedThresholdMax = customConsts.getDoubleConst("foreign_community race_care dominance_threatened high_threshold", out success);
+		if(!success) dominanceThreatenedThresholdMax = 0.75d;
+		
+		if(inCommunity == localCommunity)
+		{
+			double happinessShiftMin = customConsts.getDoubleConst("foreign_community race_care local_happiness shift min", out success);
+			if(!success) happinessShiftMin = -0.4d;
+			double happinessShiftMax = customConsts.getDoubleConst("foreign_community race_care local_happiness shift max", out success);
+			if(!success) happinessShiftMax = 0.4d;
+			double happinessMax = consts.getHappinessMax();
+		
+			if(countOfPopsByRace.ContainsKey(inRaceIfLocalCommunity) &amp;&amp; countOfPopsByRace[inRaceIfLocalCommunity] &gt; 0)
+			{
+				Int64 count = countOfPopsByRace[inRaceIfLocalCommunity];
+				double proportion = (double)count / totalPopsInCommunity;
+				
+				bool thisCrossbreedNeedsOthers = (inRaceIfLocalCommunity.isCrossBreedPossible()) &amp;&amp; (inRaceIfLocalCommunity.isCanMotherChildren() != inRaceIfLocalCommunity.isCanFatherChildren());
+				bool thisMotherOnly = (inRaceIfLocalCommunity.isCanMotherChildren() &amp;&amp; !inRaceIfLocalCommunity.isCanFatherChildren());
+				bool thisFatherOnly = (!inRaceIfLocalCommunity.isCanMotherChildren() &amp;&amp; inRaceIfLocalCommunity.isCanFatherChildren());
+				bool reproducing = (inRaceIfLocalCommunity.isCanMotherChildren() &amp;&amp; inRaceIfLocalCommunity.isCanFatherChildren()) &amp;&amp; !inRaceIfLocalCommunity.hasTag("requires crossbreeders");
+				
+				foreach(IFRace targetRace in countOfPopsByRace.Keys)
+				{
+					string contrib_text = "";
+					double careValue = 0.0d;
+					if(inRaceIfLocalCommunity == targetRace)
+					{
+						careValue = 1.0d;
+						contrib_text = "+1.0 (self) ";
+					}
+					else
+					{
+						//physical compatability concerns:
+						if((inRaceIfLocalCommunity.isCanBreatheUnderwater() != targetRace.isCanBreatheUnderwater()) || (inRaceIfLocalCommunity.isCanBreatheOverwater() != targetRace.isCanBreatheOverwater()))
+						{
+							careValue += differentBreathableAddition;
+							contrib_text += "+" + differentBreathableAddition + " (diff. breathe) ";
+						}
+						if(thisCrossbreedNeedsOthers &amp;&amp; (targetRace.isCanMotherChildren() || targetRace.isCanFatherChildren()))
+						{
+							careValue += crossbreedToNecessaryAddition;
+							contrib_text += "+" + crossbreedToNecessaryAddition + " (crossbreed to necessary other) ";
+						}
+						else if(thisCrossbreedNeedsOthers)
+						{
+							careValue += crossbreedToUnnecessaryAddition;
+							contrib_text += "+" + crossbreedToUnnecessaryAddition + " (crossbreed to unnecessary other) ";
+						}
+						if(inRaceIfLocalCommunity.isCrossBreedPossible() &amp;&amp; !thisCrossbreedNeedsOthers)
+						{
+							careValue += crossbreedToUnnecessaryAddition;
+							contrib_text += "+" + crossbreedToUnnecessaryAddition + " (crossbreed to unnecessary other) ";
+						}
+						if(thisMotherOnly &amp;&amp; (targetRace.isCrossBreedPossible() &amp;&amp; targetRace.isCanFatherChildren()))
+						{
+							careValue += motherOnlyToCrossbreed;
+							contrib_text += "+" + motherOnlyToCrossbreed + " (mother only to crossbreed) ";
+						}
+						if(thisFatherOnly &amp;&amp; (targetRace.isCrossBreedPossible() &amp;&amp; targetRace.isCanMotherChildren()))
+						{
+							careValue += fatherOnlyToCrossbreed;
+							contrib_text += "+" + fatherOnlyToCrossbreed + " (father only to crossbreed) ";
+						}
+						if(inRaceIfLocalCommunity.isCanMotherChildren() &amp;&amp; inRaceIfLocalCommunity.isCanFatherChildren() &amp;&amp; inRaceIfLocalCommunity.hasTag("requires crossbreeders") &amp;&amp; targetRace.isCrossBreedPossible() &amp;&amp; (targetRace.isCanMotherChildren() || targetRace.isCanFatherChildren()))
+						{
+							careValue += motherAndFatherToNecessaryCrossbreed;
+							contrib_text += "+" + motherAndFatherToNecessaryCrossbreed + " (mother and father needing crossbreed) ";
+						}
+						if(reproducing &amp;&amp; targetRace.isCrossBreedPossible())
+						{
+							careValue += reproducingToCrossbreed;
+							contrib_text += "+" + reproducingToCrossbreed + " (reproducing to crossbreed) ";
+						}
+						
+						//split of the community concerns:
+						if((mostPopulousRace == targetRace) &amp;&amp; (proportionOfMostPopulousRace &lt;= 0.5d) &amp;&amp; (proportionOfMostPopulousRace &gt;= 0.33333d))
+						{
+							careValue += opposingPopulousAddition;
+							contrib_text += "+" + opposingPopulousAddition + " (opposing potential racial dominance) ";
+						}
+						if(mostPopulousRace == inRaceIfLocalCommunity)
+						{
+							double dominanceThreatenedCare = 0.0d;
+							if((proportion &lt; dominanceThreatenedThresholdMax) &amp;&amp; (proportion &gt; dominanceThreatenedThresholdMin))
+							{
+								dominanceThreatenedCare = (dominanceThreatenedAdditionMax) * (dominanceThreatenedThresholdMax - proportion) / (dominanceThreatenedThresholdMax - dominanceThreatenedThresholdMin);
+							}
+							//need to check that the target race has pops in the community:
+							if(countOfPopsByRace[targetRace] == 0)
+							{
+								dominanceThreatenedCare = 0.0d;
+							}
+							else
+							{
+								careValue += dominanceThreatenedCare;
+								contrib_text += "+" + dominanceThreatenedCare + " (dominance threatened) ";
+							}
+						}
+					}
+					
+					//now, shift from connectedVariables:
+					IFConnectedVariable raceCareValueShiftAll = variableHandler.getConnectedVariable("raceCareValue" + inRaceIfLocalCommunity.getMOID() + "_moid" + targetRace.getMOID() + "_all");
+					IFConnectedVariable raceCareValueShiftCommunity = variableHandler.getConnectedVariable("raceCareValue" + inRaceIfLocalCommunity.getMOID() + "_moid" + targetRace.getMOID() + "_uid" + inCommunity.getUID());
+					if(raceCareValueShiftAll != null)
+					{
+						careValue += raceCareValueShiftAll.getVariableAsInt();
+						contrib_text += "+" + raceCareValueShiftAll.getVariableAsInt() + " (connected variable for all communities) ";
+					}
+					if(raceCareValueShiftCommunity != null)
+					{
+						careValue += raceCareValueShiftCommunity.getVariableAsInt();
+						contrib_text += "+" + raceCareValueShiftCommunity.getVariableAsInt() + " (connected variable for this community) ";
+					}
+					
+					if(inCommunity.getLeaderCollection().hasCityLeader() &amp;&amp; (targetRace == inCommunity.getLeaderCollection().getCityLeader().getRace()))
+					{
+						//now, shift from local happiness:
+						double localHappinessProportion = inCommunity.getDomesticComponent().getHappinessCollection().getRaceHappiness(inRaceIfLocalCommunity) / happinessMax;
+						careValue += localHappinessProportion * (happinessShiftMax - happinessShiftMin) + happinessShiftMin;
+						contrib_text += "+" + localHappinessProportion + " (happiness towards City Leader's race) ";
+					}
+					
+					addDebugMessage(inScriptInstance, inRaceIfLocalCommunity.getInternalName() + "->" + targetRace.getInternalName() + " care contribution: " + contrib_text);
+					outCareValues[(int)targetRace.getMOID()] += careValue;
+				}
+			}
+			else //set all race care values to 1
+			{
+				addDebugMessage(inScriptInstance, "there are no pops of race " + inRaceIfLocalCommunity.getDebugName() + " so all race care values are 1.0d");
+				for(int moid = 1; moid &lt; countOfRaces; moid++)
+				{
+					outCareValues[moid] = 1.0d;
+				}
+			}
+		}
+		else
+		{
+			//calculate contributions of each race to race care values:
+			addDebugMessage(inScriptInstance, "calculating race care values for community " + inCommunity.getDebugName());
+			foreach(var kvpair in countOfPopsByRace)
+			{
+				double proportion = (double)kvpair.Value / totalPopsInCommunity;
+				
+				bool thisCrossbreedNeedsOthers = (kvpair.Key.isCrossBreedPossible()) &amp;&amp; (kvpair.Key.isCanMotherChildren() != kvpair.Key.isCanFatherChildren());
+				bool thisMotherOnly = (kvpair.Key.isCanMotherChildren() &amp;&amp; !kvpair.Key.isCanFatherChildren());
+				bool thisFatherOnly = (!kvpair.Key.isCanMotherChildren() &amp;&amp; kvpair.Key.isCanFatherChildren());
+				bool reproducing = (kvpair.Key.isCanMotherChildren() &amp;&amp; kvpair.Key.isCanFatherChildren()) &amp;&amp; !kvpair.Key.hasTag("requires crossbreeders");
+				
+				foreach(IFRace targetRace in countOfPopsByRace.Keys)
+				{
+					string contrib_text = "";
+					double careValue = 0.0d;
+					if(kvpair.Key == targetRace)
+					{
+						careValue = 1.0d;
+						contrib_text = "+1.0 (self) ";
+					}
+					else
+					{
+						//physical compatability concerns:
+						if((kvpair.Key.isCanBreatheUnderwater() != targetRace.isCanBreatheUnderwater()) || (kvpair.Key.isCanBreatheOverwater() != targetRace.isCanBreatheOverwater()))
+						{
+							careValue += differentBreathableAddition;
+							contrib_text += "+" + differentBreathableAddition + " (diff. breathe) ";
+						}
+						if(thisCrossbreedNeedsOthers &amp;&amp; (targetRace.isCanMotherChildren() || targetRace.isCanFatherChildren()))
+						{
+							careValue += crossbreedToNecessaryAddition;
+							contrib_text += "+" + crossbreedToNecessaryAddition + " (crossbreed to necessary other) ";
+						}
+						else if(thisCrossbreedNeedsOthers)
+						{
+							careValue += crossbreedToUnnecessaryAddition;
+							contrib_text += "+" + crossbreedToUnnecessaryAddition + " (crossbreed to unnecessary other) ";
+						}
+						if(kvpair.Key.isCrossBreedPossible() &amp;&amp; !thisCrossbreedNeedsOthers)
+						{
+							careValue += crossbreedToUnnecessaryAddition;
+							contrib_text += "+" + crossbreedToUnnecessaryAddition + " (crossbreed to unnecessary other) ";
+						}
+						if(thisMotherOnly &amp;&amp; (targetRace.isCrossBreedPossible() &amp;&amp; targetRace.isCanFatherChildren()))
+						{
+							careValue += motherOnlyToCrossbreed;
+							contrib_text += "+" + motherOnlyToCrossbreed + " (mother only to crossbreed) ";
+						}
+						if(thisFatherOnly &amp;&amp; (targetRace.isCrossBreedPossible() &amp;&amp; targetRace.isCanMotherChildren()))
+						{
+							careValue += fatherOnlyToCrossbreed;
+							contrib_text += "+" + fatherOnlyToCrossbreed + " (father only to crossbreed) ";
+						}
+						if(kvpair.Key.isCanMotherChildren() &amp;&amp; kvpair.Key.isCanFatherChildren() &amp;&amp; kvpair.Key.hasTag("requires crossbreeders") &amp;&amp; targetRace.isCrossBreedPossible() &amp;&amp; (targetRace.isCanMotherChildren() || targetRace.isCanFatherChildren()))
+						{
+							careValue += motherAndFatherToNecessaryCrossbreed;
+							contrib_text += "+" + motherAndFatherToNecessaryCrossbreed + " (mother and father needing crossbreed) ";
+						}
+						if(reproducing &amp;&amp; targetRace.isCrossBreedPossible())
+						{
+							careValue += reproducingToCrossbreed;
+							contrib_text += "+" + reproducingToCrossbreed + " (reproducing to crossbreed) ";
+						}
+						
+						//split of the community concerns:
+						if((mostPopulousRace == targetRace) &amp;&amp; (proportionOfMostPopulousRace &lt;= 0.5d) &amp;&amp; (proportionOfMostPopulousRace &gt;= 0.33333d))
+						{
+							careValue += opposingPopulousAddition;
+							contrib_text += "+" + opposingPopulousAddition + " (opposing potential racial dominance) ";
+						}
+						if(mostPopulousRace == kvpair.Key)
+						{
+							double dominanceThreatenedCare = 0.0d;
+							if((proportion &lt; dominanceThreatenedThresholdMax) &amp;&amp; (proportion &gt; dominanceThreatenedThresholdMin))
+							{
+								dominanceThreatenedCare = (dominanceThreatenedAdditionMax) * (dominanceThreatenedThresholdMax - proportion) / (dominanceThreatenedThresholdMax - dominanceThreatenedThresholdMin);
+							}
+							//need to check that the target race has pops in the community:
+							if(countOfPopsByRace[targetRace] == 0)
+							{
+								dominanceThreatenedCare = 0.0d;
+							}
+							else
+							{
+								careValue += dominanceThreatenedCare;
+								contrib_text += "+" + dominanceThreatenedCare + " (dominance threatened) ";
+							}
+							
+							if(proportion &gt;= 0.5d)
+							{
+								//this race, being more populous than the combination of all other races, has its cares multiplied:
+								careValue *= dominantMult;
+								contrib_text += "*" + dominantMult + " (race is dominant) ";
+							}
+						}
+					}
+					
+					//now, shift from connectedVariables:
+					IFConnectedVariable raceCareValueShiftAll = variableHandler.getConnectedVariable("raceCareValue" + kvpair.Key.getMOID() + "_moid" + targetRace.getMOID() + "_all");
+					IFConnectedVariable raceCareValueShiftCommunity = variableHandler.getConnectedVariable("raceCareValue" + kvpair.Key.getMOID() + "_moid" + targetRace.getMOID() + "_uid" + inCommunity.getUID());
+					if(raceCareValueShiftAll != null)
+					{
+						careValue += raceCareValueShiftAll.getVariableAsInt();
+						contrib_text += "+" + raceCareValueShiftAll.getVariableAsInt() + " (connected variable for all communities) ";
+					}
+					if(raceCareValueShiftCommunity != null)
+					{
+						careValue += raceCareValueShiftCommunity.getVariableAsInt();
+						contrib_text += "+" + raceCareValueShiftCommunity.getVariableAsInt() + " (connected variable for this community) ";
+					}
+					
+					//lastly, all care contributions are multiplied by the proportion of the source race:
+					careValue *= proportion;
+					contrib_text += "*" + proportion + " (source race proportion)";
+					
+					addDebugMessage(inScriptInstance, kvpair.Key.getInternalName() + "->" + targetRace.getInternalName() + " care contribution: " + contrib_text);
+					outCareValues[(int)targetRace.getMOID()] += careValue;
+				}
+			}
+		}
+		
+		for(int moid = 1; moid &lt; outCareValues.Count; moid++)
+		{
+			IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+			addDebugMessage(inScriptInstance, "race care value total for " + race.getInternalName() + ": " + outCareValues[moid]);
+		}
+		
+		toReturn.Add(outCareValues);
+	    return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>
