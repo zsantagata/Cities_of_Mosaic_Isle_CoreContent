@@ -479,6 +479,7 @@
     <Content Include="GameData\terrainDoodads.xml" />
     <Content Include="GameData\terrainResourceParcels.xml" />
     <Content Include="GameData\terrainSourceList.xml" />
+    <Content Include="README.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

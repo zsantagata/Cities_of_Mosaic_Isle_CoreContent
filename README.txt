@@ -4,4 +4,4 @@ Certain XML elements are expected by the game to be in the form of compilable C#
 
 This repository is provided as a reference for potential modders.  The data here is called the "core data" of the game, and will be distributed with the game, but aside from being loaded first is no different in form than any potential mod would be.  The game is still in development and this "core data", as well as its form, will almost certainly change.
 
-By the time the game is released this will have a license.  It's currently useful to nobody so all rights reserved is fine for now.  If you want to see the C# interfaces declared for the game (used almost all of the C# scripts), that repo is here: (LINK)
+By the time the game is released this will have a license.  It's currently useful to nobody so all rights reserved is fine for now.  If you want to see the C# interfaces declared for the game (used in almost all of the C# scripts), that repo is here: https://github.com/zsantagata/Cities_of_Mosaic_Isle_PublicInterfaces
