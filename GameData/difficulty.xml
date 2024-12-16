@@ -50,6 +50,8 @@
 		<i1><a>Hard</a><b>1.12</b></i1>
 		<i1><a>Very Hard</a><b>1.4</b></i1>
 	</mDifficultyPresetNamesAndValues>
+	
+	<mDifficultyPresetMilTimeMultFactor>0.55</mDifficultyPresetMilTimeMultFactor> <!-- while the player can set military speed multiplier to anywhere on the full range,  -->
   
   </difficulty>
   

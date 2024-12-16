@@ -10,8 +10,8 @@
 		<name>Menu Body</name> <!-- simply for debug purposes -->
 		<frames>1</frames> <!-- must be an integer, 1 or higher -->
 		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
-		<width>7</width>
-		<height>7</height>
+		<width>150</width>
+		<height>150</height>
 		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
 	  </sprite>
 	  
@@ -19,9 +19,9 @@
 	    <id>1</id> <!-- integer, ids must be unique and flush -->
 		<name>Menu Corner</name> <!-- simply for debug purposes -->
 		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>8</y_origin> <!-- the top of an image is 0 -->
-		<width>14</width>
-		<height>14</height>
+		<y_origin>151</y_origin> <!-- the top of an image is 0 -->
+		<width>3</width>
+		<height>3</height>
 		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
 	  </sprite>
 	  
@@ -29,29 +29,9 @@
 	    <id>2</id> <!-- integer, ids must be unique and flush -->
 		<name>Menu Side</name> <!-- simply for debug purposes -->
 		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>23</y_origin> <!-- the top of an image is 0 -->
-		<width>7</width>
-		<height>7</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>3</id> <!-- integer, ids must be unique and flush -->
-		<name>In Game Overlay Corner</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>31</y_origin> <!-- the top of an image is 0 -->
-		<width>150</width>
-		<height>140</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>4</id> <!-- integer, ids must be unique and flush -->
-		<name>In Game Overlay Top Bar</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>172</y_origin> <!-- the top of an image is 0 -->
-		<width>6</width>
-		<height>49</height>
+		<y_origin>155</y_origin> <!-- the top of an image is 0 -->
+		<width>3</width>
+		<height>1</height>
 		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
 	  </sprite>
 	</mSpriteList>
@@ -59,7 +39,7 @@
   </spritesheet>
   
   <spritesheet name="Pause Button Foreground">
-    <mSheetTypeName>Button</mSheetTypeName> <!-- no actual button uses this but whatever (it's just a displayed texture over the pause button) -->
+    <mSheetTypeName>MenuImage</mSheetTypeName>
 	<mPath>_Previs Menus_and_Buttons/Buttons/Pause Button Foreground SS</mPath>
 	<mSpriteList>
 	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
@@ -462,260 +442,6 @@
     <mTagList></mTagList>
   </spritesheet>
   
-  
-  <spritesheet name="Buttons">
-    <mSheetTypeName>Button</mSheetTypeName>
-	<mPath>_Previs Menus_and_Buttons/Buttons/Button SS</mPath>
-	<mSpriteList>
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>0</id> <!-- integer, ids must be unique and flush -->
-		<name>Down Arrow</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
-		<width>50</width>
-		<height>50</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>1</id> <!-- integer, ids must be unique and flush -->
-		<name>Up Arrow</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>51</y_origin> <!-- the top of an image is 0 -->
-		<width>50</width>
-		<height>50</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>2</id> <!-- integer, ids must be unique and flush -->
-		<name>Button On</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>102</y_origin> <!-- the top of an image is 0 -->
-		<width>40</width>
-		<height>40</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>3</id> <!-- integer, ids must be unique and flush -->
-		<name>Button On Depressed</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>143</y_origin> <!-- the top of an image is 0 -->
-		<width>40</width>
-		<height>40</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>4</id> <!-- integer, ids must be unique and flush -->
-		<name>Text Button</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>184</y_origin> <!-- the top of an image is 0 -->
-		<width>100</width>
-		<height>50</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>5</id> <!-- integer, ids must be unique and flush -->
-		<name>Text Button Depressed</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>235</y_origin> <!-- the top of an image is 0 -->
-		<width>100</width>
-		<height>50</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>6</id> <!-- integer, ids must be unique and flush -->
-		<name>Button Off</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>286</y_origin> <!-- the top of an image is 0 -->
-		<width>40</width>
-		<height>40</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>7</id> <!-- integer, ids must be unique and flush -->
-		<name>Button Off Depressed</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>327</y_origin> <!-- the top of an image is 0 -->
-		<width>40</width>
-		<height>40</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>8</id> <!-- integer, ids must be unique and flush -->
-		<name>Slowdown Button Depressed</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>368</y_origin> <!-- the top of an image is 0 -->
-		<width>40</width>
-		<height>40</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>9</id> <!-- integer, ids must be unique and flush -->
-		<name>Slowdown Button</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>409</y_origin> <!-- the top of an image is 0 -->
-		<width>40</width>
-		<height>40</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>10</id> <!-- integer, ids must be unique and flush -->
-		<name>Speedup Depressed</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>450</y_origin> <!-- the top of an image is 0 -->
-		<width>40</width>
-		<height>40</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>11</id> <!-- integer, ids must be unique and flush -->
-		<name>Speedup</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>491</y_origin> <!-- the top of an image is 0 -->
-		<width>40</width>
-		<height>40</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>12</id> <!-- integer, ids must be unique and flush -->
-		<name>Overlay Top Button Depressed</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>532</y_origin> <!-- the top of an image is 0 -->
-		<width>91</width>
-		<height>40</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>13</id> <!-- integer, ids must be unique and flush -->
-		<name>Overlay Top Button</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>573</y_origin> <!-- the top of an image is 0 -->
-		<width>91</width>
-		<height>40</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>14</id> <!-- integer, ids must be unique and flush -->
-		<name>Left Arrow Button</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>614</y_origin> <!-- the top of an image is 0 -->
-		<width>25</width>
-		<height>25</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>15</id> <!-- integer, ids must be unique and flush -->
-		<name>Right Arrow Button</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>640</y_origin> <!-- the top of an image is 0 -->
-		<width>25</width>
-		<height>25</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	</mSpriteList>
-    <mTagList></mTagList>
-  </spritesheet>
-  
-  <spritesheet name="Dials">
-    <mSheetTypeName>Dial</mSheetTypeName>
-	<mPath>_Previs Menus_and_Buttons/Dials/Dial SS</mPath>
-	<mSpriteList>
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>0</id> <!-- integer, ids must be unique and flush -->
-		<name>Options Slider BG</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
-		<width>320</width>
-		<height>50</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>1</id> <!-- integer, ids must be unique and flush -->
-		<name>Qual Quan Knob BG</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>51</y_origin> <!-- the top of an image is 0 -->
-		<width>200</width>
-		<height>100</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>2</id> <!-- integer, ids must be unique and flush -->
-		<name>Qual Quan Knob</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>152</y_origin> <!-- the top of an image is 0 -->
-		<width>50</width>
-		<height>50</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>3</id> <!-- integer, ids must be unique and flush -->
-		<name>Scrollbar BG</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>203</y_origin> <!-- the top of an image is 0 -->
-		<width>30</width>
-		<height>300</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>4</id> <!-- integer, ids must be unique and flush -->
-		<name>Options Slider FG</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>504</y_origin> <!-- the top of an image is 0 -->
-		<width>320</width>
-		<height>50</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>5</id> <!-- integer, ids must be unique and flush -->
-		<name>Scrollbar FG</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>555</y_origin> <!-- the top of an image is 0 -->
-		<width>30</width>
-		<height>154</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>6</id> <!-- integer, ids must be unique and flush -->
-		<name>Horizontal Scrollbar BG</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>710</y_origin> <!-- the top of an image is 0 -->
-		<width>300</width>
-		<height>30</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>7</id> <!-- integer, ids must be unique and flush -->
-		<name>Horizontal Scrollbar FG</name> <!-- simply for debug purposes -->
-		<frames>1</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>741</y_origin> <!-- the top of an image is 0 -->
-		<width>136</width>
-		<height>20</height>
-		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	</mSpriteList>
-    <mTagList></mTagList>
-  </spritesheet>
   
   <spritesheet name="Other Icons">
     <mSheetTypeName>Button</mSheetTypeName>

@@ -105,8 +105,12 @@ Content/GameData/Resources/Ores.xml
 Content/GameData/Resources/Plants.xml
 Content/GameData/Resources/Wood and Stone.xml
 Content/GameData/Events/Informatory/informatoryEvents1.xml
+Content/GameData/SpriteSheets/button1 spritesheets.xml
+Content/GameData/SpriteSheets/button2 spritesheets.xml
 Content/GameData/SpriteSheets/debug spritesheets.xml
+Content/GameData/SpriteSheets/dial spritesheets.xml
 Content/GameData/SpriteSheets/menuItem spritesheets.xml
+Content/GameData/SpriteSheets/menu and UI spritesheets.xml
 Content/GameData/SpriteSheets/world map spritesheets.xml
 Content/GameData/SpriteSheets/diplo map spritesheets.xml
 Content/GameData/SpriteSheets/base parcel spritesheets.xml

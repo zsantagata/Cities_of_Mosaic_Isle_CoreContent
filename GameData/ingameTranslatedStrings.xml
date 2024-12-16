@@ -30,16 +30,6 @@
 	<i1><a>exit_button_text</a>
 	<b>Exit</b></i1>
 	
-	<!-- in game buttons: -->
-	<i1><a>city_button_text</a>
-	<b>City</b></i1>
-	<i1><a>info_button_text</a>
-	<b>Info</b></i1>
-	<i1><a>world_button_text</a>
-	<b>World</b></i1>
-	<i1><a>pause_button_text</a>
-	<b>Pause</b></i1>
-	
 	<!-- in game text: -->
 	<i1><a>nosave_confirm_text</a>
 	<b>Are you sure you want to exit?  Progress has not been saved.</b></i1>
@@ -61,6 +51,12 @@
 	<b>Autumn</b></i1>
 	<i1><a>calendar_formatted_season3</a>
 	<b>Winter</b></i1>
+	<i1><a>topslate_calendar_tooltip_text</a>
+	<b>Our community was founded [0] days ago.</b></i1>
+	<i1><a>topslate_popcount_text</a> <!-- what is displayed directly, not the tooltip -->
+	<b>[0]/[red][1][/red]/[green][2][/green]/[purple][3][/purple]</b></i1>
+	<i1><a>topslate_popcount_tooltip_text</a> <!-- what is displayed in the tooltip -->
+	<b>Our community is home to [0] living pops.  [1] are wounded, [2] are ill, and [3] are pregnant.</b></i1>
 	
 	<!-- encyclopedia common text (actual entries are elsewhere) -->
 	<i1><a>encyclopedia_entry_blank_default_text</a>
@@ -77,6 +73,46 @@
 	<b>Cancel</b></i1>
 	<i1><a>textEntry_confirm_name</a>
 	<b>Confirm</b></i1>
+	<i1><a>pausebutton_name</a>
+	<b>Pause</b></i1>
+	
+	<!-- in game tooltips -->
+	<i1><a>showresourcepoolmenu_tooltip</a>
+	<b>Resource Pool</b></i1>
+	<i1><a>switchviewbutton_tooltip</a>
+	<b>Switch View</b></i1>
+	<i1><a>hidetopslate_tooltip</a>
+	<b>Hide</b></i1>
+	<i1><a>showtopslate_tooltip</a>
+	<b>Show</b></i1>
+	<i1><a>pausespeedbutton_tooltip</a>
+	<b>Pause/Continue</b></i1>
+	<i1><a>speedupbutton_tooltip</a>
+	<b>Speed Up Time</b></i1>
+	<i1><a>slowdownbutton_tooltip</a>
+	<b>Slow Down Time</b></i1>
+	<i1><a>constructionmenu_tooltip</a>
+	<b>Construction</b></i1>
+	<i1><a>militarycommandmenu_tooltip</a>
+	<b>Command</b></i1>
+	<i1><a>overlaymenu_tooltip</a>
+	<b>Overlays</b></i1>
+	<i1><a>eventmenu_tooltip</a>
+	<b>Events</b></i1>
+	<i1><a>cityoverviewmenu_tooltip</a>
+	<b>City Overview</b></i1>
+	<i1><a>racemenu_tooltip</a>
+	<b>Races</b></i1>
+	<i1><a>militarymenu_tooltip</a>
+	<b>Military</b></i1>
+	<i1><a>diplomacymenu_tooltip</a>
+	<b>Diplomacy</b></i1>
+	<i1><a>industrymenu_tooltip</a>
+	<b>Industry</b></i1>
+	<i1><a>historymenu_tooltip</a>
+	<b>History</b></i1>
+	<i1><a>alertsmenu_tooltip</a>
+	<b>Alerts</b></i1>
 	
 	<!-- info view names: -->
 	<i1><a>info_view_events_name</a>
@@ -103,10 +139,10 @@
 	<b>Alerts</b></i1>
 	
 	<!-- diplo view buttons: -->
-	<i1><a>show_delegations_label</a>
-	<b>Show Delegations</b></i1>
-	<i1><a>hide_delegations_label</a>
-	<b>Hide Delegations</b></i1>
+	<i1><a>show_delegations_tooltip</a>
+	<b>Now Showing Delegations</b></i1>
+	<i1><a>hide_delegations_tooltip</a>
+	<b>Now Hiding Delegations</b></i1>
 	<i1><a>send_delegation_label</a>
 	<b>Send Delegation</b></i1>
 	<i1><a>view_history_label</a>
@@ -240,10 +276,16 @@
 	<b>Resolution on next game launch: [0]</b></i1>
 	<i1><a>options_video_fullscreen_text</a>
 	<b>Fullscreen:</b></i1>
+	<i1><a>options_transparency_text</a>
+	<b>Menu Transparency: [0]%</b></i1>
+	<i1><a>options_tooltip_text</a>
+	<b>Tooltip Time Before Appearance: [0]ms</b></i1>
+	<i1><a>options_sidebuttonmaxfade_text</a>
+	<b>Side Buttons Min Visibility: [0]%</b></i1>
 	
 	<!-- options menu difficulty descriptions -->
 	<i1><a>options_difficulty_toplabel_text</a>
-	<b>All settings in this menu can be changed at any time in-game.\nEvent Frequency Sliders:</b></i1>
+	<b>All settings in this menu can be changed at any time in-game.  Settings are saved even if you do not click Apply.\nEvent Frequency Sliders:</b></i1>
 	<i1><a>options_difficulty_cityeventfrequency_text</a>
 	<b>City Event Frequency: [0]%</b></i1>
 	<i1><a>options_difficulty_traveleventfrequency_text</a>
@@ -289,8 +331,6 @@
 	<b>Alerts Simultaneous Delay Time: [0] seconds</b></i1>
 	
 	<!-- options menu command names -->
-	<i1><a>options_command_change_name</a>
-	<b>Change</b></i1>
 	<i1><a>options_command_none_name</a>
 	<b></b></i1>
 	<i1><a>options_command_scrolln_name</a>
@@ -323,6 +363,13 @@
 	<b>Stop/Start Time</b></i1>
 	<i1><a>options_command_ordermusteredpops_name</a>
 	<b>Order Mustered Pops</b></i1>
+	<i1><a>options_setkeystodefault_name</a>
+	<b>Reset to Defaults</b></i1>
+	<!-- options menu change or add key text -->
+	<i1><a>options_capturenewkey_description</a>
+	<b>Press key to add for [0].  Left or right click to cancel.  Assigning the same key to multiple actions may cause issues.</b></i1>
+	<i1><a>options_replacekey_description</a>
+	<b>Press key to replace [1] key for [0].  Left click to cancel, right click to clear.  Assigning the same key to multiple actions may cause issues.</b></i1>
 	
 	<!-- mod menu buttons -->
 	<i1><a>modmenu_enable_label</a>
@@ -347,6 +394,8 @@
 	<!-- event view report count text -->
 	<i1><a>eventview_report_count_text</a>
 	<b>Report [0] of [1]\n[2]</b></i1> <!-- [2] = formatted date string -->
+	<i1><a>eventview_report_nocount_text</a>
+	<b>No Event Reports</b></i1>
 	
 	<!-- city overview buttons: -->
 	<i1><a>cityoverview_refreshbutton_name</a>

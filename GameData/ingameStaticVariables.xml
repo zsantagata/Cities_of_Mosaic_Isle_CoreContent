@@ -174,5 +174,9 @@
 	<mCountOfSeasonsToRememberSeasonalHistory>4</mCountOfSeasonsToRememberSeasonalHistory> <!-- these are for the charts in info views, not history log -->
 	<mCountOfYearsToRememberYearlyHistory>3</mCountOfYearsToRememberYearlyHistory> <!-- these are for the charts in info views, not history log -->
 	
+	<mDiploMapMaxViewZoom>2.5</mDiploMapMaxViewZoom>
+	<mDiploMapMinViewZoom>0.1</mDiploMapMinViewZoom>
+	<mDiploMapZoomFactor>0.9</mDiploMapZoomFactor>
+	
   </gameconsts>
 </core_data>

@@ -466,9 +466,13 @@
     <Content Include="GameData\SoundGroups\popClickOn.xml" />
     <Content Include="GameData\SpriteSheets\base parcel spritesheets.xml" />
     <Content Include="GameData\SpriteSheets\building spritesheets.xml" />
+    <Content Include="GameData\SpriteSheets\button1 spriteSheets.xml" />
+    <Content Include="GameData\SpriteSheets\button2 spritesheets.xml" />
     <Content Include="GameData\SpriteSheets\debug spritesheets.xml" />
+    <Content Include="GameData\SpriteSheets\dial spriteSheets.xml" />
     <Content Include="GameData\SpriteSheets\diplo map spritesheets.xml" />
     <Content Include="GameData\SpriteSheets\doodad spritesheets.xml" />
+    <Content Include="GameData\SpriteSheets\menu and UI spritesheets.xml" />
     <Content Include="GameData\SpriteSheets\menuItem spritesheets.xml" />
     <Content Include="GameData\SpriteSheets\Pops\hylid spritesheets.xml" />
     <Content Include="GameData\SpriteSheets\Pops\misc spritesheets.xml" />
