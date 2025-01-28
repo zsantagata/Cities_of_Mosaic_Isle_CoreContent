@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			
+			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_custom script storeFetchOrClearForcedLeader</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of a custom script which stores, retrieves, or clears the state of certain pops being forced to be leaders of their respective communities -->
+  <!-- note that this script will override any stored values without notification (besides the variableHandler's default messages).  If a caller needs to know if there is an existing forced leader before storing, do a fetch beforehand.  All values are checked for validity before storing or fetching. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+  
+	<!-- inputs to the function:
+	IFCommunity inCommunityInQuestion,
+	Int64 inLeaderType, //0 = City, 1 = Race, 2 = Industry
+	Int64 inOperationType, //0 = store, 1 = fetch, 2 = clear
+	IFIndustry inIndustryInQuestion, //null = all (for fetching/clearing).  Null is invalid for storing.  Will be ignored for non-Industry leaders
+	IFRace inRaceInQuestion, //null = all (for fetching/clearing).  Will be ignored for storing (uses inPopInQuestion's race instead) and for non-race Leaders
+	IFPop inPopInQuestion, //ignored for fetching/clearing.  Storing null is invalid (use clear operation instead)
+	Int64 inExpiryDate //if storing, use this expiry date
+	-->
+	
+	<!-- output:
+	List<IFPop> outPopsValid, //may be empty but will not be null.  Holds the pops operated on that are (or were, in the case of clear) valid to be forced leader.
+	List<IFPop> outPopsNoLongerValid, //may be empty but will not be null.  Holds the pops operated on that are not valid to be forced leader.  Will be empty for clear operation (validity is ignored for clear)
+	bool outAnyModificationsMadeDueToValidity //this will be true if any of the stored or fetched pops had their variables cleared because they are invalid to be forced as leader.  Always returns false for clear
+	-->
+	<i1><a>storeFetchOrClearForcedLeader</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity), typeof(Int64), typeof(Int64), typeof(IFIndustry), typeof(IFRace), typeof(IFPop), typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("storeFetchOrClearForcedLeader custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFCommunity inCommunityInQuestion = (IFCommunity)inArguments[0];
+		Int64 inLeaderType = (Int64)inArguments[1];
+		Int64 inOperationType = (Int64)inArguments[2];
+		IFIndustry inIndustryInQuestion = (IFIndustry)inArguments[3];
+		IFRace inRaceInQuestion = (IFRace)inArguments[4];
+		IFPop inPopInQuestion = (IFPop)inArguments[5];
+		Int64 inExpiryDate = (Int64)inArguments[6];
+		
+		if(inCommunityInQuestion == null)
+		{
+			throw new ArgumentException("storeFetchOrClearForcedLeader custom script received invalid arguments: inCommunityInQuestion cannot be null");
+			return null;
+		}
+		if(inLeaderType &lt; 0 || inLeaderType &gt; 2)
+		{
+			throw new ArgumentException("storeFetchOrClearForcedLeader custom script received invalid arguments: inLeaderType must be between 0 and 2 inclusive");
+			return null;
+		}
+		if(inOperationType &lt; 0 || inOperationType &gt; 2)
+		{
+			throw new ArgumentException("storeFetchOrClearForcedLeader custom script received invalid arguments: inOperationType must be between 0 and 2 inclusive");
+			return null;
+		}
+		if(inLeaderType == 2 &amp;&amp; inOperationType == 0 &amp;&amp; inIndustryInQuestion == null)
+		{
+			throw new ArgumentException("storeFetchOrClearForcedLeader custom script received invalid arguments: inIndustryInQuestion cannot be null for industry leader store operation");
+			return null;
+		}
+		if(inOperationType == 0 &amp;&amp; inPopInQuestion == null)
+		{
+			throw new ArgumentException("storeFetchOrClearForcedLeader custom script received invalid arguments: inPopInQuestion cannot be null for store operation");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		List&lt;IFPop&gt; outPopsValid = new List&lt;IFPop&gt;();
+		List&lt;IFPop&gt; outPopsNoLongerValid = new List&lt;IFPop&gt;();
+		bool outAnyModificationsMadeDueToValidity = false;
+		
+		List&lt;string&gt; variablesInQuestionNames = new List&lt;string&gt;();
+		string variableInQuestionName = "forced [0] popUID";
+		if(inLeaderType == 0)
+		{
+			variablesInQuestionNames.Add(variableInQuestionName.Replace("[0]", "City Leader"));
+		}
+		if(inLeaderType == 1)
+		{
+			IFRace raceToUse = ((inPopInQuestion != null) &amp;&amp; (inOperationType == 0) ? inPopInQuestion.getRace() : inRaceInQuestion);
+			if(raceToUse != null)
+			{
+				variablesInQuestionNames.Add(variableInQuestionName.Replace("[0]", "Race" + raceToUse.getMOID() + " Leader"));
+			}
+			else
+			{
+				for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("races"); moid++)
+				{
+					variablesInQuestionNames.Add(variableInQuestionName.Replace("[0]", "Race" + moid + " Leader"));
+				}
+			}
+		}
+		if(inLeaderType == 2)
+		{
+			if(inIndustryInQuestion != null)
+			{
+				variablesInQuestionNames.Add(variableInQuestionName.Replace("[0]", "Industry" + inIndustryInQuestion.getMOID() + " Leader"));
+			}
+			else
+			{
+				for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("industries"); moid++)
+				{
+					variablesInQuestionNames.Add(variableInQuestionName.Replace("[0]", "Industry" + moid + " Leader"));
+				}
+			}
+		}
+		
+		if(inOperationType == 0) //store
+		{
+			//there will be only one name in variablesInQuestionNames if we have reached here
+			if(customScripts.runCustomScriptCheckTypes("isPopValidToBeLeader", new List&lt;object&gt;()
+				{ inCommunityInQuestion, inLeaderType, inIndustryInQuestion, inPopInQuestion },
+				out List&lt;object&gt; popValid, false, typeof(List&lt;bool&gt;)))
+			{
+				if((bool)popValid[0])
+				{
+					outPopsValid.Add(inPopInQuestion);
+					variableHandler.storeIntVariable(inExpiryDate, variablesInQuestionNames[0], (Int64)inPopInQuestion.getUID());
+				}
+				else
+				{
+					outAnyModificationsMadeDueToValidity = true;
+					outPopsNoLongerValid.Add(inPopInQuestion);
+					addDebugMessage(inScriptInstance, "not storing " + inPopInQuestion.getDebugName() + " as forced " + inCommunityInQuestion.getDebugName() + " leader of kind " + inLeaderType + " because pop is invalid to be forced leader");
+				}
+			}
+		}
+		else if(inOperationType == 1) //fetch
+		{
+			foreach(string variableName in variablesInQuestionNames)
+			{
+				Int64 uid = variableHandler.getInt(variableName, out success);
+				if(success)
+				{
+					IFPop popFetched = (IFPop)getAPI().getSO("pops", uid);
+					if(popFetched == null)
+					{
+						addDebugMessage(inScriptInstance, "pop indicated as forced " + inCommunityInQuestion.getDebugName() + " leader was not found, variable name = " + variableName);
+					}
+					else
+					{
+						IFIndustry industryToCheckFor = null;
+						Int64 moid = 0;
+						if(variableName.Contains("Industry") &amp;&amp; Int64.TryParse(variableName.Replace("Industry", "").Replace(" Leader", ""), out moid))
+						{
+							industryToCheckFor = (IFIndustry)getAPI().getMOFromMOID("industries", moid);
+						}
+						if(customScripts.runCustomScriptCheckTypes("isPopValidToBeLeader", new List&lt;object&gt;()
+							{ inCommunityInQuestion, inLeaderType, industryToCheckFor, popFetched },
+							out List&lt;object&gt; popValid, false, typeof(List&lt;bool&gt;)))
+						{
+							if((bool)popValid[0])
+							{
+								outPopsValid.Add(popFetched);
+							}
+							else
+							{
+								outAnyModificationsMadeDueToValidity = true;
+								outPopsNoLongerValid.Add(popFetched);
+							}
+						}
+					}
+				}
+				//no else: this can simply fail because no pop was forced to be city/this race/this industry leader
+			}
+		}
+		else //clear
+		{
+			//validity ignored for a clear
+			foreach(string variableName in variablesInQuestionNames)
+			{
+				Int64 uid = variableHandler.getInt(variableName, out success);
+				if(success)
+				{
+					IFPop popCleared = (IFPop)getAPI().getSO("pops", uid);
+					if(popCleared == null)
+					{
+						addDebugMessage(inScriptInstance, "pop indicated as forced " + inCommunityInQuestion.getDebugName() + " leader was not found, variable name = " + variableName);
+					}
+					else
+					{
+						outPopsValid.Add(popCleared);
+					}
+				}
+				//no else: this can simply fail because no pop was forced to be city/this race/this industry leader
+			}
+		}
+		
+		List&lt;object&gt; toReturn = new List&lt;object&gt;() { outPopsValid, outPopsNoLongerValid, outAnyModificationsMadeDueToValidity };
+	    return toReturn;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function:
+	IFCommunity inCommunityInQuestion,
+	Int64 inLeaderType, //0 = City, 1 = Race, 2 = Industry
+	IFIndustry inIndustryInQuestion, //null is invalid for leader type Industry
+	IFPop inPopInQuestion, //ignored for fetching/clearing.  Storing null is invalid (use clear operation instead)
+	-->
+	
+	<!-- output:
+	bool outValid
+	-->
+	<i1><a>isPopValidToBeLeader</a> <!-- TODO use this in more places -->
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFCommunity), typeof(Int64), typeof(IFIndustry), typeof(IFPop)}
+	      }, out _))
+	    {
+			throw new ArgumentException("isPopValidToBeLeader custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFCommunity inCommunityInQuestion = (IFCommunity)inArguments[0];
+		Int64 inLeaderType = (Int64)inArguments[1];
+		IFIndustry inIndustryInQuestion = (IFIndustry)inArguments[2];
+		IFPop inPopInQuestion = (IFPop)inArguments[3];
+	
+		if(inCommunityInQuestion == null)
+		{
+			throw new ArgumentException("storeFetchOrClearForcedLeader custom script received invalid arguments: inCommunityInQuestion cannot be null");
+			return null;
+		}
+		if(inPopInQuestion == null)
+		{
+			throw new ArgumentException("storeFetchOrClearForcedLeader custom script received invalid arguments: inPopInQuestion cannot be null");
+			return null;
+		}
+		if(inLeaderType == 2 &amp;&amp; inIndustryInQuestion == null)
+		{
+			throw new ArgumentException("storeFetchOrClearForcedLeader custom script received invalid arguments: inIndustryInQuestion cannot be null when checking for industry leader");
+			return null;
+		}
+		
+		bool outValid = true;
+		
+		if(inPopInQuestion.isDead())
+			outValid = false;
+		if(inPopInQuestion.getCommunity() != inCommunityInQuestion)
+			outValid = false;
+		if(inLeaderType == 2 &amp;&amp; inPopInQuestion.getRace().isIndustryCannotWorkIn(inIndustryInQuestion))
+			outValid = false;
+		//TODO check if un-forcing variables have prevented this pop from being a leader
+		
+		return new List&lt;object&gt;() { outValid };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

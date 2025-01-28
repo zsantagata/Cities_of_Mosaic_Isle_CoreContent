@@ -18,6 +18,7 @@ Content/GameData/ModdableScripts/leaders.xml
 Content/GameData/ModdableScripts/mapGen.xml
 Content/GameData/ModdableScripts/misc.xml
 Content/GameData/ModdableScripts/miscMidnight.xml
+Content/GameData/ModdableScripts/names.xml
 Content/GameData/ModdableScripts/popCanWorkOrMuster.xml
 Content/GameData/ModdableScripts/popConsumption.xml
 Content/GameData/ModdableScripts/popDeath.xml
@@ -27,6 +28,7 @@ Content/GameData/ModdableScripts/popPregnancy.xml
 Content/GameData/ModdableScripts/popWound.xml
 Content/GameData/ModdableScripts/preDeleteScripts.xml
 Content/GameData/ModdableScripts/resourceDecay.xml
+Content/GameData/ModdableScripts/sandboxSetup.xml
 Content/GameData/ModdableScripts/skillDaily.xml
 Content/GameData/ModdableScripts/workplaceProduction.xml
 Content/GameData/ingamePathfinding.xml
@@ -77,6 +79,7 @@ Content/GameData/Buildings/Road.xml
 Content/GameData/Buildings/Salt Float.xml
 Content/GameData/Buildings/Sanitation Hub.xml
 Content/GameData/Buildings/Slaughterer.xml
+Content/GameData/Buildings/Sleeping Spot.xml
 Content/GameData/Buildings/Smelter.xml
 Content/GameData/Buildings/Storage Yard.xml
 Content/GameData/Buildings/Tents.xml
@@ -133,6 +136,7 @@ Content/GameData/Events/Delegation_Arrival/Trade/placeholder1.xml
 Content/GameData/Events/Delegation_Arrival/Emigration/placeholder1.xml
 Content/GameData/Events/Delegation_Arrival/Settlement/placeholder1.xml
 Content/GameData/Events/Delegation_Travel_MTTH/placeholder1.xml
+Content/GameData/Events/LocalCommunity/Leader Events.xml
 Content/GameData/Events/Simultaneous/Foreign_Delegation_Arrival/Basic_Foreign_Delegation_Arrival_Events.xml
 Content/GameData/Events/Simultaneous/Foreign_Delegation_Arrival/Basic_Foreign_Delegation_Arrival_Events_ConstsAndScripts.xml
 Content/GameData/Events/Test_Events/foreignDelegation_test_event.xml
@@ -151,6 +155,7 @@ Content/GameData/CustomScripts/buildingSteal.xml
 Content/GameData/CustomScripts/calculateCarryWeightOfPops.xml
 Content/GameData/CustomScripts/clearSOsDoNotDeleteMark.xml
 Content/GameData/CustomScripts/combat.xml
+Content/GameData/CustomScripts/createNewRandomCommunity.xml
 Content/GameData/CustomScripts/customScriptInputCheck.xml
 Content/GameData/CustomScripts/doesNeutralPopDesireToStay.xml
 Content/GameData/CustomScripts/fetchOrConsumeResources.xml
@@ -348,6 +353,7 @@ Content/GameData/CustomScripts/Events_Common/hideSomePotentialJoinersFromMap.xml
 Content/GameData/CustomScripts/Events_Common/proposeTradeBetweenTwoResourcePools.xml
 Content/GameData/CustomScripts/Events_Common/setupFetchOrClearVariablesForEventForEXPIRE.xml
 Content/GameData/CustomScripts/Events_Common/setupHealthOfWanderersOrEmigrants.xml
+Content/GameData/CustomScripts/Events_Common/storeFetchOrClearForcedLeader.xml
 Content/GameData/CustomScripts/Events_Common/storeOrFetchHiddenHealthProblemsForJoiners.xml
 Content/GameData/CustomScripts/Events_Common/storeOrFetchPopsForEvent.xml
 Content/GameData/CustomScripts/Events_Common/storeOrFetchResourcesForEvent.xml
@@ -369,6 +375,11 @@ Content/GameData/CustomScripts/ForeignAI_Common/getResourcesLocallySourceable.xm
 Content/GameData/CustomScripts/ForeignAI_Common/recalcAllResourcesLocallySourceable.xml
 Content/GameData/CustomScripts/ForeignAI_Common/setResourceLocallySourceable.xml
 Content/GameData/CustomScripts/ForeignAI_Common/startDelegation.xml
+Content/GameData/CustomScripts/MidnightScripts/happinessFromLeaderChanges.xml
+Content/GameData/CustomScripts/MidnightScripts/newIndustryLeaderSkillReveal.xml
+Content/GameData/CustomScripts/NameGenerators/buildingNameGenerator_Common.xml
+Content/GameData/CustomScripts/NameGenerators/communityNameGenerator_Common.xml
+Content/GameData/CustomScripts/NameGenerators/popNameGenerator_Common.xml
 Content/GameData/CustomScripts/PopHealth_Common/popConsumption.xml
 Content/GameData/CustomScripts/PopHealth_Common/popDeathFromIllness.xml
 Content/GameData/CustomScripts/PopHealth_Common/popDeathFromOldAge.xml
@@ -424,15 +435,4 @@ Content/GameData/PathfindingScripts/UnmusteredInBattle.xml
 Content/GameData/PathfindingScripts/ViolentIntent.xml
 Content/GameData/PathfindingScripts/Wandering.xml
 Content/GameData/PathfindingScripts/Wounded.xml
-Content/GameData/Names/Ceoid_names.xml
-Content/GameData/Names/Drake_names.xml
-Content/GameData/Names/Felys_names.xml
-Content/GameData/Names/Greenfolk_names.xml
-Content/GameData/Names/Harpy_names.xml
-Content/GameData/Names/Hylid_names.xml
-Content/GameData/Names/Lithefolk_names.xml
-Content/GameData/Names/Mermaid_names.xml
-Content/GameData/Names/Minotaur_names.xml
-Content/GameData/Names/Scorpioform_names.xml
-Content/GameData/Names/Shifter_names.xml
-Content/GameData/Names/Weaver_names.xml
+Content/GameData/tempLogCullingForAlpha.xml

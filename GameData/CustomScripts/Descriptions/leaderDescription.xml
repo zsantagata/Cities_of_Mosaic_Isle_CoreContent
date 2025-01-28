@@ -108,7 +108,7 @@
 			double minHappiness = consts.getHappinessMin();
 			double maxHappiness = consts.getHappinessMax();
 			IFHappinessCollection happiness = localCommunity.getDomesticComponent().getHappinessCollection();
-			double happinessProportion = (happiness.getRaceHappiness(inPop.getRace()) - minHappiness) / (maxHappiness - minHappiness);
+			double happinessProportion = (happiness.getRealRaceHappiness(inPop.getRace()) - minHappiness) / (maxHappiness - minHappiness);
 			//industry leaders are generally neutral, unless they are from the City Leader's race and racial happiness is high:
 			if(industryLeader)
 			{

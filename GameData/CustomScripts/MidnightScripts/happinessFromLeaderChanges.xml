@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <customconsts name="default">
+	  <mCustomVariableList kind="add">
+		  <i1><a>happinessFromLeaderChanges city_leader value max</a> <b>double</b> <c>10</c></i1>
+		  <i1><a>happinessFromLeaderChanges city_leader value min</a> <b>double</b> <c>3</c></i1>
+		  <i1><a>happinessFromLeaderChanges race_leader value max</a> <b>double</b> <c>4</c></i1>
+		  <i1><a>happinessFromLeaderChanges race_leader value min</a> <b>double</b> <c>-4</c></i1>
+		  <i1><a>happinessFromLeaderChanges industry_leader value max</a> <b>double</b> <c>5</c></i1>
+		  <i1><a>happinessFromLeaderChanges industry_leader value min</a> <b>double</b> <c>0</c></i1>
+		  
+		  <i1><a>happinessFromLeaderChanges happiness_cause name before_replace_text</a> <b>string</b>
+		  <c>Leadership Changes</c></i1>
+		  <i1><a>happinessFromLeaderChanges happiness_cause city_description before_replace_text</a> <b>string</b>
+		  <c>Change of City Leadership has caused pops of this race to think differently about their power in the community.</c></i1>
+		  <i1><a>happinessFromLeaderChanges happiness_cause race_description before_replace_text</a> <b>string</b>
+		  <c>Change in Race Leadership has shaped these pops' attitudes about our city.</c></i1>
+		  <i1><a>happinessFromLeaderChanges happiness_cause industry_description before_replace_text</a> <b>string</b>
+		  <c>Pops take pride in new Industry Leaders of their race, and dislike losing these positions.</c></i1>
+		  
+		  <!-- early midnight scripts and late midnight scripts have different naming for their logging consts: -->
+		  <i1><a>log_script_custom late midnight script happinessFromLeaderChanges</a> <b>int</b> <c>1</c></i1>
+	  </mCustomVariableList>
+  </customconsts>
+  
+  <customscripts name="default">
+	<mLateMidnightScripts kind="add">
+	<!-- this script will detect if there are leadership changes that occurred in the last day, and make the races of those leaders happy/unhappy as a result -->
+	<i1><a>happinessFromLeaderChanges</a>
+	<b>
+	  bool success = false;
+	  var customConsts = getAPI().getCustomConsts();
+		
+	  Dictionary&lt;IFRace, int&gt; cityLeaderChangesByRace = new Dictionary&lt;IFRace, int&gt;();
+	  Dictionary&lt;IFRace, int&gt; raceLeaderChangesByRace = new Dictionary&lt;IFRace, int&gt;();
+	  Dictionary&lt;IFRace, int&gt; industryLeaderChangesByRace = new Dictionary&lt;IFRace, int&gt;();
+	  
+	  IFCommunity localCommunity = getAPI().getLocalCommunity();
+      IFHistoricalOccurrenceCollection history = localCommunity.getHistory();
+	  IFHappinessCollection happyCollect = localCommunity.getDomesticComponent().getHappinessCollection();
+	  Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+	  
+	  ReadOnlyCollection&lt;IFHistoricalOccurrence&gt; hoccurrences = history.getAllHistoryBetweenDates(currentDate - 1, currentDate); //this includes occurrences of the day that just passed (including the previous midnight), but not occurrences that happened during this midnight
+	
+	  foreach(var hoccurrence in hoccurrences)
+	  {
+	    IFRace race = null;
+		if(hoccurrence.getAction().getMinorAdjectives().Contains("lost leadership"))
+		{
+			UInt64 uid = hoccurrence.getTarget().getTargetID();
+			IFPop pop = (IFPop)getAPI().getSO("pops", uid);
+			if(pop != null)
+				race = pop.getRace();
+		}
+		else if(hoccurrence.getAction().getMinorAdjectives().Contains("new leadership"))
+		{
+			UInt64 uid = hoccurrence.getTarget().getTargetID();
+			IFPop pop = (IFPop)getAPI().getSO("pops", uid);
+			if(pop != null)
+				race = pop.getRace();
+		}
+		if(race == null)
+			continue;
+		if(!cityLeaderChangesByRace.ContainsKey(race))
+			cityLeaderChangesByRace.Add(race, 0);
+		if(!raceLeaderChangesByRace.ContainsKey(race))
+			raceLeaderChangesByRace.Add(race, 0);
+		if(!industryLeaderChangesByRace.ContainsKey(race))
+			industryLeaderChangesByRace.Add(race, 0);
+		if(hoccurrence.getAction().getMinorAdjectives().Contains("lost City leadership"))
+		{
+			cityLeaderChangesByRace[race]--;
+		}
+		if(hoccurrence.getAction().getMinorAdjectives().Contains("new City leadership"))
+		{
+			cityLeaderChangesByRace[race]++;
+		}
+		if(hoccurrence.getAction().getMinorAdjectives().Contains("lost Race leadership"))
+		{
+			raceLeaderChangesByRace[race]--;
+		}
+		if(hoccurrence.getAction().getMinorAdjectives().Contains("new Race leadership"))
+		{
+			raceLeaderChangesByRace[race]++;
+		}
+		if(hoccurrence.getAction().getMinorAdjectives().Contains("lost Industry leadership"))
+		{
+			industryLeaderChangesByRace[race]--;
+		}
+		if(hoccurrence.getAction().getMinorAdjectives().Contains("new Industry leadership"))
+		{
+			industryLeaderChangesByRace[race]++;
+		}
+	  }
+	
+	  double cityValMax = customConsts.getDoubleConst("happinessFromLeaderChanges city_leader value max", out success);
+	  if(!success) cityValMax = 10.0d;
+	  double cityValMin = customConsts.getDoubleConst("happinessFromLeaderChanges city_leader value min", out success);
+	  if(!success) cityValMin = 3.0d;
+	  double raceValMax = customConsts.getDoubleConst("happinessFromLeaderChanges race_leader value max", out success);
+	  if(!success) raceValMax = 4.0d;
+	  double raceValMin = customConsts.getDoubleConst("happinessFromLeaderChanges race_leader value min", out success);
+	  if(!success) raceValMin = -4.0d;
+	  double industryValMax = customConsts.getDoubleConst("happinessFromLeaderChanges industry_leader value max", out success);
+	  if(!success) industryValMax = 5.0d;
+	  double industryValMin = customConsts.getDoubleConst("happinessFromLeaderChanges industry_leader value min", out success);
+	  if(!success) industryValMin = 0.0d;
+	
+	  string happyName = customConsts.getStringConst("happinessFromLeaderChanges happiness_cause name before_replace_text", out success);
+	  if(!success) happyName = "Leadership Changes";
+	  string happyCityDesc = customConsts.getStringConst("happinessFromLeaderChanges happiness_cause city_description before_replace_text", out success);
+	  if(!success) happyCityDesc = "Change of City Leadership has caused pops of this race to think differently about their power in the community.";
+	  string happyRaceDesc = customConsts.getStringConst("happinessFromLeaderChanges happiness_cause race_description before_replace_text", out success);
+	  if(!success) happyRaceDesc = "Change in Race Leadership has shaped these pops' attitudes about our city.";
+	  string happyIndustryDesc = customConsts.getStringConst("happinessFromLeaderChanges happiness_cause industry_description before_replace_text", out success);
+	  if(!success) happyIndustryDesc = "Pops take pride in new Industry Leaders of their race, and dislike losing these positions.";
+	
+	  foreach(var kvpair in cityLeaderChangesByRace)
+	  {
+		if(kvpair.Value == 0)
+			continue;
+			
+		double happinessVal = getAPI().calcRand() * (cityValMax - cityValMin) * kvpair.Value;
+		happyCollect.addNewHappinessCauseToday(kvpair.Key, happyName, happyCityDesc, happinessVal, false);
+	  }
+	  foreach(var kvpair in raceLeaderChangesByRace)
+	  {
+		if(kvpair.Value == 0)
+			continue;
+			
+		double happinessVal = getAPI().calcRand() * (raceValMax - raceValMin) * kvpair.Value;
+		happyCollect.addNewHappinessCauseToday(kvpair.Key, happyName, happyRaceDesc, happinessVal, false);
+	  }
+	  foreach(var kvpair in industryLeaderChangesByRace)
+	  {
+		if(kvpair.Value == 0)
+			continue;
+			
+		double happinessVal = getAPI().calcRand() * (industryValMax - industryValMin) * kvpair.Value;
+		happyCollect.addNewHappinessCauseToday(kvpair.Key, happyName, happyIndustryDesc, happinessVal, false);
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	</mLateMidnightScripts>
+	
+  </customscripts>
+  
+</core_data>

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <!-- only one of these should exist and its name should be "default" -->
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	
+	    <i1><a>log_script_mMapGenGetParcel</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_script_mMapGenCullDoodads</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_igRace_health</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_igResourcePool_all</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_igResourcePool_quality</a> <b>int</b> <c>0</c></i1>
+	    <i1><a>log_igResourcePool_quantity</a> <b>int</b> <c>0</c></i1>
+		<i1><a>log_script_custom script getracecarevalues</a> <b>int</b> <c>0</c></i1>
+		<i1><a>log_script_custom script playerResourceDecayDaily</a> <b>int</b> <c>0</c></i1>
+		<i1><a>log_script_econcalc econstrength normaleconcalc</a> <b>int</b> <c>0</c></i1>
+		
+		<i1><a>log_script_mpoppeacepathfinding</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_igpop_pathfinding</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_pathfindingpopregister_all</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_pathfindingpopregister_update</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget place_pop_on_nearest_passable_location</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_beingabducted_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_beingabducted_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_beingabducted</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_chasingenemy_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_chasingenemy_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_chasingenemy</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_dead_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_dead_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_dead</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyabductingwoundedpopprepare_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyabductingwoundedpopprepare_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemyabductingwoundedprepare</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemycausechaos_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemycausechaos_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemycausechaos</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemychasingfriendly_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemychasingfriendly_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemychasingfriendly</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemydamagingbuilding_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemydamagingbuilding_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemydamagingbuilding</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyfleeingmapbroken_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyfleeingmapbroken_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemyfleeingmapbroken</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyfleeingmapsuccess_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyfleeingmapsuccess_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemyfleeingmapsuccess</a> <b>int</b> <c>0</c></i1>
+<i1><a>pathfinding_state_enemyfleeingmapabduction history costbenefit value</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyfleeingmapabduction_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyfleeingmapabduction_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemyfleeingmapabduction</a> <b>int</b> <c>0</c></i1>
+<i1><a>pathfinding_state_enemyfleeingmapstealing history costbenefit value</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyfleeingmapstealing_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyfleeingmapstealing_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemyfleeingmapstealing</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyidleeval_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemyidleeval_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemyidleeval</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemylongrangehuntingbuilding_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemylongrangehuntingbuilding_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemylongrangehuntingbuilding</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemylongrangehuntingpop_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemylongrangehuntingpop_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemylongrangehuntingpop</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemystealingfrombuilding_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_enemystealingfrombuilding_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_enemystealingfrombuilding</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fighting_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fighting_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_fighting</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fleeinghostile_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fleeinghostile_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_fleeinghostile</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fleeingmapneutral_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fleeingmapneutral_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_fleeingmapneutral</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fleeingtobuilding_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fleeingtobuilding_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_fleeingtobuilding</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fleeingtocenterofmap_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fleeingtocenterofmap_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_fleeingtocenterofmap</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fleeingtoshelter_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_fleeingtoshelter_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_fleeingtoshelter</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_idle_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_idle_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_idle</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_movetomuster_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_movetomuster_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_movetomuster</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_movetoshelterinhome_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_movetoshelterinhome_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_movetoshelterinhome</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_movetoshelterinworkplace_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_movetoshelterinworkplace_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_movetoshelterinworkplace</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_mustering_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_mustering_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_mustering</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_neutralleavemap_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_neutralleavemap_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_neutralleavemap</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_neutralwanderingnearhome_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_neutralwanderingnearhome_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_neutralwanderingnearhome</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_neutralwanderingnohome_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_neutralwanderingnohome_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_neutralwanderingnohome</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_ordered_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_ordered_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_ordered</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_sick_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_sick_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_sick</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_unmusteredinbattle_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_unmusteredinbattle_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_unmusteredinbattle</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_violentintent_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_violentintent_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_violentintent</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_wandering_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_wandering_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_wandering</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_wounded_hasvalidtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_custom script pathfinding_state_wounded_findtargetfortransitionin</a> <b>int</b> <c>0</c></i1>
+<i1><a>log_script_mscriptsdeterminingstateandtarget state_wounded</a> <b>int</b> <c>0</c></i1>
+
+	</mCustomVariableList>
+  </customconsts>
+</core_data>

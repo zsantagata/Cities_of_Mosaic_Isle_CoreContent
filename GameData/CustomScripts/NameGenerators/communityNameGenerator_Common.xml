@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- Nowadays names of new places (of which, admittedly, there are few) mostly fall into two forms: direct descriptions, or cultural references.
+		In history, when navigation and information-gathering were both difficult and potentially deadly if failed, the name of a place often doubled as part of its description.  And in prehistory, there's not a lot of common culture to make allusions to.
+		In COMI, I reflect that by making names combinations of existing English words.  These words should be of a kind that could either help navigation, provide information about a place, or both.
+
+verbs are of the form "place that [verbs]" (so "runs", "grows", "shines" are all valid)
+nouns are singular
+adjectives, including those that end in "ing"
+adverbs are in their usual form
+
+the first letter OF EACH REPLACING TEXT will be capitalized
+also note that these are very generic because biome-specific name generation should override this usually
+
+note that this name generator works for the english language only, obviously.  Translators should replace it
+ -->
+	  
+	  <i1><a>communityNameGenerator_Common name_shape list_of_options before_replace_text</a> <b>list</b> <c>[noun] and [noun],[noun]-[noun],[adj] [noun],[noun] by the [noun],[noun] the [adj] [noun],[noun] next to [adj] [noun],[noun] above the [adj] [noun],[noun] that [verb],[noun]-that-[verb]-[adv],[noun]-where-no-[noun]-[verb],[noun]-where-[noun]-[verb]-[adv],[adj]-[noun]-where-[noun]-[verb],[adj] [noun] past [noun],[adj] [noun] beyond [noun],[adj] [noun] that [verb]</c></i1>
+	  
+	  <i1><a>communityNameGenerator_Common nouns list_of_options before_replace_text</a> <b>list</b> <c>home,valley,cliff,pool,rock,clay,boulder,field,slope,caldera,peak,bend,bluff,path,cave,light</c></i1>
+	  <i1><a>communityNameGenerator_Common adjectives list_of_options before_replace_text</a> <b>list</b> <c>wild,sharp,dry,rainy,windy,mild,dangerous,safe,far,round,sunny,hot,cold,hidden,high,low</c></i1>
+	  <i1><a>communityNameGenerator_Common verbs list_of_options before_replace_text</a> <b>list</b> <c>runs,grows,shines,falls,rises,stands,is,breaks,joins,stops,splits,sinks,stays,ends,starts</c></i1>
+	  <i1><a>communityNameGenerator_Common adverbs list_of_options before_replace_text</a> <b>list</b> <c>swiftly,never,often,clearly,oddly,highest,lowest,east,west,north,south,again,first,last,quietly</c></i1>
+	  
+	  <i1><a>communityNameGenerator_Common custom_chance</a> <b>double</b> <c>0.001</c></i1> <!-- this should be pretty low unless you add a WHOLE BUNCH of custom names.  Like, a thousand. -->
+	  <i1><a>communityNameGenerator_Common custom_full_name list_of_options</a> <b>list</b> <c></c></i1> <!-- none as of now -->
+
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_biome</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which generates a random community name from the above.  The "Common" part of the name is there to indicate that the script does not use the community's AI or biome in choosing a name -->
+  <!-- note that this script, unlike possibly other name assignment scripts, should not fail to assign a name.  If other more specific scripts assign empty string, they fall through to more general scripts; this is the most general script. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFCommunity inCommunity
+	
+	There is one output: string outName -->
+	<i1><a>communityNameGenerator_Common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFCommunity)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("communityNameGenerator_Common custom script received invalid arguments");
+	  }
+				
+	  IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	  
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outName = "";
+	double chanceOfCustomName = customConsts.getDoubleConst("communityNameGenerator_Common custom_chance", out success);
+	bool customNameUsed = false;
+	if(!success) chanceOfCustomName = 0.001d;
+	if(getAPI().calcProb(chanceOfCustomName))
+	{
+		outName = getAPI().getOneRandomItemFromList(customConsts.getListConst("communityNameGenerator_Common custom_full_name list_of_options", out success));
+		customNameUsed = success &amp;&amp; (outName != "");
+	}
+	
+	if(!customNameUsed)
+	{
+		ReadOnlyCollection&lt;string&gt; possibleOptions = customConsts.getListConst("communityNameGenerator_Common name_shape list_of_options before_replace_text", out success);
+		if(!success)
+		{
+			possibleOptions = (new List&lt;string&gt;() { "[noun]-[noun]" }).AsReadOnly(); 
+		}
+		
+		outName = getAPI().getOneRandomItemFromList(possibleOptions);
+
+		for(int j = 0; j &lt; 4; j++)
+		{
+			ReadOnlyCollection&lt;string&gt; hardList;
+			string toReplace;
+			switch(j)
+			{
+				case 0:
+					hardList = customConsts.getListConst("communityNameGenerator_Common nouns list_of_options before_replace_text", out success);
+					toReplace = "[noun]";
+				break;
+				
+				case 1:
+					hardList = customConsts.getListConst("communityNameGenerator_Common adjectives list_of_options before_replace_text", out success);
+					toReplace = "[adj]";
+				break;
+				
+				case 2:
+					hardList = customConsts.getListConst("communityNameGenerator_Common adverbs list_of_options before_replace_text", out success);
+					toReplace = "[adv]";
+				break;
+				
+				case 3:
+					hardList = customConsts.getListConst("communityNameGenerator_Common verbs list_of_options before_replace_text", out success);
+					toReplace = "[verb]";
+				break;
+			
+				default:
+					toReplace = "";
+					hardList = (new List&lt;string&gt;()).AsReadOnly();
+				break;
+			}
+			
+			int countOfToReplace = outName.Split(toReplace).Length - 1;
+			List&lt;string&gt; listToUse = new List&lt;string&gt;(hardList);
+			getAPI().shuffleList(listToUse);
+			for(int i = 0; i &lt; countOfToReplace; i++)
+			{
+				string toUse = listToUse[i].Trim().ToLower();
+				toUse = char.ToUpper(toUse[0]) + toUse[1..];
+				int pos = outName.IndexOf(toReplace);
+				outName = outName.Substring(0, pos) + toUse + outName.Substring(pos + toReplace.Length);
+			}
+		}
+	}
+	
+	if(outName == "")
+	{
+		addDebugMessage(inScriptInstance, "script somehow failed to assign a name at all; should not happen as this is the most general script");
+		outName = "INVALID_NAME";
+	}
+	
+    return new List&lt;object&gt;() { outName.Trim() };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

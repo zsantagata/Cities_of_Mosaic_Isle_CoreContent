@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
 <core_data>
-  <!-- TODO: make Tents require cloth or leather or wood, and make an even crappier housing called "outside sleeping" that requires nothing to make and houses 3 people per tile -->
   <igBuildingKind name="Tents">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Tents</full_path>
@@ -14,6 +13,24 @@
 	<mBuildingKindQualities>0x6</mBuildingKindQualities><!-- 0x2 = overwater enable, 0x4 = passable -->
     <mWidth>6</mWidth>
     <mHeight>4</mHeight>
+	
+	<mResourcesToBuild>
+		<i1><a>Leather</a><b>40</b></i1>
+		<i1><a>Spider Silk</a><b>40</b></i1>
+		<i1><a>Wool</a><b>40</b></i1>
+		<i1><a>Cotton</a><b>40</b></i1>
+		<i1><a>Hemp</a><b>40</b></i1>
+		<i1><a>Ladyhair</a><b>40</b></i1>
+	</mResourcesToBuild>
+	
+	<mDurabilityMultBasedOnConstructionResources>
+		<i1><a>Leather</a><b>1.5</b></i1>
+		<i1><a>Spider Silk</a><b>0.7</b></i1>
+		<i1><a>Wool</a><b>0.9</b></i1>
+		<i1><a>Cotton</a><b>0.9</b></i1>
+		<i1><a>Hemp</a><b>1.0</b></i1>
+		<i1><a>Ladyhair</a><b>4.0</b></i1>
+	</mDurabilityMultBasedOnConstructionResources>
 
 	<mPopDaysToBuild>8</mPopDaysToBuild>
 	<mBaseDurability>100</mBaseDurability>
@@ -36,7 +53,6 @@
 	  <i1>housing disease resist malus</i1>
 	  <i1>housing hstasis malus</i1>
 	  <i1>flammable</i1>
-	  <i1>disable repair</i1>
 	  
 	  <!-- description tags: -->
 	  <i1>description_shape_top_noun:poletops</i1>

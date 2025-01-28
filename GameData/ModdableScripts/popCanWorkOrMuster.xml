@@ -17,12 +17,19 @@
 			var variableHandler = getAPI().getVariableHandler();
 			IFPop inPop = (IFPop)inArguments[0];
 			
-			//TODO any individual considerations
+			bool success = false;
+			Int64 unableToWorkIfNonzero = variableHandler.getConnectedInt("unableToWork_pop" + inPop.getUID(), out success);
+			if(!success) unableToWorkIfNonzero = 0;
+			Int64 unwillingToWorkIfNonzero = variableHandler.getConnectedInt("unwillingToWork_pop" + inPop.getUID(), out success);
+			if(!success) unwillingToWorkIfNonzero = 0;
+			
 			//note that we don't consider 'does the pop already have a workplace' here because this is about working *at all* not being free to work somewhere else
 			if(           !inPop.isDead()
 			   &amp;&amp; !inPop.isWounded()
 			   &amp;&amp; !inPop.isPregnantImmobile()
 			   &amp;&amp; inPop.hasHomeBuilding() //only pops with homes can work in workplaces (pops without homes will contribute to construction though)
+			   &amp;&amp; (unableToWorkIfNonzero == 0)
+			   &amp;&amp; (unwillingToWorkIfNonzero == 0)
 			   &amp;&amp; (!inPop.isIll() || getAPI().canIllPopsOfRaceWorkInIndustry(inPop.getRace(), null)) //null means "any industry"; a specific building will have to check for its industry
 			  )
 			{
@@ -48,11 +55,18 @@
 			var variableHandler = getAPI().getVariableHandler();
 			IFPop inPop = (IFPop)inArguments[0];
 			
-			//TODO any individual considerations
+			bool success = false;
+			Int64 unableToMusterIfNonzero = variableHandler.getConnectedInt("unableToMuster_pop" + inPop.getUID(), out success);
+			if(!success) unableToMusterIfNonzero = 0;
+			Int64 unwillingToMusterIfNonzero = variableHandler.getConnectedInt("unwillingToMuster_pop" + inPop.getUID(), out success);
+			if(!success) unwillingToMusterIfNonzero = 0;
+			
 			//note that we don't consider 'is pop already mustered' here because this is about mustering *at all*
 			if(           !inPop.isDead()
 			   &amp;&amp; !inPop.isWounded()
 			   &amp;&amp; !inPop.isPregnantImmobile()
+			   &amp;&amp; (unableToMusterIfNonzero == 0)
+			   &amp;&amp; (unwillingToMusterIfNonzero == 0)
 			  )
 			{
 				return new List&lt;object&gt;() { true };

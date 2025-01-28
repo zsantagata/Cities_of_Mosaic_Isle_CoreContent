@@ -609,7 +609,7 @@
 		<i1><a>mHardcodedHistory pop_became_city_leader majoradj before_replace_text</a> <b>string</b>
 		<c>leader</c></i1>
 		<i1><a>mHardcodedHistory pop_became_city_leader minoradjlist before_replace_text</a> <b>string</b>
-		<c></c></i1>
+		<c>new City Leader, new leadership</c></i1>
 		<i1><a>mHardcodedHistory pop_became_city_leader impact value</a> <b>int</b> <c>75</c></i1>
 		<i1><a>mHardcodedHistory pop_became_city_leader otherImpacts before_replace_text</a> <b>string</b>
 		<c></c></i1>
@@ -621,7 +621,7 @@
 		<i1><a>mHardcodedHistory pop_nolonger_city_leader majoradj before_replace_text</a> <b>string</b>
 		<c>leader</c></i1>
 		<i1><a>mHardcodedHistory pop_nolonger_city_leader minoradjlist before_replace_text</a> <b>string</b>
-		<c></c></i1>
+		<c>lost City leadership, lost leadership</c></i1>
 		<i1><a>mHardcodedHistory pop_nolonger_city_leader impact value</a> <b>int</b> <c>-75</c></i1>
 		<i1><a>mHardcodedHistory pop_nolonger_city_leader otherImpacts before_replace_text</a> <b>string</b>
 		<c></c></i1>
@@ -633,7 +633,7 @@
 		<i1><a>mHardcodedHistory pop_became_race_leader majoradj before_replace_text</a> <b>string</b>
 		<c>leader</c></i1>
 		<i1><a>mHardcodedHistory pop_became_race_leader minoradjlist before_replace_text</a> <b>string</b>
-		<c>race,[0]</c></i1>
+		<c>race,[0],new Race Leader, new leadership</c></i1>
 		<i1><a>mHardcodedHistory pop_became_race_leader impact value</a> <b>int</b> <c>60</c></i1>
 		<i1><a>mHardcodedHistory pop_became_race_leader otherImpacts before_replace_text</a> <b>string</b>
 		<c></c></i1>
@@ -645,7 +645,7 @@
 		<i1><a>mHardcodedHistory pop_nolonger_race_leader majoradj before_replace_text</a> <b>string</b>
 		<c>leader</c></i1>
 		<i1><a>mHardcodedHistory pop_nolonger_race_leader minoradjlist before_replace_text</a> <b>string</b>
-		<c>race,[0]</c></i1>
+		<c>race,[0],lost Race leadership, lost leadership</c></i1>
 		<i1><a>mHardcodedHistory pop_nolonger_race_leader impact value</a> <b>int</b> <c>-60</c></i1>
 		<i1><a>mHardcodedHistory pop_nolonger_race_leader otherImpacts before_replace_text</a> <b>string</b>
 		<c></c></i1>
@@ -657,7 +657,7 @@
 		<i1><a>mHardcodedHistory pop_became_industry_leader majoradj before_replace_text</a> <b>string</b>
 		<c>leader</c></i1>
 		<i1><a>mHardcodedHistory pop_became_industry_leader minoradjlist before_replace_text</a> <b>string</b>
-		<c>[0]</c></i1>
+		<c>[0],new Industry Leader, new leadership</c></i1>
 		<i1><a>mHardcodedHistory pop_became_industry_leader impact value</a> <b>int</b> <c>45</c></i1>
 		<i1><a>mHardcodedHistory pop_became_industry_leader otherImpacts before_replace_text</a> <b>string</b>
 		<c>work_happiness|1</c></i1>
@@ -669,7 +669,7 @@
 		<i1><a>mHardcodedHistory pop_nolonger_industry_leader majoradj before_replace_text</a> <b>string</b>
 		<c>leader</c></i1>
 		<i1><a>mHardcodedHistory pop_nolonger_industry_leader minoradjlist before_replace_text</a> <b>string</b>
-		<c>[0]</c></i1>
+		<c>[0],lost Industry leadership, lost leadership</c></i1>
 		<i1><a>mHardcodedHistory pop_nolonger_industry_leader impact value</a> <b>int</b> <c>-45</c></i1>
 		<i1><a>mHardcodedHistory pop_nolonger_industry_leader otherImpacts before_replace_text</a> <b>string</b>
 		<c>work_happiness|-1</c></i1>

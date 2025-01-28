@@ -308,7 +308,7 @@
 					if(inCommunity.getLeaderCollection().hasCityLeader() &amp;&amp; (targetRace == inCommunity.getLeaderCollection().getCityLeader().getRace()))
 					{
 						//now, shift from local happiness:
-						double localHappinessProportion = inCommunity.getDomesticComponent().getHappinessCollection().getRaceHappiness(inRaceIfLocalCommunity) / happinessMax;
+						double localHappinessProportion = inCommunity.getDomesticComponent().getHappinessCollection().getRealRaceHappiness(inRaceIfLocalCommunity) / happinessMax;
 						careValue += localHappinessProportion * (happinessShiftMax - happinessShiftMin) + happinessShiftMin;
 						contrib_text += "+" + localHappinessProportion + " (happiness towards City Leader's race) ";
 					}

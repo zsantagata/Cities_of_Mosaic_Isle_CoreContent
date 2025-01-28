@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <igBuildingKind name="Sleeping Spot">
+    <Encyclopedia_Entry>
+	  <full_path>Buildings/Sleeping Spot</full_path>
+	  <body_text>Sleeping Spot.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <image_SS></image_SS>
+	  <related_entries_full_paths>
+	  <!-- nothing in this list of entries -->
+	  </related_entries_full_paths>
+	</Encyclopedia_Entry>
+	<mBuildingKindQualities>0x7</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x4 = passable -->
+    <mWidth>2</mWidth>
+    <mHeight>2</mHeight>
+
+	<mPopDaysToBuild>1</mPopDaysToBuild>
+	<mBaseDurability>65535</mBaseDurability>
+	
+	<mBeautyValue>0</mBeautyValue>
+	<mBeautyRadius>0</mBeautyRadius>
+	
+    <mSSIDs>
+		<i>Sleeping Spot</i>
+	</mSSIDs>
+	
+	<mHousingCapacity>8</mHousingCapacity>
+	<mHousingQualityFactor>0.0</mHousingQualityFactor>
+	
+	<mIsHousing>1</mIsHousing>
+	<mTagList>
+	  <i1>road benefit distance decrease</i1>
+	  <i1>housing disease resist malus</i1>
+	  <i1>housing hstasis malus</i1>
+	  <i1>disable repair</i1>
+	  <i1>no construction</i1> <!-- this is to indicate that this "building" isn't a real construction but more like designating an area -->
+	  <i1>sandbox startup enable</i1>
+	  
+	  <!-- description tags: -->
+	  <i1>description_shape_top_noun:open sky</i1>
+	  <i1>description_shape_side_noun:open air</i1>
+	  <i1>description_shape_middle_noun:sleeping spots</i1>
+	  <i1>description_shape_bottom_noun:packed grounds</i1>
+	</mTagList>
+  </igBuildingKind>
+</core_data>

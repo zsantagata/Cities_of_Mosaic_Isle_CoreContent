@@ -233,8 +233,8 @@
 			thirdPopIsAttacking = false;
 		}
 		
-		//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
-		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackingPop, defendingPop, thirdPop, thirdPopIsAttacking, 0.0d, 0.0d }, out _);
+		//let the pops fight:
+		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackingPop, defendingPop, thirdPop, thirdPopIsAttacking }, out _);
 	}
 	
 	//there may be pops which attack and are not intercepted:

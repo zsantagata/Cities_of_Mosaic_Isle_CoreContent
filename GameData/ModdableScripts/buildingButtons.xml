@@ -60,7 +60,7 @@
 			if(           !inPop.hasMusteringPoint()
 			   &amp;&amp; inPop.isCapableOfMustering()
 			   &amp;&amp; !musteringPoint.isBuildingDestroyed()
-			   &amp;&amp; (inPop.getPathfindingState().ToLower() != "fighting") //TODO figure out how best to make this a const/accessible thing
+			   &amp;&amp; (inPop.getPathfindingState().ToLower() != "fighting") //TODO use the const
 			   &amp;&amp; ((waterStatus == IFBuilding.eBuildingWaterStatus.cMixed) || (waterStatus == IFBuilding.eBuildingWaterStatus.cOverwaterEntirely &amp;&amp; inPop.getRace().isCanBreatheOverwater()) || (waterStatus == IFBuilding.eBuildingWaterStatus.cUnderwaterEntirely &amp;&amp; inPop.getRace().isCanBreatheUnderwater()))
 			  )
 			{

@@ -35,7 +35,7 @@
   <customscripts name="default">
 	<mCustomScriptsList kind="add">
   
-	<!-- combat resolution has one input arguments: IFPop inPop.  There is one output: double outCombatPower.  The output is positive if the pop is alive, and 0.0d otherwise. -->
+	<!-- combat power of a pop has one input arguments: IFPop inPop.  There is one output: double outCombatPower.  The output is positive if the pop is alive, and 0.0d otherwise. -->
 	<i1><a>getCombatPowerOfPop</a>
 	<b>
 	  //input count and type check:

@@ -224,15 +224,23 @@
 	  
 	  //check that all pops can work, and specifically work here:
 	  HashSet&lt;IFPop&gt; popsToFire = new HashSet&lt;IFPop&gt;(); //use this because we can't modify worker pops in a foreach loop
+	  double specificPopWorkMultiplierSum = 0.0d;
 	  foreach(IFPop pop in inWorkplace.getWorkplaceComponent().getWorkerPops())
 	  {
 		if(!pop.isCapableOfWorking())
 		{
 			popsToFire.Add(pop);
 		}
-		else if(pop.isIll() &amp;&amp; !getAPI().canIllPopsOfRaceWorkInIndustry(pop.getRace(), inWorkplace.getBuildingKind().getIndustry()))
+		else if(pop.isIll() &amp;&amp; !getAPI().canIllPopsOfRaceWorkInIndustry(pop.getRace(), inWorkplace.getBuildingKind().getIndustry())) //TODO call through to a common custom script (called through by "can hire pop at workplace") instead
 		{
 			popsToFire.Add(pop);
+		}
+		else
+		{
+			double specificPopWorkMultiplier = variableHandler.getConnectedDouble("laborFactorMultiplier_pop" + pop.getUID(), out success);
+			if(!success) specificPopWorkMultiplier = 1.0d;
+		    //TODO some racial considerations should go here
+			specificPopWorkMultiplierSum += specificPopWorkMultiplier;
 		}
 	  }
 	  foreach(IFPop pop in popsToFire)
@@ -240,9 +248,9 @@
 		pop.setWorkplaceBuilding(null);
 	  }
 	  
-	  //TODO any racial considerations should go here
+	  //TODO some racial considerations should go here
 	  
-	  outLaborValue = (double)(inWorkplace.getWorkplaceComponent().getWorkerPops().Count);
+	  outLaborValue = specificPopWorkMultiplierSum;
 	  
 	  return new List&lt;object&gt;() { outLaborValue };
 	</b>

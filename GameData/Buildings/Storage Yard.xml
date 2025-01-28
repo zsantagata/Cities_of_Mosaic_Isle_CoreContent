@@ -39,6 +39,8 @@
 	<mTagList>
 	  <i1>road benefit distance decrease</i1>
 	  <i1>distribution</i1>
+	  <i1>no construction</i1> <!-- this is to indicate that this "building" isn't a real construction but more like designating an area -->
+	  <i1>sandbox startup enable</i1>
 	  
 	  <!-- description tags: -->
 	  <i1>description_shape_top_noun:poletops</i1>

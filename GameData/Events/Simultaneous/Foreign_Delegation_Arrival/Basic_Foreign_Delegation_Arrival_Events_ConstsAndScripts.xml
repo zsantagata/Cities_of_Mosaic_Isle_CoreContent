@@ -299,7 +299,7 @@
 		customScripts.runCustomScript("clearPopsStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "" }, out _);
 		
 		//upon happening stores these:
-		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null }, out _);
+		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null, null, 0L }, out _);
 		
         variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_delegationUID", 0);
 		variableHandler.storeIntVariable(0, "evt_Basic Foreign Emigration Delegation Arrival Event" + inEventReport.getUID() + "_lyingResources", 0);
@@ -846,7 +846,7 @@
 		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "delegationSide" }, out _);
 		
 		//upon happening stores these:
-		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null }, out _);
+		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null, null, 0L }, out _);
 		
         variableHandler.storeIntVariable(0, "evt_Basic Foreign Trade Delegation Arrival Event" + inEventReport.getUID() + "_delegationUID", 0);
 		
@@ -1200,7 +1200,7 @@
 		//upon happening stores these:
         variableHandler.storeIntVariable(0, "evt_Basic Foreign Diplomacy Delegation Arrival Event" + inEventReport.getUID() + "_cheating", 0);
 		
-		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null }, out _);
+		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null, null, 0L }, out _);
 		
         variableHandler.storeIntVariable(0, "evt_Basic Foreign Diplomacy Delegation Arrival Event" + inEventReport.getUID() + "_delegationUID", 0);
 		

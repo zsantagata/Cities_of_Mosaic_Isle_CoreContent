@@ -159,7 +159,7 @@
 	if(!success) maxHappinessQuantityDesired = 0.75d;
 	double minHappiness = consts.getHappinessMin();
 	double maxHappiness = consts.getHappinessMax();
-	double quantityDesired = (((happiness.getRaceHappiness(inPop.getRace()) - minHappiness) / (maxHappiness - minHappiness)) *
+	double quantityDesired = (((happiness.getRealRaceHappiness(inPop.getRace()) - minHappiness) / (maxHappiness - minHappiness)) *
 		(maxHappinessQuantityDesired - minHappinessQuantityDesired)) + minHappinessQuantityDesired;
 	
 	//this actually consumes the drugs:

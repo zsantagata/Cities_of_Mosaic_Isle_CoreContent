@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>createNewRandomCommunity alert before_replace_text</a> <b>string</b>
+	  <c>A new community called [0] has been discovered.</c></i1>
+		
+		<!-- diplo pixels are at a higher scale than world map pixels; these are in diplo pixels -->
+	  <i1><a>createNewRandomCommunity radius_from_others min</a> <b>double</b> <c>15</c></i1>
+	  <i1><a>createNewRandomCommunity radius_from_local_community min</a> <b>double</b> <c>15</c></i1>
+	  <i1><a>createNewRandomCommunity radius_from_local_community max</a> <b>double</b> <c>800</c></i1>
+	  <i1><a>createNewRandomCommunity location_attempts max</a> <b>int</b> <c>50</c></i1>
+	  
+	  <i1><a>createNewRandomCommunity pop_count_start min</a> <b>int</b> <c>30</c></i1>
+	  <i1><a>createNewRandomCommunity pop_count_start max</a> <b>int</b> <c>135</c></i1>
+	  <!-- the race distribution is like this: choose a race, then make between min/max of the below * 100% of the remaining pops this race.  Races can be chosen multiple times. -->
+	  <!-- higher values increase the chances the new community is dominated by more of a single race -->
+	  <i1><a>createNewRandomCommunity pop_race_proportion min</a> <b>double</b> <c>0.3</c></i1>
+	  <i1><a>createNewRandomCommunity pop_race_proportion max</a> <b>double</b> <c>1.3</c></i1>
+	  
+	  <!-- communities should start with resources -->
+	  <i1><a>createNewRandomCommunity resources food_per_pop min</a> <b>double</b> <c>13.5</c></i1>
+	  <i1><a>createNewRandomCommunity resources food_per_pop max</a> <b>double</b> <c>28.5</c></i1>
+	  <i1><a>createNewRandomCommunity resources hstasis_per_pop min</a> <b>double</b> <c>1.5</c></i1>
+	  <i1><a>createNewRandomCommunity resources hstasis_per_pop max</a> <b>double</b> <c>5.5</c></i1>
+	  <i1><a>createNewRandomCommunity resources other_per_pop min</a> <b>double</b> <c>1.5</c></i1>
+	  <i1><a>createNewRandomCommunity resources other_per_pop max</a> <b>double</b> <c>5.5</c></i1>
+	  <!-- these are proportions of the whole range -->
+	  <i1><a>createNewRandomCommunity resources quality min</a> <b>double</b> <c>0.4</c></i1>
+	  <i1><a>createNewRandomCommunity resources quality max</a> <b>double</b> <c>0.6</c></i1>
+	  
+	  <i1><a>createNewRandomCommunity water_ratio max</a> <b>double</b> <c>0.9</c></i1> <!-- note that communities without a land biome will have this forced to 1.0d by C# code -->
+	  
+		<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script createNewRandomCommunity</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which generates a random community. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the function:
+	bool inSendAlert
+	
+	The output is the IFCommunity generated.  Note that if there is some sort of failure, the return IFCommunity could be null -->
+	<i1><a>createNewRandomCommunity</a>
+	<b>
+			//input count and type check:
+			var customScripts = getAPI().getCustomScripts();
+			if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+				{typeof(bool)}
+			  }, out _))
+			{
+				throw new ArgumentException("createNewRandomCommunity custom script received invalid arguments");
+				return null;
+			}
+	  
+			bool inSendAlert = (bool)inArguments[0];
+			
+            var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			bool success = false;
+			
+			IFCommunity communityCreated = null;
+			
+			//fetch necessary custom consts:
+			string alertReplaceText = customConsts.getStringConst("createNewRandomCommunity alert before_replace_text", out success);
+			if(!success) alertReplaceText = "A new community called [0] has been discovered.";
+			
+			double radiusOthersMin = customConsts.getDoubleConst("createNewRandomCommunity radius_from_others min", out success);
+			if(!success) radiusOthersMin = 15;
+			double radiusLocalMin = customConsts.getDoubleConst("createNewRandomCommunity radius_from_local_community min", out success);
+			if(!success) radiusLocalMin = 15;
+			double radiusLocalMax = customConsts.getDoubleConst("createNewRandomCommunity radius_from_local_community max", out success);
+			if(!success) radiusLocalMax = 800;
+			Int64 locationAttemptsMax = customConsts.getIntConst("createNewRandomCommunity location_attempts max", out success);
+			if(!success) locationAttemptsMax = 50;
+			
+			Int64 popCountStartMin = customConsts.getIntConst("createNewRandomCommunity pop_count_start min", out success);
+			if(!success) popCountStartMin = 30;
+			Int64 popCountStartMax = customConsts.getIntConst("createNewRandomCommunity pop_count_start max", out success);
+			if(!success) popCountStartMax = 135;
+			double racePropMin = customConsts.getDoubleConst("createNewRandomCommunity pop_race_proportion min", out success);
+			if(!success) racePropMin = 0.3d;
+			double racePropMax = customConsts.getDoubleConst("createNewRandomCommunity pop_race_proportion max", out success);
+			if(!success) racePropMax = 1.3d;
+			
+			double foodPerPopMin = customConsts.getDoubleConst("createNewRandomCommunity resources food_per_pop min", out success);
+			if(!success) foodPerPopMin = 13.5d;
+			double foodPerPopMax = customConsts.getDoubleConst("createNewRandomCommunity resources food_per_pop max", out success);
+			if(!success) foodPerPopMax = 28.5d;
+			double hstasisPerPopMin = customConsts.getDoubleConst("createNewRandomCommunity resources hstasis_per_pop min", out success);
+			if(!success) hstasisPerPopMin = 1.5d;
+			double hstasisPerPopMax = customConsts.getDoubleConst("createNewRandomCommunity resources hstasis_per_pop max", out success);
+			if(!success) hstasisPerPopMax = 5.5d;
+			double otherPerPopMin = customConsts.getDoubleConst("createNewRandomCommunity resources other_per_pop min", out success);
+			if(!success) otherPerPopMin = 1.5d;
+			double otherPerPopMax = customConsts.getDoubleConst("createNewRandomCommunity resources other_per_pop max", out success);
+			if(!success) otherPerPopMax = 5.5d;
+			
+			double resourceQualityMinProp = customConsts.getDoubleConst("createNewRandomCommunity resources quality min", out success);
+			if(!success) resourceQualityMinProp = 0.4d;
+			double resourceQualityMaxProp = customConsts.getDoubleConst("createNewRandomCommunity resources quality max", out success);
+			if(!success) resourceQualityMaxProp = 0.6d;
+			double waterRatioMax = customConsts.getDoubleConst("createNewRandomCommunity water_ratio max", out success);
+			if(!success) waterRatioMax = 0.9d;
+			
+			double resourceQualityMin = (consts.getResourceQualityMax() - consts.getResourceQualityMin()) * resourceQualityMinProp + consts.getResourceQualityMin();
+			double resourceQualityMax = (consts.getResourceQualityMax() - consts.getResourceQualityMin()) * resourceQualityMaxProp + consts.getResourceQualityMin();
+			
+			//to not repeat the task, collect a list of food/hstasis resources here:
+			List&lt;IFResource&gt; foodResources = new List&lt;IFResource&gt;();
+			List&lt;IFResource&gt; hstasisResources = new List&lt;IFResource&gt;();
+			int countOfResources = getAPI().getTotalCountOfMO("resources");
+			for(int i = 1; i &lt; countOfResources; i++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", i);
+				if(res.isFood() &amp;&amp; !res.isNotInResourcePool())
+				{
+					foodResources.Add(res);
+				}
+				if(res.isHStasis() &amp;&amp; !res.isNotInResourcePool())
+				{
+					hstasisResources.Add(res);
+				}
+			}
+			
+			//calculate location:
+			double radius = 0.0d;
+			double angle = 0.0d;
+			double originX = getAPI().getLocalCommunity().getDiploMapLocationX();
+			double originY = getAPI().getLocalCommunity().getDiploMapLocationY();
+			Int64 maxX = getAPI().getDiploMapDimensions().Item1;
+			Int64 maxY = getAPI().getDiploMapDimensions().Item2;
+			success = false;
+			double xLoc = 0.0d;
+			double yLoc = 0.0d;
+			for(int i = 0; i &lt; locationAttemptsMax; i++)
+			{
+				radius = getAPI().calcRand() * (radiusLocalMax - radiusLocalMin) + radiusLocalMin;
+				angle = getAPI().calcRand() * 2 * Math.PI;
+				
+				xLoc = originX + radius * Math.Cos(angle);
+				yLoc = originY + radius * Math.Sin(angle);
+				
+				if(xLoc &lt; 0 || yLoc &lt; 0 || xLoc &gt; maxX || yLoc &gt; maxY)
+				{
+					addDebugMessage(inScriptInstance, "random location is off map: xLoc = " + xLoc + " yLoc = " + yLoc + " maxX = " + maxX + " maxY = " + maxY);
+					continue;
+				}
+				
+				//now check that the location is not too close to anything else:
+				bool goodSoFar = true;
+				foreach(UInt64 uid in getAPI().getUIDsOfAllSO("communities"))
+				{
+					IFCommunity comm = (IFCommunity)getAPI().getSO("communities", uid);
+					if(comm.isNormalCommunity() || comm.isAbstractCommunity())
+					{
+						if(getAPI().calcDistanceBetweenPoints(Tuple.Create(xLoc, yLoc), Tuple.Create&lt;double, double&gt;(comm.getDiploMapLocationX(), comm.getDiploMapLocationY())) &lt; radiusOthersMin)
+						{
+							addDebugMessage(inScriptInstance, "random location (" + xLoc + ", " + yLoc + ") is too close to " + comm.getDebugName());
+							goodSoFar = false;
+						}
+					}
+				}
+				if(goodSoFar)
+				{
+					success = true;
+					break;
+				}
+			}
+			if(!success)
+			{
+				addDebugMessage(inScriptInstance, "unable to find location for new community after " + locationAttemptsMax + " attempts; ending early and returning null");
+				return new List&lt;object&gt;() { communityCreated };
+			}
+			
+			//assemble the pop counts:
+			List&lt;IFRace&gt; races = new List&lt;IFRace&gt;();
+			for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("races"); moid++)
+			{
+				IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+				if(!race.isHiddenFromPlayerSight())
+					races.Add(race);
+			}
+			Dictionary&lt;IFRace, UInt64&gt; raceCounts = new Dictionary&lt;IFRace, UInt64&gt;();
+			Int64 countOfPops = popCountStartMin + getAPI().calcRandIntUnder(popCountStartMax + 1 - popCountStartMin);
+			Int64 popsAssignedSoFar = 0;
+			while(popsAssignedSoFar != countOfPops)
+			{
+				Int64 thisRoundPops = (Int64)((getAPI().calcRand() * (racePropMax - racePropMin) + racePropMin) * (countOfPops - popsAssignedSoFar));
+				if(thisRoundPops &gt; countOfPops - popsAssignedSoFar)
+					thisRoundPops = countOfPops - popsAssignedSoFar;
+					
+				popsAssignedSoFar += thisRoundPops;
+				IFRace race = getAPI().getOneRandomItemFromList(races);
+				
+				if(!raceCounts.ContainsKey(race))
+					raceCounts.Add(race, 0);
+				raceCounts[race] += (UInt64)thisRoundPops;
+			}
+			
+			//generate the community:
+			communityCreated = getAPI().createCommunity(raceCounts, IFCommunity.eCommunityType.cNormal, true, 0, null, null, null, (Int64)xLoc, (Int64)yLoc, getAPI().calcRand() * waterRatioMax);
+			
+			//calculate the resources:
+			//the way I do this is to force all resources to max with certain qualities, then use the fetch script to fetch random amounts, and make those random amounts the actual amount of resources
+			IFResourcePool pool = communityCreated.getResourcePool();
+			for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(!res.isNotInResourcePool())
+				{
+					pool.addResourcesOfQuality(res, consts.getResourcePoolMax(), getAPI().calcRand() * (resourceQualityMax - resourceQualityMin) + resourceQualityMin);
+				}
+			}
+			//fetch food:
+			Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; foodResourcesActuallyHeld = null;
+			if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;() { pool, true, false, foodResources, countOfPops * (getAPI().calcRand() * (foodPerPopMax - foodPerPopMin) + foodPerPopMin), false, false, false, false, false, false, true },
+				out List&lt;object&gt; fetchReturnFood, false, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+			{
+				foodResourcesActuallyHeld = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchReturnFood[2];
+			}
+			//fetch hstasis:
+			Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; hstasisResourcesActuallyHeld = null;
+			if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;() { pool, true, false, hstasisResources, countOfPops * (getAPI().calcRand() * (hstasisPerPopMax - hstasisPerPopMin) + hstasisPerPopMin), false, false, false, false, false, false, true },
+				out List&lt;object&gt; fetchReturnHstasis, false, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+			{
+				hstasisResourcesActuallyHeld = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchReturnHstasis[2];
+			}
+			//fetch other:
+			Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; otherResourcesActuallyHeld = null;
+			if(customScripts.runCustomScriptCheckTypes("fetchOrConsumeResources", new List&lt;object&gt;() { pool, false, false, null, countOfPops * (getAPI().calcRand() * (otherPerPopMax - otherPerPopMin) + otherPerPopMin), false, false, false, false, false, false, true },
+				out List&lt;object&gt; fetchReturnOther, false, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
+			{
+				otherResourcesActuallyHeld = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)fetchReturnOther[2];
+			}
+			for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(!res.isNotInResourcePool())
+				{
+					pool.subtractResource(res, consts.getResourcePoolMax());
+				}
+			}
+			foreach(var kvpair in foodResourcesActuallyHeld)
+			{
+				pool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+			}
+			foreach(var kvpair in hstasisResourcesActuallyHeld)
+			{
+				pool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+			}
+			foreach(var kvpair in otherResourcesActuallyHeld)
+			{
+				pool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2);
+			}
+			
+			//send the alert:
+			if(inSendAlert)
+			{
+				getAPI().createAlert(alertReplaceText.Replace("[0]", communityCreated.getDisplayName()), 255, 255, 255, false, null, null, communityCreated); //the numbers are r/g/b, and false is for not pausing
+			}
+			
+			List&lt;object&gt; toReturn = new List&lt;object&gt;() { communityCreated };
+			return toReturn;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

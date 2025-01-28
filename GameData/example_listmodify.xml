@@ -3,20 +3,20 @@
 <core_data>
 	
   <igRace name="default">
-	<mPopNameList kind="add"> <!-- simple list of strings.  Since can be long, separate files will have this per igRace in core -->
-	  <i1>MISSING!POP NAME 1</i1>
-	  <i2>MISSING POP!NAME 2</i2>
-	  <i3>MISSING POP NAME!3</i3>
-	  <i4>MISSING POP NAME 4!</i4>
-	  <i5>!MISSING POP NAME 5</i5>
-	</mPopNameList>
-	<mPopNameList kind="remove"> <!-- simple list of strings.  Since can be long, separate files will have this per igRace in core -->
-	  <i1>MISSING POP NAME 1</i1>
-	  <i2>MISSING POP NAME 2</i2>
-	  <i3>MISSING POP NAME 3</i3>
-	  <i4>MISSING POP NAME 4</i4>
-	  <i5>MISSING POP NAME 5</i5>
-	</mPopNameList>
+	<mBuildingsToTreatAsHousing kind="add"><!-- basic list of names -->
+	  <i1>MISSING! NAME 1</i1>
+	  <i2>MISSING !NAME 2</i2>
+	  <i3>MISSING NAME!3</i3>
+	  <i4>MISSING NAME 4!</i4>
+	  <i5>!MISSING NAME 5</i5>
+	</mBuildingsToTreatAsHousing>
+	<mBuildingsToTreatAsHousing kind="remove"><!-- basic list of names -->
+	  <i1>MISSING! NAME 1</i1>
+	  <i2>MISSING !NAME 2</i2>
+	  <i3>MISSING NAME!3</i3>
+	  <i4>MISSING NAME 4!</i4>
+	  <i5>!MISSING NAME 5</i5>
+	</mBuildingsToTreatAsHousing>
   </igRace>
 
     <!-- for tuple-lists we need to use an actual moddable object to see a difference, not just the defaults -->

@@ -557,6 +557,33 @@
 		return null;
 	</mCanPopMuster>
 	
+	<!-- naming community has one input: IFCommunity to be named, which has already been created.  There is one output: string outName. -->
+	<!-- this script is called each time a (non-Enemy/Rebels/Wanderers/TheLady) community is created (even invisible or abstract ones) if and only if there is not a name provided (as in, empty string). -->
+	<!-- the output should not be the empty string -->
+    <mCommunityNameGenerator>
+		return null;
+    </mCommunityNameGenerator>
+	
+	<!-- naming pop has one input: IFPop to be named, which has already been created.  There is one output: string outName. -->
+	<!-- this script is called each time a pop is created if and only if there is not a name provided -->
+	<!-- the output should not be the empty string -->
+    <mPopNameGenerator>
+		return null;
+    </mPopNameGenerator>
+	
+	<!-- naming building has one input: IFBuilding to be named, which has already been created.  There is one output: string outName. -->
+	<!-- this script is called each time a building is created, whether or not it is placed on the map, but only if there is not a name provided (as in, empty string). -->
+	<!-- the output should not be the empty string -->
+    <mBuildingNameGenerator>
+		return null;
+    </mBuildingNameGenerator>
+	
+	<!-- sandbox setup has one input: IFRace to settle with.  There is no output. -->
+	<!-- this script is called at the end of C# code setting up a new sandbox savegame. -->
+    <mSandboxSetup>
+		return null;
+    </mSandboxSetup>
+	
   </gamescripts>
   
 </core_data>

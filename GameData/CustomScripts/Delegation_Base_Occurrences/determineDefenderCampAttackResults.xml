@@ -206,8 +206,8 @@
 				thirdPop = fightTargets[1];
 			}
 			
-			//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
-			customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { firstPop, secondPop, thirdPop, twoAttackers, 0.0d, 0.0d }, out _);
+			//let the pops fight:
+			customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { firstPop, secondPop, thirdPop, twoAttackers }, out _);
 			
 			inEnemyDefenders.RemoveAt(0);
 			fightTargets.RemoveAt(0);

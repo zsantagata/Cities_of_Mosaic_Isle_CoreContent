@@ -120,8 +120,8 @@
 		Tuple&lt;IFPop, IFPop&gt; attackers = doublePopAttackers.Dequeue();
 		IFPop defender = nonDefendingRealTargets[index];
 		
-		//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
-		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackers.Item1, defender, attackers.Item2, true, 0.0d, 0.0d }, out _);
+		//let the pops fight:
+		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackers.Item1, defender, attackers.Item2, true }, out _);
 		
 		if(defender.isDead() || defender.isWounded()) victoriousFightsAndNotTakenFights++;
 		nonDefendingRealTargets.RemoveAt(index);
@@ -132,8 +132,8 @@
 		IFPop attacker = singlePopAttackers.Dequeue();
 		IFPop defender = nonDefendingRealTargets[index];
 		
-		//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
-		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attacker, defender, null, false, 0.0d, 0.0d }, out _);
+		//let the pops fight:
+		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attacker, defender, null, false }, out _);
 		
 		if(defender.isDead() || defender.isWounded()) victoriousFightsAndNotTakenFights++;
 		nonDefendingRealTargets.RemoveAt(index);
@@ -153,8 +153,8 @@
 			{
 				Tuple&lt;IFPop, IFPop&gt; attackers = doublePopAttackers.Dequeue();
 				
-				//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
-				customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackers.Item1, defenders[0], attackers.Item2, true, 0.0d, 0.0d }, out _);
+				//let the pops fight:
+				customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackers.Item1, defenders[0], attackers.Item2, true }, out _);
 				
 				if(defenders[0].isDead() || defenders[0].isWounded()) victoriousFightsAndNotTakenFights++;
 				defenders.RemoveAt(0);
@@ -164,8 +164,8 @@
 				IFPop attacker = singlePopAttackers.Dequeue();
 				IFPop defender = defenders[0];
 				
-				//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
-				customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attacker, defender, null, false, 0.0d, 0.0d }, out _);
+				//let the pops fight:
+				customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attacker, defender, null, false }, out _);
 				
 				if(defender.isDead() || defender.isWounded()) victoriousFightsAndNotTakenFights++;
 				defenders.RemoveAt(0);
@@ -186,8 +186,8 @@
 		Tuple&lt;IFPop, IFPop&gt; attackers = doublePopAttackers.Dequeue();
 		IFPop defender = nonDeadDefenders[0];
 		
-		//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
-		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackers.Item1, defender, attackers.Item2, true, 0.0d, 0.0d }, out _);
+		//let the pops fight:
+		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attackers.Item1, defender, attackers.Item2, true }, out _);
 			
 		if(defender.isDead() || defender.isWounded()) victoriousFightsAndNotTakenFights++;
 		nonDeadDefenders.RemoveAt(0);
@@ -197,8 +197,8 @@
 		IFPop attacker = singlePopAttackers.Dequeue();
 		IFPop defender = nonDeadDefenders[0];
 		
-		//let the pops fight (the set map location shouldn't matter since they aren't on the map anyway):
-		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attacker, defender, null, false, 0.0d, 0.0d }, out _);
+		//let the pops fight:
+		customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { attacker, defender, null, false }, out _);
 		
 		if(defender.isDead() || defender.isWounded()) victoriousFightsAndNotTakenFights++;
 		nonDeadDefenders.RemoveAt(0);

@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>mPopNameGenerator name_for_The_Lady before_replace_text</a> <b>string</b> <c>The Lady of Leaves</c></i1>
+	  
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of scripts relating to generating default names for communities, pops, and buildings.  Delegations are automatically named by C# code but can be renamed by the player -->
+  <gamescripts name="default">
+  
+	<!-- naming community has one input: IFCommunity to be named, which has already been created.  There is one output: string outName. -->
+	<!-- this script is called each time a (non-Enemy/Rebels/Wanderers/TheLady) community is created (even invisible or abstract ones) if and only if there is not a name provided (as in, empty string). -->
+	<!-- the output should not be the empty string -->
+    <mCommunityNameGenerator>
+	  //input count check:
+	  if(inArguments.Length &lt; 1)
+      {
+        return null;
+      }
+	  
+	  IFCommunity inCommunity = (IFCommunity)inArguments[0];
+	  string toReturn = "";
+	  
+	  //we first check if the foreign AI of the community exists and if there is a name generator script associated with it:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(inCommunity.hasCurrentAI())
+	  {
+		string scriptNameToCheckFor = "communityNameGenerator_" + inCommunity.getCurrentAI().getInternalName();
+		if(customScripts.doesCustomScriptExistWithName(scriptNameToCheckFor))
+		{
+			if(customScripts.runCustomScriptCheckTypes(scriptNameToCheckFor, new List&lt;object&gt;() { inCommunity }, out List&lt;object&gt; outString, false, typeof(string)))
+			{
+				toReturn = (string)outString[0];
+			}
+		}
+	  }
+	  
+	  //we then check if there is a name generator script associated with the major biome of the community (prefer land unless water only):
+	    string biomeString = ((inCommunity.getWaterRatio() == 1.0d) || !inCommunity.hasLandBiome()) &amp;&amp; inCommunity.hasWaterBiome() ? inCommunity.getWaterBiome().getInternalName() :
+			inCommunity.hasLandBiome() ? inCommunity.getLandBiome().getInternalName() :
+			"INVALID_BIOME";
+	  
+		string scriptNameToCheckFor2 = "communityNameGenerator_" + biomeString;
+		if(customScripts.doesCustomScriptExistWithName(scriptNameToCheckFor2))
+		{
+			if(customScripts.runCustomScriptCheckTypes(scriptNameToCheckFor2, new List&lt;object&gt;() { inCommunity }, out List&lt;object&gt; outString3, false, typeof(string)))
+			{
+				toReturn = (string)outString3[0];
+			}
+		}
+	  
+	  //if that has not assigned a name, use the common name generator:
+	  if(toReturn == "")
+	  {
+		if(customScripts.runCustomScriptCheckTypes("communityNameGenerator_Common", new List&lt;object&gt;() { inCommunity }, out List&lt;object&gt; outString2, false, typeof(string)))
+		{
+			toReturn = (string)outString2[0];
+		}
+	  }
+	
+	  return new List&lt;object&gt;() { toReturn };
+    </mCommunityNameGenerator>
+	
+	<!-- naming pop has one input: IFPop to be named, which has already been created.  There is one output: string outName. -->
+	<!-- this script is called each time a pop is created if and only if there is not a name provided -->
+	<!-- the output should not be the empty string -->
+    <mPopNameGenerator>
+	  //input count check:
+	  if(inArguments.Length &lt; 1)
+      {
+        return null;
+      }
+	  
+	  IFPop inPop = (IFPop)inArguments[0];
+	  string toReturn = "";
+	  
+	  //The Lady has a "hard-coded" name
+	  if(inPop == getAPI().getTheLadyCommunity().getLeaderCollection().getCityLeader())
+	  {
+		toReturn = getAPI().getCustomConsts().getStringConst("mPopNameGenerator name_for_The_Lady before_replace_text", out bool success);
+		if(!success) toReturn = "The Lady of Leaves";
+	  }
+	  
+	  if(toReturn == "")
+	  {
+		  var customScripts = getAPI().getCustomScripts();
+		  string sexAppend = "";
+		  if(inPop.getSex() == IFPop.ePopSex.cMale)
+			sexAppend = "M";
+		  if(inPop.getSex() == IFPop.ePopSex.cFemale)
+			sexAppend = "F";
+		  //otherwise the race is unisex so it shouldn't matter
+		  
+		  string raceAppend = inPop.getRace().getInternalName();
+		  
+		  //we first check if there is a race-and-sex name generator:
+		  if(sexAppend != "")
+		  {
+			string scriptNameToCheckFor = "popNameGenerator_" + raceAppend + sexAppend;
+			if(customScripts.doesCustomScriptExistWithName(scriptNameToCheckFor))
+			{
+				if(customScripts.runCustomScriptCheckTypes(scriptNameToCheckFor, new List&lt;object&gt;() { inPop }, out List&lt;object&gt; outString, false, typeof(string)))
+				{
+					toReturn = (string)outString[0];
+				}
+			}
+		  }
+		  
+		  //if that has not assigned a name, check if there is a race name generator:
+		  if(toReturn == "")
+		  {
+			string scriptNameToCheckFor = "popNameGenerator_" + raceAppend;
+			if(customScripts.doesCustomScriptExistWithName(scriptNameToCheckFor))
+			{
+				if(customScripts.runCustomScriptCheckTypes(scriptNameToCheckFor, new List&lt;object&gt;() { inPop }, out List&lt;object&gt; outString2, false, typeof(string)))
+				{
+					toReturn = (string)outString2[0];
+				}
+			}
+		  }
+		  
+		  //if that has not assigned a name, use the common name generator:
+		  if(toReturn == "")
+		  {
+			if(customScripts.runCustomScriptCheckTypes("popNameGenerator_Common", new List&lt;object&gt;() { inPop }, out List&lt;object&gt; outString3, false, typeof(string)))
+			{
+				toReturn = (string)outString3[0];
+			}
+		  }
+	  }
+	
+	  return new List&lt;object&gt;() { toReturn };
+    </mPopNameGenerator>
+  
+	<!-- naming building has one input: IFBuilding to be named, which has already been created.  There is one output: string outName. -->
+	<!-- this script is called each time a building is created, whether or not it is placed on the map, but only if there is not a name provided (as in, empty string). -->
+	<!-- the output should not be the empty string -->
+    <mBuildingNameGenerator>
+	  //input count check:
+	  if(inArguments.Length &lt; 1)
+      {
+        return null;
+      }
+	  
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  string toReturn = "";
+	  
+	  //we first check if the building kind script exists; if not use the common script:
+	  var customScripts = getAPI().getCustomScripts();
+	  string scriptNameToCheckFor = "buildingNameGenerator_" + inBuilding.getBuildingKind().getInternalName();
+	  if(customScripts.doesCustomScriptExistWithName(scriptNameToCheckFor))
+	  {
+	  	if(customScripts.runCustomScriptCheckTypes(scriptNameToCheckFor, new List&lt;object&gt;() { inBuilding }, out List&lt;object&gt; outString, false, typeof(string)))
+		{
+			toReturn = (string)outString[0];
+		}
+	  }
+	  
+	  //if that has not assigned a name, use the common name generator:
+	  if(toReturn == "")
+	  {
+		if(customScripts.runCustomScriptCheckTypes("buildingNameGenerator_Common", new List&lt;object&gt;() { inBuilding }, out List&lt;object&gt; outString2, false, typeof(string)))
+		{
+			toReturn = (string)outString2[0];
+		}
+	  }
+	
+	  return new List&lt;object&gt;() { toReturn };
+    </mBuildingNameGenerator>
+	
+  </gamescripts>
+  
+</core_data>

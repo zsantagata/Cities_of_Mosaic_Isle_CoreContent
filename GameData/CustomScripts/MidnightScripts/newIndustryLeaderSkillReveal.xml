@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <customconsts name="default">
+	  <mCustomVariableList kind="add">
+		  <!-- multiplier from community average skill -->
+		  <i1><a>newIndustryLeaderSkillReveal skill_factor max</a> <b>double</b> <c>2.5</c></i1>
+		  <i1><a>newIndustryLeaderSkillReveal skill_factor min</a> <b>double</b> <c>1.02</c></i1>
+		  
+		  <!-- proportion of the whole range -->
+		  <i1><a>newIndustryLeaderSkillReveal skill_value_above_community max</a> <b>double</b> <c>0.4</c></i1>
+		  <i1><a>newIndustryLeaderSkillReveal skill_value_above_community min</a> <b>double</b> <c>0.02</c></i1>
+		  
+		  <!-- early midnight scripts and late midnight scripts have different naming for their logging consts: -->
+		  <i1><a>log_script_custom late midnight script newIndustryLeaderSkillReveal</a> <b>int</b> <c>1</c></i1>
+	  </mCustomVariableList>
+  </customconsts>
+  
+  <customscripts name="default">
+	<mLateMidnightScripts kind="add">
+	<!-- this script will detect if there are leadership changes that occurred in the last day, and make the races of those leaders happy/unhappy as a result -->
+	<i1><a>newIndustryLeaderSkillReveal</a>
+	<b>
+	  bool success = false;
+	  var consts = getAPI().getConsts();
+	  var customConsts = getAPI().getCustomConsts();
+	  var variableHandler = getAPI().getVariableHandler();
+	  
+	  Dictionary&lt;IFIndustry, IFPop&gt; newLedIndustries = new Dictionary&lt;IFIndustry, IFPop&gt;();
+	  
+	  IFCommunity localCommunity = getAPI().getLocalCommunity();
+      IFHistoricalOccurrenceCollection history = localCommunity.getHistory();
+	  Int64 currentDate = getAPI().getCalendar().getCurrentDate();
+	  
+	  ReadOnlyCollection&lt;IFHistoricalOccurrence&gt; hoccurrences = history.getAllHistoryBetweenDates(currentDate - 1, currentDate); //this includes occurrences of the day that just passed (including the previous midnight), but not occurrences that happened during this midnight
+	
+	  foreach(var hoccurrence in hoccurrences)
+	  {
+		if(hoccurrence.getAction().getMinorAdjectives().Contains("new Industry leadership"))
+		{
+			UInt64 uidOfPop = hoccurrence.getTarget().getTargetID();
+			IFPop pop = (IFPop)getAPI().getSO("pops", uidOfPop);
+			if(pop != null)
+			{
+				IFIndustry industry = localCommunity.getLeaderCollection().getIndustryLedByPop(pop);
+				if(industry != null)
+				{
+					newLedIndustries.Add(industry, pop);
+				}
+			}
+		}
+	  }
+	
+	  double skillMax = consts.getWorkerSkillMax();
+	  double skillMin = consts.getWorkerSkillMin();
+	  double skillFactorMax = customConsts.getDoubleConst("newIndustryLeaderSkillReveal skill_factor max", out success);
+	  if(!success) skillFactorMax = 2.5d;
+	  double skillFactorMin = customConsts.getDoubleConst("newIndustryLeaderSkillReveal skill_factor min", out success);
+	  if(!success) skillFactorMin = 1.02d;
+	  double skillValueAboveCommunityMax = customConsts.getDoubleConst("newIndustryLeaderSkillReveal skill_value_above_community max", out success);
+	  if(!success) skillValueAboveCommunityMax = 0.4d;
+	  double skillValueAboveCommunityMin = customConsts.getDoubleConst("newIndustryLeaderSkillReveal skill_value_above_community min", out success);
+	  if(!success) skillValueAboveCommunityMin = 0.02d;
+	  
+	  skillValueAboveCommunityMax *= (skillFactorMax - skillFactorMin);
+	  skillValueAboveCommunityMin *= (skillFactorMax - skillFactorMin);
+	
+	  string varName = "preventNewIndustryLeaderSkillReveal_pop[0]";
+	  IFIndustrySkills skills = localCommunity.getDomesticComponent().getIndustrySkills();
+	  foreach(var kvpair in newLedIndustries)
+	  {
+		//check if we should not set the new leader skill in this script, in case an event did it directly:
+		Int64 skipIfNonZero = variableHandler.getInt(varName.Replace("[0]", kvpair.Value.getUID().ToString()), out success);
+		if(!success) skipIfNonZero = 0;
+		
+		if(skipIfNonZero == 0)
+		{
+			double avgSkill = skills.getAverageSkill(kvpair.Key);
+			double skillToSet = avgSkill * (getAPI().calcRand() * (skillFactorMax - skillFactorMin) + skillFactorMin);
+			if(skillToSet - avgSkill &gt; skillValueAboveCommunityMax)
+				skillToSet = avgSkill + skillValueAboveCommunityMax;
+			if(skillToSet - avgSkill &lt; skillValueAboveCommunityMin)
+				skillToSet = avgSkill + skillValueAboveCommunityMin;
+				
+			skills.setLeaderSkill(skillToSet, kvpair.Key);
+		}
+	  }
+	
+	  return null;
+	</b>
+	</i1>
+	</mLateMidnightScripts>
+	
+  </customscripts>
+  
+</core_data>

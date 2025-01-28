@@ -404,88 +404,8 @@
 	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
 	    <id>0</id> <!-- integer, ids must be unique and flush -->
 		<name>Replanter</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
 		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
-		<width>400</width>
-		<height>201</height>
-		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>1</id> <!-- integer, ids must be unique and flush -->
-		<name>Replanter</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>202</y_origin> <!-- the top of an image is 0 -->
-		<width>400</width>
-		<height>201</height>
-		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>2</id> <!-- integer, ids must be unique and flush -->
-		<name>Replanter</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>404</y_origin> <!-- the top of an image is 0 -->
-		<width>400</width>
-		<height>201</height>
-		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>3</id> <!-- integer, ids must be unique and flush -->
-		<name>Replanter</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>606</y_origin> <!-- the top of an image is 0 -->
-		<width>400</width>
-		<height>201</height>
-		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>4</id> <!-- integer, ids must be unique and flush -->
-		<name>Replanter</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>808</y_origin> <!-- the top of an image is 0 -->
-		<width>400</width>
-		<height>201</height>
-		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>5</id> <!-- integer, ids must be unique and flush -->
-		<name>Replanter</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>1010</y_origin> <!-- the top of an image is 0 -->
-		<width>400</width>
-		<height>201</height>
-		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>6</id> <!-- integer, ids must be unique and flush -->
-		<name>Replanter</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>1212</y_origin> <!-- the top of an image is 0 -->
-		<width>400</width>
-		<height>201</height>
-		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>7</id> <!-- integer, ids must be unique and flush -->
-		<name>Replanter</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>1414</y_origin> <!-- the top of an image is 0 -->
-		<width>400</width>
-		<height>201</height>
-		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>8</id> <!-- integer, ids must be unique and flush -->
-		<name>Replanter</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>1616</y_origin> <!-- the top of an image is 0 -->
 		<width>400</width>
 		<height>201</height>
 		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
@@ -545,6 +465,23 @@
     <mTagList></mTagList>
   </spritesheet>
   
+  <spritesheet name="Sleeping Spot">
+    <mSheetTypeName>igBuildingKind</mSheetTypeName>
+	<mPath>_Previs Map Objects/Buildings/Sleeping Spot SS</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>Sleeping Spot</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>200</width>
+		<height>101</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
   <spritesheet name="Smelter">
     <mSheetTypeName>igBuildingKind</mSheetTypeName>
 	<mPath>_Previs Map Objects/Buildings/Smelter SS</mPath>
@@ -569,28 +506,8 @@
 	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
 	    <id>0</id> <!-- integer, ids must be unique and flush -->
 		<name>Storage Yard</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
 		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
-		<width>300</width>
-		<height>151</height>
-		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>1</id> <!-- integer, ids must be unique and flush -->
-		<name>Storage Yard</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>152</y_origin> <!-- the top of an image is 0 -->
-		<width>300</width>
-		<height>151</height>
-		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
-	  </sprite>
-	  
-	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
-	    <id>2</id> <!-- integer, ids must be unique and flush -->
-		<name>Storage Yard</name> <!-- simply for debug purposes -->
-		<frames>2</frames> <!-- must be an integer, 1 or higher -->
-		<y_origin>304</y_origin> <!-- the top of an image is 0 -->
 		<width>300</width>
 		<height>151</height>
 		<fps>1.0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->

@@ -18,12 +18,6 @@ return new List&lt;object&gt;() { true };
     </mScriptWhichGatesHappening>
 
     <mScriptUponHappening>
-            //input count check:
-            if (inArguments.Length &lt; 2)
-            {
-                return null;
-            }
-
             var consts = getAPI().getConsts();
             var customConsts = getAPI().getCustomConsts();
             var customScripts = getAPI().getCustomScripts();
@@ -231,13 +225,6 @@ return new List&lt;object&gt;() { true };
     </mScriptWhichGatesHappening>
 
     <mScriptUponHappening>
-
-            //input count check:
-            if (inArguments.Length &lt; 2)
-            {
-                return null;
-            }
-
             var consts = getAPI().getConsts();
             var customConsts = getAPI().getCustomConsts();
             var customScripts = getAPI().getCustomScripts();
@@ -467,12 +454,6 @@ return new List&lt;object&gt;() { true };
     </mScriptWhichGatesHappening>
 
     <mScriptUponHappening>
-            //input count check:
-            if (inArguments.Length &lt; 2)
-            {
-                return null;
-            }
-
             var consts = getAPI().getConsts();
             var customConsts = getAPI().getCustomConsts();
             var customScripts = getAPI().getCustomScripts();
@@ -524,7 +505,7 @@ return new List&lt;object&gt;() { true };
             }
 
             //thirdly, we need to enable and force-for-tomorrow the EXPIRE event:
-            customScripts.runCustomScript(&quot;setupFetchOrClearVariablesForEventForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, false, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()) }, out _);
+            customScripts.runCustomScript(&quot;setupFetchOrClearVariablesForEventForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, false, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), null, -1L }, out _);
 
             //fourthly, calculate until when the pops will stay and how strongly they care to:
             Int64 currentDate = getAPI().getCalendar().getCurrentDate();
@@ -1313,12 +1294,6 @@ return new List&lt;object&gt;() { true };
     </mScriptWhichGatesHappening>
 
     <mScriptUponHappening>
-            //input count check:
-            if (inArguments.Length &lt; 2)
-            {
-                return null;
-            }
-
             var consts = getAPI().getConsts();
             var customConsts = getAPI().getCustomConsts();
             var customScripts = getAPI().getCustomScripts();
@@ -1388,12 +1363,6 @@ return new List&lt;object&gt;() { true };
     </mScriptWhichGatesHappening>
 
     <mScriptUponHappening>
-            //input count check:
-            if (inArguments.Length &lt; 2)
-            {
-                return null;
-            }
-
             var consts = getAPI().getConsts();
             var customConsts = getAPI().getCustomConsts();
             var customScripts = getAPI().getCustomScripts();
@@ -1429,7 +1398,7 @@ return new List&lt;object&gt;() { true };
             }
 
             //secondly, we need to enable and force-for-tomorrow the EXPIRE event:
-            customScripts.runCustomScript(&quot;setupFetchOrClearVariablesForEventForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, false, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()) }, out _);
+            customScripts.runCustomScript(&quot;setupFetchOrClearVariablesForEventForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, false, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), null, -1L }, out _);
 
             //thirdly, calculate until when the pops will stay and how strongly they care to:
             Int64 currentDate = getAPI().getCalendar().getCurrentDate();
@@ -2035,12 +2004,6 @@ return new List&lt;object&gt;() { true };
     </mScriptWhichGatesHappening>
 
     <mScriptUponHappening>
-            //input count check:
-            if (inArguments.Length &lt; 2)
-            {
-                return null;
-            }
-
             var consts = getAPI().getConsts();
             var customConsts = getAPI().getCustomConsts();
             var customScripts = getAPI().getCustomScripts();
@@ -2112,12 +2075,6 @@ return new List&lt;object&gt;() { true };
     </mScriptWhichGatesHappening>
 
     <mScriptUponHappening>
-            //input count check:
-            if (inArguments.Length &lt; 2)
-            {
-                return null;
-            }
-
             var consts = getAPI().getConsts();
             var customConsts = getAPI().getCustomConsts();
             var customScripts = getAPI().getCustomScripts();
@@ -2214,7 +2171,7 @@ return new List&lt;object&gt;() { true };
             }
 
             //fourth, we need to enable and force-for-tomorrow the EXPIRE event:
-            customScripts.runCustomScript(&quot;setupFetchOrClearVariablesForEventForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, false, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()) }, out _);
+            customScripts.runCustomScript(&quot;setupFetchOrClearVariablesForEventForEXPIRE&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, false, new List&lt;IFPop&gt;(inDelegation.getPopsInDelegation()), null, -1L }, out _);
 
             //fifth, in order to calculate the real count of resources for display by text, store the actual resources of the delegation:
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesActuallyHeld = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
@@ -2963,12 +2920,6 @@ return new List&lt;object&gt;() { true };
     </mScriptWhichGatesHappening>
 
     <mScriptUponHappening>
-            //input count check:
-            if (inArguments.Length &lt; 2)
-            {
-                return null;
-            }
-
             var consts = getAPI().getConsts();
             var customConsts = getAPI().getCustomConsts();
             var customScripts = getAPI().getCustomScripts();

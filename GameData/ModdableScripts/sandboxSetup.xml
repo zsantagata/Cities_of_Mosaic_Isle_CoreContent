@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  <i1><a>setupSandbox community_count</a> <b>int</b> <c>5</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+  
+  <!-- this file holds the implementation of a few miscellaneous scripts -->
+  <gamescripts name="default">
+	<!-- sandbox setup has one input: race of settling pops.  It has no outputs -->
+	<mSandboxSetup>
+    //input count check:
+	if (inArguments.Length &lt; 1)
+	{
+		return null;
+	}
+	
+	var customScripts = getAPI().getCustomScripts();
+	IFRace inRace = (IFRace)inArguments[0];
+	
+	customScripts.runCustomScript("setupSandboxPops", new List&lt;object&gt;() { inRace }, out _);
+	customScripts.runCustomScript("setupSandboxResourcePool", new List&lt;object&gt;() { }, out _);
+	customScripts.runCustomScript("setupSandboxIndustryValues", new List&lt;object&gt;() { }, out _);
+	customScripts.runCustomScript("setupSandboxLeaders", new List&lt;object&gt;() { }, out _);
+	customScripts.runCustomScript("setupSandboxCommunities", new List&lt;object&gt;() { }, out _);
+	customScripts.runCustomScript("setupSandboxDesolation", new List&lt;object&gt;() { }, out _);
+	
+	return null;
+    </mSandboxSetup>
+  </gamescripts>
+  
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+		<!-- setupSandboxPops has one input: race of settling pops.  It has no outputs -->
+		<!-- this is meant to be called by the mSandboxSetup moddable script -->
+		<i1><a>setupSandboxPops</a>
+		<b>
+			//input count and type check:
+			var customScripts = getAPI().getCustomScripts();
+			if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+				{typeof(IFRace)}
+			}, out _))
+			{
+				throw new ArgumentException("setupSandboxPops custom script received invalid arguments");
+				return null;
+			}
+				
+			IFRace inRace = (IFRace)inArguments[0];
+			if(inRace == null)
+			{
+				throw new ArgumentException("setupSandboxPops custom script received invalid argument inRace: cannot be null");
+				return null;
+			}
+			
+			var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			bool success = false;
+			
+			Int64 countOfPopsSandbox = customConsts.getIntConst("sandboxsetup pop count", out success);
+			if(!success) countOfPopsSandbox = 20;
+			
+			IFCommunity localCommunity = getAPI().getLocalCommunity();
+			Int64 mapWidth = localCommunity.getDomesticComponent().getMap().getMapDimensions().Item1;
+			Int64 mapHeight = localCommunity.getDomesticComponent().getMap().getMapDimensions().Item2;
+			for(int i = 0; i &lt; countOfPopsSandbox; i++)
+			{
+				IFPop toAdd = getAPI().generateNewPop(inRace, localCommunity);
+				//place the pop on the map:
+				toAdd.placePopOnMapLocation(getAPI().calcRand() * mapWidth, getAPI().calcRand() * mapHeight);
+			}
+			
+			return null;
+		</b></i1>
+		
+		<!-- setupSandboxResourcePool has no inputs.  It has no outputs -->
+		<!-- this is meant to be called by the mSandboxSetup moddable script -->
+		<i1><a>setupSandboxResourcePool</a>
+		<b>
+			var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			bool success = false;
+	  
+			//TODO
+			
+			double foodCountSandbox = customConsts.getDoubleConst("sandboxsetup pool food count", out success);
+			if(!success) foodCountSandbox = 300;
+			
+			List&lt;IFResource&gt; foodResources = new List&lt;IFResource&gt;();
+			for(int moid = 0; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+			{
+				IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+				if(res.isFood() &amp;&amp; !res.isNotInResourcePool())
+				{
+					foodResources.Add(res);
+				}
+			}
+			
+			double avgQual = (consts.getResourceQualityMax() + consts.getResourceQualityMin()) / 2;
+			getAPI().getLocalCommunity().getResourcePool().addResourcesOfQuality(getAPI().getOneRandomItemFromList(foodResources), foodCountSandbox, avgQual);
+			
+			return null;
+		</b></i1>
+		
+		<!-- setupSandboxIndustryValues has no inputs.  It has no outputs -->
+		<!-- this is meant to be called by the mSandboxSetup moddable script -->
+		<i1><a>setupSandboxIndustryValues</a>
+		<b>
+			//all start at 0, nothing to do
+		
+			return null;
+		</b></i1>
+		
+		<!-- setupSandboxLeaders has no inputs.  It has no outputs -->
+		<!-- this is meant to be called by the mSandboxSetup moddable script -->
+		<i1><a>setupSandboxLeaders</a>
+		<b>
+			var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+	  
+			//set the City Leader:
+			getAPI().getLocalCommunity().getLeaderCollection().setCityLeader(
+				getAPI().getOneRandomItemFromList(getAPI().getLocalCommunity().getPopsLoyalToCommunity(true, false))
+				);
+	  
+			return null;
+		</b></i1>
+		
+		<!-- setupSandboxCommunities has no inputs.  It has no outputs -->
+		<!-- this is meant to be called by the mSandboxSetup moddable script -->
+		<i1><a>setupSandboxCommunities</a>
+		<b>
+			var consts = getAPI().getConsts();
+			var customConsts = getAPI().getCustomConsts();
+			var variableHandler = getAPI().getVariableHandler();
+			var customScripts = getAPI().getCustomScripts();
+	  
+			Int64 communityCount = customConsts.getIntConst("setupSandbox community_count", out bool success);
+			if(!success) communityCount = 5;
+	  
+			for(int i = 0; i &lt; communityCount; i++)
+			{
+				customScripts.runCustomScript("createNewRandomCommunity", new List&lt;object&gt;() { false }, out _);
+			}
+	  
+			return null;
+		</b></i1>
+		
+		<!-- setupSandboxDesolation has no inputs.  It has no outputs -->
+		<!-- this is meant to be called by the mSandboxSetup moddable script -->
+		<i1><a>setupSandboxDesolation</a>
+		<b>
+			//all start at 0, nothing to do
+	  
+			return null;
+		</b></i1>
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

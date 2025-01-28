@@ -39,6 +39,7 @@
 	
 	var consts = getAPI().getConsts();
 	var customConsts = getAPI().getCustomConsts();
+	var variableHandler = getAPI().getVariableHandler();
 	  
 	  double low_thresh = consts.getHealthLowThreshold();
 	  double high_thresh = consts.getHealthHighThreshold();
@@ -46,6 +47,8 @@
 	  double max = consts.getHealthMax();
 	  
 	  // TODO any race or other non-standard considerations 
+	  double popOverallHealthFactor = variableHandler.getConnectedDouble("overallHealthFactor_pop" + inPop.getUID(), out bool success);
+	  if(!success) popOverallHealthFactor = 1.0d;
 	  
 	  // there are two effects that are modeled here which change individual health levels (protein, mcal, water and hstasis) from their direct calculations above: 
 	  // A) people who are not incapable will seek out a minimum of their MCal, water, and HStasis needs to keep themselves alive.  These healths have increased minimums for capable pops.  Protein is deliberately kept out of this. 
@@ -85,7 +88,6 @@
 	  
 	  // B) 
 	  //TODO: label biomes as cold or hot (and have this changeable by variables), so that only one of these applies at a time:
-	  bool success = false;
 	  if(waterHealthNew &gt; low_thresh)
 	  {
 		double water_to_hstasis_factor = customConsts.getDoubleConst("popHealth_overall water_to_hstasis mult", out success);
@@ -172,7 +174,7 @@
 	  }
 	  
 	  // bounds 
-	  double overall_health = (multMalus * (4*additiveBonus + protHealthNew + mcalHealthNew + waterHealthNew + hstasisHealthNew)); // the multiplication of additiveBonus by 4 is to undo the average factor we started with for multMalus 
+	  double overall_health = (popOverallHealthFactor * multMalus * (4*additiveBonus + protHealthNew + mcalHealthNew + waterHealthNew + hstasisHealthNew)); // the multiplication of additiveBonus by 4 is to undo the average factor we started with for multMalus 
 	  if(overall_health &lt; min) {
 	    overall_health = min;
 	  }

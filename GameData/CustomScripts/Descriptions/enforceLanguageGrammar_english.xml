@@ -22,6 +22,8 @@
 	  <i1><a>enforceLanguageGrammar_english enable_a_to_an_for_vowel_starts_if_nonzero</a> <b>int</b> <c>1</c></i1>
 	  <i1><a>enforceLanguageGrammar_english enable_possessive_remove_double_s_if_nonzero</a> <b>int</b> <c>1</c></i1>
 	  <i1><a>enforceLanguageGrammar_english enable_capitalize_first_char_if_letter_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_spacecomma_to_comma_if_nonzero</a> <b>int</b> <c>1</c></i1>
+	  <i1><a>enforceLanguageGrammar_english enable_spaceperiod_to_period_if_nonzero</a> <b>int</b> <c>1</c></i1>
 	  
 	  <!-- these are not used by this script but instead are a common separator for the mult_* descriptions: -->
 	  <i1><a>english multiple_item_separator notlast before_replace_text</a> <b>string</b> <c>,</c></i1>
@@ -116,6 +118,12 @@
 	
 	Int64 capitalizeFirstCharIfLetterInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_capitalize_first_char_if_letter_if_nonzero", out success);
 	if(!success) capitalizeFirstCharIfLetterInt = 1;
+	
+	Int64 spaceCommaToCommaInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_spacecomma_to_comma_if_nonzero", out success);
+	if(!success) spaceCommaToCommaInt = 1;
+	
+	Int64 spacePeriodToPeriodInt = customConsts.getIntConst("enforceLanguageGrammar_english enable_spaceperiod_to_period_if_nonzero", out success);
+	if(!success) spacePeriodToPeriodInt = 1;
 	
 	//secondly, run through all options and enforce the rules:
 	if(tabReplacementInt != 0)
@@ -380,6 +388,16 @@
 			}
 			break;
 		}
+	}
+	
+	if(spaceCommaToCommaInt != 0)
+	{
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" ,", ",");
+	}
+	
+	if(spacePeriodToPeriodInt != 0)
+	{
+		outStringWithEnforcedGrammar = outStringWithEnforcedGrammar.Replace(" .", ".");
 	}
 	
 	addDebugMessage(inScriptInstance, "input string=" + inStringToEnforceGrammarUpon + "\noutput string=" + outStringWithEnforcedGrammar);

@@ -102,20 +102,6 @@
 		<i>null</i>
 	</mSSIDs>
 	<mSelectedSGID>develop_popClickOn</mSelectedSGID>
-	<mCommunityNameList> <!-- simple list of strings.  Since can be long, separate files will have this per igRace in core -->
-	  <i1>MISSING COMMUNITY NAME 1</i1>
-	  <i2>MISSING COMMUNITY NAME 2</i2>
-	  <i3>MISSING COMMUNITY NAME 3</i3>
-	  <i4>MISSING COMMUNITY NAME 4</i4>
-	  <i5>MISSING COMMUNITY NAME 5</i5>
-	</mCommunityNameList>
-	<mPopNameList> <!-- simple list of strings.  Since can be long, separate files will have this per igRace in core -->
-	  <i1>MISSING POP NAME 1</i1>
-	  <i2>MISSING POP NAME 2</i2>
-	  <i3>MISSING POP NAME 3</i3>
-	  <i4>MISSING POP NAME 4</i4>
-	  <i5>MISSING POP NAME 5</i5>
-	</mPopNameList>
 
     <mLandSpeed>1.0</mLandSpeed> <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->
     <mWaterSpeed>1.0</mWaterSpeed> <!-- this is a multiplier on base pop speed. Must be positive, because even though pops will not path into places they cannot breathe, they may find themselves there and need to move out -->

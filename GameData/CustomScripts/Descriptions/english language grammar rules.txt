@@ -18,3 +18,5 @@ I call these grammar rules but grammar rules can't really be enforced, because s
 14) the word "a" should not be followed by a word with a vowel starting letter.  Instead, the word "a" should be transformed into "an" (okay this one is actually about vowel "sounds" rather than the letter but this is close enough)
 15) possessive of a word ending in s should be just ', not 's (ex: Minotaurs's should be Minotaurs', but Hylidae's should stay as Hylidae's)
 16) if the first non-space character of the string is a letter, it should be capitalized
+17) a space and then a comma should be just a comma
+18) a space and then a period should be just a period

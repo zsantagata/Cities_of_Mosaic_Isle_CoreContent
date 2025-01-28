@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- Early on in civilization (or pre-civilization), names were not abstract.  They were used to identify individuals in an unambiguous way to the small group which would usually talk about the individual.  This can make names ambiguous between non-interacting groups.  They were also used as a psuedo-religious blessing from the parents, or other individual who gave the name, meant for good fortune.
+In COMI, I reflect that by making all names combinations of existing English words.  These words are generally of positive sentiment.  These words can include adjectives, nouns, verbs and adverbs.
+
+verbs are of the form "s/he who [verbs]" (so "runs", "hunts", "triumphs" are all valid)
+nouns are singular
+adjectives do not end in "ing"
+adverbs are in their usual form
+
+the first letter of the name will be capitalized, and all the rest lower case
+
+note that this name generator works for the english language only, obviously.  Translators should replace it 
+ -->
+	  
+	  <i1><a>popNameGenerator_Common name_shape list_of_options before_replace_text</a> <b>list</b> <c>[noun] [noun],[noun] the [noun],[noun] the [adj],[noun] of the [noun],[noun] the [adj] [noun],[noun] of the [adj] [noun],[noun]-who-[verb],[noun]-who-[verb]-[adv],[adj] [noun],[adj] [noun] the [noun],[adj] [noun] of the [noun],[adj]-[noun]-who-[verb],[verb] [adv],One-who-[verb]-[adv],[verb]-and-[verb],[verb]-and-[verb]-[adv],[adj]-One-who-[verb],[adj]-One-who-[verb]-[adv],[adj]-and-[adj]-One</c></i1>
+	  
+	  <i1><a>popNameGenerator_Common nouns list_of_options before_replace_text</a> <b>list</b> <c>rose,water,rain,fire,earth,wind,gust,leaf,trunk,tree,root,spear,tooth,claw,gem,hope,sun,moon,sky,cloud,gleam,warrior,victor,flower,petal,glory,heart,river,dune,stone,cliff,tusk,fin,star</c></i1>
+	  <i1><a>popNameGenerator_Common adjectives list_of_options before_replace_text</a> <b>list</b> <c>free,strong,swift,hardy,beloved,honored,skillful,loyal,happy,hale,clever,quick,quiet,iron,gold,dangerous,healthy,calm,fair,trustworthy,wild,lovely,first,best</c></i1>
+	  <i1><a>popNameGenerator_Common verbs list_of_options before_replace_text</a> <b>list</b> <c>runs,hunts,makes,grows,travels,swims,triumphs,laughs,talks,fights,trains,learns,gathers,smiles,searches,survives,eats,wins,remembers,mates,jokes</c></i1>
+	  <i1><a>popNameGenerator_Common adverbs list_of_options before_replace_text</a> <b>list</b> <c>well,swiftly,quickly,often,forever,daily,oddly,cleverly,best,humbly,calmly,freely,wildly,better,smartly</c></i1>
+	  
+	  <i1><a>popNameGenerator_Common custom_chance</a> <b>double</b> <c>0.001</c></i1> <!-- this should be pretty low unless you add a WHOLE BUNCH of custom names.  Like, a thousand. -->
+	  <i1><a>popNameGenerator_Common custom_full_name list_of_options</a> <b>list</b> <c></c></i1> <!-- none as of now -->
+
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_biome</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+  <!-- this file holds the implementation of a custom script which generates a random pop name from the above.  The "Common" part of the name is there to indicate that the script does not use the pop's race or sex in choosing a name -->
+  <!-- note that this script, unlike possibly other name assignment scripts, should not fail to assign a name.  If other more specific scripts assign empty string, they fall through to more general scripts; this is the most general script. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFPop inPop
+	
+	There is one output: string outName -->
+	<i1><a>popNameGenerator_Common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFPop)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("popNameGenerator_Common custom script received invalid arguments");
+	  }
+				
+	  IFPop inPop = (IFPop)inArguments[0];
+	  
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outName = "";
+	double chanceOfCustomName = customConsts.getDoubleConst("popNameGenerator_Common custom_chance", out success);
+	bool customNameUsed = false;
+	if(!success) chanceOfCustomName = 0.001d;
+	if(getAPI().calcProb(chanceOfCustomName))
+	{
+		outName = getAPI().getOneRandomItemFromList(customConsts.getListConst("popNameGenerator_Common custom_full_name list_of_options", out success));
+		customNameUsed = success &amp;&amp; (outName != "");
+	}
+	
+	if(!customNameUsed)
+	{
+		ReadOnlyCollection&lt;string&gt; possibleOptions = customConsts.getListConst("popNameGenerator_Common name_shape list_of_options before_replace_text", out success);
+		if(!success)
+		{
+			possibleOptions = (new List&lt;string&gt;() { "[noun] [noun]" }).AsReadOnly(); 
+		}
+		
+		outName = getAPI().getOneRandomItemFromList(possibleOptions);
+
+		for(int j = 0; j &lt; 4; j++)
+		{
+			ReadOnlyCollection&lt;string&gt; hardList;
+			string toReplace;
+			switch(j)
+			{
+				case 0:
+					hardList = customConsts.getListConst("popNameGenerator_Common nouns list_of_options before_replace_text", out success);
+					toReplace = "[noun]";
+				break;
+				
+				case 1:
+					hardList = customConsts.getListConst("popNameGenerator_Common adjectives list_of_options before_replace_text", out success);
+					toReplace = "[adj]";
+				break;
+				
+				case 2:
+					hardList = customConsts.getListConst("popNameGenerator_Common adverbs list_of_options before_replace_text", out success);
+					toReplace = "[adv]";
+				break;
+				
+				case 3:
+					hardList = customConsts.getListConst("popNameGenerator_Common verbs list_of_options before_replace_text", out success);
+					toReplace = "[verb]";
+				break;
+			
+				default:
+					toReplace = "";
+					hardList = (new List&lt;string&gt;()).AsReadOnly();
+				break;
+			}
+			
+			int countOfToReplace = outName.Split(toReplace).Length - 1;
+			List&lt;string&gt; listToUse = new List&lt;string&gt;(hardList);
+			getAPI().shuffleList(listToUse);
+			for(int i = 0; i &lt; countOfToReplace; i++)
+			{
+				string toUse = listToUse[i].Trim().ToLower();
+				toUse = char.ToUpper(toUse[0]) + toUse[1..];
+				int pos = outName.IndexOf(toReplace);
+				outName = outName.Substring(0, pos) + toUse + outName.Substring(pos + toReplace.Length);
+			}
+		}
+	}
+	
+	if(outName == "")
+	{
+		addDebugMessage(inScriptInstance, "script somehow failed to assign a name at all; should not happen as this is the most general script");
+		outName = "INVALID_NAME";
+	}
+	
+    return new List&lt;object&gt;() { outName.Trim() };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

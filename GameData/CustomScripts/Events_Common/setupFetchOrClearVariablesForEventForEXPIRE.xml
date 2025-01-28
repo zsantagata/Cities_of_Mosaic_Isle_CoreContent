@@ -11,7 +11,7 @@
 	</customconsts>
 	
   <!-- this file holds the implementation of a custom script which sets up or clears variables related to an event's connected EXPIRE event, using the variableHandler -->
-  <!-- EXPIRE events commonly deal with pops getting impatient, so those common situations are handled here.  However, if there are other things that need to be associated with the EXPIRE event, storing/clearing must be done outside this script -->
+  <!-- EXPIRE events commonly deal with visiting pops getting impatient and leaving the map, alive on-map loyal pops having one of those conditions no longer true, or a simple timer expiring, so those common situations are handled here.  However, if there are other things that need to be associated with the EXPIRE event, storing/clearing must be done outside this script -->
   <customscripts name="default">
 	<mCustomScriptsList kind="add">
   
@@ -20,18 +20,27 @@
 	Int64 inEventReportUID, //this can only be negative if inSetup and inClear are false.  Should be the event report uid of the non-EXPIRE event.
 	bool inSetup, //if false, this is fetch or clear
 	bool inClear, //if false, this is fetch
-	List<IFPop> inAssociatedPopsToStore, //this can be null if there are no associated pops with the EXPIRE event, and is ignored if inSetup is false
+	List<IFPop> inVisitingPopsToStore, //this can be null if there are no visiting pops associated with the EXPIRE event, and is ignored if inSetup is false
+	List<IFPop> inLoyalOnMapPopsToStore, //this can be null if there are no alive on-map loyal pops associated with the EXPIRE event, and is ignored if inSetup is false
+	Int64 inDirectTimer //if this is non-positive, or inSetup is false, ignored.  Note that the date must PASS this, not just REACH it
+	-->
+	<!-- note to self: conditions for expiry are handled like this (this is handled in commonUponHappeningScriptForEXPIRE but the knowledge is necessary here):
+	 A) if all inputs provided were ignored/invalid, then the event will expire the first time any caller checks
+	 B) if any input provided was valid, then the event will expire when ANY of THE VALID conditions indicate the event should expire
+	 B1) that means EXPIRY = OR OF ALL VALID CONDITIONS
 	-->
 	
 	<!-- output: 
-	Dictionary<Int64, List<IFPop>> outPopsAssociated, //this will be empty unless fetching, and may be empty if there is no associated pops found.  Key = UID of the inEventReportUID that was stored
+	Dictionary<Int64, List<IFPop>> outVisitingPopsAssociated, //this will be empty unless fetching.  The List may be empty if there were no visiting pops associated with the event report.  Lists will not be null.  The Keys of the out dictionaries will be the same.  Key = UID of the inEventReportUID that was stored
+	Dictionary<Int64, List<IFPop>> outLoyalOnMapPopsAssociated, //this will be empty unless fetching.  The List may be empty if there were no alive loyal on-map pops associated with the event report.  Lists will not be null.  The Keys of the out dictionaries will be the same.  Key = UID of the inEventReportUID that was stored
+	Dictionary<Int64, Int64> outDirectTimer, //this will be empty unless fetching.  The value may be non-positive if there was no timer associated with the event report.  The Keys of the out dictionaries will be the same.  Key = UID of the inEventReportUID that was stored
 	-->
 	<i1><a>setupFetchOrClearVariablesForEventForEXPIRE</a>
 	<b>
 	    //input count and type check:
 	    var customScripts = getAPI().getCustomScripts();
 	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
-		    {typeof(IFEventStatus), typeof(Int64), typeof(bool), typeof(bool), typeof(List&lt;IFPop&gt;)}
+		    {typeof(IFEventStatus), typeof(Int64), typeof(bool), typeof(bool), typeof(List&lt;IFPop&gt;), typeof(List&lt;IFPop&gt;), typeof(Int64)}
 	      }, out _))
 	    {
 			throw new ArgumentException("setupFetchOrClearVariablesForEventForEXPIRE custom script received invalid arguments");
@@ -42,7 +51,9 @@
 		Int64 inEventReportUID = (Int64)inArguments[1];
 		bool inSetup = (bool)inArguments[2];
 		bool inClear = (bool)inArguments[3];
-		List&lt;IFPop&gt; inAssociatedPopsToStore = (List&lt;IFPop&gt;)inArguments[4];
+		List&lt;IFPop&gt; inVisitingPopsToStore = (List&lt;IFPop&gt;)inArguments[4];
+		List&lt;IFPop&gt; inLoyalOnMapPopsToStore = (List&lt;IFPop&gt;)inArguments[4];
+		Int64 inDirectTimer = (Int64)inArguments[6];
 		
 		if(inEventStatus == null)
 		{
@@ -59,7 +70,9 @@
 		var customConsts = getAPI().getCustomConsts();
 		var variableHandler = getAPI().getVariableHandler();
 		
-		Dictionary&lt;Int64, List&lt;IFPop&gt;&gt; outPopsAssociated = new Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;();
+		Dictionary&lt;Int64, List&lt;IFPop&gt;&gt; outVisitingPopsAssociated = new Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;();
+		Dictionary&lt;Int64, List&lt;IFPop&gt;&gt; outLoyalOnMapPopsAssociated = new Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;();
+		Dictionary&lt;Int64, Int64&gt; outDirectTimer = new Dictionary&lt;Int64, Int64&gt;();
 		bool success = false;
 		
         Int64 currentDate = getAPI().getCalendar().getCurrentDate();
@@ -98,14 +111,33 @@
 						variableHandler.connectVariables(lowerAdded, listOfUIDs);
 						
 						//pops:
-						if(inAssociatedPopsToStore != null)
+						if(inVisitingPopsToStore != null)
 						{
-							variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_associatedPopsCount" + inEventReportUID, inAssociatedPopsToStore.Count);
-							for(int index = 0; index &lt; inAssociatedPopsToStore.Count; index++)
+							variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_visitingPopsCount" + inEventReportUID, inVisitingPopsToStore.Count);
+							for(int index = 0; index &lt; inVisitingPopsToStore.Count; index++)
 							{
-								variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_associatedPop" + inEventReportUID + "index" + index, (Int64)inAssociatedPopsToStore[index].getUID());
+								variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_visitingPop" + inEventReportUID + "index" + index, (Int64)inVisitingPopsToStore[index].getUID());
 							}
 						}
+						else
+						{
+							variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_noVisitingPopsTrueIfNonZeroFor" + inEventReportUID, 1);
+						}
+						if(inLoyalOnMapPopsToStore != null)
+						{
+							variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_loyalOnMapPopsCount" + inEventReportUID, inLoyalOnMapPopsToStore.Count);
+							for(int index = 0; index &lt; inLoyalOnMapPopsToStore.Count; index++)
+							{
+								variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_loyalOnMapPop" + inEventReportUID + "index" + index, (Int64)inLoyalOnMapPopsToStore[index].getUID());
+							}
+						}
+						else
+						{
+							variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_noLoyalOnMapPopsTrueIfNonZeroFor" + inEventReportUID, 1);
+						}
+						
+						//storing no matter what should be okay
+						variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + expireEvt.getInternalName() + "_directTimer" + inEventReportUID, inDirectTimer);
 					}
 				}
 				else if(inClear)
@@ -118,14 +150,27 @@
 					}
 					
 					//pops:
-					Int64 countOfAssociatedPops = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_associatedPopsCount" + inEventReportUID, out success);
-					if(!success) countOfAssociatedPops = 0;
+					Int64 countOfVisitingPops = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_visitingPopsCount" + inEventReportUID, out success);
+					if(!success) countOfVisitingPops = 0;
 					
-					variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_associatedPopsCount" + inEventReportUID, 0);
-					for(int index = 0; index &lt; countOfAssociatedPops; index++)
+					variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_visitingPopsCount" + inEventReportUID, 0);
+					for(int index = 0; index &lt; countOfVisitingPops; index++)
 					{
-						variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_associatedPop" + inEventReportUID + "index" + index, 0);
+						variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_visitingPop" + inEventReportUID + "index" + index, 0);
 					}
+					variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_noVisitingPopsTrueIfNonZeroFor" + inEventReportUID, 0);
+					
+					Int64 countOfLoyalOnMapPops = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_visitingPopsCount" + inEventReportUID, out success);
+					if(!success) countOfLoyalOnMapPops = 0;
+					
+					variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_loyalOnMapPopsCount" + inEventReportUID, 0);
+					for(int index = 0; index &lt; countOfLoyalOnMapPops; index++)
+					{
+						variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_loyalOnMapPop" + inEventReportUID + "index" + index, 0);
+					}
+					variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_noLoyalOnMapPopsTrueIfNonZeroFor" + inEventReportUID, 0);
+					
+					variableHandler.storeIntVariable(0, "evt_" + expireEvt.getInternalName() + "_directTimer" + inEventReportUID, -1L);
 				}
 				else //fetching
 				{
@@ -142,13 +187,12 @@
 								Int64 eventReportUID = lower.getVariableAsInt();
 							
 								//pops:
-								Int64 countOfAssociatedPops = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_associatedPopsCount" + eventReportUID, out success);
-								if(!success) countOfAssociatedPops = 0;
-								
+								Int64 countOfVisitingPops = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_visitingPopsCount" + eventReportUID, out success);
+								if(!success) countOfVisitingPops = 0;
 								List&lt;IFPop&gt; popsToAdd = new List&lt;IFPop&gt;();
-								for(int index = 0; index &lt; countOfAssociatedPops; index++)
+								for(int index = 0; index &lt; countOfVisitingPops; index++)
 								{
-									Int64 popUID = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_associatedPop" + eventReportUID + "index" + index, out success);
+									Int64 popUID = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_visitingPop" + eventReportUID + "index" + index, out success);
 									if(success)
 									{
 										IFPop popToAdd = (IFPop)getAPI().getSO("pops", popUID);
@@ -158,10 +202,32 @@
 										}
 									}
 								}
-								if(popsToAdd.Count != 0)
+								//no matter what, add the eventReportUID to the dictionary:
+								outVisitingPopsAssociated.Add(eventReportUID, popsToAdd);
+								
+								Int64 countOfLoyalOnMapPops = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_loyalOnMapPopsCount" + eventReportUID, out success);
+								if(!success) countOfLoyalOnMapPops = 0;
+								popsToAdd = new List&lt;IFPop&gt;();
+								for(int index = 0; index &lt; countOfLoyalOnMapPops; index++)
 								{
-									outPopsAssociated.Add(eventReportUID, popsToAdd);
+									Int64 popUID = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_loyalOnMapPop" + eventReportUID + "index" + index, out success);
+									if(success)
+									{
+										IFPop popToAdd = (IFPop)getAPI().getSO("pops", popUID);
+										if(popToAdd != null)
+										{
+											popsToAdd.Add(popToAdd);
+										}
+									}
 								}
+								//no matter what, add the eventReportUID to the dictionary:
+								outLoyalOnMapPopsAssociated.Add(eventReportUID, popsToAdd);
+								
+								Int64 directTimer = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_directTimer" + inEventReportUID, out success);
+								if(!success) directTimer = -1L;
+								
+								//no matter what, add the eventReportUID to the dictionary:
+								outDirectTimer.Add(eventReportUID, directTimer);
 							}
 						}
 					}
@@ -169,7 +235,7 @@
 			}
 		}
 		
-		return new List&lt;object&gt;() { outPopsAssociated };
+		return new List&lt;object&gt;() { outVisitingPopsAssociated, outLoyalOnMapPopsAssociated, outDirectTimer };
 	</b>
 	</i1>
 	

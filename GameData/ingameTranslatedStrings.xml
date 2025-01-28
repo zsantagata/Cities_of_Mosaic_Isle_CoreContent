@@ -30,6 +30,30 @@
 	<i1><a>exit_button_text</a>
 	<b>Exit</b></i1>
 	
+	<!-- pause menu buttons: -->
+	<i1><a>resume_button_text</a>
+	<b>Resume</b></i1>
+	<i1><a>save_game_button_text</a>
+	<b>Save Game</b></i1>
+	<i1><a>main_menu_button_text</a>
+	<b>Main Menu</b></i1>
+	
+	<!-- sandbox generation buttons: -->
+	<i1><a>generatemap_button_text</a>
+	<b>Generate Map</b></i1>
+	<i1><a>playmap_button_text</a>
+	<b>Play Map</b></i1>
+	
+	<!-- sandbox generation text: -->
+	<i1><a>location_nobiome_text</a>
+	<b>None</b></i1>
+	<i1><a>location_info_text</a>
+	<b>Location: ([0], [1])\nLand Biome: [2]\nWater Biome: [3]\n[4]</b></i1>
+	<i1><a>location_coastal_text</a>
+	<b>Coastal</b></i1>
+	<i1><a>location_nocoastal_text</a>
+	<b></b></i1>
+	
 	<!-- in game text: -->
 	<i1><a>nosave_confirm_text</a>
 	<b>Are you sure you want to exit?  Progress has not been saved.</b></i1>
@@ -56,7 +80,7 @@
 	<i1><a>topslate_popcount_text</a> <!-- what is displayed directly, not the tooltip -->
 	<b>[0]/[red][1][/red]/[green][2][/green]/[purple][3][/purple]</b></i1>
 	<i1><a>topslate_popcount_tooltip_text</a> <!-- what is displayed in the tooltip -->
-	<b>Our community is home to [0] living pops.  [1] are wounded, [2] are ill, and [3] are pregnant.</b></i1>
+	<b>[0] loyal pops are in our community right now.  [1] are wounded, [2] are ill, and [3] are pregnant (immobile).</b></i1>
 	
 	<!-- encyclopedia common text (actual entries are elsewhere) -->
 	<i1><a>encyclopedia_entry_blank_default_text</a>
@@ -71,6 +95,8 @@
 	<!-- in game buttons -->
 	<i1><a>textEntry_cancel_name</a>
 	<b>Cancel</b></i1>
+	<i1><a>textEntry_clear_name</a>
+	<b>Clear</b></i1>
 	<i1><a>textEntry_confirm_name</a>
 	<b>Confirm</b></i1>
 	<i1><a>pausebutton_name</a>
@@ -85,8 +111,6 @@
 	<b>Hide</b></i1>
 	<i1><a>showtopslate_tooltip</a>
 	<b>Show</b></i1>
-	<i1><a>pausespeedbutton_tooltip</a>
-	<b>Pause/Continue</b></i1>
 	<i1><a>speedupbutton_tooltip</a>
 	<b>Speed Up Time</b></i1>
 	<i1><a>slowdownbutton_tooltip</a>
@@ -113,6 +137,33 @@
 	<b>History</b></i1>
 	<i1><a>alertsmenu_tooltip</a>
 	<b>Alerts</b></i1>
+	
+	<i1><a>pausespeedbutton_tooltip0</a>
+	<b>Continue</b></i1>
+	<i1><a>pausespeedbutton_tooltip1</a>
+	<b>Pause</b></i1>
+	<i1><a>pausespeedbutton_tooltip2</a>
+	<b>Pause</b></i1>
+	<i1><a>pausespeedbutton_tooltip3</a>
+	<b>Pause</b></i1>
+	<i1><a>pausespeedbutton_tooltip4</a>
+	<b>Pause</b></i1>
+	<i1><a>pausespeedbutton_tooltip5</a>
+	<b>Continue</b></i1>
+	<i1><a>pausespeedbutton_tooltip6</a>
+	<b>Pause</b></i1>
+	<i1><a>pausespeedbutton_tooltip7</a>
+	<b>Paused: Delegation Starting</b></i1>
+	<i1><a>pausespeedbutton_tooltip8</a>
+	<b>Paused: Delegation Waiting to Resolve</b></i1>
+	<i1><a>pausespeedbutton_tooltip9</a>
+	<b>Paused: Event Waiting to Resolve</b></i1>
+	<i1><a>pausespeedbutton_tooltip10</a>
+	<b>Scenario Lost</b></i1>
+	<i1><a>pausespeedbutton_tooltip11</a>
+	<b>Paused: Midnight Calculations</b></i1>
+	<i1><a>pausespeedbutton_tooltip12</a>
+	<b>Paused: Pause Menu Open</b></i1>
 	
 	<!-- info view names: -->
 	<i1><a>info_view_events_name</a>
@@ -169,8 +220,6 @@
 	<b>Host Delegations</b></i1>
 	<i1><a>overlay_diplomacy_wanderers_label</a>
 	<b>Wanderers</b></i1>
-	<i1><a>delete_building_button</a>
-	<b>Delete</b></i1>
 	
 	<i1><a>box_drag_all_label</a>
 	<b>Box Drag: All</b></i1>
@@ -361,6 +410,10 @@
 	<b>Pause Menu</b></i1>
 	<i1><a>options_command_stoporcontinue_name</a>
 	<b>Stop/Start Time</b></i1>
+	<i1><a>options_command_confirmtext_name</a>
+	<b>Confirm Text</b></i1>
+	<i1><a>options_command_sendfeedback_name</a>
+	<b>Send Feedback to Developer</b></i1>
 	<i1><a>options_command_ordermusteredpops_name</a>
 	<b>Order Mustered Pops</b></i1>
 	<i1><a>options_setkeystodefault_name</a>
@@ -370,6 +423,30 @@
 	<b>Press key to add for [0].  Left or right click to cancel.  Assigning the same key to multiple actions may cause issues.</b></i1>
 	<i1><a>options_replacekey_description</a>
 	<b>Press key to replace [1] key for [0].  Left click to cancel, right click to clear.  Assigning the same key to multiple actions may cause issues.</b></i1>
+	
+	<!-- building menu text -->
+	<i1><a>buildingmenu_categoryall_text</a>
+	<b>All</b></i1>
+	<i1><a>buildingmenu_categoryworkplaces_text</a>
+	<b>Workplaces</b></i1>
+	<i1><a>buildingmenu_categoryhousing_text</a>
+	<b>Housing</b></i1>
+	<i1><a>buildingmenu_categorymustering_text</a>
+	<b>Mustering Points</b></i1>
+	<i1><a>buildingmenu_categorydistribution_text</a>
+	<b>Distribution</b></i1>
+	<i1><a>buildingmenu_categoryother_text</a>
+	<b>Other</b></i1>
+	<i1><a>buildingmenu_encyclopediaappend_text</a>
+	<b>...</b></i1>
+	<i1><a>buildingmenu_noresource_text</a>
+	<b>No Resources</b></i1>
+	
+	<!-- building menu label -->
+	<i1><a>buildingmenu_openencyclopedia_text</a>
+	<b>Open Encyclopedia</b></i1>
+	<i1><a>delete_building_button</a>
+	<b>Delete</b></i1>
 	
 	<!-- mod menu buttons -->
 	<i1><a>modmenu_enable_label</a>
@@ -430,6 +507,10 @@
 	<b>All pops in the community know your name is [0], City Leader.  [1] races of our community have chosen race leaders, and [2] have not.  [3] industries have leaders, while [4] do not.</b></i1>
 	<i1><a>cityoverview_buildings_description</a>
 	<b>There are [0] fully constructed buildings in our community, [1] of which are workplaces, [2] of which are housing, and [3] of which are mustering points.  We are constructing [4] buildings, [5] of which are workplaces, [6] of which are housing, and [7] of which are mustering points.</b></i1>
+	
+	<!-- chart general text: -->
+	<i1><a>chart_nochartselected_description</a>
+	<b>No chart selected.</b></i1>
 	
 	<!-- resource view buttons: -->
 	<i1><a>resourceview_manualbreakdown_doit_name</a>
@@ -854,6 +935,8 @@
 	<b></b></i1>
 	
 	<!-- community common text -->
+	<i1><a>community_name_text</a>
+	<b>Community called [0]</b></i1>
 	<i1><a>community_econstrength_text</a>
 	<b>EconStrength: [0] of [1]</b></i1>
 	<i1><a>community_milstrength_text</a>
@@ -1348,6 +1431,23 @@
 	<b>All</b></i1>
 	<i1><a>pop_selector_no_pops_description</a>
 	<b>No eligible pops match the current filters.</b></i1>
+	
+	<i1><a>pop_selector_single_pop_description</a>
+	<b>[0] [1]pop [2], [3][4]Soldier Skill: [5]%, Equipment Quality: [6]</b></i1> <!-- 0 = race adj, 1 = sex adj, 2 = pop name, [3] = leaderships, [4] = health status -->
+	<i1><a>pop_selector_single_pop_cityleader_description</a>
+	<b>City Leader</b></i1>
+	<i1><a>pop_selector_single_pop_raceleader_description</a>
+	<b>Race Leader</b></i1>
+	<i1><a>pop_selector_single_pop_industryleader_description</a>
+	<b>Industry Leader ([0])</b></i1>
+	<i1><a>pop_selector_single_pop_healthill_description</a>
+	<b>Ill</b></i1>
+	<i1><a>pop_selector_single_pop_healthwounded_description</a>
+	<b>Wounded</b></i1>
+	<i1><a>pop_selector_single_pop_healthpregnantnoimmobile_description</a>
+	<b>Pregnant</b></i1>
+	<i1><a>pop_selector_single_pop_healthpregnantimmobile_description</a>
+	<b>Pregnant (Immobile)</b></i1>
 	
 	<i1><a>pop_selector_mil_filter_none</a>
 	<b>None</b></i1>

@@ -69,6 +69,7 @@
 	  double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("industry skill decay");
 	  baseDegrade *= difficulty;
 	  skills.setAverageSkill(skills.getAverageSkill(industry) - ((skillMax - skillMin) * baseDegrade), industry);
+	  skills.setLeaderSkill(skills.getLeaderSkill(industry) - ((skillMax - skillMin) * baseDegrade), industry);
 	  
 	  //Secondly, pops that are newly born have no skills, and therefore decrease the average skill level in proportion to how many of them there are:
 	  //(Wanderers are presumed to have the skills to pick up the community's way of doing things)
@@ -80,6 +81,8 @@
 	  currentSkill *= (nowPopCount - popsNewlyBorn.Count) / nowPopCount;
 	  currentSkill += skillMin;
 	  skills.setAverageSkill(currentSkill, industry);
+	  
+	  //when a pop becomes a new industry leader, their true skill is revealed at next midnight, so allow late midnight scripts to take care of that
 	
 	  return null;
     </mIndustrySkillDecreaseDaily>

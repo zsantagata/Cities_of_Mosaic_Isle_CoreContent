@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+
+  <customconsts name="default">
+	<mCustomVariableList kind="add">
+	  <!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+	  
+	  <!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
+	  <i1><a>log_script_custom script replaceDescriptionMarkupKind_mult_biome</a> <b>int</b> <c>1</c></i1>
+	</mCustomVariableList>
+  </customconsts>
+
+	  
+	  <!-- for ease of use by the player, the name of a new building will be the buildingkind plus a number -->
+	  
+  <!-- this file holds the implementation of a custom script which generates a building name from the above.  The "Common" part of the name is there to indicate that the script is not a specific buildingkind script, though this script does use the buildingkind's display name in making the building's name -->
+  <!-- note that this script, unlike possibly other name assignment scripts, should not fail to assign a name.  If other more specific scripts assign empty string, they fall through to more general scripts; this is the most general script. -->
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- inputs to the script:
+	IFBuilding inBuilding
+	
+	There is one output: string outName -->
+	<i1><a>buildingNameGenerator_Common</a>
+	<b>
+	  //input count and type check:
+	  var customScripts = getAPI().getCustomScripts();
+	  if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		  {typeof(IFBuilding)}
+	    }, out _))
+	  {
+		  throw new ArgumentException("buildingNameGenerator_Common custom script received invalid arguments");
+	  }
+				
+	  IFBuilding inBuilding = (IFBuilding)inArguments[0];
+	  
+	var customConsts = getAPI().getCustomConsts();
+	bool success = false;
+	
+	string outName = "";
+	
+	int number = 1;
+	//check if there is a building on the local map which already has this name.  If so, increase the number by 1 until that is no longer true:
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+	bool noBuildingHasThisName = false;
+	while(!noBuildingHasThisName)
+	{
+		noBuildingHasThisName = true;
+		outName = inBuilding.getBuildingKind().getDisplayName() + " " + number;
+		outName = outName.Trim().ToLower();
+        outName = char.ToUpper(outName[0]) + outName[1..];
+		foreach(IFBuilding building in localCommunity.getDomesticComponent().getMap().getAllBuildingsOnMap())
+		{
+			if(building.getDisplayName() == outName)
+			{
+				noBuildingHasThisName = false;
+				number++;
+				break;
+			}
+		}
+	}
+	
+    return new List&lt;object&gt;() { outName };
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>
