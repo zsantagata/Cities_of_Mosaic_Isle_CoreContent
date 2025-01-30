@@ -4,7 +4,7 @@
   <igBuildingKind name="Sleeping Spot">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Sleeping Spot</full_path>
-	  <body_text>Sleeping Spot.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>A Sleeping Spot is no more than a designated spot to lie down on the ground.  It counts as housing.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

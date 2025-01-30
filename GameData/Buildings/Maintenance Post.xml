@@ -14,7 +14,7 @@
   <igBuildingKind name="Maintenance Post">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Maintenance Post</full_path>
-	  <body_text>Maintenance Post.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Workers at a Maintenance Post will repair, and preserve, buildings in its radius.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -23,6 +23,8 @@
 	<mBuildingKindQualities>0x28003</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x8000 = this is a service workplace (outputs no goods), 0x20000 = workplace forces best quality (only valid for service industry buildings) -->
     <mWidth>2</mWidth>
     <mHeight>2</mHeight>
+	
+	<mVisualFeedbackFlag>0x1</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>1</mPopDaysToBuild>
 	<mBaseDurability>50</mBaseDurability>

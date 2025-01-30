@@ -15,7 +15,7 @@
   <igBuildingKind name="Architect's Hall">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Architect's Hall</full_path>
-	  <body_text>Architect's Hall.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>A planning office where workers increase construction speed of new buildings.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

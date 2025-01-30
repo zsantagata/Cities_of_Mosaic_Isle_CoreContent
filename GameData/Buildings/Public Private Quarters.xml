@@ -16,7 +16,7 @@
   <igBuildingKind name="Public Private Quarters">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Public Private Quarters</full_path>
-	  <body_text>Public Private Quarters.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>In these Quarters, local pops can have others at their beck and call for a time, including for brothel service.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -25,6 +25,8 @@
 	<mBuildingKindQualities>0x18003</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x8000 = this is a service workplace (outputs no goods), 0x10000 = workplace can use no inputs -->
     <mWidth>4</mWidth>
     <mHeight>4</mHeight>
+	
+	<mVisualFeedbackFlag>0x4</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>4</mPopDaysToBuild>
 	<mBaseDurability>125</mBaseDurability>

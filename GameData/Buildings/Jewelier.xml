@@ -4,7 +4,7 @@
   <igBuildingKind name="Jewelier">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Jewelier</full_path>
-	  <body_text>Jewelier.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>The Jewelier uses small tools and delicate handiwork to create decorative items.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

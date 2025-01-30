@@ -5,7 +5,7 @@
   <igBuildingKind name="Road">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Road</full_path>
-	  <body_text>Road.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Roads are expensive to build, but provide benefits when buildings are connected.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

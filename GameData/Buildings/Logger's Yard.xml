@@ -4,7 +4,7 @@
   <igBuildingKind name="Logger's Yard">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Logger's Yard</full_path>
-	  <body_text>Logger's Yard.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>The Logger's Yard is a clearing for workers to turn logs into Lumber and Hardwood.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -13,6 +13,8 @@
 	<mBuildingKindQualities>0x12002</mBuildingKindQualities><!-- 0x2 = overwater enable, 0x2000 = workplace that uses land sources around it, 0x10000 = workplace can use no inputs -->
     <mWidth>3</mWidth>
     <mHeight>5</mHeight>
+	
+	<mVisualFeedbackFlag>0x20</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>7</mPopDaysToBuild>
 	<mBaseDurability>275</mBaseDurability>

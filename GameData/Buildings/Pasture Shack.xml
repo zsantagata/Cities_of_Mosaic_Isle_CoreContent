@@ -4,7 +4,7 @@
   <igBuildingKind name="Pasture Shack">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Pasture Shack</full_path>
-	  <body_text>Pasture Shack.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Animals will sleep at a Pasture Shack after grazing, corralled by their handlers.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -13,6 +13,8 @@
 	<mBuildingKindQualities>0x2006</mBuildingKindQualities><!-- 0x2 = overwater enable, 0x4 = passable, 0x2000 = workplace that uses land sources around it -->
     <mWidth>2</mWidth>
     <mHeight>2</mHeight>
+	
+	<mVisualFeedbackFlag>0x20</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>3</mPopDaysToBuild>
 	<mBaseDurability>50</mBaseDurability>

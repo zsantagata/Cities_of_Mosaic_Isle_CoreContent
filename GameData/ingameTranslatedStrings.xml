@@ -115,6 +115,8 @@
 	<b>Speed Up Time</b></i1>
 	<i1><a>slowdownbutton_tooltip</a>
 	<b>Slow Down Time</b></i1>
+	<i1><a>toggleinspection_tooltip</a>
+	<b>Toggle Inspection</b></i1>
 	<i1><a>constructionmenu_tooltip</a>
 	<b>Construction</b></i1>
 	<i1><a>militarycommandmenu_tooltip</a>
@@ -322,11 +324,11 @@
 	<i1><a>options_video_currentreso_text</a>
 	<b>Current Resolution: [0]x[1]</b></i1>
 	<i1><a>options_video_nextreso_text</a>
-	<b>Resolution on next game launch: [0]</b></i1>
+	<b>Resolution (requires restart): [0]</b></i1>
 	<i1><a>options_video_fullscreen_text</a>
-	<b>Fullscreen:</b></i1>
+	<b>Fullscreen (requires restart):</b></i1>
 	<i1><a>options_transparency_text</a>
-	<b>Menu Transparency: [0]%</b></i1>
+	<b>Menu Opacity: [0]%</b></i1>
 	<i1><a>options_tooltip_text</a>
 	<b>Tooltip Time Before Appearance: [0]ms</b></i1>
 	<i1><a>options_sidebuttonmaxfade_text</a>
@@ -416,6 +418,8 @@
 	<b>Send Feedback to Developer</b></i1>
 	<i1><a>options_command_ordermusteredpops_name</a>
 	<b>Order Mustered Pops</b></i1>
+	<i1><a>options_command_hoveroverinspection_name</a>
+	<b>Toggle Mouse Inspection</b></i1>
 	<i1><a>options_setkeystodefault_name</a>
 	<b>Reset to Defaults</b></i1>
 	<!-- options menu change or add key text -->
@@ -1482,6 +1486,22 @@
 	<i1><a>building_fallback_production_none</a>
 	<b>This building will produce nothing.</b></i1>
 	
+	<!-- building construction feedback alerts -->
+	<i1><a>buildingconstruction_failurealert_onlyone_text</a>
+	<b>Only one of this kind of building can be in the city.</b></i1>
+	<i1><a>buildingconstruction_failurealert_coastalrestrictions_text</a>
+	<b>This building must be built near a coastline.</b></i1>
+	<i1><a>buildingconstruction_failurealert_wateronly_text</a>
+	<b>This building needs to be built on water.</b></i1>
+	<i1><a>buildingconstruction_failurealert_landonly_text</a>
+	<b>This building needs to be built on land.</b></i1>
+	<i1><a>buildingconstruction_failurealert_offmap_text</a>
+	<b>Buildings cannot be built off the map.</b></i1>
+	<i1><a>buildingconstruction_failurealert_unbuildable_text</a>
+	<b>These tiles cannot be built upon.</b></i1>
+	<i1><a>buildingconstruction_failurealert_noresources_text</a>
+	<b>Not enough of selected resources to build building.</b></i1>
+	
 	</mTranslationStrings>
 	
 	<!-- additional encyclopedia entries (besides those related directly to other MOs) are declared here.  The title is first, then the text. -->
@@ -1489,7 +1509,8 @@
 	<mEncyclopediaEntriesAdditional>
 	<i1>
 	<full_path>Lore/The Lady</full_path>
-	<body_text>The Lady, as she is called, is an entity that inhabits Mosaic Isle.  She has lived on the Isle, and looked after its denizens, since a time before record.  If the Lady has a true name or form, no one knows it.  She often appears before the Isle's denizens, offering them aid or coercing them, to pursue her own objectives.
+	<body_text>
+The Lady, as she is called, is an entity that inhabits Mosaic Isle.  She has lived on the Isle, and looked after its denizens, since a time before record.  If the Lady has a true name or form, no one knows it.  She often appears before the Isle's denizens, offering them aid or coercing them, to pursue her own objectives.
 
 Monuments and offerings to the Lady increase the probability that she will visit, but she may appear as a Wanderer at any time.  She is often called "The Lady of Leaves" because of her method of travel: where leaves swirl amidst a still wind, the Lady is sure to appear.
   
@@ -1498,6 +1519,221 @@ The Lady's Garden, an otherwordly domain that few have seen, lies nestled in the
 	<image_SS></image_SS>
 	<related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial</full_path>
+	<body_text>Encyclopedia entries in this category are available as a reference for how to play Cities of Mosaic Isle.  At the end of each entry is a link to the next entry, or you can select a specific topic from the menu to the left.</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/Controls</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/Controls</full_path>
+	<body_text>
+Cities of Mosaic Isle can be controlled fully by the mouse, and certain actions can be assigned to keys.
+	
+MOUSE CONTROLS:\nIn most contexts, left-click to select something, and right-click to dismiss/cancel.  On menus with scrollbars, the scrollwheel can be used while hovering the mouse over the menu.
+Moving the mouse near the edge of the screen scrolls whichever map is currently being displayed.  The scroll wheel can be used to zoom in and out of some maps, and clicking the middle mouse down can be used to pan some maps.
+Some buttons or other elements have tooltips which provide more information.  Hover the mouse over an element, and if it has a tooltip, a small text box will appear.
+On the City Map, multiple pops are selected by box-selection.  To box-select, press and hold left-click, then move the mouse somewhere else on the City Map.  Release left-click when the box is over the pops you wish to select.  When mustered pops are selected, you can use right click to order them to a place on the City Map.
+	
+KEYBOARD CONTROLS:\nKeyboard controls can be viewed, assigned, and unassigned in the Options menu.
+	
+In the main view: the top slate contains buttons to switch between the City Map and World Map, and to open the Resource Pool menu.  You can hide/show the top slate by clicking the little arrow.  The top right slate contains time controls.  The buttons on the right open menus, some of which are informational, others of which can be used to control your City.
+Importantly, on the City Map, the Building button is used to select a new building to construct.  To build: click the building's picture, hover over the map, rotate the ghost building with the scrollwheel or zoom in/out buttons, and left click.  Right click to dismiss.  This menu also contains a tool to order the deletion of buildings.
+	
+Cities of Mosaic Isle provides the player with the ability to pause time, and also pauses time on its own for certain reasons.  The circular button in the top right of the screen displays the current time state.  Clicking this button will bring you to the source of a pause if the game has forcibly paused.  Much day-to-day processing occurs at midnight, but events and attacks can happen at any time.  Any action can be taken while the game is paused.
+Other buttons on the top left can be used to speed up or slow down the passage of time.  These buttons can be assigned keys in the Options menu.
+	
+Any menu on the City Map view and World Map view can be dragged around or dismissed.  Right-click on a menu to dismiss it specifically, or right click anywhere to dismiss the topmost menu.
+	
+Alerts appear at the top of the screen during gameplay.  Left-clicking an alert brings the view to the focus of the alert, if there is one.  Right-clicking dismisses an alert.  Recent alerts are listed in the Alerts menu.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/Basics</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/Basics</full_path>
+	<body_text>
+Click any pop or building on the City Map to bring up its menu.  A few simple buildings like Roads do not have a menu.
+	
+All the monsters ("pops") in your city need housing.  Basic Sleeping Spots can be built instantly with no resources.  Most other buildings require resources and construction effort to build.  Pops without homes will provide construction effort, but not work in any building.
+	
+Houses need food and temperature regulation ("HStasis", short for homeostasis) for their pops to live.  Buildings fetch these resources from the Resource Pool of your City.  To access the Resource Pool, buildings require a Distribution building nearby.  A basic Storage Yard has a small radius of Distribution and exposes resources to the open, but can be built instantly with no resources.  Most pops living above the water's surface need water as well; see Food and Water for more information.
+Pops select houses themselves from available housing at midnight.  Races can be restricted from certain housing in the Race Permissions menu, but housing cannot be directly assigned.
+	
+Workplaces need workers to operate, and most likely a connection to the Resource Pool through a Distribution building.  A workplace's menu provides fine-grained control over the workplace: inputs, outputs, workers, and quality/quantity balance can be chosen here.  All workplace menus provide an estimate of their day-to-day output.  There is no penalty for having workplaces which are not staffed or understaffed, so consider building workplaces ahead of time to give yourself more options.
+Pops only work at a building if assigned there.  A pop can only work at one building, and cannot work if wounded or during advanced pregnancy.  Large-scale controls are available in the Industry menu.
+	
+Mustering points are buildings where pops will gather equipment and prepare for battle when hostiles are on the City Map.  Pops can be mustered immediately when selected, but only with whatever equipment they were already holding.  Some mustering points are also workplaces; pops assigned to these workplaces will also muster at these buildings.
+Pops without a mustering point will try to flee to their homes or workplaces during battle, but can be mustered directly.
+	
+You start with some food and a basic housing area already, but most likely your first steps as City Leader will be to secure a food supply for your citizens.  Then, other important needs such as HStasis goods, better housing, military defense, and happiness can be considered.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/Food and Water</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/Food and Water</full_path>
+	<body_text>
+Your citizens need food in order to live.  Food is mostly gathered from resources on land or sea, as trading or raiding for food is a risky choice.  To gather food, build an appropriate workplace near terrain resources on the City Map: if the workplace can gather resources from tiles in its radius, those tiles flash.
+
+Some types of Food decay quickly, such as Meat or Fish.  Other types of Food, such as Wheat, last a longer time.  When resources decay to their lowest quality, many of those resources will be discarded, and the remainder will regain a small portion of their quality: your pops have separated out the small amount that is recoverable.
+
+Pops of most races require 2 units of Food each day: each unit of Food represents 1 megacalorie, or MCal.  Pops will grow happier and healthier with higher quality food, and a higher variety of food.  Pops without food will quickly grow unhappy, be more susceptible to disease, and eventually die.
+Pops of most races require Protein from their food.  Meat, Fish, and Beans are examples of high-protein foods.  Without enough Protein, pops will lose Soldier Skill from loss of muscle mass, and eventually grow sick.  This happens more slowly than starvation.
+
+Pops of all races need Water in some way.  Housing placed fully or partially underwater provides Water for all pops within.  Other housing requires service from a Water Bearing building nearby.  Without Water, pops will grow sick and die even more quickly than without Food.
+
+Healthy pops without housing or with inadequate housing will forage for Food and Water, though this foraging will slowly degrade their health.  Pops who are wounded, ill, or have an advanced pregnancy cannot forage for themselves and are at much greater risk.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/HStasis</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/HStasis</full_path>
+	<body_text>
+Your citizens need some sort of protection from the elements.  In some biomes, this is the wind and cold; in others the sun's heat.  In mild biomes, these needs decay more slowly.
+
+Better housing will protect pops from the elements, but cannot do so all the time.  Pops need goods which help them maintain homeostasis: a stable internal environment of the body.  In Cities of Mosaic Isle, the word homeostasis is shortened to HStasis.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/Health</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/Health</full_path>
+	<body_text>
+Pops have four elements to their health: MCal, Protein, Water, and HStasis.  Health of each element decays over time when the pop is unable to provide for the associated need, though the decay speed is different for each.
+MCal, Protein, and Water health needs recover as the pop has access to these necessities, needing multiple days to return to full health.  HStasis health decays over time and is immediately replenished to full when a pop consumes an HStasis item.
+
+All the individual elements are combined into an Overall health value.  A low Overall health value makes pops more vulnerable to contracting diseases or dying from existing diseases and wounds.  Pops with low Overall health are also less effective workers and combatants.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/Wounds and Illness</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/Wounds and Illness</full_path>
+	<body_text>
+Pops can gain Wounds from multiple sources: combat, childbirth, workplace accidents, or exposure to the elements can all cause wounds.  Pops with wounds cannot work or muster in battle.
+Pops with a single Wound will recover if their Overall health is kept high, but pops with a Wound are at greater risk of contracting disease.  Wounded pops that would suffer another Wound instead have their Wound labeled as "deadly", and recovery is delayed.  Pops with deadly wounds can die at any time during their recovery.  Medical science of the Mosaic Isle is too primitive to distinguish between deadly Wounds and survivable ones.
+
+Pops gain Illness from multiple sources: their environment, their peers, or low Overall health.  Illnesses from the environment occur randomly, with higher weights for certain biomes, desolated areas, races of pops, and pop health.  Between pops, illnesses spread more quickly among the same household, workplace, and race.
+Each ill pop has a small chance each day to die from its illness, no matter how high their Overall health is.  This chance is greater with low Overall health, or if the pop is suffering a Wound.  Ill pops can be ordered to work or muster, but will be less effective at either task.
+
+Certain buildings provide services that diminish various problems of Wounds and Illnesses, and/or recover more quickly, depending on the kind of building.  Certain goods such as Bandages and Tonics will be consumed by pops to reduce risk of death and recover more quickly.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/Children and Pregnancy</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/Children and Pregnancy</full_path>
+	<body_text>
+Female or hermaphroditic monsters of some races can become pregnant through interaction with other monsters.  This interaction happens randomly if the appropriate pops share housing, though the chance is decreased if food supplies, happiness, or health is low.  You can build a brothel-like building called a Public Private Quarters and order it to cause pregnancies, but as City Leader your citizens would not accept other orders regarding reproduction.
+
+Many races of Cities of Mosaic Isle have different conditions on causing pregnancies.  Races which are all-female or all-male require pops of cross-breeding races (such as Shifters) to reproduce.  Some races have both males and females, but only one of the sexes is capable of reproduction and thus need to cross-breed; other races are fully capable of having children on their own.  For specifics, view the Encyclopedia entry relating to the race in question.
+
+The length of a pregnancy is related to the race of the mother.  Most races have a time near the end of the pregnancy where the mother is incapable of working or mustering, often labeled as "Pregnant (Immobile)".
+Pregnancies end with childbirth.  Children can be born healthy or stillborn, and the mother can remain healthy, suffer a wound, or die in childbirth.  The Lady of Leaves takes healthy children to live with her and returns a newly-minted adult of the same race in their place, so every healthy childbirth results in a new adult citizen for your city.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/Battle</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/Battle</full_path>
+	<body_text>
+When any hostile pop is on the City Map, or when any member of the City has been ordered to muster, the City is in battle.  Only loyal, mustered pops can be controlled during battle, though time can be paused at any moment and any pop ordered to muster/unmuster immediately.  The time that passes during battle is not reflected on the daily clock, so battles can be considered "instantaneous" for calendar purposes.
+
+Opposing pops will fight if close enough, and if at least one pop wants to fight.  Pops cannot be commanded during a fight, but can be commanded again if unhurt at the end of their fight.  Fights can be 1-on-1 or 2-on-1; a third pop will ignore a 2-on-1 in their favor and turn a 2-on-1 against their favor into a pair of separate 1-on-1 fights.  As you could expect, the 2 pops of a 2-on-1 have an advantage against their foe.
+
+Hostile pops have some sort of goal to their violence: certain pops, certain races, certain buildings, and general chaos are some but not all of their possible targets.  If they reach a threshold of success towards their goal, or suffer a certain threshold of losses, they will attempt to leave the City Map.  If a hostile has stolen resources or abducted pops, these things will be lost when the hostile leaves the map.
+Battle ends when all hostiles are off-map, wounded, or dead, or when there are no alive and unwounded loyal pops on the map.  In the second case, the game is lost unless there are loyal pops waiting to return from delegations, or there are Rebels among the hostiles.
+
+Rebels are a special kind of hostile: they are members of your City who are choosing violence to accomplish their goals!  Rebels who lie wounded at the end of battle will change loyalty back to your city upon your victory.  If Rebels are victorious in battle, all Rebels on the City Map will change loyalty back to your city: they are the community now!  Rebels who flee may become Wanderers, or may attempt to return to the city. 
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/Wanderers</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/Wanderers</full_path>
+	<body_text>
+Wanderers are monsters of Mosaic Isle who do not have a permanent settlement to call home.  From time to time, Wanderers may appear at the edge of your city, triggering an event.  Every Wanderer event allows you to send them away before they choose to leave on their own.
+
+Many Wanderer events will allow you to accept the Wanderers as new citizens.  This is the primary means by which your city's population will increase in the short-term, because pregnancy takes a comparatively long time.  But beware: Wanderers are often desperate, may lie or carry disease with them, or may even betray you to steal resources.  It is highly unlikely that you will encounter the same Wanderers ever again, so they have little to lose.  Furthermore, your existing citizens may be unhappy about your decision.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/Happiness</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/Happiness</full_path>
+	<body_text>
+In a survival-stressed land like Mosaic Isle, honest happiness is greatly rare.  Most pops settle for the feeling that doom is not waiting around the corner.  As such, you could consider Cities of Mosaic Isle's "happiness" as unwillingness to cause trouble.
+
+Because the races of any community in Mosaic Isle band together to increase their collective chance of survival, they also come to a conclusion about their current situation.  Each race in your city has an independent happiness value, and often different causes for this happiness.  Races which are happy are less likely to cause troublesome or dangerous events, though the chance is never zero.
+
+Most races share some common causes of happiness due to their standard of living: better health, better food, better housing, access to mates, and more of their own kind in nearby housing are examples of this.
+The general attitude of most people on Mosaic Isle is that doom indeed waits around the corner, but that corner may be further or closer at each moment.  When events cause happiness or distress among a race, it is only for a time; happiness values from any cause decay over time and eventually vanish.  The past may be a lesson, but the future is always uncertain.
+
+To see race happiness and the reasons for it, open the Race Happiness menu by clicking on the Race button on the right side of the screen.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	  <i1>Game Concepts/Tutorial/Delegations</i1>
+	</related_entries_full_paths>
+	</i1>
+	
+	<i1>
+	<full_path>Game Concepts/Tutorial/Delegations</full_path>
+	<body_text>
+Communities on Mosaic Isle interact with each other by sending delegations to one another.  These delegations consist of pops of the source community, most likely carrying some resources or equipment, and travel to their destination.  Sometimes, they even come back.
+
+There are six types of delegation: War, Raiding, Diplomacy, Trade, Emigration, and Settlement.
+War: a hostile delegation which seeks to destroy.
+Raiding: a hostile delegation which seeks to take resources or abduct people.
+Diplomacy: a peaceful delegation which seeks to improve relations in some way.
+Trade: a peaceful delegation which seeks to exchange resources.
+Emigration: a peaceful delegation whose members have been cast out from their home community.
+Settlement: a delegation to create a colony in a barren land.  This delegation type is not currently implemented in the game, and foreign communities will never be able to send this type.
+
+Foreign communities will send delegations to each other; these will be handled invisibly.  Foreign communities will also send delegations to the player: these will be accompanied by an alert, an event, and the appearance of the foreign pops on the City Map.  Which types of delegations are sent, and how often, are determined by a foreign community's opinion of your community.
+
+When you send a delegation, the delegation will travel on the map for a time until its expected return date.  On its expected return date, you'll be asked to "resolve" the delegation: all in a row, the events (and their consequences) of a delegation will be shown for you to handle.  In the midst of these will be your delegation's actions at its target, which will be dependent on the delegation type.  Once all events are resolved, the delegation will return immediately, at a later date if delayed, or not at all if every delegation member was lost to the wilds.
+
+To send a delegation to a foreign community, open its menu on the World Map view and click the "Send Delegation" button.
+	</body_text>
+	<image_SS></image_SS>
+	<related_entries_full_paths>
+	<!-- nothing -->
 	</related_entries_full_paths>
 	</i1>
 	

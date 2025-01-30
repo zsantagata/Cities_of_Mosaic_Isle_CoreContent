@@ -4,7 +4,7 @@
   <igBuildingKind name="Smelter">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Smelter</full_path>
-	  <body_text>Smelter.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Ores of various kinds are turned into Metal at a Smelter, consuming Lumber in the process.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

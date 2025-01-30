@@ -397,6 +397,7 @@
     <None Include="GameData\ModdableScripts\delegation.xml" />
     <None Include="GameData\ModdableScripts\delegationBaseOccurrences.xml" />
     <None Include="GameData\ModdableScripts\delegationForeignHandling.xml" />
+    <None Include="GameData\ModdableScripts\descriptions.xml" />
     <None Include="GameData\ModdableScripts\enterExitBattle.xml" />
     <None Include="GameData\ModdableScripts\happiness.xml" />
     <None Include="GameData\ModdableScripts\history.xml" />
@@ -484,5 +485,6 @@
     <None Include="GameData\terrainSourceList.xml" />
     <Content Include="README.txt" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

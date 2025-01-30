@@ -11,7 +11,7 @@
   <igBuildingKind name="Clinic">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Clinic</full_path>
-	  <body_text>Clinic.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Clinic workers do their best to keep wounded and ill monsters in nearby housing from death.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -20,6 +20,8 @@
 	<mBuildingKindQualities>0x38003</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x8000 = this is a service workplace (outputs no goods), 0x10000 = workplace can use no inputs, 0x20000 = workplace forces best quality (only valid for service industry buildings) -->
     <mWidth>4</mWidth>
     <mHeight>5</mHeight>
+	
+	<mVisualFeedbackFlag>0x4</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>6</mPopDaysToBuild>
 	<mBaseDurability>175</mBaseDurability>
@@ -103,7 +105,7 @@
 	
 	<mScriptCalledDaily></mScriptCalledDaily> <!-- exactly what it says on the tin: if this building is fully constructed, this script is called daily.  First input is the building itself. -->
 	<mScriptCalledBetweenOutputCalculationAndResolution>
-		//script intent: as the output quality of this building increases, the probability of getting disease from any source decreases
+		//script intent: as the output quality of this building increases, the probability of dying from wounds/illnesses decreases
 	
 		//common to all workplace scripts:
 		if(inArguments.Length &lt; 7)

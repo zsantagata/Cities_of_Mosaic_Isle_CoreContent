@@ -4,7 +4,7 @@
   <igBuildingKind name="Weaponsmith">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Weaponsmith</full_path>
-	  <body_text>Weaponsmith.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>A workshop and tools for making weapons, useable by any monster.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

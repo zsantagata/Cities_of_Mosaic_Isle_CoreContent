@@ -4,7 +4,7 @@
   <igBuildingKind name="Games of Chance">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Games of Chance</full_path>
-	  <body_text>Games of Chance.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>With small tokens and games made by workers, monsters in the neighborhood try their luck for entertainment.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -13,6 +13,8 @@
 	<mBuildingKindQualities>0x38003</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x8000 = this is a service workplace (outputs no goods), 0x10000 = workplace can use no inputs, 0x20000 = workplace forces best quality (only valid for service industry buildings) -->
     <mWidth>4</mWidth>
     <mHeight>4</mHeight>
+	
+	<mVisualFeedbackFlag>0x4</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>4</mPopDaysToBuild>
 	<mBaseDurability>140</mBaseDurability>

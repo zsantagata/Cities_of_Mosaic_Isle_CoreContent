@@ -14,7 +14,7 @@
   <igBuildingKind name="Inn">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Inn</full_path>
-	  <body_text>Inn.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Wanderers will stay at an Inn, rather than sleeping in the open.  They will linger longer in the community as a result, and store their goods here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

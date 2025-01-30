@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
+			<i1><a>cityViewInspection pops overall_element before_replace_text</a> <b>string</b>
+			<c>[0] [1] [2] [3]</c></i1> <!-- 0 = count, 1 = health (healthy/wounded/ill/dead), 2 = loyalty (loyal/neutral/hostile), 3 = race plural noun or single noun -->
+			<i1><a>cityViewInspection healthy adjective before_replace_text</a> <b>string</b>
+			<c>healthy</c></i1>
+			<i1><a>cityViewInspection wounded adjective before_replace_text</a> <b>string</b>
+			<c>wounded</c></i1>
+			<i1><a>cityViewInspection ill adjective before_replace_text</a> <b>string</b>
+			<c>ill</c></i1>
+			<i1><a>cityViewInspection dead adjective before_replace_text</a> <b>string</b>
+			<c>dead</c></i1>
+			<i1><a>cityViewInspection loyal adjective before_replace_text</a> <b>string</b>
+			<c>loyal</c></i1>
+			<i1><a>cityViewInspection neutral adjective before_replace_text</a> <b>string</b>
+			<c>neutral</c></i1>
+			<i1><a>cityViewInspection hostile adjective before_replace_text</a> <b>string</b>
+			<c>hostile</c></i1>
+			
+			<i1><a>cityViewInspection building overall_element before_replace_text</a> <b>string</b>
+			<c>Building: [0]</c></i1>
+			<i1><a>cityViewInspection resource_parcel overall_element before_replace_text</a> <b>string</b>
+			<c>Land Source: [0]</c></i1>
+			<i1><a>cityViewInspection doodad overall_element before_replace_text</a> <b>string</b>
+			<c>Doodad: [0]</c></i1>
+			<i1><a>cityViewInspection base_terrain overall_element before_replace_text</a> <b>string</b>
+			<c>[0] ([1])</c></i1>
+			<i1><a>cityViewInspection base_terrain land noun before_replace_text</a> <b>string</b>
+			<c>Land</c></i1>
+			<i1><a>cityViewInspection base_terrain water noun before_replace_text</a> <b>string</b>
+			<c>Water</c></i1>
+			<i1><a>cityViewInspection passable adjective before_replace_text</a> <b>string</b>
+			<c>Passable</c></i1>
+			<i1><a>cityViewInspection not_passable adjective before_replace_text</a> <b>string</b>
+			<c>Not Passable</c></i1>
+			<i1><a>cityViewInspection buildable adjective before_replace_text</a> <b>string</b>
+			<c>Buildable</c></i1>
+			<i1><a>cityViewInspection not_buildable adjective before_replace_text</a> <b>string</b>
+			<c>Not Buildable</c></i1>
+			
+		</mCustomVariableList>
+	</customconsts>
+	
+  <!-- this file holds the implementation of scripts which provide a description of what the mouse is hovering over on the City View and Diplo View -->
+  <gamescripts name="default">
+	<!-- city view inspection has two inputs: List<IFPop> popsOnTile, IFMapTile tileUnderCursor.  There is one output: string outTooltipText. -->
+	<!-- this script is called during gameplay when the player has "toggle inspection" on and hovers over a tile on the City Map -->
+	<mCityViewInspection>
+	//input count check:
+	if(inArguments.Length &lt; 2)
+    {
+		return null;
+    }
+	
+    List&lt;IFPop&gt; inPopsOnTile = (List&lt;IFPop&gt;)inArguments[0];
+    IFMapTile inTileUnderCursor = (IFMapTile)inArguments[1];
+	
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+	var customConsts = getAPI().getCustomConsts();
+	string outTooltipText = "";
+	bool success = false;
+	
+	//gather custom consts:
+	string pop_overall_element = customConsts.getStringConst("cityViewInspection pops overall_element before_replace_text", out success);
+	if(!success) pop_overall_element = "[0] [1] [2] [3]";
+	
+	string healthyAdj = customConsts.getStringConst("cityViewInspection healthy adjective before_replace_text", out success);
+	if(!success) healthyAdj = "healthy";
+	string woundedAdj = customConsts.getStringConst("cityViewInspection wounded adjective before_replace_text", out success);
+	if(!success) woundedAdj = "wounded";
+	string illAdj = customConsts.getStringConst("cityViewInspection ill adjective before_replace_text", out success);
+	if(!success) illAdj = "ill";
+	string deadAdj = customConsts.getStringConst("cityViewInspection dead adjective before_replace_text", out success);
+	if(!success) deadAdj = "dead";
+	
+	string loyalAdj = customConsts.getStringConst("cityViewInspection loyal adjective before_replace_text", out success);
+	if(!success) loyalAdj = "loyal";
+	string neutralAdj = customConsts.getStringConst("cityViewInspection neutral adjective before_replace_text", out success);
+	if(!success) neutralAdj = "neutral";
+	string hostileAdj = customConsts.getStringConst("cityViewInspection hostile adjective before_replace_text", out success);
+	if(!success) hostileAdj = "hostile";
+	
+	string buildingElement = customConsts.getStringConst("cityViewInspection building overall_element before_replace_text", out success);
+	if(!success) buildingElement = "Building: [0]";
+	string resourceParcelElement = customConsts.getStringConst("cityViewInspection resource_parcel overall_element before_replace_text", out success);
+	if(!success) resourceParcelElement = "Land Source: [0]";
+	string doodadElement = customConsts.getStringConst("cityViewInspection doodad overall_element before_replace_text", out success);
+	if(!success) doodadElement = "Doodad: [0]";
+	string terrainElement = customConsts.getStringConst("cityViewInspection base_terrain overall_element before_replace_text", out success);
+	if(!success) terrainElement = "[0] ([1])";
+	string landNoun = customConsts.getStringConst("cityViewInspection base_terrain land noun before_replace_text", out success);
+	if(!success) landNoun = "Land";
+	string waterNoun = customConsts.getStringConst("cityViewInspection base_terrain water noun before_replace_text", out success);
+	if(!success) waterNoun = "Water";
+	
+	string passableAdj = customConsts.getStringConst("cityViewInspection passable adjective before_replace_text", out success);
+	if(!success) passableAdj = "Passable";
+	string notPassableAdj = customConsts.getStringConst("cityViewInspection not_passable adjective before_replace_text", out success);
+	if(!success) notPassableAdj = "Not Passable";
+	string buildableAdj = customConsts.getStringConst("cityViewInspection buildable adjective before_replace_text", out success);
+	if(!success) buildableAdj = "Buildable";
+	string notBuildableAdj = customConsts.getStringConst("cityViewInspection not_buildable adjective before_replace_text", out success);
+	if(!success) notBuildableAdj = "Not Buildable";
+	
+	//first, assemble the dictionary of pops:
+	Dictionary&lt;IFRace, Dictionary&lt;string, Dictionary&lt;string, int&gt;&gt;&gt; raceToLoyaltyToHealthToCountDict = new Dictionary&lt;IFRace, Dictionary&lt;string, Dictionary&lt;string, int&gt;&gt;&gt;();
+	foreach(IFPop pop in inPopsOnTile)
+	{
+		if(!raceToLoyaltyToHealthToCountDict.ContainsKey(pop.getRace()))
+			raceToLoyaltyToHealthToCountDict.Add(pop.getRace(), new Dictionary&lt;string, Dictionary&lt;string, int&gt;&gt;());
+		string loyalty = pop.getCommunity() == localCommunity ? loyalAdj : ( getAPI().isHostileCommunity(pop.getCommunity()) ? hostileAdj : neutralAdj );
+		if(!raceToLoyaltyToHealthToCountDict[pop.getRace()].ContainsKey(loyalty))
+			raceToLoyaltyToHealthToCountDict[pop.getRace()].Add(loyalty, new Dictionary&lt;string, int&gt;());
+		string health = pop.isDead() ? deadAdj : pop.isWounded() ? woundedAdj : pop.isIll() ? illAdj : healthyAdj;
+		if(!raceToLoyaltyToHealthToCountDict[pop.getRace()][loyalty].ContainsKey(health))
+			raceToLoyaltyToHealthToCountDict[pop.getRace()][loyalty].Add(health, 0);
+		raceToLoyaltyToHealthToCountDict[pop.getRace()][loyalty][health]++;
+	}
+	
+	//then, assemble the string of pops:
+	foreach(var kvpairOutermost in raceToLoyaltyToHealthToCountDict)
+	{
+		foreach(var kvpairMiddle in kvpairOutermost.Value)
+		{
+			foreach(var kvpairInner in kvpairMiddle.Value)
+			{
+				outTooltipText += pop_overall_element.Replace("[0]", kvpairInner.Value.ToString())
+					.Replace("[1]", kvpairInner.Key)
+					.Replace("[2]", kvpairMiddle.Key)
+					.Replace("[3]", (kvpairInner.Value == 1) ? kvpairOutermost.Key.getSingleNoun() : kvpairOutermost.Key.getPluralNoun())
+					+ "\n";
+			}
+		}
+	}
+	
+	//then, assemble the tile string:
+	if(inTileUnderCursor.hasBuilding())
+	{
+		outTooltipText += buildingElement.Replace("[0]", inTileUnderCursor.getBuilding().getDisplayName()) + "\n";
+	}
+	if(inTileUnderCursor.hasResourceParcel())
+	{
+		outTooltipText += resourceParcelElement.Replace("[0]", inTileUnderCursor.getResourceParcel().getDisplayName()) + "\n";
+	}
+	if(inTileUnderCursor.hasDoodad())
+	{
+		outTooltipText += doodadElement.Replace("[0]", inTileUnderCursor.getDoodad().getDisplayName()) + "\n";
+	}
+	outTooltipText += terrainElement.Replace("[0]", inTileUnderCursor.getBaseTerrain().getBiome().getDisplayName())
+						.Replace("[1]", inTileUnderCursor.isUnderwater() ? waterNoun : landNoun) + "\n";
+	
+	outTooltipText += inTileUnderCursor.isPassable() ? passableAdj : notPassableAdj;
+	outTooltipText += ", ";
+	outTooltipText += inTileUnderCursor.isBuildable() ? buildableAdj : notBuildableAdj;
+	
+	return new List&lt;object&gt;() { outTooltipText };
+	</mCityViewInspection>
+	
+	<!-- diplo view inspection has two inputs: List<IFDelegation> delegationsUnderCursor, List<IFCommunity> communitiesUnderCursor.  There is one output: string outTooltipText. -->
+	<!-- this script is called during gameplay when the player has "toggle inspection" on and hovers over any delegations or communities on the Diplo Map -->
+    <mDiploViewInspection>
+	//input count check:
+	if(inArguments.Length &lt; 2)
+    {
+		return null;
+    }
+	
+    List&lt;IFDelegation&gt; inDelegationsUnderCursor = (List&lt;IFDelegation&gt;)inArguments[0];
+    List&lt;IFCommunity&gt; inCommunitiesUnderCursor = (List&lt;IFCommunity&gt;)inArguments[1];
+	
+	IFCommunity localCommunity = getAPI().getLocalCommunity();
+	var customConsts = getAPI().getCustomConsts();
+	string outTooltipText = "";
+	bool success = false;
+	
+	for(int i = 0; i &lt; inDelegationsUnderCursor.Count; i++)
+	{
+		if(i != 0)
+			outTooltipText += ", ";
+		outTooltipText += inDelegationsUnderCursor[i].getDisplayName();
+	}
+	if(outTooltipText != "")
+		outTooltipText += "\n";
+		
+	for(int i = 0; i &lt; inCommunitiesUnderCursor.Count; i++)
+	{
+		if(i != 0)
+			outTooltipText += ", ";
+		outTooltipText += inCommunitiesUnderCursor[i].getDisplayName();
+	}
+	if(outTooltipText != "")
+		outTooltipText += "\n";
+	
+	return new List&lt;object&gt;() { outTooltipText };
+    </mDiploViewInspection>
+	
+  </gamescripts>
+  
+</core_data>

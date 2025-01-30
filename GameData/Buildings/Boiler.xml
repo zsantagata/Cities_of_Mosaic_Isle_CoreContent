@@ -4,7 +4,7 @@
   <igBuildingKind name="Boiler">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Boiler</full_path>
-	  <body_text>Boiler.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>A fire pit where seawater is boiled to create salt.  Water-bearing workplaces benefit from a nearby Boiler.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

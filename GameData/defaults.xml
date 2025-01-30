@@ -235,6 +235,9 @@
     <mBeautySynergyBuildings><!-- basic list of names -->
 	</mBeautySynergyBuildings>
 	
+	<mVisualFeedbackFlag>0x0</mVisualFeedbackFlag> <!-- 0x0 = none, 0x1 = all buildings, 0x2 = workplaces, 0x4 = housing, 0x8 = mustering points, 0x10 = distribution buildings, 0x20 = appropriate resource parcels (calculated from land resource inputs), 0x40 = custom script -->
+	<mVisualFeedbackCustomScript>return null;</mVisualFeedbackCustomScript>
+	
 	<mSSIDs>
 		<i>null</i>
 	</mSSIDs>

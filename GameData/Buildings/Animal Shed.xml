@@ -12,7 +12,7 @@
   <igBuildingKind name="Animal Shed">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Animal Shed</full_path>
-	  <body_text>Animal Shed.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>A closed-in barn for animals, fed from City stockpiles by workers.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

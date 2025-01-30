@@ -4,7 +4,7 @@
   <igBuildingKind name="Storage Yard">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Storage Yard</full_path>
-	  <body_text>Storage Yard.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>A Storage Yard is no more than a designated spot to place goods.  It counts as Distribution.  Goods degrade quickly when exposed to the open like this.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -13,6 +13,8 @@
 	<mBuildingKindQualities>0x7</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x4 = passable -->
     <mWidth>3</mWidth>
     <mHeight>3</mHeight>
+	
+	<mVisualFeedbackFlag>0x1</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>1</mPopDaysToBuild>
 	<mBaseDurability>100</mBaseDurability>

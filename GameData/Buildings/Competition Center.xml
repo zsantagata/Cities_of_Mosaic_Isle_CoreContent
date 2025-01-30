@@ -4,7 +4,7 @@
   <igBuildingKind name="Competition Center">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Competition Center</full_path>
-	  <body_text>Competition Center.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Monsters gather here to watch, or participate, in competitions set up by thankless stagehands.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -13,6 +13,8 @@
 	<mBuildingKindQualities>0x38007</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x4 = passable, 0x8000 = this is a service workplace (outputs no goods), 0x10000 = workplace can use no inputs, 0x20000 = workplace forces best quality (only valid for service industry buildings) -->
     <mWidth>3</mWidth>
     <mHeight>7</mHeight>
+	
+	<mVisualFeedbackFlag>0x4</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>10</mPopDaysToBuild>
 	<mBaseDurability>500</mBaseDurability>
@@ -69,7 +71,7 @@
 	
 	<mMaxWorkers>6</mMaxWorkers>
 	<mIndustry>Entertainment</mIndustry>
-	<mRadius>10</mRadius>
+	<mRadius>13</mRadius>
 	
 	<mResourceInputs_NotForOutputs_RequiredOther_Exclusive_AmountWeight_FitnessFactor> <!-- this is a list of: reference to resource (common input resource), list of references to resources (outputs for which consumption of the common-input-resource is disabled), list of references to resources (other resources which must be consumed while the common-input-resource is being consumed), list of references to resources (other resources which cannot be consumed while the common-input-resource is being consumed) -->
 	  <i4>

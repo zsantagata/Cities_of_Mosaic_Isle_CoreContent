@@ -584,6 +584,18 @@
 		return null;
     </mSandboxSetup>
 	
+	<!-- city view inspection has two inputs: List<IFPop> popsOnTile, IFMapTile tileUnderCursor.  There is one output: string outTooltipText. -->
+	<!-- this script is called during gameplay when the player has "toggle inspection" on and hovers over a tile on the City Map -->
+    <mCityViewInspection>
+		return null;
+    </mCityViewInspection>
+	
+	<!-- diplo view inspection has two inputs: List<IFDelegation> delegationsUnderCursor, List<IFCommunity> communitiesUnderCursor.  There is one output: string outTooltipText. -->
+	<!-- this script is called during gameplay when the player has "toggle inspection" on and hovers over any delegations or communities on the Diplo Map -->
+    <mDiploViewInspection>
+		return null;
+    </mDiploViewInspection>
+	
   </gamescripts>
   
 </core_data>

@@ -5,7 +5,7 @@
   <igBuildingKind name="Pit">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Pit</full_path>
-	  <body_text>Pit.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>No one will be able to pass over a Pit dug in the ground.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

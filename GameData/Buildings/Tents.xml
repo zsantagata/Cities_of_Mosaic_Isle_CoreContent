@@ -4,7 +4,7 @@
   <igBuildingKind name="Tents">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Tents</full_path>
-	  <body_text>Tents.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Tents are a step up from Sleeping Spots, but are not as good housing as more permanent structures.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

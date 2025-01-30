@@ -4,7 +4,7 @@
   <igBuildingKind name="Watchtower">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Watchtower</full_path>
-	  <body_text>Watchtower.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Monsters assigned to a Watchtower will muster here when battle begins.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

@@ -11,7 +11,7 @@
   <igBuildingKind name="Sanitation Hub">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Sanitation Hub</full_path>
-	  <body_text>Sanitation Hub.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Workers of Sanitation Hubs clean the homes of other monsters.  This thankless task reduces disease chance for others, and increases it for the workers.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -20,6 +20,8 @@
 	<mBuildingKindQualities>0x38006</mBuildingKindQualities><!-- 0x2 = overwater enable, 0x4 = passable, 0x8000 = this is a service workplace (outputs no goods), 0x10000 = workplace can use no inputs, 0x20000 = workplace forces best quality (only valid for service industry buildings) -->
     <mWidth>2</mWidth>
     <mHeight>2</mHeight>
+	
+	<mVisualFeedbackFlag>0x4</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>1</mPopDaysToBuild>
 	<mBaseDurability>100</mBaseDurability>

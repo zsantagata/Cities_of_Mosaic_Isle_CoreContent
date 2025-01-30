@@ -4,7 +4,7 @@
   <igBuildingKind name="Hunter's Lodge">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Hunter's Lodge</full_path>
-	  <body_text>Hunter's Lodge.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>A preparation area where hunters store their tools, and a butcher's block awaiting their success.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -13,6 +13,8 @@
 	<mBuildingKindQualities>0x16003</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x2000 = workplace that uses land sources around it, 0x4000 = workplace chooses one output resource instead of making all at once, 0x10000 = workplace can use no inputs -->
     <mWidth>2</mWidth>
     <mHeight>4</mHeight>
+	
+	<mVisualFeedbackFlag>0x20</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>2</mPopDaysToBuild> <!-- values below 1 will be treated as 1 -->
 	<mBaseDurability>80</mBaseDurability>

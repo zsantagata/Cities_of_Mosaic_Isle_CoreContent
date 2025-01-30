@@ -4,7 +4,7 @@
   <igBuildingKind name="Clown College">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Clown College</full_path>
-	  <body_text>Clown College.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Clowns entertain monsters in surrounding houses through their antics.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -13,6 +13,8 @@
 	<mBuildingKindQualities>0x38003</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x8000 = this is a service workplace (outputs no goods), 0x10000 = workplace can use no inputs, 0x20000 = workplace forces best quality (only valid for service industry buildings) -->
     <mWidth>3</mWidth>
     <mHeight>4</mHeight>
+	
+	<mVisualFeedbackFlag>0x4</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>2</mPopDaysToBuild>
 	<mBaseDurability>100</mBaseDurability>

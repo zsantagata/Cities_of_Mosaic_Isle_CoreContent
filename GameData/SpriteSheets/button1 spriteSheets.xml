@@ -120,6 +120,23 @@
     <mTagList></mTagList>
   </spritesheet>
   
+  <spritesheet name="toggleInspection_ss">
+    <mSheetTypeName>Button</mSheetTypeName>
+	<mPath>_Previs Menus_and_Buttons/Buttons/Icons/inspectionButton</mPath>
+	<mSpriteList>
+	  <sprite> <!-- name here does not actually matter, neither does order of sprites -->
+	    <id>0</id> <!-- integer, ids must be unique and flush -->
+		<name>inspectionButton</name> <!-- simply for debug purposes -->
+		<frames>1</frames> <!-- must be an integer, 1 or higher -->
+		<y_origin>0</y_origin> <!-- the top of an image is 0 -->
+		<width>55</width>
+		<height>55</height>
+		<fps>0</fps> <!-- must be non-negative; 0 will turn into 1.0d so be sure that there is only one frame if you put 0 -->
+	  </sprite>
+	</mSpriteList>
+    <mTagList></mTagList>
+  </spritesheet>
+  
   <spritesheet name="militaryCommandMenu_ss">
     <mSheetTypeName>Button</mSheetTypeName>
 	<mPath>_Previs Menus_and_Buttons/Buttons/Icons/militaryCommandMenu</mPath>

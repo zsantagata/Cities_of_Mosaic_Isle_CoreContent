@@ -11,6 +11,7 @@ Content/GameData/ModdableScripts/buildingConstruction.xml
 Content/GameData/ModdableScripts/delegation.xml
 Content/GameData/ModdableScripts/delegationBaseOccurrences.xml
 Content/GameData/ModdableScripts/delegationForeignHandling.xml
+Content/GameData/ModdableScripts/descriptions.xml
 Content/GameData/ModdableScripts/enterExitBattle.xml
 Content/GameData/ModdableScripts/happiness.xml
 Content/GameData/ModdableScripts/housingQuality.xml

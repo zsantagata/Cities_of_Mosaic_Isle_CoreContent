@@ -4,7 +4,7 @@
   <igBuildingKind name="Mustering Grounds">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Mustering Grounds</full_path>
-	  <body_text>Mustering Grounds.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>The Mustering Grounds is simply a space where equipment is held and pops can be called to muster.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

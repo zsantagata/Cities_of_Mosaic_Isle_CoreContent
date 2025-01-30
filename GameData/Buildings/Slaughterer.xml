@@ -4,7 +4,7 @@
   <igBuildingKind name="Slaughterer">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Slaughterer</full_path>
-	  <body_text>Slaughterer.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>A Slaughterer is a specialist building to break down livestock.  The recovered resources are higher quality than the source animals.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

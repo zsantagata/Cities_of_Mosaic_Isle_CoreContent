@@ -4,7 +4,7 @@
   <igBuildingKind name="Armorer">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Armorer</full_path>
-	  <body_text>Armorer.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>A workshop and tools for creating armor, usable by any monster.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

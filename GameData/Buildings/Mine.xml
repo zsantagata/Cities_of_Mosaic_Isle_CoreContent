@@ -4,7 +4,7 @@
   <igBuildingKind name="Mine">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Mine</full_path>
-	  <body_text>Mine.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>At a Mine, working miners gather whatever ores and stones are close to the surface in the surroundings.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
@@ -13,6 +13,8 @@
 	<mBuildingKindQualities>0x12003</mBuildingKindQualities><!-- 0x1 = underwater enable, 0x2 = overwater enable, 0x2000 = workplace that uses land sources around it, 0x10000 = workplace can use no inputs --> 
     <mWidth>3</mWidth>
     <mHeight>3</mHeight>
+	
+	<mVisualFeedbackFlag>0x20</mVisualFeedbackFlag>
 
 	<mPopDaysToBuild>20</mPopDaysToBuild>
 	<mBaseDurability>600</mBaseDurability>

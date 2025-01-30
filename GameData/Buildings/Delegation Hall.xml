@@ -17,7 +17,7 @@
   <igBuildingKind name="Delegation Hall">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Delegation Hall</full_path>
-	  <body_text>Delegation Hall.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>Visiting delegations from afar will house here, served by local workers.  Foreign visitors will stay for longer, and offer trades, when staying in a Delegation Hall.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

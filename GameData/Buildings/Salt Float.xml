@@ -4,7 +4,7 @@
   <igBuildingKind name="Salt Float">
     <Encyclopedia_Entry>
 	  <full_path>Buildings/Salt Float</full_path>
-	  <body_text>Salt Float.  Put encyclopedia description here.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
+	  <body_text>The Salt Floats of Mosaic Isle are wide floats where workers let seawater dry in the sun and scrape off salt.</body_text><!-- in order to prevent the encyclopedia entry from being visible, we set the body text to empty -->
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->
