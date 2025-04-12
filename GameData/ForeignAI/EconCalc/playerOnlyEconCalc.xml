@@ -249,7 +249,7 @@
 			
 		allBuildingKinds.Add(building.getBuildingKind());
 		buildingCount++;
-		averageMaterialImpact += building.getBuildingKind().getOutputMultForConstructionResource(building.getMadeOfResource());
+		averageMaterialImpact += building.calcBuildingDurabilityMultFromConstructionResources();
 	}
 	if(buildingCount != 0)
 	{

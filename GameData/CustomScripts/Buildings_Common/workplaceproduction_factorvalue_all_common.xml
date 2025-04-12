@@ -338,7 +338,7 @@
 	
 	  double skillMult = skillFactorMin + ( ((skillFactorMax - skillFactorMin) * (skillValue - min_skill)) / ( max_skill - min_skill ) );
 	  double buildingFactor = inWorkplace.getBuildingKind().getOutputResourceQuanDailyFactor();
-	  double constructionResourcesMult = inWorkplace.getBuildingKind().getOutputMultForConstructionResource(inWorkplace.getMadeOfResource());
+	  double constructionResourcesMult = inWorkplace.calcBuildingOutputMultFromConstructionResources();
 	  double buildingDamageMult = buildingDamageMultMin + (buildingDamageMultMax - buildingDamageMultMin) * buildingDamageRatio;
 	  
 	  outCapitalValue = skillMult * buildingFactor * constructionResourcesMult * buildingDamageMult;

@@ -18,7 +18,7 @@
   <igTerrainBiome name="Mountain">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Mountain</full_path>
-	  <body_text>Mountain.  Put encyclopedia description here.</body_text>
+	  <body_text>The high peaks of Mosaic Isle's Mountains remain cold no matter the latitude.  Some soil allows for plant and tree growth, but animals must travel far in these lands.  Communities here may struggle for food, but could find metal ore in quantities greater than anywhere else.  The speed at which non-flying travelers could traverse mountains to trade this wealth to others, however, is predictably low.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

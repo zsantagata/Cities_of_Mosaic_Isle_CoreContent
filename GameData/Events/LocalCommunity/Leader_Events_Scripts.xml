@@ -1,0 +1,1859 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark (quotation mark only in certain contexts) are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	
+	<!-- this script is a common script for cleanup of variables associated with Race Leader Elected (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Race Leader Elected cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Race Leader Elected cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Race Leader Elected cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Race Leader Elected cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//upon happening stores these:
+        variableHandler.storeIntVariable(0, "evt_" + "Race Leader Elected" + "_leaderUID" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Race Leader Elected" + "_contention" + inEventReport.getUID(), 0);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with City Leader Change (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>City Leader Change cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("City Leader Change cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("City Leader Change cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("City Leader Change cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//upon happening stores these:
+        variableHandler.storeIntVariable(0, "evt_" + "City Leader Change" + "_newCityLeader" + inEventReport.getUID(), 0);
+		
+		return null;
+	</b>
+	</i1>
+	
+	
+	<!-- this script is a common script for cleanup of variables associated with Another City Leader Candidate: Compromise (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Another City Leader Candidate: Compromise cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Another City Leader Candidate: Compromise cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Another City Leader Candidate: Compromise cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Another City Leader Candidate: Compromise cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//upon happening stores these:
+        variableHandler.storeIntVariable(0, "evt_" + "Another City Leader Candidate: Compromise" + "_newCityLeaderUID" + inEventReport.getUID(), 0);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Another City Leader Candidate: Riot (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Another City Leader Candidate: Riot cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Another City Leader Candidate: Riot cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Another City Leader Candidate: Riot cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Another City Leader Candidate: Riot cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//upon happening stores these:
+        variableHandler.storeIntVariable(0, "evt_" + "Another City Leader Candidate: Riot" + "_newCityLeaderUID" + inEventReport.getUID(), 0);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Another City Leader Candidate: Strike (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Another City Leader Candidate: Strike cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Another City Leader Candidate: Strike cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Another City Leader Candidate: Strike cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Another City Leader Candidate: Strike cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//upon happening stores these:
+        variableHandler.storeIntVariable(0, "evt_" + "Another City Leader Candidate: Strike" + "_newCityLeaderUID" + inEventReport.getUID(), 0);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Another City Leader Candidate: Hoarding Goods (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Another City Leader Candidate: Hoarding Goods cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Another City Leader Candidate: Hoarding Goods cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Another City Leader Candidate: Hoarding Goods cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Another City Leader Candidate: Hoarding Goods cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//upon happening stores these:
+        variableHandler.storeIntVariable(0, "evt_" + "Another City Leader Candidate: Hoarding Goods" + "_newCityLeaderUID" + inEventReport.getUID(), 0);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Industry Leader Emerges (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Industry Leader Emerges cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Industry Leader Emerges cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Industry Leader Emerges cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Industry Leader Emerges cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//upon happening stores these:
+        variableHandler.storeIntVariable(0, "evt_" + "Industry Leader Emerges" + "_newIndustryLeaderUID" + inEventReport.getUID(), 0);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with No Support of Old City Leader (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>No Support of Old City Leader cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("No Support of Old City Leader cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("No Support of Old City Leader cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("No Support of Old City Leader cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//upon happening stores these:
+        variableHandler.storeIntVariable(0, "evt_" + "No Support of Old City Leader" + "_newCityAndRaceLeaderUID" + inEventReport.getUID(), 0);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Attempted Murder of City Leader (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Attempted Murder of City Leader cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Attempted Murder of City Leader cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Attempted Murder of City Leader cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Attempted Murder of City Leader cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//gating stores these:
+        variableHandler.storeIntVariable(0, "Attempted Murder of City Leader_raceAttemptingIt", 0);
+		
+		//upon happening stores these:
+		//fetch these variables before clearing them:
+		Int64 countOfPopsDefending = variableHandler.getInt("Attempted Murder of City Leader_countofpopsdefending", out bool success);
+		Int64 countOfPopsAttacking = variableHandler.getInt("Attempted Murder of City Leader_countofpopsattacking", out success);
+        variableHandler.storeIntVariable(0, "Attempted Murder of City Leader_countofpopsdefending", 0);
+        variableHandler.storeIntVariable(0, "Attempted Murder of City Leader_countofpopsattacking", 0);
+		for(int i = 0; i &lt; countOfPopsDefending; i++)
+		{
+			variableHandler.storeIntVariable(0, "Attempted Murder of City Leader_popdefendinguid_" + i, 0);
+		}
+		for(int i = 0; i &lt; countOfPopsAttacking; i++)
+		{
+			variableHandler.storeIntVariable(0, "Attempted Murder of City Leader_popattackinguid_" + i, 0);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Mass Industry Leader Resignation (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Mass Industry Leader Resignation cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Mass Industry Leader Resignation cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Mass Industry Leader Resignation cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Mass Industry Leader Resignation cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//gating stores these:
+        variableHandler.storeIntVariable(0, "Mass Industry Leader Resignation_raceSteppingDown", 0);
+		
+		//upon happening stores these:
+		//fetch these variables before clearing them:
+		Int64 countOfPops = variableHandler.getInt("Mass Industry Leader Resignation_evtReport" + inEventReport.getUID() + "_countofpopssteppingdown", out bool success);
+        variableHandler.storeIntVariable(0, "Mass Industry Leader Resignation_evtReport" + inEventReport.getUID() + "_countofpopssteppingdown", 0);
+		for (int i = 0; i &lt; countOfPops; i++)
+		{
+			variableHandler.storeIntVariable(0, "Mass Industry Leader Resignation_evtReport" + inEventReport.getUID() + "_popuid_" + i, 0);
+			variableHandler.storeIntVariable(0, "Mass Industry Leader Resignation_evtReport" + inEventReport.getUID() + "_industrymoid_" + i, 0);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Murder of Industry Leader (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Murder of Industry Leader cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Murder of Industry Leader cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Murder of Industry Leader cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Murder of Industry Leader cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//gating stores these:
+        variableHandler.storeIntVariable(0, "Murder of Industry Leader_actorRace", 0);
+        variableHandler.storeIntVariable(0, "Murder of Industry Leader_targetRace", 0);
+		
+		//upon happening stores these:
+		variableHandler.storeIntVariable(0, "Murder of Industry Leader_evtReport" + inEventReport.getUID() + "_leaderKilledIfNonZero", 0);
+		variableHandler.storeIntVariable(0, "Murder of Industry Leader_actorRace" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "Murder of Industry Leader_targetRace" + inEventReport.getUID(), 0);
+		
+		//make sure the EXPIRE event is handled successfully:
+		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null, null, 0L }, out _);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for handling rejection of an investigation into the murder of an industry leader -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Murder of Industry Leader rejection_common</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Murder of Industry Leader rejection_common custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		//fetch the race of the murdered industry leader, the race of the murderer, and other races (and their count of industry leaders):
+		Int64 actorRaceMOID = variableHandler.getInt("Murder of Industry Leader_actorRace" + inEventReportUID, out success);
+		IFRace actorRace = (IFRace)getAPI().getMOFromMOID("races", actorRaceMOID);
+		Int64 targetRaceMOID = variableHandler.getInt("Murder of Industry Leader_targetRace" + inEventReportUID, out success);
+		IFRace targetRace = (IFRace)getAPI().getMOFromMOID("races", targetRaceMOID);
+		
+		Dictionary&lt;IFRace, Int64&gt; otherRacesAndIndustryLeaderCount = new Dictionary&lt;IFRace, Int64&gt;();
+		var dictOfExistingRaces = getAPI().getLocalCommunity().getLoyalPopsByRace(true, false);
+		var leaders = getAPI().getLocalCommunity().getLeaderCollection();
+		bool actorRaceExists = false;
+		bool targetRaceExists = false;
+		foreach(IFRace race in dictOfExistingRaces.Keys)
+		{
+			if(race != actorRace &amp;&amp; race != targetRace)
+			{
+				otherRacesAndIndustryLeaderCount.Add(race, 0);
+				foreach(IFPop pop in leaders.getIndustryLeaders())
+				{
+					if(!pop.isDead() &amp;&amp; pop.getRace() == race)
+					{
+						otherRacesAndIndustryLeaderCount[race]++;
+					}
+				}
+			}
+			else if(actorRace == race)
+			{
+				actorRaceExists = true;
+			}
+			else
+			{
+				targetRaceExists = true;
+			}
+		}
+		
+		//fetch the custom consts for unhappiness:
+		double happinessValTarget = customConsts.getDoubleConst("evt_Murder of Industry Leader_rejectionTargetHappinessVal", out success);
+		if(!success) happinessValTarget = -28.5d;
+		double happinessValActor = customConsts.getDoubleConst("evt_Murder of Industry Leader_rejectionActorHappinessVal", out success);
+		if(!success) happinessValActor = -17.5d;
+		double happinessOtherValMin = customConsts.getDoubleConst("evt_Murder of Industry Leader_rejectionOtherHappinessValMin", out success);
+		if(!success) happinessOtherValMin = -7.5d;
+		double happinessOtherValAddPer = customConsts.getDoubleConst("evt_Murder of Industry Leader_rejectionOtherHappinessValAddPerIndustryLeader", out success);
+		if(!success) happinessOtherValAddPer = -3.5d;
+		double happinessOtherValMax = customConsts.getDoubleConst("evt_Murder of Industry Leader_rejectionOtherHappinessValMax", out success);
+		if(!success) happinessOtherValMax = -28.5d;
+		
+		//fetch happiness names and descriptions:
+		string happinessTargetName = customConsts.getStringConst("evt_Murder of Industry Leader_rejectionTargetHappinessName before_replace_text", out success);
+		if(!success) happinessTargetName = "No Justice For Our Dead";
+		string happinessTargetDesc = customConsts.getStringConst("evt_Murder of Industry Leader_rejectionTargetHappinessDesc before_replace_text", out success);
+		if(!success) happinessTargetDesc = "Our Industry Leader was murdered, and the City Leader did nothing to punish the perpetrators!";
+		
+		string happinessActorName = customConsts.getStringConst("evt_Murder of Industry Leader_rejectionActorHappinessName before_replace_text", out success);
+		if(!success) happinessActorName = "Direct Action Successful";
+		string happinessActorDesc = customConsts.getStringConst("evt_Murder of Industry Leader_rejectionActorHappinessDesc before_replace_text", out success);
+		if(!success) happinessActorDesc = "We killed a troublesome monster of another race, and the City Leader overlooked our deed.  This indicates the City Leader's weakness, which we can take advantage of.";
+		
+		string happinessOtherName = customConsts.getStringConst("evt_Murder of Industry Leader_rejectionOtherHappinessName before_replace_text", out success);
+		if(!success) happinessOtherName = "No Justice For Dead Industry Leader";
+		string happinessOtherDesc = customConsts.getStringConst("evt_Murder of Industry Leader_rejectionOtherHappinessDesc before_replace_text", out success);
+		if(!success) happinessOtherDesc = "An Industry Leader was murdered, and the City Leader did nothing.";
+		
+		if(targetRaceExists)
+		{
+			getAPI().getLocalCommunity().getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(
+						targetRace,
+						happinessTargetName, happinessTargetDesc,
+						happinessValTarget, false);
+		}
+		if(actorRaceExists)
+		{
+			getAPI().getLocalCommunity().getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(
+						actorRace,
+						happinessActorName, happinessActorDesc,
+						happinessValActor, false);
+		}	
+		foreach(var kvpair in otherRacesAndIndustryLeaderCount)
+		{
+			double happinessVal = happinessOtherValMin + kvpair.Value * happinessOtherValAddPer;
+			if(Math.Abs(happinessVal) &gt; Math.Abs(happinessOtherValMax))
+			{
+				happinessVal = happinessOtherValMax;
+			}
+			
+			getAPI().getLocalCommunity().getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(
+						kvpair.Key,
+						happinessOtherName, happinessOtherDesc,
+						happinessVal, false);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Industry Leader Theft (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	<!-- output: none
+	-->
+	<i1><a>Industry Leader Theft cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Industry Leader Theft cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Industry Leader Theft cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Industry Leader Theft cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//gating stores these:
+        variableHandler.storeIntVariable(0,"Industry Leader Theft_leaderInQuestion", 0);
+		
+		//upon happening stores these:
+		variableHandler.storeIntVariable(0, "Industry Leader Theft_evtReport" + inEventReport.getUID() + "_leaderInQuestion", 0);
+		variableHandler.storeIntVariable(0, "Industry Leader Theft_evtReport" + inEventReport.getUID() + "_typeInt", 0);
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "" }, out _);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Framing of Industry Leader (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	<!-- output: none
+	-->
+	<i1><a>Framing of Industry Leader cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Framing of Industry Leader cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Framing of Industry Leader cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Framing of Industry Leader cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//gating stores these:
+		variableHandler.storeIntVariable(0, "Framing of Industry Leader_actorRace", 0);
+		variableHandler.storeIntVariable(0, "Framing of Industry Leader_targetRace", 0);
+		
+		//upon happening stores these:
+		variableHandler.storeIntVariable(0, "Framing of Industry Leader_evtReport" + inEventReport.getUID() + "_industryLeaderFramed", 0);
+		variableHandler.storeIntVariable(0, "Framing of Industry Leader_evtReport" + inEventReport.getUID() + "_raceLeaderActor", 0);
+		variableHandler.storeIntVariable(0, "Framing of Industry Leader_evtReport" + inEventReport.getUID() + "_playerSeesFramingIfNonZero", 0);
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "" }, out _);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Industry Leader Competition (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	<!-- output: none
+	-->
+	<i1><a>Industry Leader Competition cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Industry Leader Competition cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Industry Leader Competition cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Industry Leader Competition cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//gating stores these:
+        variableHandler.storeIntVariable(0, "Industry Leader Competition_leaderUID", 0);
+		
+		//upon happening stores these:
+		variableHandler.storeIntVariable(0, "evt_" + "Industry Leader Competition" + "_challengerUID" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Industry Leader Competition" + "_leaderUID" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Industry Leader Competition" + "_challengerCheatsIfNotZero" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Industry Leader Competition" + "_leaderCheatsIfNotZero" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Industry Leader Competition" + "_cityLeaderSeesCheatingIfNotZero" + inEventReport.getUID(), 0);
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "" }, out _);
+		
+		//make sure the EXPIRE event is handled successfully:
+		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, true, null, null, 0L }, out _);
+		
+		//timeout may or may not store these, clear them now:
+		variableHandler.storeIntVariable(0, "evt_" + "Industry Leader Competition" + "_timeExpire_leaderWonIfNotZero" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Industry Leader Competition" + "_timeExpire_competitionOccurredIfNotZero" + inEventReport.getUID(), 0);
+		variableHandler.storeStringVariable(0, "evt_" + "Industry Leader Competition" + "_timeExpire_worksString" + inEventReport.getUID(), "");
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for creating works associated with Industry Leader Competition.  This script returns a string.  -->
+	<!-- this script should be called once, consumes the input resources (if/when available), and creates outputs based on the industry leader's skill, average skill, resources in, and kind of industry -->
+	<!-- possible results are: refining of goods produced/consumed by a building in the industry, increasing the skill of the industry, increasing happiness (temp or permanent) -->
+	<!-- (the reason I am choosing not to include "creation of output resources" is that there's too much calculation to make sure it'd actually be comparable to what a regular building with workers would produce) -->
+	<!-- inputs to the function:
+		IFPop inIndustryLeader,
+		IFPop inChallenger,
+		Dictionary<IFResource, Tuple<double, double>> inResourcesConsumed
+	-->
+	<!-- output: string outDescriptionOfWorks
+	-->
+	<i1><a>Industry Leader Competition create_works</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFPop), typeof(IFPop), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Industry Leader Competition create_works custom script received invalid arguments");
+			return null;
+	    }
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		IFPop inIndustryLeader = (IFPop)inArguments[0];
+		IFPop inChallenger = (IFPop)inArguments[1];
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; inResourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)inArguments[2];
+		
+		if(inIndustryLeader == null)
+		{
+			throw new ArgumentException("Industry Leader Competition create_works custom script received invalid arguments: inIndustryLeader cannot be null");
+		}
+		if(inChallenger == null)
+		{
+			throw new ArgumentException("Industry Leader Competition create_works custom script received invalid arguments: inChallenger cannot be null");
+		}
+		if(inResourcesConsumed == null)
+		{
+			throw new ArgumentException("Industry Leader Competition create_works custom script received invalid arguments: inResourcesConsumed cannot be null");
+		}
+		
+		//fetch the industry in question:
+		IFIndustry industry = getAPI().getLocalCommunity().getLeaderCollection().getIndustryLedByPop(inIndustryLeader);
+		if(industry == null)
+		{
+			throw new ArgumentException("Industry Leader Competition create_works custom script received invalid arguments: inIndustryLeader must lead an industry");
+		}
+		
+		//fetch custom consts for weights:
+		double refineWeight = customConsts.getDoubleConst("Industry Leader Competition works refining weight", out success);
+		if(!success) refineWeight = 33.3d;
+		double skillWeight = customConsts.getDoubleConst("Industry Leader Competition works skill weight", out success);
+		if(!success) skillWeight = 33.3d;
+		double tempHappinessWeight = customConsts.getDoubleConst("Industry Leader Competition works temp_happiness weight", out success);
+		if(!success) tempHappinessWeight = 33.3d;
+		double permHappinessWeight = customConsts.getDoubleConst("Industry Leader Competition works permanent_happiness weight", out success);
+		if(!success) permHappinessWeight = 0.1d;
+		
+		//fetch all possible refinable resources:
+		HashSet&lt;IFResource&gt; refinableResources = new HashSet&lt;IFResource&gt;(inResourcesConsumed.Keys);
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("buildingkinds"); moid++)
+		{
+			IFBuildingKind kind = (IFBuildingKind)getAPI().getMOFromMOID("buildingkinds", moid);
+			if(kind.isWorkplace() &amp;&amp; kind.getIndustry() == industry)
+			{
+				foreach(IFResource res in kind.getOutputResources())
+					refinableResources.Add(res);
+				foreach(IFResource res in kind.getRequiredResourceInputs())
+					refinableResources.Add(res);
+				foreach(var innerTuple in kind.getResourceInputsBigTuple())
+				{
+					refinableResources.Add(innerTuple.Item1);
+					foreach(IFResource res in innerTuple.Item3)
+					{
+						refinableResources.Add(res);
+					}
+				}
+			}
+		}
+		
+		string outDescriptionOfWorks = "";
+		if(refinableResources.Count == 0)
+		{
+			refineWeight = 0;
+		}
+		double weightRoll = getAPI().calcRand() * (refineWeight + skillWeight + tempHappinessWeight + permHappinessWeight);
+		if(refineWeight > weightRoll)
+		{
+			//refine resources (at least as many in quantity as are in the consumed resources):
+			double quantityInConsumedResources = 0.0d;
+			double quantityOfTalliedSoFar = 0.0d;
+			List&lt;IFResource&gt; resourcesChosenToRefine = new List&lt;IFResource&gt;();
+			foreach(var kvpair in inResourcesConsumed)
+			{
+				quantityInConsumedResources += kvpair.Value.Item1;
+			}
+			List&lt;IFResource&gt; listCopy = new List&lt;IFResource&gt;(refinableResources);
+			getAPI().shuffleList(listCopy);
+			IFResourcePool localPool = getAPI().getLocalCommunity().getResourcePool();
+			while((quantityInConsumedResources > quantityOfTalliedSoFar) &amp;&amp; listCopy.Count != 0)
+			{
+				double quantityInPool = localPool.getResourceQuantity(listCopy[0]);
+				if(quantityInPool > 0.0d)
+				{
+					quantityOfTalliedSoFar += quantityInPool;
+					resourcesChosenToRefine.Add(listCopy[0]);
+				}
+				listCopy.RemoveAt(0);
+			}
+			
+			//now we have a list of resources to refine.  Refine them:
+			double qualIncreasePropMin = customConsts.getDoubleConst("Industry Leader Competition works refining qual_increase_min", out success);
+			if(!success) qualIncreasePropMin = 0.10d;
+			double qualIncreasePropMax = customConsts.getDoubleConst("Industry Leader Competition works refining qual_increase_max", out success);
+			if(!success) qualIncreasePropMax = 0.35d;
+			
+			double qualMin = consts.getResourceQualityMin();
+			double qualMax = consts.getResourceQualityMax();
+			double qualIncreaseMin = (qualMax - qualMin) * qualIncreasePropMin;
+			double qualIncreaseMax = (qualMax - qualMin) * qualIncreasePropMax;
+			
+			string listOfResourcesText = "";
+			for(int i = 0; i &lt; resourcesChosenToRefine.Count; i++)
+			{
+				double qualIncrease = getAPI().calcRand() * (qualIncreaseMax - qualIncreaseMin);
+				listOfResourcesText += (i != 0 ? ", " : "") + resourcesChosenToRefine[i].getDisplayName() + " " + getAPI().getDisplayStringForQuality(qualIncrease);
+				localPool.changeResourceQuality(resourcesChosenToRefine[i], qualIncrease);
+			}
+			
+			outDescriptionOfWorks = customConsts.getStringConst("Industry Leader Competition works refining text", out success);
+			if(!success) outDescriptionOfWorks = "With keen judgment for their best uses and some effort, our competitors have improved the quality of the following resources in our stockpiles: [0].";
+			outDescriptionOfWorks = outDescriptionOfWorks.Replace("[0]", listOfResourcesText);
+		}
+		else if(refineWeight + skillWeight > weightRoll)
+		{
+			double skillIncreasePropMin = customConsts.getDoubleConst("Industry Leader Competition works skill increase_min", out success);
+			if(!success) skillIncreasePropMin = 0.035d;
+			double skillIncreasePropMax = customConsts.getDoubleConst("Industry Leader Competition works skill increase_max", out success);
+			if(!success) skillIncreasePropMax = 0.125d;
+			
+			double skillIncreaseProp = getAPI().calcRand() * (skillIncreasePropMax - skillIncreasePropMin);
+			
+			double skillMin = consts.getWorkerSkillMin();
+			double skillMax = consts.getWorkerSkillMax();
+			
+			double skillIncrease = skillIncreaseProp * (skillMax - skillMin);
+			
+			getAPI().getLocalCommunity().getDomesticComponent().getIndustrySkills().setAverageSkill(skillIncrease + getAPI().getLocalCommunity().getDomesticComponent().getIndustrySkills().getAverageSkill(industry), industry);
+			
+			outDescriptionOfWorks = customConsts.getStringConst("Industry Leader Competition works skill text", out success);
+			if(!success) outDescriptionOfWorks = "By demonstrating common mistakes and providing time-saving techniques, our competitors have improved our community's skill in their craft by [0].";
+			outDescriptionOfWorks = outDescriptionOfWorks.Replace("[0]", getAPI().getDisplayStringForDouble(100 * skillIncreaseProp) + "%");
+		}
+		else if(refineWeight + skillWeight + tempHappinessWeight > weightRoll)
+		{
+			//temp happiness
+			double happinessVal = customConsts.getDoubleConst("Industry Leader Competition works temp_happiness happiness_val", out success);
+			if(!success) happinessVal = 25.0d;
+			
+			string happinessName = customConsts.getStringConst("Industry Leader Competition works temp_happiness_name before_replace_text", out success);
+			if(!success) happinessName = "Impressive Competition";
+			string happinessDesc = customConsts.getStringConst("Industry Leader Competition works temp_happiness_desc before_replace_text", out success);
+			if(!success) happinessDesc = "An Industry Leader of the community and a challenger held a public competition.  The goal of each was to work their craft to amused, shocked, and intrigue onlookers.  Monsters of the community will be talking about this memorable event for a while.";
+			
+			foreach(IFRace race in getAPI().getLocalCommunity().getLoyalPopsByRace().Keys)
+			{
+				getAPI().getLocalCommunity().getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(race,
+					happinessName, happinessDesc, happinessVal, false); //false = not permanent
+			}
+			
+			outDescriptionOfWorks = customConsts.getStringConst("Industry Leader Competition works temp_happiness text", out success);
+			if(!success) outDescriptionOfWorks = "The competitors used their skills, and the provided resources, to entertain onlookers and provide a distraction from the troubles of everyday life.";
+		}
+		else
+		{
+			//perm happiness
+			double happinessVal = customConsts.getDoubleConst("Industry Leader Competition works permanent_happiness happiness_val", out success);
+			if(!success) happinessVal = 0.75d;
+			
+			string happinessName = customConsts.getStringConst("Industry Leader Competition works permanent_happiness_name before_replace_text", out success);
+			if(!success) happinessName = "Industry Leader Achievement Blessed!";
+			string happinessDesc = customConsts.getStringConst("Industry Leader Competition works permanent_happiness_desc before_replace_text", out success);
+			if(!success) happinessDesc = "An Industry Leader and a challenger held a public competition to advance the knowledge of their craft.  So successful were they that the Lady herself took notice!  For advancing the art of [0], the Lady has praised the community!";
+			happinessDesc = happinessDesc.Replace("[0]", industry.getDisplayName());
+			
+			for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("races"); moid++)
+			{
+				IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+				if(race != null &amp;&amp; !race.isHiddenFromPlayerSight())
+				{
+					getAPI().getLocalCommunity().getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(race,
+						happinessName, happinessDesc, happinessVal, true); //true = permanent
+				}
+			}
+			
+			outDescriptionOfWorks = customConsts.getStringConst("Industry Leader Competition works permanent_happiness text", out success);
+			if(!success) outDescriptionOfWorks = "The competitors attempted to advance the art of [0], and by the grace of the Lady they have succeeded!  Her dance of leaves surrounded the two as they finished their works, and Her words of praise for our community were carried here from afar!  As of today, we have been blessed!";
+			outDescriptionOfWorks = outDescriptionOfWorks.Replace("[0]", industry.getDisplayName());
+		}
+		
+		return new List&lt;object&gt;() { outDescriptionOfWorks };
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for timeout associated with Industry Leader Competition.  -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID
+	-->
+	<!-- output: none
+	-->
+	<i1><a>Industry Leader Competition timeout</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Industry Leader Competition timeout custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		Int64 industryLeaderUID = variableHandler.getInt("evt_" + "Industry Leader Competition" + "_leaderUID" + inEventReportUID, out success);
+		IFPop industryLeader = (IFPop)getAPI().getSO("pops", industryLeaderUID);
+		Int64 challengerUID = variableHandler.getInt("evt_" + "Industry Leader Competition" + "_challengerUID" + inEventReportUID, out success);
+		IFPop challenger = (IFPop)getAPI().getSO("pops", challengerUID);
+		
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		IFIndustry industry = localCommunity.getLeaderCollection().getIndustryLedByPop(industryLeader);
+		
+		Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
+		//need to find the event status for the event.  Annoying but necessary.
+		IFEventStatus inEventStatus = null;
+		IFEvent evt = (IFEvent)getAPI().getMOFromInternalName("events", "Industry Leader Competition");
+		if(evt != null)
+		{
+			inEventStatus = (IFEventStatus)getAPI().getSO("eventstatuses", evt.getMOID());
+			if (customScripts.runCustomScriptCheckTypes("storeOrFetchResourcesForEvent", new List&lt;object>() { inEventStatus, inEventReportUID, false, null, "", Int64.MaxValue, true }, out List&lt;object> returnVals,
+				false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double>>), typeof(string)))
+			{
+				resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double>>)returnVals[0];
+			}
+		}
+		
+		bool resourcesExist = true;
+		foreach(var kvpair in resourcesConsumed)
+		{
+			if(getAPI().getLocalCommunity().getResourcePool().getResourceQuantity(kvpair.Key) &lt; kvpair.Value.Item1)
+			{
+				resourcesExist = false;
+				break;
+			}
+		}
+		
+		//first, we need to check that both pops are alive and in the city, the resources exist, and the industry leader is still the industry leader.  If so, the competition occurs.  Call the create_works script, and possibly set the new Industry Leader.
+		if((industry != null) &amp;&amp; resourcesExist &amp;&amp; !(industryLeader.isDead() || challenger.isDead() || industryLeader.hasDelegation() || challenger.hasDelegation()))
+		{
+			variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + "Industry Leader Competition" + "_timeExpire_competitionOccurredIfNotZero" + inEventReportUID, 1);
+			
+			//calculate if the Industry Leader succeeds or fails:
+			double baseIndustryLeaderSuccess = customConsts.getDoubleConst(&quot;Industry Leader Competition industry_leader_success prob&quot;, out success);
+			if (!success) baseIndustryLeaderSuccess = 0.46d;
+			double industryLeaderSuccessIncreaseSkillDiffMult = customConsts.getDoubleConst(&quot;Industry Leader Competition industry_leader_success_increase_skill_diff mult&quot;, out success);
+			if (!success) industryLeaderSuccessIncreaseSkillDiffMult = 3.5d; //for every 1 percentage point the industry leader&apos;s skill is above the average skill, their percentage change of winning increases by this
+			double skillDiff = localCommunity.getDomesticComponent().getIndustrySkills().getLeaderSkill(industry) - localCommunity.getDomesticComponent().getIndustrySkills().getAverageSkill(industry);
+			double prob = baseIndustryLeaderSuccess + skillDiff * industryLeaderSuccessIncreaseSkillDiffMult;
+			bool industryLeaderSuccess = getAPI().calcProb(prob);
+			//note that I deliberately haven't added the cheating considerations here: with enough time, that could have changed
+
+			variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + "Industry Leader Competition" + "_timeExpire_leaderWonIfNotZero" + inEventReportUID, industryLeaderSuccess ? 1 : 0);
+			
+			IFResourcePool pool = localCommunity.getResourcePool();
+			foreach (var kvpair in resourcesConsumed)
+			{
+				pool.subtractResource(kvpair.Key, kvpair.Value.Item1);
+			}
+			if(customScripts.runCustomScriptCheckTypes("Industry Leader Competition create_works", new List&lt;object&gt;() { industryLeader, challenger, resourcesConsumed }, out List&lt;object> returnVals2,
+				false, typeof(string)))
+			{
+				variableHandler.storeStringVariable(Int64.MaxValue, "evt_" + "Industry Leader Competition" + "_timeExpire_worksString" + inEventReportUID, (string)returnVals2[0]);
+			}
+			else
+			{
+				variableHandler.storeStringVariable(Int64.MaxValue, "evt_" + "Industry Leader Competition" + "_timeExpire_worksString" + inEventReportUID, "");
+			}
+			
+			//only clear the industry leader after the works are created (create_works needs the leader to still exist)
+			if(!industryLeaderSuccess)
+			{
+				localCommunity.getLeaderCollection().setIndustryLeader(challenger, industry);
+			}
+		}
+		//else, the competition did not occur
+		else
+		{
+			variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + "Industry Leader Competition" + "_timeExpire_leaderWonIfNotZero" + inEventReportUID, 0);
+			variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + "Industry Leader Competition" + "_timeExpire_competitionOccurredIfNotZero" + inEventReportUID, 0);
+			variableHandler.storeStringVariable(Int64.MaxValue, "evt_" + "Industry Leader Competition" + "_timeExpire_worksString" + inEventReportUID, "");
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Unchecked Greed of Race Leader (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Unchecked Greed of Race Leader cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Unchecked Greed of Race Leader cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Unchecked Greed of Race Leader cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Unchecked Greed of Race Leader cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//upon happening stores these:
+        variableHandler.storeIntVariable(0, "evt_" + "Unchecked Greed of Race Leader" + "_raceLeaderUID" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Unchecked Greed of Race Leader" + "_followThroughHelpIfNotZero" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Unchecked Greed of Race Leader" + "_followThroughHarmIfNotZero" + inEventReport.getUID(), 0);
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "" }, out _);
+		
+		//possibly stored by rejection_common:
+		variableHandler.storeIntVariable(0, "evt_" + "Unchecked Greed of Race Leader" + "_RESOLUTIONvariable" + inEventReport.getUID(), 0);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for calculation of resolution variable associated with Unchecked Greed of Race Leader.  This script does not do anything that the player would see.  -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID
+	-->
+	
+	<!-- NTS the way I'm using RESOLUTIONvariable in this event doesn't match with how I use it elsewhere; don't use this as a reference for other uses -->
+	
+	<!-- output: Int64 outRESOLUTIONVariable
+	-->
+	<i1><a>Unchecked Greed of Race Leader calc_resolutionvariable</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Unchecked Greed of Race Leader calc_resolutionvariable custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		Int64 raceLeaderUID = variableHandler.getInt("evt_" + "Unchecked Greed of Race Leader" + "_raceLeaderUID" + inEventReportUID, out success);
+		IFPop raceLeader = (IFPop)getAPI().getSO("pops", raceLeaderUID);
+		
+		//1 = time expire
+		//2 = race leader dead
+		Int64 outRESOLUTIONVariable = raceLeader.isDead() ? 2 : 1; //implicit time expire
+		
+		return new List&lt;object&gt;() { outRESOLUTIONVariable };
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for rejection of the offer associated with Unchecked Greed of Race Leader.  -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Unchecked Greed of Race Leader rejection_common</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Unchecked Greed of Race Leader rejection_common custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		Int64 raceLeaderUID = variableHandler.getInt("evt_" + "Unchecked Greed of Race Leader" + "_raceLeaderUID" + inEventReportUID, out success);
+		IFPop raceLeader = (IFPop)getAPI().getSO("pops", raceLeaderUID);
+		Int64 followThroughHarmIfNotZero = variableHandler.getInt("evt_" + "Unchecked Greed of Race Leader" + "_followThroughHarmIfNotZero" + inEventReportUID, out success);
+		if (!success) followThroughHarmIfNotZero = 0;
+		
+		if(followThroughHarmIfNotZero != 0)
+		{
+			//add unhappiness to race leader's race:
+			string happinessName = customConsts.getStringConst("Unchecked Greed of Race Leader deny_followthrough happiness_name before_replace_text", out success);
+			if (!success) happinessName = "Race Leader Instigation";
+			string happinessDesc = customConsts.getStringConst("Unchecked Greed of Race Leader deny_followthrough happiness_desc before_replace_text", out success);
+			if (!success) happinessDesc = "Our Race Leader has made it clear how little the City Leader cares for us, or values our contributions.  We must take action!";
+			double happinessVal = customConsts.getDoubleConst("Unchecked Greed of Race Leader deny_followthrough happiness_val", out success);
+			if (!success) happinessVal = -30.0;
+
+			getAPI().getLocalCommunity().getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(raceLeader.getRace(), happinessName, happinessDesc, happinessVal, false);
+		}
+		
+		//calculate resolution variable and store it:
+		if(customScripts.runCustomScriptCheckTypes("Unchecked Greed of Race Leader calc_resolutionvariable", new List&lt;object&gt;() { inEventReportUID }, out List&lt;object&gt; returnVals,
+			false, typeof(Int64)))
+		{
+			variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + "Unchecked Greed of Race Leader" + "_RESOLUTIONvariable" + inEventReportUID, (Int64)returnVals[0]);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Fear of Race Leader Competitor (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		Int64 inEventReportUID
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Fear of Race Leader Competitor cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Fear of Race Leader Competitor cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		Int64 inEventReportUID = (Int64)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Fear of Race Leader Competitor cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//gating script stores these:
+		variableHandler.storeIntVariable(0, "Fear of Race Leader Competitor_raceMOID", 0);
+		
+		//upon happening stores these:
+		variableHandler.storeIntVariable(0, "evt_" + "Fear of Race Leader Competitor" + "_raceLeaderUID" + inEventReportUID, 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Fear of Race Leader Competitor" + "_competitorUID" + inEventReportUID, 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Fear of Race Leader Competitor" + "_competitorReplacesLeaderIfNotZero" + inEventReportUID, 0);
+		
+		//make sure the EXPIRE event is handled successfully:
+		customScripts.runCustomScript("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { inEventStatus, inEventReportUID, false, true, null, null, 0L }, out _);
+		
+		//stored by calc_resolutionvariable:
+		variableHandler.storeIntVariable(0, "evt_" + "Fear of Race Leader Competitor" + "_RESOLUTIONvariable" + inEventReportUID, 0);
+		
+		//possibly stored by a choice so that cleanup is called by expire:
+		variableHandler.storeIntVariable(0, "evt_" + "Fear of Race Leader Competitor" + "_cleanupNotCalledIfNonZero" + inEventReportUID, 0);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for calculation of resolution variable associated with Fear of Race Leader Competitor.  This script will be called multiple times since it is called by choice gating scripts, so it should only make changes once (if appropriate) and then never again (for one instance of an event) -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID,
+		bool inExpireHappensNow
+	-->
+	
+	<!-- how calc_resolutionvariable is used in this event and others: a return value of '0' or '-1' means the event has not yet been resolved.  Return values of positive integers are defined per event,
+		 but generally mean that the event has resolved and the RESOLUTIONvariable will not change after that.
+
+		 The script which indicates that the event has expired will call this script with "inExpireHappensNow" as true, locking the value of RESOLUTIONvariable if it has not been already set.
+		 Other scripts should not check if the RESOLUTIONvariable exists in variableHandler but should instead call this script to get the return value.  If RESOLUTIONvariable is already set, it will be returned.  Otherwise, this script calculates if the RESOLUTIONvariable can be set because certain conditions unique to the event are true (such as an involved pop dying).  If so, the RESOLUTIONvariable is set.  Otherwise, a value of -1 is returned.
+		 At the time the RESOLUTIONvariable is set, this script will also call other scripts which perform the actions (such as happiness/unhappiness and others) that should occur as a result of the event being resolved (in whichever way)
+		 -->
+	
+	<!-- output:
+		Int64 outRESOLUTIONVariable
+	-->
+	<i1><a>Fear of Race Leader Competitor calc_resolutionvariable</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64), typeof(bool)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Fear of Race Leader Competitor calc_resolutionvariable custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		bool inExpireHappensNow = (bool)inArguments[1];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		Int64 outRESOLUTIONVariable = variableHandler.getInt("evt_" + "Fear of Race Leader Competitor" + "_RESOLUTIONvariable" + inEventReportUID, out success);
+		//first, check if the RESOLUTIONvariable has already been set:
+		if(success &amp;&amp; (outRESOLUTIONVariable &gt; 0))
+		{
+			return new List&lt;object&gt;() { outRESOLUTIONVariable };
+		}
+		else
+		{
+			outRESOLUTIONVariable = -1L;
+		}
+		
+		//if not, calculate it:
+		//calculations can depend on whether the event is expiring now or not
+		//RESOLUTION = 1 means the competitor became dead/disloyal and the race leader did not (and was still the race leader at the time it happened).  OR the competitor is currently on an Emmigration delegation
+		//RESOLUTION = 2 means race leader became dead/disloyal/no longer the race leader
+		//RESOLUTION = 3 means at time of EXPIRE, both competitor and race leader were valid, and replacement = true
+		//RESOLUTION = 4 means at time of EXPIRE, both competitor and race leader were valid, and replacement = false
+		Int64 raceLeaderUID = variableHandler.getInt("evt_" + "Fear of Race Leader Competitor" + "_raceLeaderUID" + inEventReportUID, out success);
+		IFPop raceLeader = (IFPop)getAPI().getSO("pops", raceLeaderUID);
+		Int64 competitorUID = variableHandler.getInt("evt_" + "Fear of Race Leader Competitor" + "_competitorUID" + inEventReportUID, out success);
+		IFPop competitor = (IFPop)getAPI().getSO("pops", competitorUID);
+		Int64 replaceIfNotZero = variableHandler.getInt("evt_" + "Fear of Race Leader Competitor" + "_competitorReplacesLeaderIfNotZero" + inEventReportUID, out success);
+		
+		bool competitorValid = (!competitor.isDead() &amp;&amp; competitor.getCommunity() == getAPI().getLocalCommunity()) &amp;&amp; !(competitor.hasDelegation() &amp;&amp; (competitor.getDelegation().getDelegationType() == IFDelegation.eDelegationType.cEmigration));
+		bool raceLeaderValid = (!raceLeader.isDead() &amp;&amp; raceLeader.getCommunity() == getAPI().getLocalCommunity() &amp;&amp; raceLeader == getAPI().getLocalCommunity().getLeaderCollection().getRaceLeader(raceLeader.getRace()));
+		if(!raceLeaderValid)
+		{
+			//the race leader no longer being in the position resolves the event early
+			outRESOLUTIONVariable = 2;
+			//call a script which makes the changes associated with this resolution of the event
+			//(equivalent of the "Calculations (aka make changes based on this choice)" and "Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events" sections of most choice selection scripts)
+			customScripts.runCustomScript("Fear of Race Leader Competitor upon_resolution_raceLeaderOutOfAction", new List&lt;object&gt;() { inEventReportUID }, out _);
+		}
+		else if(!competitorValid)
+		{
+			//the competitor no longer being valid resolves the event early
+			outRESOLUTIONVariable = 1;
+			//call a script which makes the changes associated with this resolution of the event
+			//(equivalent of the "Calculations (aka make changes based on this choice)" and "Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events" sections of most choice selection scripts)
+			customScripts.runCustomScript("Fear of Race Leader Competitor upon_resolution_competitorOutOfAction", new List&lt;object&gt;() { inEventReportUID }, out _);
+		}
+		
+		if(inExpireHappensNow &amp;&amp; outRESOLUTIONVariable == -1L)
+		{
+			//these resolutions only occur if the event is expiring now, and other "early" event resolutions were not true
+			if(replaceIfNotZero != 0)
+			{
+				outRESOLUTIONVariable = 3;
+				//call a script which makes the changes associated with this resolution of the event
+				//(equivalent of the "Calculations (aka make changes based on this choice)" and "Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events" sections of most choice selection scripts)
+				customScripts.runCustomScript("Fear of Race Leader Competitor upon_resolution_raceLeaderReplaced", new List&lt;object&gt;() { inEventReportUID, competitor }, out _);
+			}
+			else
+			{
+				outRESOLUTIONVariable = 4;
+				//call a script which makes the changes associated with this resolution of the event
+				//(equivalent of the "Calculations (aka make changes based on this choice)" and "Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events" sections of most choice selection scripts)
+				customScripts.runCustomScript("Fear of Race Leader Competitor upon_resolution_raceLeaderNotReplaced", new List&lt;object&gt;() { inEventReportUID }, out _);
+			}
+		}
+		
+		if(outRESOLUTIONVariable != -1L)
+		{
+			//if the event has resolved, store the value so it does not change
+			variableHandler.storeIntVariable(Int64.MaxValue, "evt_" + "Fear of Race Leader Competitor" + "_RESOLUTIONvariable" + inEventReportUID, outRESOLUTIONVariable);
+		}
+		
+		return new List&lt;object&gt;() { outRESOLUTIONVariable };
+	</b>
+	</i1>
+	
+	<!-- this script is a script for a certain resolution of the event Fear of Race Leader Competitor.  This script is called when the event is resolved; that is, when the resolution variable is "set" -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Fear of Race Leader Competitor upon_resolution_raceLeaderOutOfAction</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Fear of Race Leader Competitor upon_resolution_raceLeaderOutOfAction custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		//the race leader has been taken out of action due to actions by the player or coincidence.  Nothing else happens (the competitor was set as "forced race leader" by the upon-happening script so that should resolve on its own)
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a script for a certain resolution of the event Fear of Race Leader Competitor.  This script is called when the event is resolved; that is, when the resolution variable is "set" -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Fear of Race Leader Competitor upon_resolution_competitorOutOfAction</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Fear of Race Leader Competitor upon_resolution_competitorOutOfAction custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		//the competitor has been taken out of action due to actions by the player or coincidence.
+		//the race leader is happy:
+		Int64 raceLeaderUID = variableHandler.getInt("evt_" + "Fear of Race Leader Competitor" + "_raceLeaderUID" + inEventReportUID, out success);
+		IFPop raceLeader = (IFPop)getAPI().getSO("pops", raceLeaderUID);
+		string happinessName = customConsts.getStringConst("Fear of Race Leader Competitor help happiness_name before_replace_text", out success);
+		if (!success) happinessName = "Race Leader Praise";
+		string happinessDesc = customConsts.getStringConst("Fear of Race Leader Competitor help happiness_desc before_replace_text", out success);
+		if (!success) happinessDesc = "Our Race Leader told us the City Leader helped prevent unseen danger from coming our way.  Without our Race Leader's words, we could not see how we would suffer without the City Leader's guidance.";
+		double happinessVal = customConsts.getDoubleConst("Fear of Race Leader Competitor help happiness_val", out success);
+		if (!success) happinessVal = 27.5d;
+
+		getAPI().getLocalCommunity().getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(raceLeader.getRace(), happinessName, happinessDesc, happinessVal, false);
+		
+		//and the event is less likely to occur (because competitors are less likely to emerge):
+		double minMTTHFactor = customConsts.getDoubleConst("evt_" + "Fear of Race Leader Competitor" + "_minMTTHFactor", out success);
+		if (!success) minMTTHFactor = 0.8d;
+		double decreaseMTTHFactor = customConsts.getDoubleConst("evt_" + "Fear of Race Leader Competitor" + "_decreaseMTTHFactor_overlookTraining", out success);
+		if (!success) decreaseMTTHFactor = 0.95d;
+
+		IFEvent evt = (IFEvent)getAPI().getMOFromInternalName("events", "Fear of Race Leader Competitor");
+		if (evt != null)
+		{
+			IFEventStatus eventStatus = (IFEventStatus)getAPI().getSO("eventstatuses", evt.getMOID());
+			double baseMTTH = evt.getDefaultMTTH();
+			double newMTTH = eventStatus.getMTTH() * decreaseMTTHFactor;
+			if (newMTTH &lt; minMTTHFactor * baseMTTH)
+				newMTTH = minMTTHFactor * baseMTTH;
+			eventStatus.setMTTH((Int64)newMTTH);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a script for a certain resolution of the event Fear of Race Leader Competitor.  This script is called when the event is resolved; that is, when the resolution variable is "set" -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Fear of Race Leader Competitor upon_resolution_raceLeaderNotReplaced</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Fear of Race Leader Competitor upon_resolution_raceLeaderNotReplaced custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		//the race leader has not been replaced by their competitor, but the player took no action to make that happen
+		//the race leader is angry at the player:
+		Int64 raceLeaderUID = variableHandler.getInt("evt_" + "Fear of Race Leader Competitor" + "_raceLeaderUID" + inEventReportUID, out success);
+		IFPop raceLeader = (IFPop)getAPI().getSO("pops", raceLeaderUID);
+		string happinessName = customConsts.getStringConst("Fear of Race Leader Competitor nohelp happiness_name before_replace_text", out success);
+		if (!success) happinessName = "Race Leader Instigation";
+		string happinessDesc = customConsts.getStringConst("Fear of Race Leader Competitor nohelp happiness_desc before_replace_text", out success);
+		if (!success) happinessDesc = "Our Race Leader has made it clear how the City Leader attempted to control us: the City Leader supported a bid for race leadership by one puppet [0].  We must take action!";
+		happinessDesc = happinessDesc.Replace("[0]", raceLeader.getRace().getSingleNoun());
+		double happinessVal = customConsts.getDoubleConst("Fear of Race Leader Competitor nohelp happiness_val", out success);
+		if (!success) happinessVal = -30.0;
+
+		getAPI().getLocalCommunity().getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(raceLeader.getRace(), happinessName, happinessDesc, happinessVal, false);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a script for a certain resolution of the event Fear of Race Leader Competitor.  This script is called when the event is resolved; that is, when the resolution variable is "set" -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID,
+		IFPop inNewRaceLeader
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Fear of Race Leader Competitor upon_resolution_raceLeaderReplaced</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64), typeof(IFPop)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Fear of Race Leader Competitor upon_resolution_raceLeaderReplaced custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		IFPop inNewRaceLeader = (IFPop)inArguments[1];
+		
+		if(inNewRaceLeader == null)
+		{
+			throw new ArgumentException("Fear of Race Leader Competitor upon_resolution_raceLeaderReplaced custom script received invalid arguments: inNewRaceLeader cannot be null");
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		//the race leader is replaced by their competitor
+		getAPI().getLocalCommunity().getLeaderCollection().setRaceLeader(inNewRaceLeader);
+		//this event is more likely to happen again in the future:
+		double maxMTTHFactor = customConsts.getDoubleConst("evt_" + "Fear of Race Leader Competitor" + "_maxMTTHFactor", out success);
+		if (!success) maxMTTHFactor = 1.5d;
+		double increaseMTTHFactor = customConsts.getDoubleConst("evt_" + "Fear of Race Leader Competitor" + "_increaseMTTHFactor", out success);
+		if (!success) increaseMTTHFactor = 1.15d;
+
+		IFEvent evt = (IFEvent)getAPI().getMOFromInternalName("events", "Fear of Race Leader Competitor");
+		if (evt != null)
+		{
+			IFEventStatus eventStatus = (IFEventStatus)getAPI().getSO("eventstatuses", evt.getMOID());
+			double baseMTTH = evt.getDefaultMTTH();
+			double newMTTH = eventStatus.getMTTH() * increaseMTTHFactor;
+			if (newMTTH &gt; maxMTTHFactor * baseMTTH)
+				newMTTH = maxMTTHFactor * baseMTTH;
+			eventStatus.setMTTH((Int64)newMTTH);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for time expiry of Fear of Race Leader Competitor. -->
+	<!-- inputs to the function:
+		Int64 inEventReportUID
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Fear of Race Leader Competitor expire</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(Int64)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Unchecked Greed of Race Leader rejection_common custom script received invalid arguments");
+			return null;
+	    }
+		
+		Int64 inEventReportUID = (Int64)inArguments[0];
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		bool success = false;
+		
+		Int64 raceLeaderUID = variableHandler.getInt("evt_" + "Unchecked Greed of Race Leader" + "_raceLeaderUID" + inEventReportUID, out success);
+		IFPop raceLeader = (IFPop)getAPI().getSO("pops", raceLeaderUID);
+		
+		//calculate resolution variable to lock it in and perform resolution (if it hasn't been already):
+		if(customScripts.runCustomScriptCheckTypes("Fear of Race Leader Competitor calc_resolutionvariable", new List&lt;object&gt;() { inEventReportUID, true }, out List&lt;object&gt; returnVals,
+			false, typeof(Int64)))
+		{
+			//nothing
+		}
+		
+		//if a choice was made that dismissed the event report early, cleanup will not have been called because we still need the variables for calc_resolutionvariable.
+		//so check that and call cleanup now if we need to
+		Int64 cleanupNotCalledIfNonZero = variableHandler.getInt("evt_" + "Fear of Race Leader Competitor" + "_cleanupNotCalledIfNonZero" + inEventReportUID, out success);
+		if(cleanupNotCalledIfNonZero != 0)
+		{
+			IFEvent evt = (IFEvent)getAPI().getMOFromInternalName("events", "Fear of Race Leader Competitor");
+			if (evt != null)
+			{
+				IFEventStatus eventStatus = (IFEventStatus)getAPI().getSO("eventstatuses", evt.getMOID());
+				customScripts.runCustomScript("Fear of Race Leader Competitor cleanup", new List&lt;object&gt;() { eventStatus, inEventReportUID }, out _);
+			}
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Training Day Request.  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- NTS this script will be called by Training Day Request cleanup_resolve; that cleanup script will clean things that were stored by Training Day Request that are needed for that event.
+		 this script only cleans up things stored by Training Day Request whether the RESOLVE event goes ahead or not
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Training Day Request cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Training Day Request cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Training Day Request cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Training Day Request cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//gating stores these:
+		variableHandler.storeIntVariable(0, "Training Day Request_industryLeaderUID", 0);
+		
+		//upon happening stores these:
+		variableHandler.storeIntVariable(0, "evt_" + "Training Day Request" + "_industryLeaderUID" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Training Day Request" + "_theftIfNotZero" + inEventReport.getUID(), 0);
+		variableHandler.storeIntVariable(0, "evt_" + "Training Day Request" + "_dayOffIfNotZero" + inEventReport.getUID(), 0);
+		customScripts.runCustomScript("clearResourcesStoredVariablesForEvent", new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), "" }, out _);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a script for cleanup of variables associated with Training Day Request RESOLVE.  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Training Day Request cleanup_resolve</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Training Day Request cleanup_resolve custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Training Day Request cleanup_resolve custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Training Day Request cleanup_resolve custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+        variableHandler.storeIntVariable(0, "evt_" + "Training Day Request" + "_industryLeaderUID", 0);
+        variableHandler.storeIntVariable(0, "evt_" + "Training Day Request" + "_theftIfNotZero", 0);
+        variableHandler.storeIntVariable(0, "evt_" + "Training Day Request" + "_dayOffIfNotZero", 0);
+        variableHandler.storeIntVariable(0, "Training Day Request report_UID", 0);
+		
+		//furthermore, this script should disable the RESOLVE event and re-enable the normal event:
+		inEventStatus.setEnabled(false);
+		IFEvent originalEvt = (IFEvent)getAPI().getMOFromInternalName("events", "Training Day Request");
+		IFEventStatus status = (IFEventStatus)getAPI().getSO("eventstatuses", originalEvt.getMOID());
+		status.setEnabled(true);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- this script is a common script for cleanup of variables associated with Demand for City and Race Leader Role Split (including EXPIRE).  This script does not do anything that the player would see.  -->
+	<!-- therefore this script (like all cleanup scripts) should be called *after* the resolution text is assembled.  Note also that, like all cleanup scripts, nothing bad should happen if this is called multiple times. -->
+	<!-- inputs to the function:
+		IFEventStatus inEventStatus,
+		IFEventReport inEventReport
+	-->
+	
+	<!-- output: none
+	-->
+	<i1><a>Demand for City and Race Leader Role Split cleanup</a>
+	<b>
+	    //input count and type check:
+	    var customScripts = getAPI().getCustomScripts();
+	    if(!customScripts.runCustomScript("customScriptInputCheck", new List&lt;object&gt;() { inArguments, new List&lt;Type&gt;()
+		    {typeof(IFEventStatus), typeof(IFEventReport)}
+	      }, out _))
+	    {
+			throw new ArgumentException("Demand for City and Race Leader Role Split cleanup custom script received invalid arguments");
+			return null;
+	    }
+		
+		IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+		IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+		if(inEventStatus == null)
+		{
+			throw new ArgumentException("Demand for City and Race Leader Role Split cleanup custom script received invalid arguments: inEventStatus cannot be null");
+			return null;
+		}
+		if(inEventReport == null)
+		{
+			throw new ArgumentException("Demand for City and Race Leader Role Split cleanup custom script received invalid arguments: inEventReport cannot be null");
+			return null;
+		}
+		
+        var consts = getAPI().getConsts();
+		var customConsts = getAPI().getCustomConsts();
+		var variableHandler = getAPI().getVariableHandler();
+		
+		//there are no variables stored by this event
+		
+		return null;
+	</b>
+	</i1>
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

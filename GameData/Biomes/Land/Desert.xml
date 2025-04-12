@@ -18,7 +18,7 @@
   <igTerrainBiome name="Desert">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Desert</full_path>
-	  <body_text>Desert.  Put encyclopedia description here.</body_text>
+	  <body_text>Dry and hot weather dominates the Deserts of Mosaic Isle.  Scarce fertile soil and grazeland can be found, if one is willing to search far and wide for it.  Besides the exposed and cracked stone of less sandy regions, the Desert's greatest advantage is a lack of competitors in the biome.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

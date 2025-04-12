@@ -18,7 +18,8 @@
   <igTerrainBiome name="Cold Water">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Cold Water</full_path>
-	  <body_text>Cold Water.  Put encyclopedia description here.</body_text>
+	  <body_text>Cold Waters near the poles can be home to great schools of fatty fish, but are difficult for most monsters to make a home.  Nonetheless, near-freezing temperatures suppress the growth of water-borne parasites, and still waters in the deep have not worn down seabed mineral resources like other water climates.
+Only water-breathing monsters can settle in open waters, and some buildings can only be built on land.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

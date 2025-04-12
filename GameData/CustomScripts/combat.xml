@@ -13,7 +13,9 @@
 			<!-- TODO if a pop cannot breathe where it is fighting, introduce a penalty that increases as rounds go on -->
 			
 			<!-- logging const for a custom script is always "log_script_custom script undercase_script_name" where undercase_script_name is the thing you put as the name, but with all capitals made lowercase -->
-			<i1><a>log_script_custom script combatresolve</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script combatResolveAndRelocatePops</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script combatResolve</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_custom script combatResolveSingleRound</a> <b>int</b> <c>1</c></i1>
 		</mCustomVariableList>
 	</customconsts>
 	

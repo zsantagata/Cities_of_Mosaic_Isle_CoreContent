@@ -87,7 +87,7 @@
             }
             double industryLeaderProbMult = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;_industryLeaderProbMult&quot;, out success);
             if (!success) industryLeaderProbMult = 4.0d;
-            double unhealthyPopProbMult = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;unhealthyPopProbMult&quot;, out success);
+            double unhealthyPopProbMult = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;_unhealthyPopProbMult&quot;, out success);
             if (!success) unhealthyPopProbMult = 0.33d;
 
             double totalWeight = industryLeaders.Count * industryLeaderProbMult + healthyPops.Count + unhealthyPops.Count * unhealthyPopProbMult;
@@ -126,9 +126,9 @@
             double contention = getAPI().calcRand() * (contentionMax - contentionMin) + contentionMin;
             if (contention &gt; contentionHighThreshold)
             {
-                string highContentionHappinessString = customConsts.getStringConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;_highContentionHappinessString&quot;, out success);
+                string highContentionHappinessString = customConsts.getStringConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;_highContentionHappinessString before_replace_text&quot;, out success);
                 if (!success) highContentionHappinessString = &quot;Disunity among the [0] has distracted them from troubling the City Leader or the greater community.&quot;;
-                string highContentionHappinessName = customConsts.getStringConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;_highContentionHappinessName&quot;, out success);
+                string highContentionHappinessName = customConsts.getStringConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;_highContentionHappinessName before_replace_text&quot;, out success);
                 if (!success) highContentionHappinessName = &quot;Contentious Election&quot;;
                 localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(raceInQuestion,
                     highContentionHappinessName,
@@ -137,9 +137,9 @@
             }
             else if (contention &lt; contentionLowThreshold)
             {
-                string lowContentionHappinessString = customConsts.getStringConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;_lowContentionHappinessString&quot;, out success);
+                string lowContentionHappinessString = customConsts.getStringConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;_lowContentionHappinessString before_replace_text&quot;, out success);
                 if (!success) lowContentionHappinessString = &quot;Unity among the [0] behind their new leader has focused them on increasing their status.&quot;;
-                string lowContentionHappinessName = customConsts.getStringConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;_lowContentionHappinessName&quot;, out success);
+                string lowContentionHappinessName = customConsts.getStringConst(&quot;evt_&quot; + &quot;Race Leader Elected&quot; + &quot;_lowContentionHappinessName before_replace_text&quot;, out success);
                 if (!success) lowContentionHappinessName = &quot;United Behind Leader&quot;;
                 localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(raceInQuestion,
                     lowContentionHappinessName,
@@ -229,27 +229,21 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
 
                 if (contention &gt; contentionHighThreshold)
                 {
-                    resolution_text = customConsts.getStringConst(&quot;Race Leader Elected resolution_text high_contention before_replace_text&quot;, out success);
-                    if (!success)
-                    {
-                        resolution_text = &quot;Many [1] are unhappy with this choice, causing disunity.  This will keep their attention away from the rest of the community for a time.&quot;;
-                    }
+                    string resolution_text_high = customConsts.getStringConst(&quot;Race Leader Elected resolution_text high_contention before_replace_text&quot;, out success);
+                    if (!success) resolution_text_high = &quot;Many [1] are unhappy with this choice, causing disunity.  This will keep their attention away from the rest of the community for a time.&quot;;
+                    resolution_text += resolution_text_high;
                 }
                 else if (contention &lt; contentionLowThreshold)
                 {
-                    resolution_text = customConsts.getStringConst(&quot;Race Leader Elected resolution_text low_contention before_replace_text&quot;, out success);
-                    if (!success)
-                    {
-                        resolution_text = &quot;Almost all [1] celebrate this choice, and look forward to advancing [0] fortunes in the community.&quot;;
-                    }
+                    string resolution_text_med = customConsts.getStringConst(&quot;Race Leader Elected resolution_text low_contention before_replace_text&quot;, out success);
+                    if (!success) resolution_text_med = &quot;Almost all [1] celebrate this choice, and look forward to advancing [0] fortunes in the community.&quot;;
+                    resolution_text += resolution_text_med;
                 }
                 else
                 {
-                    resolution_text = customConsts.getStringConst(&quot;Race Leader Elected resolution_text middle_contention before_replace_text&quot;, out success);
-                    if (!success)
-                    {
-                        resolution_text = &quot;No shift in [0] attitudes has been made clear.&quot;;
-                    }
+                    string resolution_text_low = customConsts.getStringConst(&quot;Race Leader Elected resolution_text middle_contention before_replace_text&quot;, out success);
+                    if (!success) resolution_text_low = &quot;No shift in [0] attitudes has been made clear.&quot;;
+                    resolution_text += resolution_text_low;
                 }
 
                 resolution_text = resolution_text.Replace(&quot;[0]&quot;, newRaceLeader.getRace().getAdjective());
@@ -894,8 +888,8 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
             if (!success) unhappinessName = &quot;Insidious Plot Successful&quot;;
             string unhappinessDesc = customConsts.getStringConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Compromise&quot; + &quot;_unhappinessDescAccept before_replace_text&quot;, out success);
             if (!success) unhappinessDesc = &quot;The old [0] City Leader was forced out in favor of a different City Leader, backed by all the other races of the community.  [1] are furious!&quot;;
-            unhappinessDesc.Replace(&quot;[0]&quot;, currentCityLeader.getRace().getAdjective());
-            unhappinessDesc.Replace(&quot;[1]&quot;, currentCityLeader.getRace().getPluralNoun());
+            unhappinessDesc = unhappinessDesc.Replace(&quot;[0]&quot;, currentCityLeader.getRace().getAdjective());
+            unhappinessDesc = unhappinessDesc.Replace(&quot;[1]&quot;, currentCityLeader.getRace().getPluralNoun());
             Int64 dayCountMinForcedCityLeader = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Compromise&quot; + &quot;_acceptDaysForcedLeaderMin&quot;, out success);
             if (!success) dayCountMinForcedCityLeader = 50;
             Int64 dayCountMaxForcedCityLeader = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Compromise&quot; + &quot;_acceptDaysForcedLeaderMax&quot;, out success);
@@ -1046,8 +1040,8 @@ The City Leader has accepted the offer to step down.
             if (evtEnabled)
             {
                 //there must be enough goods to hoard, and enough pops of a single race in the local community:
-                double minGoodsToHoardPerPop = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Hoarding Goods&quot; + &quot;_minGoodsToHoardPerPop&quot;, out success);
-                if (!success) minGoodsToHoardPerPop = 15;
+                double minGoodsToHoardPerPop = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Hoarding Goods&quot; + &quot;_minGoodsToHoardPerPop&quot;, out success);
+                if (!success) minGoodsToHoardPerPop = 15.0d;
                 double totalGoodsInCommunity = 0.0d;
                 for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO(&quot;resources&quot;); moid++)
                 {
@@ -1233,10 +1227,10 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
             //fetch game consts, custom consts, difficulties, variables, and SOs/MOs:
             //(remember source conditions from gating scripts)
             IFCommunity localCommunity = getAPI().getLocalCommunity();
-            double minGoodsToHoardPerPop = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Hoarding Goods&quot; + &quot;_minGoodsToHoardPerPop&quot;, out success);
-            if (!success) minGoodsToHoardPerPop = 15;
-            double maxGoodsToHoardPerPop = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Hoarding Goods&quot; + &quot;_maxGoodsToHoardPerPop&quot;, out success);
-            if (!success) maxGoodsToHoardPerPop = 35;
+            double minGoodsToHoardPerPop = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Hoarding Goods&quot; + &quot;_minGoodsToHoardPerPop&quot;, out success);
+            if (!success) minGoodsToHoardPerPop = 15.0d;
+            double maxGoodsToHoardPerPop = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Hoarding Goods&quot; + &quot;_maxGoodsToHoardPerPop&quot;, out success);
+            if (!success) maxGoodsToHoardPerPop = 35.0d;
             Int64 newCityLeaderUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Another City Leader Candidate: Hoarding Goods&quot; + &quot;_newCityLeaderUID&quot; + inEventReport.getUID(), out success);
             IFPop newCityLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, newCityLeaderUID);
             bool allNecessaryVariablesFetched = (newCityLeader != null);
@@ -1326,8 +1320,8 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
             if (!success) unhappinessName = &quot;Insidious Plot Successful&quot;;
             string unhappinessDesc = customConsts.getStringConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Hoarding Goods&quot; + &quot;_unhappinessDescAccept before_replace_text&quot;, out success);
             if (!success) unhappinessDesc = &quot;The old [0] City Leader was forced out in favor of a different City Leader, due to rampant thefts by others.  [1] are furious!&quot;;
-            unhappinessDesc.Replace(&quot;[0]&quot;, currentCityLeader.getRace().getAdjective());
-            unhappinessDesc.Replace(&quot;[1]&quot;, currentCityLeader.getRace().getPluralNoun());
+            unhappinessDesc = unhappinessDesc.Replace(&quot;[0]&quot;, currentCityLeader.getRace().getAdjective());
+            unhappinessDesc = unhappinessDesc.Replace(&quot;[1]&quot;, currentCityLeader.getRace().getPluralNoun());
             Int64 dayCountMinForcedCityLeader = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Hoarding Goods&quot; + &quot;_acceptDaysForcedLeaderMin&quot;, out success);
             if (!success) dayCountMinForcedCityLeader = 50;
             Int64 dayCountMaxForcedCityLeader = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Hoarding Goods&quot; + &quot;_acceptDaysForcedLeaderMax&quot;, out success);
@@ -1725,8 +1719,8 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
             if (!success) unhappinessName = &quot;Insidious Plot Successful&quot;;
             string unhappinessDesc = customConsts.getStringConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Strike&quot; + &quot;_unhappinessDescAccept before_replace_text&quot;, out success);
             if (!success) unhappinessDesc = &quot;The old [0] City Leader was forced out in favor of a different City Leader, due to the threat of a crippling strike.  [1] are furious!&quot;;
-            unhappinessDesc.Replace(&quot;[0]&quot;, currentCityLeader.getRace().getAdjective());
-            unhappinessDesc.Replace(&quot;[1]&quot;, currentCityLeader.getRace().getPluralNoun());
+            unhappinessDesc = unhappinessDesc.Replace(&quot;[0]&quot;, currentCityLeader.getRace().getAdjective());
+            unhappinessDesc = unhappinessDesc.Replace(&quot;[1]&quot;, currentCityLeader.getRace().getPluralNoun());
             Int64 dayCountMinForcedCityLeader = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Strike&quot; + &quot;_acceptDaysForcedLeaderMin&quot;, out success);
             if (!success) dayCountMinForcedCityLeader = 50;
             Int64 dayCountMaxForcedCityLeader = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Strike&quot; + &quot;_acceptDaysForcedLeaderMax&quot;, out success);
@@ -2168,8 +2162,8 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
             if (!success) unhappinessName = &quot;Insidious Plot Successful&quot;;
             string unhappinessDesc = customConsts.getStringConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Riot&quot; + &quot;_unhappinessDescAccept before_replace_text&quot;, out success);
             if (!success) unhappinessDesc = &quot;The old [0] City Leader was forced out in favor of a different City Leader, after threat of violence!  [1] are furious!&quot;;
-            unhappinessDesc.Replace(&quot;[0]&quot;, currentCityLeader.getRace().getAdjective());
-            unhappinessDesc.Replace(&quot;[1]&quot;, currentCityLeader.getRace().getPluralNoun());
+            unhappinessDesc = unhappinessDesc.Replace(&quot;[0]&quot;, currentCityLeader.getRace().getAdjective());
+            unhappinessDesc = unhappinessDesc.Replace(&quot;[1]&quot;, currentCityLeader.getRace().getPluralNoun());
             Int64 dayCountMinForcedCityLeader = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Riot&quot; + &quot;_acceptDaysForcedLeaderMin&quot;, out success);
             if (!success) dayCountMinForcedCityLeader = 50;
             Int64 dayCountMaxForcedCityLeader = customConsts.getIntConst(&quot;evt_&quot; + &quot;Another City Leader Candidate: Riot&quot; + &quot;_acceptDaysForcedLeaderMax&quot;, out success);
@@ -2941,7 +2935,7 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
                 {
                     resolution_text = &quot;[3]The time spent arguing has caused the skills of all [0] pops to decrease slightly.  Nonetheless, I congratulate you on your new position, City Leader [1].&quot;;
                 }
-                string other_races_text = customConsts.getStringConst(&quot;&quot;, out success);
+                string other_races_text = customConsts.getStringConst(&quot;No Support of Old City Leader resolution_text other_races_prepend before_replace_text&quot;, out success);
                 if(!success)
                 {
                     other_races_text = &quot;Other races in the community worry the new [0] City Leader will disregard their needs.  They seek to take advantage of any weakness in the transition of leadership.\n\n&quot;;
@@ -3271,7 +3265,7 @@ N/A
             string allCommadUIDs = &quot;&quot;;
             for (int i = 0; i &lt; popsAttempting.Count; i++)
             {
-                allCommadUIDs += popsAttempting[i] + &quot;,&quot;;
+                allCommadUIDs += popsAttempting[i].getUID() + &quot;,&quot;;
             }
             allCommadUIDs = allCommadUIDs[..^1];
             reportText = reportText.Replace(&quot;[0]&quot;, allCommadUIDs);
@@ -3406,13 +3400,17 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
                         {
                             if (defendersStillCapableOfFighting.Count &gt; 0)
                                 defendersStillCapableOfFighting.RemoveAt(0);
-                            if(thirdPopIsDefender)
+                            if(thirdPopIsDefender &amp;&amp; (thirdPop != null))
                             {
                                 if (defendersStillCapableOfFighting.Count &gt; 0)
                                     defendersStillCapableOfFighting.RemoveAt(0);
                                 else //if the leader was defeated in combat and there are no more defenders, the leader is killed
                                     leaderKilled = true;
                             }
+							else
+							{
+								leaderKilled = cityLeader.isDead();
+							}
                         }
                     }
                     else
@@ -3531,7 +3529,7 @@ There are dead this day.
                 //there must be a race with one or more industry leaders who are not forced:
                 for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO(&quot;industries&quot;); moid++)
                 {
-                    IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID(&quot;industry&quot;, moid);
+                    IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID(&quot;industries&quot;, moid);
                     if(industry != null)
                     {
                         IFPop leader = leaders.getIndustryLeader(industry);
@@ -3727,7 +3725,7 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
                 Int64 uid = variableHandler.getInt(&quot;Mass Industry Leader Resignation_evtReport&quot; + inEventReport.getUID() + &quot;_popuid_&quot; + i, out success);
                 IFPop pop = (IFPop)getAPI().getSO(&quot;pops&quot;, uid);
                 Int64 moid = variableHandler.getInt(&quot;Mass Industry Leader Resignation_evtReport&quot; + inEventReport.getUID() + &quot;_industrymoid_&quot; + i, out success);
-                IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID(&quot;industry&quot;, moid);
+                IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID(&quot;industries&quot;, moid);
                 popsToIndustries.Add(pop, industry);
             }
             bool allNecessaryVariablesFetched = (popsToIndustries.Count != 0);
@@ -3761,8 +3759,7 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
                 string list = &quot;&quot;;
                 foreach(var kvpair in popsToIndustries)
                 {
-                    list += listElement.Replace(&quot;[0]&quot;, kvpair.Key.getDisplayName());
-                    list += listElement.Replace(&quot;[1]&quot;, kvpair.Value.getDisplayName());
+                    list += listElement.Replace(&quot;[0]&quot;, kvpair.Key.getDisplayName()).Replace(&quot;[1]&quot;, kvpair.Value.getDisplayName());
                 }
 
                 resolution_text = resolution_text.Replace(&quot;[0]&quot;, list);
@@ -4055,6 +4052,7 @@ Their efforts will be missed.
                         attackersStillCapableOfFighting.RemoveAt(0);
                         if (secondAttacker != null)
                             attackersStillCapableOfFighting.RemoveAt(0);
+                        leaderKilled = popTarget.isDead();
                     }
                     else //if the industry leader stopped fighting but the attackers didn&apos;t, that means they succeeded
                     {
@@ -4067,6 +4065,7 @@ Their efforts will be missed.
                     break; //just a failsafe for the while loop so the game doesn&apos;t hang
                 }
             }
+			if(leaderKilled) popTarget.setIsDead(true, IFPop.ePopDeathReason.cViolence, attackers.Count &gt; 0 ? getAPI().getOneRandomItemFromList(attackers) : null);
 
             //enable the EXPIRE event:
                         Int64 minTimeToAdd = customConsts.getIntConst(&quot;evt_&quot; + &quot;Murder of Industry Leader&quot; + &quot;_minTimeToExpire&quot;, out success);
@@ -4118,8 +4117,9 @@ Their efforts will be missed.
                 string woundedCustomString = &quot;&quot;;
                 if(leaderWounded)
                 {
-                    woundedCustomString = customConsts.getStringConst(&quot;Murder of Industry Leader report_text_leadersurvivedwithwounds before_replace_text&quot;, out success);
-                    if (!success) woundedCustomString = &quot;, despite their wounds&quot;;
+                    string successWoundedCustomString = customConsts.getStringConst(&quot;Murder of Industry Leader report_text_leadersurvivedwithwounds before_replace_text&quot;, out success);
+                    if (!success) successWoundedCustomString = &quot;, despite their wounds&quot;;
+                    woundedCustomString += successWoundedCustomString;
                 }
                 reportText = reportText.Replace(&quot;[4]&quot;, woundedCustomString);
             }
@@ -4204,9 +4204,9 @@ An Industry Leader assassination has been attempted by another race.
 
             Int64 daysToWork = customConsts.getIntConst(&quot;Murder of Industry Leader_forcedwork_daystowork&quot;, out success);
             if (!success) daysToWork = 30;
-            double healthFactor = customConsts.getIntConst(&quot;Murder of Industry Leader_forcedwork_healthFactor&quot;, out success);
+            double healthFactor = customConsts.getDoubleConst(&quot;Murder of Industry Leader_forcedwork_healthFactor&quot;, out success);
             if (!success) healthFactor = 0.85d;
-            double workFactor = customConsts.getIntConst(&quot;Murder of Industry Leader_forcedwork_workFactor&quot;, out success);
+            double workFactor = customConsts.getDoubleConst(&quot;Murder of Industry Leader_forcedwork_workFactor&quot;, out success);
             if (!success) workFactor = 1.2d;
 
             Int64 actorRaceMOID = variableHandler.getInt(&quot;Murder of Industry Leader_actorRace&quot; + inEventReport.getUID(), out success);
@@ -4358,7 +4358,7 @@ They will work off this blood debt.
             bool otherRacesWithIndustryLeaders = false;
             if (allNecessaryVariablesFetched)
             {
-                customScripts.runCustomScript(&quot;Murder of Industry Leader rejection_common&quot;, new List&lt;object&gt;() { inEventReport.getUID() }, out _);
+                customScripts.runCustomScript(&quot;Murder of Industry Leader rejection_common&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID() }, out _);
                 foreach(IFPop pop in localCommunity.getLeaderCollection().getIndustryLeaders())
                 {
                     if(pop.getRace() != actorRace &amp;&amp; pop.getRace() != targetRace)
@@ -4384,7 +4384,7 @@ They will work off this blood debt.
                     resolution_text = &quot;[0] anger is instant.  The City Leader will not protect them, they shout.  They threaten to take their defense into their own hands.  Elsewhere, [1] talks quietly among [2] kin.[3]&quot;;
                 }
 
-                string otherRacesAdditional = customConsts.getStringConst(&quot;Murder of Industry Leader resolution_text no_action other_races before_replace_text&quot;, out success);
+                string otherRacesAdditional = customConsts.getStringConst(&quot;Murder of Industry Leader resolution_text no_action extra_races other_races before_replace_text&quot;, out success);
                 if (!success)
                 {
                     otherRacesAdditional = &quot;\n\nUninvolved races in the community openly ask questions about the your attitude towards their own Industry Leaders, City Leader.&quot;;
@@ -4489,7 +4489,6 @@ Kin will grieve, and few will forget.
             bool otherRacesWithIndustryLeaders = false;
             if (allNecessaryVariablesFetched)
             {
-                customScripts.runCustomScript(&quot;Murder of Industry Leader rejection_common&quot;, new List&lt;object&gt;() { inEventReport.getUID() }, out _);
                 anyOfActorRaceStillPresent = localCommunity.getLoyalPopsByRace(true, false).ContainsKey(actorRace);
                 foreach (IFPop pop in localCommunity.getLeaderCollection().getIndustryLeaders())
                 {
@@ -4782,15 +4781,15 @@ N/A
 
             Int64 sum = theftWeight + preserveWeight + trainingWeight + mistakeWeight;
             Int64 randVal = getAPI().calcRandIntUnder(sum);
-            if (randVal &lt; (sum - mistakeWeight))
+            if (randVal &gt; (sum - mistakeWeight))
             {
                 typeInt = 3;
             }
-            else if(sum &lt; (sum - (mistakeWeight + trainingWeight)))
+            else if(randVal &gt; (sum - (mistakeWeight + trainingWeight)))
             {
                 typeInt = 2;
             }
-            else if(sum &lt; (sum - (mistakeWeight + trainingWeight + preserveWeight)))
+            else if(randVal &gt; (sum - (mistakeWeight + trainingWeight + preserveWeight)))
             {
                 typeInt = 1;
             }
@@ -4825,28 +4824,35 @@ N/A
                         possibleBKinds.Add(kind);
                     }
                 }
-                IFBuildingKind kindChosen = getAPI().getOneRandomItemFromList(possibleBKinds);
-                foreach(IFResource res in kindChosen.getOutputResources())
-                {
-                    if(!res.isNotInResourcePool())
-                    {
-                        resourcesFromBuildingKind.Add(res);
-                    }
-                }
-                foreach(var element in kindChosen.getResourceInputsBigTuple())
-                {
-                    if(!element.Item1.isNotInResourcePool())
-                    {
-                        resourcesFromBuildingKind.Add(element.Item1);
-                    }
-                }
+			    if(possibleBKinds.Count != 0)
+				{
+					IFBuildingKind kindChosen = getAPI().getOneRandomItemFromList(possibleBKinds);
+					foreach(IFResource res in kindChosen.getOutputResources())
+					{
+						if(res == null)
+							continue;
+						if(!res.isNotInResourcePool())
+						{
+							resourcesFromBuildingKind.Add(res);
+						}
+					}
+					foreach(var element in kindChosen.getResourceInputsBigTuple())
+					{
+						if(element.Item1 == null)
+							continue;
+						if(!element.Item1.isNotInResourcePool())
+						{
+							resourcesFromBuildingKind.Add(element.Item1);
+						}
+					}
+				}
 
                 if(resourcesFromBuildingKind.Count &gt; 0)
                 {
                     double focusFractionMin = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Industry Leader Theft&quot; + &quot;_focusFractionMin&quot;, out success);
                     if (!success) focusFractionMin = 0.6d;
                     double focusFractionMax = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Industry Leader Theft&quot; + &quot;_focusFractionMax&quot;, out success);
-                    if (!success) focusFractionMin = 1.0d;
+                    if (!success) focusFractionMax = 1.0d;
                     double focusFraction = focusFractionMin + (focusFractionMax - focusFractionMin) * getAPI().calcRand();
                     remainingResourceFraction -= focusFraction;
 
@@ -4889,7 +4895,7 @@ N/A
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;Industry Leader Theft_evtReport&quot; + inEventReport.getUID() + &quot;_leaderInQuestion&quot;, leaderUID);
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;Industry Leader Theft_evtReport&quot; + inEventReport.getUID() + &quot;_typeInt&quot;, typeInt);
 
-            customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), true, resourcesLost, &quot;&quot;, Int64.MaxValue, true }, out _);
+            customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, resourcesLost, &quot;&quot;, Int64.MaxValue, true }, out _);
 
             //internal logic complete.  Assemble the report text:
             string reportText = customConsts.getStringConst(&quot;Industry Leader Theft report_text before_replace_text&quot;, out success);
@@ -5080,7 +5086,7 @@ The resources do not reappear.
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRestored = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
             Int64 leaderUID = variableHandler.getInt(&quot;Industry Leader Theft_evtReport&quot; + inEventReport.getUID() + &quot;_leaderInQuestion&quot;, out success);
             IFPop leader = (IFPop)getAPI().getSO(&quot;pops&quot;, leaderUID);
-            if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesRestored = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -5111,11 +5117,13 @@ The resources do not reappear.
                 double qualFactorMax = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Industry Leader Theft&quot; + &quot;_increaseQualityFactorMax_overlookPreserve&quot;, out success);
                 if (!success) qualFactorMax = 1.1125d;
 
+				double minQual = consts.getResourceQualityMin();
+
                 IFResourcePool pool = localCommunity.getResourcePool();
                 foreach(var kvpair in resourcesRestored)
                 {
                     qualityImprovements.Add(kvpair.Key, pool.getResourceQuality(kvpair.Key));
-                    pool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2 * (qualFactorMin + (qualFactorMax - qualFactorMin) * getAPI().calcRand()));
+                    pool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, minQual + ((kvpair.Value.Item2 - minQual) * (qualFactorMin + (qualFactorMax - qualFactorMin) * getAPI().calcRand())));
                     qualityImprovements[kvpair.Key] = pool.getResourceQuality(kvpair.Key) - qualityImprovements[kvpair.Key];
                 }
             }
@@ -5344,7 +5352,7 @@ The industry has gained skill by using these resources to practice.
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRestored = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
             Int64 leaderUID = variableHandler.getInt(&quot;Industry Leader Theft_evtReport&quot; + inEventReport.getUID() + &quot;_leaderInQuestion&quot;, out success);
             IFPop leader = (IFPop)getAPI().getSO(&quot;pops&quot;, leaderUID);
-            if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesRestored = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -5451,7 +5459,7 @@ The resources reappear after another count.
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRestored = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
             Int64 leaderUID = variableHandler.getInt(&quot;Industry Leader Theft_evtReport&quot; + inEventReport.getUID() + &quot;_leaderInQuestion&quot;, out success);
             IFPop leader = (IFPop)getAPI().getSO(&quot;pops&quot;, leaderUID);
-            if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesRestored = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -5560,7 +5568,7 @@ The resources are returned by the thieving Industry Leader.
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRestored = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
             Int64 leaderUID = variableHandler.getInt(&quot;Industry Leader Theft_evtReport&quot; + inEventReport.getUID() + &quot;_leaderInQuestion&quot;, out success);
             IFPop leader = (IFPop)getAPI().getSO(&quot;pops&quot;, leaderUID);
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesRestored = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -5591,11 +5599,13 @@ The resources are returned by the thieving Industry Leader.
                 double qualFactorMax = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Industry Leader Theft&quot; + &quot;_increaseQualityFactorMax_exilePreserve&quot;, out success);
                 if (!success) qualFactorMax = 1.1125d;
 
+				double minQual = consts.getResourceQualityMin();
+
                 IFResourcePool pool = localCommunity.getResourcePool();
                 foreach (var kvpair in resourcesRestored)
                 {
                     qualityImprovements.Add(kvpair.Key, pool.getResourceQuality(kvpair.Key));
-                    pool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, kvpair.Value.Item2 * (qualFactorMin + (qualFactorMax - qualFactorMin) * getAPI().calcRand()));
+                    pool.addResourcesOfQuality(kvpair.Key, kvpair.Value.Item1, minQual + ((kvpair.Value.Item2 - minQual) * (qualFactorMin + (qualFactorMax - qualFactorMin) * getAPI().calcRand())));
                     qualityImprovements[kvpair.Key] = pool.getResourceQuality(kvpair.Key) - qualityImprovements[kvpair.Key];
                 }
             }
@@ -5764,7 +5774,7 @@ The resources reappear, better preserved than expected.
                 string resolution_text = customConsts.getStringConst(&quot;Industry Leader Theft resolution_text exile_training before_replace_text&quot;, out success);
                 if (!success)
                 {
-                    resolution_text = &quot;[0] has left the city with the remainder of the resources, City Leader, before we could stop [one_pop|personal_3ppronoun_phrase:[1]].  Most of the resources were used to train others in the community in [2] by the time you issued the threat of exile, though the ex-[2] Leader did not inform us.  [3] blame the City Leader for this miscommunication.&quot;
+                    resolution_text = &quot;[0] has left the city with the remainder of the resources, City Leader, before we could stop [one_pop|target_3ppronoun_phrase:[1]].  Most of the resources were used to train others in the community in [2] by the time you issued the threat of exile, though the ex-[2] Leader did not inform us.  [3] blame the City Leader for this miscommunication.&quot;
                         + &quot;\n\n[2] has gained [4] skill.&quot;;
                 }
 
@@ -5846,7 +5856,7 @@ The industry has gained skill by using these resources to practice.  The Industr
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRestored = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
             Int64 leaderUID = variableHandler.getInt(&quot;Industry Leader Theft_evtReport&quot; + inEventReport.getUID() + &quot;_leaderInQuestion&quot;, out success);
             IFPop leader = (IFPop)getAPI().getSO(&quot;pops&quot;, leaderUID);
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesRestored = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -6120,7 +6130,7 @@ The resources reappear after another count.  The Industry Leader has been exiled
             List&lt;IFPop&gt; possibleTargets = new List&lt;IFPop&gt;();
             for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO(&quot;industries&quot;); moid++)
             {
-                IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID(&quot;industry&quot;, moid);
+                IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID(&quot;industries&quot;, moid);
                 if(industry != null)
                 {
                     IFPop pop = leaders.getIndustryLeader(industry);
@@ -6166,7 +6176,7 @@ The resources reappear after another count.  The Industry Leader has been exiled
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;Framing of Industry Leader_evtReport&quot; + inEventReport.getUID() + &quot;_raceLeaderActor&quot;, actorRaceLeader.getUID());
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;Framing of Industry Leader_evtReport&quot; + inEventReport.getUID() + &quot;_playerSeesFramingIfNonZero&quot;, playerSeesFraming ? 1 : 0);
 
-            customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), true, resourcesLost, &quot;&quot;, Int64.MaxValue, true }, out _);
+            customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, resourcesLost, &quot;&quot;, Int64.MaxValue, true }, out _);
 
             //internal logic complete.  Assemble the report text:
             string reportText = customConsts.getStringConst(&quot;Framing of Industry Leader report_text before_replace_text&quot;, out success);
@@ -6178,7 +6188,7 @@ The resources reappear after another count.  The Industry Leader has been exiled
             }
 
             string playerSeesReportText = customConsts.getStringConst(&quot;Framing of Industry Leader report_text_player_sees_additional before_replace_text&quot;, out success);
-            if (!success) playerSeesReportText = &quot;Keen [one_race|bodypartvision_noun_phrase:[4]] have spotted [5] taking these resources to the home of the [6] Leader, [7].  They are trying to steal resources and frame [1] for the act!&quot;;
+            if (!success) playerSeesReportText = &quot;\n\nKeen [one_race|bodypartvision_noun_phrase:[4]] have spotted [5] taking these resources to the home of the [6] Leader, [7].  They are trying to steal resources and frame [1] for the act!&quot;;
 
             if(playerSeesFraming)
             {
@@ -6697,7 +6707,7 @@ The resources do not reappear.  The Industry Leader has been exiled.
             Int64 raceleaderUID = variableHandler.getInt(&quot;Framing of Industry Leader_evtReport&quot; + inEventReport.getUID() + &quot;_raceLeaderActor&quot;, out success);
             IFPop raceLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, raceleaderUID);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRestored = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesRestored = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -6946,7 +6956,7 @@ The resources reappear, in the home of a Race Leader.  They are exiled from the 
             double maxAmountToTakeFromPool = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_maxAmountToTakeFromPool&quot;, out success);
             if (!success) maxAmountToTakeFromPool = 150.0d;
 
-            double amountToTakeFromPool = minAmountToTakeFromPool * (maxAmountToTakeFromPool - minAmountToTakeFromPool) * getAPI().calcRand();
+            double amountToTakeFromPool = minAmountToTakeFromPool + (maxAmountToTakeFromPool - minAmountToTakeFromPool) * getAPI().calcRand();
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequestedFromPool = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
             if (customScripts.runCustomScriptCheckTypes(&quot;fetchOrConsumeResources&quot;, new List&lt;object&gt;() { localCommunity.getResourcePool(), false, false, null, amountToTakeFromPool, false, false, false, false, false, false, false },
                 out List&lt;object&gt; returnVals, false, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
@@ -6964,7 +6974,7 @@ The resources reappear, in the home of a Race Leader.  They are exiled from the 
 
             //determine if the City Leader sees challenger or leader cheating:
             double predStrength = localCommunity.getDomesticComponent().getPredictionStrength();
-            double detectionPredThreshold = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerCheatsProb&quot;, out success);
+            double detectionPredThreshold = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_detectionPredThreshold&quot;, out success);
             if (!success) detectionPredThreshold = 70.0d;
             bool doesLeaderSee = (predStrength &gt;= detectionPredThreshold);
 
@@ -6982,7 +6992,7 @@ The resources reappear, in the home of a Race Leader.  They are exiled from the 
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderCheatsIfNotZero&quot; + inEventReport.getUID(), doesLeaderCheat ? 1 : 0);
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_cityLeaderSeesCheatingIfNotZero&quot; + inEventReport.getUID(), doesLeaderSee ? 1 : 0);
             //also store the resources:
-            customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), true, resourcesRequestedFromPool, &quot;&quot;, Int64.MaxValue, false }, out _);
+            customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, resourcesRequestedFromPool, &quot;&quot;, Int64.MaxValue, false }, out _);
 
             //internal logic complete.  Assemble the report text:
             string reportText = customConsts.getStringConst(&quot;Industry Leader Competition report_text before_replace_text&quot;, out success);
@@ -7074,12 +7084,12 @@ A challenger has bragged greatly about their skill, claiming to have more skill 
             Int64 industryLeaderUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderUID&quot; + inEventReport.getUID(), out success);
             IFPop industryLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
             Int64 challengerUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerUID&quot; + inEventReport.getUID(), out success);
-            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
+            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, challengerUID);
             Int64 leaderCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 challengerCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 cityLeaderSeesCheatingIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_cityLeaderSeesCheatingIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRestored = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesRestored = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -7233,12 +7243,12 @@ Both individuals are disappointed.  Our Industry Leader continues in the positio
             Int64 industryLeaderUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderUID&quot; + inEventReport.getUID(), out success);
             IFPop industryLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
             Int64 challengerUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerUID&quot; + inEventReport.getUID(), out success);
-            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
+            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, challengerUID);
             Int64 leaderCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 challengerCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 cityLeaderSeesCheatingIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_cityLeaderSeesCheatingIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -7438,12 +7448,12 @@ The competition has finished.
             Int64 industryLeaderUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderUID&quot; + inEventReport.getUID(), out success);
             IFPop industryLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
             Int64 challengerUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerUID&quot; + inEventReport.getUID(), out success);
-            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
+            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, challengerUID);
             Int64 leaderCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 challengerCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 cityLeaderSeesCheatingIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_cityLeaderSeesCheatingIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -7647,12 +7657,12 @@ The competition has finished.
             Int64 industryLeaderUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderUID&quot; + inEventReport.getUID(), out success);
             IFPop industryLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
             Int64 challengerUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerUID&quot; + inEventReport.getUID(), out success);
-            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
+            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, challengerUID);
             Int64 leaderCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 challengerCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 cityLeaderSeesCheatingIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_cityLeaderSeesCheatingIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -7800,12 +7810,12 @@ The competition has finished.
             Int64 industryLeaderUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderUID&quot; + inEventReport.getUID(), out success);
             IFPop industryLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
             Int64 challengerUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerUID&quot; + inEventReport.getUID(), out success);
-            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
+            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, challengerUID);
             Int64 leaderCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 challengerCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 cityLeaderSeesCheatingIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_cityLeaderSeesCheatingIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -7843,7 +7853,7 @@ The competition has finished.
                 double happinessVal = customConsts.getDoubleConst(&quot;Industry Leader Competition leader_cheated happiness_val&quot;, out success);
                 if (!success) happinessVal = 20.0;
 
-                localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(challenger.getRace(), happinessName, happinessDesc, happinessVal, false);
+                localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(industryLeader.getRace(), happinessName, happinessDesc, happinessVal, false);
 
                 //also, the Industry Leadership changes:
                 localCommunity.getLeaderCollection().setIndustryLeader(challenger, industry);
@@ -7958,12 +7968,12 @@ The competition has finished.
             Int64 industryLeaderUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderUID&quot; + inEventReport.getUID(), out success);
             IFPop industryLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
             Int64 challengerUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerUID&quot; + inEventReport.getUID(), out success);
-            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
+            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, challengerUID);
             Int64 leaderCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 challengerCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 cityLeaderSeesCheatingIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_cityLeaderSeesCheatingIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -8115,12 +8125,12 @@ The competition has finished.
             Int64 industryLeaderUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderUID&quot; + inEventReport.getUID(), out success);
             IFPop industryLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
             Int64 challengerUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerUID&quot; + inEventReport.getUID(), out success);
-            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
+            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, challengerUID);
             Int64 leaderCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 challengerCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 cityLeaderSeesCheatingIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_cityLeaderSeesCheatingIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -8293,12 +8303,12 @@ The competition has finished.
             Int64 industryLeaderUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderUID&quot; + inEventReport.getUID(), out success);
             IFPop industryLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
             Int64 challengerUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerUID&quot; + inEventReport.getUID(), out success);
-            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
+            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, challengerUID);
             Int64 leaderCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 challengerCheatIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerCheatsIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 cityLeaderSeesCheatingIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_cityLeaderSeesCheatingIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -8333,7 +8343,15 @@ The competition has finished.
                 if (!success) industryLeaderSuccessIncreaseSkillDiffMult = 3.5d; //for every 1 percentage point the industry leader&apos;s skill is above the average skill, their percentage change of winning increases by this
                 double skillDiff = localCommunity.getDomesticComponent().getIndustrySkills().getLeaderSkill(industry) - localCommunity.getDomesticComponent().getIndustrySkills().getAverageSkill(industry);
                 double prob = baseIndustryLeaderSuccess + skillDiff * industryLeaderSuccessIncreaseSkillDiffMult;
-                industryLeaderSuccess = getAPI().calcProb(prob);
+                if(challengerCheatIfNotZero != 0 &amp;&amp; leaderCheatIfNotZero == 0)
+				{
+					prob = 0.0d;
+				}
+				if(challengerCheatIfNotZero == 0 &amp;&amp; leaderCheatIfNotZero != 0)
+				{
+					prob = 1.0d;
+				}
+				industryLeaderSuccess = getAPI().calcProb(prob);
 
                 if(!industryLeaderSuccess)
                 {
@@ -8343,7 +8361,7 @@ The competition has finished.
                 {
                     //the only thing a &quot;tie&quot; impacts is the text at the end
                     double tieChance = customConsts.getDoubleConst(&quot;Industry Leader Competition tie prob&quot;, out success);
-                    if (!success) baseIndustryLeaderSuccess = 0.4d;
+                    if (!success) tieChance = 0.4d;
                     tie = getAPI().calcProb(tieChance);
                 }
             }
@@ -8477,11 +8495,11 @@ The competition has finished.
             Int64 industryLeaderUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_leaderUID&quot; + inEventReport.getUID(), out success);
             IFPop industryLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
             Int64 challengerUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_challengerUID&quot; + inEventReport.getUID(), out success);
-            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, industryLeaderUID);
+            IFPop challenger = (IFPop)getAPI().getSO(&quot;pops&quot;, challengerUID);
 
             Int64 leaderWonIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_timeExpire_leaderWonIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 competitionOccurredIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_timeExpire_competitionOccurredIfNotZero&quot; + inEventReport.getUID(), out success);
-            string savedWorksString = variableHandler.getString(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_timeExpire_worksString&quot;, out success);
+            string savedWorksString = variableHandler.getString(&quot;evt_&quot; + &quot;Industry Leader Competition&quot; + &quot;_timeExpire_worksString&quot; + inEventReport.getUID(), out success);
 
             IFIndustry industry = localCommunity.getLeaderCollection().getIndustryLedByPop(industryLeader);
             bool allNecessaryVariablesFetched = (industryLeader != null) &amp;&amp; (challenger != null);
@@ -8593,7 +8611,7 @@ return new List&lt;object&gt;() { true };
             }
 
             //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
-            //commonUponHappeningScriptForEXPIRE and rejection_common does that
+            //commonUponHappeningScriptForEXPIRE and timeout does that
 
             //internal logic complete.  Assemble the report text the player will see:
             //invisible event, so no report text
@@ -8734,7 +8752,7 @@ N/A
             if (!success) minAmountToTakeFromPool = 250.0d;
             double maxAmountToTakeFromPool = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Unchecked Greed of Race Leader&quot; + &quot;_maxAmountToTakeFromPool&quot;, out success);
             if (!success) maxAmountToTakeFromPool = 600.0d;
-            double amountToTakeFromPool = minAmountToTakeFromPool * (maxAmountToTakeFromPool - minAmountToTakeFromPool) * getAPI().calcRand();
+            double amountToTakeFromPool = minAmountToTakeFromPool + (maxAmountToTakeFromPool - minAmountToTakeFromPool) * getAPI().calcRand();
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequestedFromPool = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
             if (customScripts.runCustomScriptCheckTypes(&quot;fetchOrConsumeResources&quot;, new List&lt;object&gt;() { localCommunity.getResourcePool(), false, false, null, amountToTakeFromPool, false, false, false, false, false, false, false },
                 out List&lt;object&gt; returnVals, false, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
@@ -8762,7 +8780,7 @@ N/A
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Unchecked Greed of Race Leader&quot; + &quot;_followThroughHelpIfNotZero&quot; + inEventReport.getUID(), followThroughHelp ? 1 : 0);
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Unchecked Greed of Race Leader&quot; + &quot;_followThroughHarmIfNotZero&quot; + inEventReport.getUID(), followThroughHarm ? 1 : 0);
             //also store the resources:
-            customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), true, resourcesRequestedFromPool, &quot;&quot;, Int64.MaxValue, false }, out _);
+            customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, resourcesRequestedFromPool, &quot;&quot;, Int64.MaxValue, false }, out _);
 
             //internal logic complete.  Assemble the report text:
             string reportText = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader report_text before_replace_text&quot;, out success);
@@ -8841,7 +8859,7 @@ A Race Leader demands a personal bribe of resources.  If granted, the race will 
             if (choiceEnabled)
             {
                 //check that the community has the resources:
-                if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
+                if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
                     false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
                 {
                     Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -8880,7 +8898,7 @@ A Race Leader demands a personal bribe of resources.  If granted, the race will 
             Int64 followThroughHarmIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Unchecked Greed of Race Leader&quot; + &quot;_followThroughHarmIfNotZero&quot; + inEventReport.getUID(), out success);
             if (!success) followThroughHarmIfNotZero = 0;
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -8948,7 +8966,7 @@ A Race Leader demands a personal bribe of resources.  If granted, the race will 
             //internal logic complete.  Assemble the resolution text the player will see:
             if (allNecessaryVariablesFetched)
             {
-                string resolution_text_foundout = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader resolution_text foundout before_replace_text&quot;, out success);
+                string resolution_text_foundout = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader resolution_text discreet_grant_foundout before_replace_text&quot;, out success);
                 if (!success)
                 {
                     resolution_text_foundout = &quot;[0] entered [1]&apos;s home shortly after the resources were delivered.  They exited with a mutilated corpse.  It seems either we, or the late [1], were not as discreet as [one_pop|personal_3ppronoun_phrase:[2]] desired.  New candidates for [3] Leader speak loudly about the City Leader&apos;s decisions, claiming their people are being distracted, rather than provided for.&quot;;
@@ -9031,7 +9049,7 @@ The resources were delivered to the greedy race leader.
             if (choiceEnabled)
             {
                 //check that the community has the resources:
-                if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
+                if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
                     false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
                 {
                     Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -9070,7 +9088,7 @@ The resources were delivered to the greedy race leader.
             Int64 followThroughHarmIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Unchecked Greed of Race Leader&quot; + &quot;_followThroughHarmIfNotZero&quot; + inEventReport.getUID(), out success);
             if (!success) followThroughHarmIfNotZero = 0;
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -9130,7 +9148,7 @@ The resources were delivered to the greedy race leader.
             //internal logic complete.  Assemble the resolution text the player will see:
             if (allNecessaryVariablesFetched)
             {
-                string resolution_text_foundout = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader resolution_text foundout before_replace_text&quot;, out success);
+                string resolution_text_foundout = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader resolution_text discreet_grant_foundout before_replace_text&quot;, out success);
                 if (!success)
                 {
                     resolution_text_foundout = &quot;[0] entered [1]&apos;s home shortly after the resources were delivered.  They exited with a mutilated corpse.  It seems either we, or the late [1], were not as discreet as [one_pop|personal_3ppronoun_phrase:[2]] desired.  New candidates for [3] Leader speak loudly about the City Leader&apos;s decisions, claiming their people are being distracted, rather than provided for.&quot;;
@@ -9212,7 +9230,7 @@ The resources were delivered to the greedy race leader.
             if (choiceEnabled)
             {
                 //check that the community has the resources:
-                if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
+                if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
                     false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
                 {
                     Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -9251,7 +9269,7 @@ The resources were delivered to the greedy race leader.
             Int64 followThroughHarmIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Unchecked Greed of Race Leader&quot; + &quot;_followThroughHarmIfNotZero&quot; + inEventReport.getUID(), out success);
             if (!success) followThroughHarmIfNotZero = 0;
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -9282,19 +9300,19 @@ The resources were delivered to the greedy race leader.
 
                 localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(raceLeader.getRace(), happinessName, happinessDesc, happinessVal, false);
 
-                happinessName = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader overt_grant other_races happiness_name before_replace_text&quot;, out success);
-                if (!success) happinessName = &quot;City Leader Gifted Others&quot;;
-                happinessDesc = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader overt_grant other_races happiness_desc before_replace_text&quot;, out success);
-                if (!success) happinessDesc = &quot;Another race was granted a gift from city stockpiles, but we received nothing.  Why should our work only be others&apos; benefit?&quot;;
-                happinessVal = customConsts.getDoubleConst(&quot;Unchecked Greed of Race Leader overt_grant other_races happiness_val&quot;, out success);
-                if (!success) happinessVal = -10.0;
+                string happinessName2 = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader overt_grant other_races happiness_name before_replace_text&quot;, out success);
+                if (!success) happinessName2 = &quot;City Leader Gifted Others&quot;;
+                string happinessDesc2 = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader overt_grant other_races happiness_desc before_replace_text&quot;, out success);
+                if (!success) happinessDesc2 = &quot;Another race was granted a gift from city stockpiles, but we received nothing.  Why should our work only be others&apos; benefit?&quot;;
+                double happinessVal2 = customConsts.getDoubleConst(&quot;Unchecked Greed of Race Leader overt_grant other_races happiness_val&quot;, out success);
+                if (!success) happinessVal2 = -10.0;
                 //add unhappiness to other races:
                 foreach (IFRace race in localCommunity.getLoyalPopsByRace(true, false).Keys)
                 {
                     if (race == raceLeader.getRace())
                         continue;
 
-                    localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(race, happinessName, happinessDesc, happinessVal, false);
+                    localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(race, happinessName2, happinessDesc2, happinessVal2, false);
                 }
             }
 
@@ -9376,7 +9394,7 @@ The resources were delivered to the greedy race leader.
             if (choiceEnabled)
             {
                 //check that the community has the resources:
-                if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
+                if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
                     false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
                 {
                     Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -9452,7 +9470,7 @@ The resources were delivered to the greedy race leader.
             //internal logic complete.  Assemble the resolution text the player will see:
             if (allNecessaryVariablesFetched)
             {
-                string resolution_text_foundout = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader resolution_text foundout before_replace_text&quot;, out success);
+                string resolution_text_foundout = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader resolution_text no_grant_foundout before_replace_text&quot;, out success);
                 if (!success)
                 {
                     resolution_text_foundout = &quot;[0] entered [1]&apos;s home shortly after the decision was made not to grant the resources.  It seems that the once-leader has chosen to leave the city entirely, no doubt as a result of this incident.  We, or the now exiled [1], must have been overheard in some way.  New candidates for [3] Leader speak loudly about their old leader&apos;s flaws, claiming their people were being used as tools, rather than listened to.&quot;;
@@ -9535,7 +9553,7 @@ The resources were not delivered to the greedy race leader.
             if (choiceEnabled)
             {
                 //check that the community has the resources:
-                if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
+                if(customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
                     false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
                 {
                     Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -9596,7 +9614,7 @@ The resources were not delivered to the greedy race leader.
             //internal logic complete.  Assemble the resolution text the player will see:
             if (allNecessaryVariablesFetched)
             {
-                string resolution_text_foundout = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader resolution_text foundout before_replace_text&quot;, out success);
+                string resolution_text_foundout = customConsts.getStringConst(&quot;Unchecked Greed of Race Leader resolution_text no_grant_foundout before_replace_text&quot;, out success);
                 if (!success)
                 {
                     resolution_text_foundout = &quot;[0] entered [1]&apos;s home shortly after the decision was made not to grant the resources.  It seems that the once-leader has chosen to leave the city entirely, no doubt as a result of this incident.  We, or the now exiled [1], must have been overheard in some way.  New candidates for [3] Leader speak loudly about their old leader&apos;s flaws, claiming their people were being used as tools, rather than listened to.&quot;;
@@ -9811,7 +9829,7 @@ return new List&lt;object&gt;() { true };
 
                 foreach (Int64 uid in eventReportUIDsExpired)
                 {
-                    customScripts.runCustomScript(&quot;Unchecked Greed of Race Leader rejection_common&quot;, new List&lt;object&gt;() { uid }, out _); //TODO this will also calc a RESOLUTION variable
+                    customScripts.runCustomScript(&quot;Unchecked Greed of Race Leader rejection_common&quot;, new List&lt;object&gt;() { uid }, out _);
                 }
             }
 
@@ -9867,7 +9885,8 @@ N/A
                 Dictionary&lt;IFRace, int&gt; racesWithNonLeadersInCommunity = new Dictionary&lt;IFRace, int&gt;();
                 Int64 countOfNonLeadersNecessary = customConsts.getIntConst(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_minAmountToTakeFromPool&quot;, out success);
                 if (!success) countOfNonLeadersNecessary = 3;
-
+                HashSet&lt;IFRace&gt; nonLeaderToRemove = new HashSet&lt;IFRace&gt;();
+                HashSet&lt;IFRace&gt; leaderToRemove = new HashSet&lt;IFRace&gt;();
                 foreach (IFPop pop in localCommunity.getPopsLoyalToCommunity(true, false))
                 {
                     if (!pop.hasDelegation() &amp;&amp; (leaders.getCityLeader() != pop)) //skip the City Leader from being considered
@@ -9884,7 +9903,6 @@ N/A
                         }
                     }
                 }
-                HashSet&lt;IFRace&gt; nonLeaderToRemove = new HashSet&lt;IFRace&gt;();
                 foreach (var kvpair in racesWithNonLeadersInCommunity)
                 {
                     if (kvpair.Value &lt; countOfNonLeadersNecessary)
@@ -9915,8 +9933,6 @@ N/A
                 {
                     racesWithNonLeadersInCommunity.Remove(race);
                 }
-
-                HashSet&lt;IFRace&gt; leaderToRemove = new HashSet&lt;IFRace&gt;();
                 foreach(IFRace race in racesWithLeadersInCommunity)
                 {
                     //if there is a to-be-forced Race Leader, this event cannot occur for that race if that person is the current Race Leader:
@@ -10007,13 +10023,13 @@ N/A
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_raceLeaderUID&quot; + inEventReport.getUID(), raceLeader.getUID());
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_competitorUID&quot; + inEventReport.getUID(), competitor.getUID());
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_competitorReplacesLeaderIfNotZero&quot; + inEventReport.getUID(), competitorReplacesLeader ? 1 : 0);
-            //the RESOLUTION variable is useful for when the EXPIRE event happening should &quot;freeze&quot; the option available, so that later changes don&apos;t impact the selection the player can make.
+            //the RESOLUTION variable is useful for when some sort of resolution happening should &quot;freeze&quot; the option available, so that later changes don&apos;t impact the selection the player can make.
             //here:
-            //RESOLUTION = -1 means EXPIRE has not yet happened
-            //RESOLUTION = 1 means at time of EXPIRE, the competitor is dead/disloyal and the race leader is not (and is still the race leader)
-            //RESOLUTION = 2 means at time of EXPIRE, race leader was dead/disloyal/no longer the race leader
-            //RESOLUTION = 3 means at time of EXPIRE, both competitor and race leader were valid, and replacement = true
-            //RESOLUTION = 4 means at time of EXPIRE, both competitor and race leader were valid, and replacement = false
+            //RESOLUTION = -1 or 0 means resolution has not yet happened
+        //RESOLUTION = 1 means the competitor became dead/disloyal and the race leader did not (and was still the race leader at the time it happened)
+        //RESOLUTION = 2 means race leader became dead/disloyal/no longer the race leader
+        //RESOLUTION = 3 means at time of EXPIRE, both competitor and race leader were valid, and replacement = true
+        //RESOLUTION = 4 means at time of EXPIRE, both competitor and race leader were valid, and replacement = false
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_RESOLUTIONvariable&quot; + inEventReport.getUID(), -1L);
 
             //internal logic complete.  Assemble the report text:
@@ -10023,7 +10039,7 @@ N/A
                 reportText = &quot;Hello, City Leader. This is [1] Leader [2]. I need a favor from you.&quot;
                     + &quot;\n\n[3] are starting to question my leadership.  That is normal even in the best of times, but one of my [4], [7], is inflaming the situation with [one_pop|possessive_3ppronoun_adj_phrase:[5]] lies.&quot;
                     + &quot;  [one_pop|personal_3ppronoun_phrase:[5]] may try to usurp my position, and I intend not to let this infighting succeed.&quot;
-                    + &quot;\n\n\r\nIf [7] becomes unable to mislead the [1] community, I would have more appreciation for your leadership.  The [6] would hear about my newfound respect, I promise.  But if my people continue to hear the lies of selfish actors, it will be clear you mean to weaken us from within.  Such hostility will not go unanswered.&quot;
+                    + &quot;\n\nIf [7] becomes unable to mislead the [1] community, I would have more appreciation for your leadership.  The [6] would hear about my newfound respect, I promise.  But if my people continue to hear the lies of selfish actors, it will be clear you mean to weaken us from within.  Such hostility will not go unanswered.&quot;
                     + &quot;\n\nThere is no need for us to speak about this again.  I&apos;ll await your action.  Good night, [0].&quot;;
             }
 
@@ -10066,24 +10082,22 @@ A Race Leader sees one of their constituents attempting to usurp the position.  
             List&lt;object&gt; toReturn = new List&lt;object&gt;();
             bool success = false;
             bool choiceEnabled = true;
-            Int64 RESOLUTIONvariable = variableHandler.getInt(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_RESOLUTIONvariable&quot; + inEventReport.getUID(), out success);
-            if (!success) RESOLUTIONvariable = 0;
-            Int64 thisChoiceRESOULTION = 1;
+            Int64 thisChoiceRESOLUTION = 1;
 
-            Int64 calcRESOLUTIONvariable = 0;
             if (choiceEnabled)
             {
                 //check if this resolution is available:
                 choiceEnabled = false;
-                if (customScripts.runCustomScriptCheckTypes(&quot;Fear of Race Leader Competitor calc_resolutionvariable&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID() }, out List&lt;object&gt; returnVals,
+                Int64 calcRESOLUTIONvariable = 0;
+                if (customScripts.runCustomScriptCheckTypes(&quot;Fear of Race Leader Competitor calc_resolutionvariable&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID(), false }, out List&lt;object&gt; returnVals,
                     false, typeof(Int64)))
                 {
                     calcRESOLUTIONvariable = (Int64)returnVals[0];
                 }
-            }
-            if(RESOLUTIONvariable == thisChoiceRESOULTION || ((RESOLUTIONvariable &lt; 1) &amp;&amp; (calcRESOLUTIONvariable == thisChoiceRESOULTION)))
-            {
-                choiceEnabled = true;
+                if (calcRESOLUTIONvariable == thisChoiceRESOLUTION)
+                {
+                    choiceEnabled = true;
+                }
             }
 
             toReturn.Add(choiceEnabled);
@@ -10106,30 +10120,18 @@ A Race Leader sees one of their constituents attempting to usurp the position.  
             IFPop raceLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, raceLeaderUID);
             Int64 competitorUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_competitorUID&quot; + inEventReport.getUID(), out success);
             IFPop competitor = (IFPop)getAPI().getSO(&quot;pops&quot;, competitorUID);
-            //RESOLUTION = -1 means EXPIRE has not yet happened
-            //RESOLUTION = 1 means at time of EXPIRE, the competitor is dead/disloyal and the race leader is not (and is still the race leader)
-            //RESOLUTION = 2 means at time of EXPIRE, race leader was dead/disloyal/no longer the race leader
-            //RESOLUTION = 3 means at time of EXPIRE, both competitor and race leader were valid, and replacement = true
-            //RESOLUTION = 4 means at time of EXPIRE, both competitor and race leader were valid, and replacement = false
-            Int64 RESOLUTIONvariable = variableHandler.getInt(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_RESOLUTIONvariable&quot; + inEventReport.getUID(), out success);
-            //we only care about RESOLUTIONvariable here because if it is -1 or 0, we need to call the common success script
             bool allNecessaryVariablesFetched = (raceLeader != null) &amp;&amp; (competitor != null);
 
             //fetching information complete.  Calculations (aka make changes based on this choice):
             if (allNecessaryVariablesFetched)
             {
-                if(RESOLUTIONvariable &lt; 1)
-                {
-                    //call the common success script:
-                    //TODO note this should also decrease the chance this event occurs
-                    customScripts.runCustomScript(&quot;Fear of Race Leader Competitor success_common&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID() }, out _);
-                }
+                //through calc_resolutionvariable in the choice gating script (or in the EXPIRE script, whichever happened first), this has already happened
             }
 
             //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
             if (allNecessaryVariablesFetched)
             {
-                //happiness was added either by success_common or upon expiry
+                //through calc_resolutionvariable in the choice gating script (or in the EXPIRE script, whichever happened first), this has already happened
             }
 
             //internal logic complete.  Assemble the resolution text the player will see:
@@ -10159,7 +10161,7 @@ A Race Leader sees one of their constituents attempting to usurp the position.  
             }
 
             //lastly, cleanup (if any):
-            customScripts.runCustomScript(&quot;Fear of Race Leader Competitor cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+            customScripts.runCustomScript(&quot;Fear of Race Leader Competitor cleanup&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out _);
 
             return null;
         </selection_script>
@@ -10184,24 +10186,22 @@ The race leader remains in their position, due to our efforts.
             List&lt;object&gt; toReturn = new List&lt;object&gt;();
             bool success = false;
             bool choiceEnabled = true;
-            Int64 RESOLUTIONvariable = variableHandler.getInt(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_RESOLUTIONvariable&quot; + inEventReport.getUID(), out success);
-            if (!success) RESOLUTIONvariable = 0;
-            Int64 thisChoiceRESOULTION = 2;
+            Int64 thisChoiceRESOLUTION = 2;
 
-            Int64 calcRESOLUTIONvariable = 0;
             if (choiceEnabled)
             {
                 //check if this resolution is available:
                 choiceEnabled = false;
-                if (customScripts.runCustomScriptCheckTypes(&quot;Fear of Race Leader Competitor calc_resolutionvariable&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID() }, out List&lt;object&gt; returnVals,
+                Int64 calcRESOLUTIONvariable = 0;
+                if (customScripts.runCustomScriptCheckTypes(&quot;Fear of Race Leader Competitor calc_resolutionvariable&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID(), false }, out List&lt;object&gt; returnVals,
                     false, typeof(Int64)))
                 {
                     calcRESOLUTIONvariable = (Int64)returnVals[0];
                 }
-            }
-            if(RESOLUTIONvariable == thisChoiceRESOULTION || ((RESOLUTIONvariable &lt; 1) &amp;&amp; (calcRESOLUTIONvariable == thisChoiceRESOULTION)))
-            {
-                choiceEnabled = true;
+                if (calcRESOLUTIONvariable == thisChoiceRESOLUTION)
+                {
+                    choiceEnabled = true;
+                }
             }
 
             toReturn.Add(choiceEnabled);
@@ -10229,13 +10229,13 @@ The race leader remains in their position, due to our efforts.
             //fetching information complete.  Calculations (aka make changes based on this choice):
             if (allNecessaryVariablesFetched)
             {
-
+                //through calc_resolutionvariable in the choice gating script (or in the EXPIRE script, whichever happened first), this has already happened
             }
 
             //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
             if (allNecessaryVariablesFetched)
             {
-
+                //through calc_resolutionvariable in the choice gating script (or in the EXPIRE script, whichever happened first), this has already happened
             }
 
             //internal logic complete.  Assemble the resolution text the player will see:
@@ -10263,7 +10263,7 @@ The race leader remains in their position, due to our efforts.
             }
 
             //lastly, cleanup (if any):
-            customScripts.runCustomScript(&quot;Fear of Race Leader Competitor cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+            customScripts.runCustomScript(&quot;Fear of Race Leader Competitor cleanup&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out _);
 
             return null;
         </selection_script>
@@ -10288,13 +10288,7 @@ The race leader is no longer a member of the community.
             List&lt;object&gt; toReturn = new List&lt;object&gt;();
             bool success = false;
             bool choiceEnabled = true;
-            Int64 RESOLUTIONvariable = variableHandler.getInt(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_RESOLUTIONvariable&quot; + inEventReport.getUID(), out success);
-            if (!success) RESOLUTIONvariable = 0;
 
-            if (choiceEnabled)
-            {
-                choiceEnabled = RESOLUTIONvariable &lt; 1;
-            }
             if (choiceEnabled)
             {
                 Int64 replaceIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_competitorReplacesLeaderIfNotZero&quot; + inEventReport.getUID(), out success);
@@ -10306,9 +10300,24 @@ The race leader is no longer a member of the community.
                 IFCommunity localCommunity = getAPI().getLocalCommunity();
                 double predictionDifficulty = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_knowReplaceDifficulty&quot;, out success);
                 if (!success) predictionDifficulty = 85.0d;
-                if(localCommunity.getDomesticComponent().getPredictionStrength() &lt; predictionDifficulty)
+                if (localCommunity.getDomesticComponent().getPredictionStrength() &lt; predictionDifficulty)
                 {
                     choiceEnabled = false;
+                }
+            }
+            if (choiceEnabled)
+            {
+                //check if the event has already resolved:
+                choiceEnabled = false;
+                Int64 calcRESOLUTIONvariable = 0;
+                if (customScripts.runCustomScriptCheckTypes(&quot;Fear of Race Leader Competitor calc_resolutionvariable&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID(), false }, out List&lt;object&gt; returnVals,
+                    false, typeof(Int64)))
+                {
+                    calcRESOLUTIONvariable = (Int64)returnVals[0];
+                }
+                if (calcRESOLUTIONvariable &lt;= 0) //positive integers mean the event has already resolved
+                {
+                    choiceEnabled = true;
                 }
             }
 
@@ -10337,20 +10346,7 @@ The race leader is no longer a member of the community.
             //fetching information complete.  Calculations (aka make changes based on this choice):
             if (allNecessaryVariablesFetched)
             {
-                double minMTTHFactor = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_minMTTHFactor&quot;, out success);
-                if (!success) minMTTHFactor = 0.8d;
-                double decreaseMTTHFactor = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_decreaseMTTHFactor_overlookTraining&quot;, out success);
-                if (!success) decreaseMTTHFactor = 0.95d;
 
-                IFEvent evt = (IFEvent)getAPI().getMOFromMOID(&quot;events&quot;, inEventStatus.getUID());
-                if (evt != null)
-                {
-                    double baseMTTH = evt.getDefaultMTTH();
-                    double newMTTH = inEventStatus.getMTTH() * decreaseMTTHFactor;
-                    if (newMTTH &lt; minMTTHFactor * baseMTTH)
-                        newMTTH = minMTTHFactor * baseMTTH;
-                    inEventStatus.setMTTH((Int64)newMTTH);
-                }
             }
 
             //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
@@ -10385,7 +10381,8 @@ The race leader is no longer a member of the community.
             }
 
             //lastly, cleanup (if any):
-            customScripts.runCustomScript(&quot;Fear of Race Leader Competitor cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+            //customScripts.runCustomScript(&quot;Fear of Race Leader Competitor cleanup&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out _);
+            variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_cleanupNotCalledIfNonZero&quot; + inEventReport.getUID(), 1);
 
             return null;
         </selection_script>
@@ -10410,24 +10407,22 @@ The race leader will be replaced in their position, so we can ignore this threat
             List&lt;object&gt; toReturn = new List&lt;object&gt;();
             bool success = false;
             bool choiceEnabled = true;
-            Int64 RESOLUTIONvariable = variableHandler.getInt(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_RESOLUTIONvariable&quot; + inEventReport.getUID(), out success);
-            if (!success) RESOLUTIONvariable = 0;
-            Int64 thisChoiceRESOULTION = 3;
+            Int64 thisChoiceRESOLUTION = 3;
 
-            Int64 calcRESOLUTIONvariable = 0;
             if (choiceEnabled)
             {
                 //check if this resolution is available:
                 choiceEnabled = false;
-                if (customScripts.runCustomScriptCheckTypes(&quot;Fear of Race Leader Competitor calc_resolutionvariable&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID() }, out List&lt;object&gt; returnVals,
+                Int64 calcRESOLUTIONvariable = 0;
+                if (customScripts.runCustomScriptCheckTypes(&quot;Fear of Race Leader Competitor calc_resolutionvariable&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID(), false }, out List&lt;object&gt; returnVals,
                     false, typeof(Int64)))
                 {
                     calcRESOLUTIONvariable = (Int64)returnVals[0];
                 }
-            }
-            if(RESOLUTIONvariable == thisChoiceRESOULTION || ((RESOLUTIONvariable &lt; 1) &amp;&amp; (calcRESOLUTIONvariable == thisChoiceRESOULTION)))
-            {
-                choiceEnabled = true;
+                if (calcRESOLUTIONvariable == thisChoiceRESOLUTION)
+                {
+                    choiceEnabled = true;
+                }
             }
 
             toReturn.Add(choiceEnabled);
@@ -10455,26 +10450,13 @@ The race leader will be replaced in their position, so we can ignore this threat
             //fetching information complete.  Calculations (aka make changes based on this choice):
             if (allNecessaryVariablesFetched)
             {
-                double minMTTHFactor = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_minMTTHFactor&quot;, out success);
-                if (!success) minMTTHFactor = 0.8d;
-                double decreaseMTTHFactor = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_decreaseMTTHFactor_overlookTraining&quot;, out success);
-                if (!success) decreaseMTTHFactor = 0.95d;
-
-                IFEvent evt = (IFEvent)getAPI().getMOFromMOID(&quot;events&quot;, inEventStatus.getUID());
-                if (evt != null)
-                {
-                    double baseMTTH = evt.getDefaultMTTH();
-                    double newMTTH = inEventStatus.getMTTH() * decreaseMTTHFactor;
-                    if (newMTTH &lt; minMTTHFactor * baseMTTH)
-                        newMTTH = minMTTHFactor * baseMTTH;
-                    inEventStatus.setMTTH((Int64)newMTTH);
-                }
+                //through calc_resolutionvariable in the choice gating script (or in the EXPIRE script, whichever happened first), this has already happened
             }
 
             //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
             if (allNecessaryVariablesFetched)
             {
-
+                //through calc_resolutionvariable in the choice gating script (or in the EXPIRE script, whichever happened first), this has already happened
             }
 
             //internal logic complete.  Assemble the resolution text the player will see:
@@ -10504,7 +10486,7 @@ The race leader will be replaced in their position, so we can ignore this threat
             }
 
             //lastly, cleanup (if any):
-            customScripts.runCustomScript(&quot;Fear of Race Leader Competitor cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+            customScripts.runCustomScript(&quot;Fear of Race Leader Competitor cleanup&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out _);
 
             return null;
         </selection_script>
@@ -10529,24 +10511,22 @@ The race leader has been replaced in their position.  Such a thing is more likel
             List&lt;object&gt; toReturn = new List&lt;object&gt;();
             bool success = false;
             bool choiceEnabled = true;
-            Int64 RESOLUTIONvariable = variableHandler.getInt(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_RESOLUTIONvariable&quot; + inEventReport.getUID(), out success);
-            if (!success) RESOLUTIONvariable = 0;
-            Int64 thisChoiceRESOULTION = 4;
+            Int64 thisChoiceRESOLUTION = 4;
 
-            Int64 calcRESOLUTIONvariable = 0;
             if (choiceEnabled)
             {
                 //check if this resolution is available:
                 choiceEnabled = false;
-                if (customScripts.runCustomScriptCheckTypes(&quot;Fear of Race Leader Competitor calc_resolutionvariable&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID() }, out List&lt;object&gt; returnVals,
+                Int64 calcRESOLUTIONvariable = 0;
+                if (customScripts.runCustomScriptCheckTypes(&quot;Fear of Race Leader Competitor calc_resolutionvariable&quot;, new List&lt;object&gt;() { (Int64)inEventReport.getUID(), false }, out List&lt;object&gt; returnVals,
                     false, typeof(Int64)))
                 {
                     calcRESOLUTIONvariable = (Int64)returnVals[0];
                 }
-            }
-            if(RESOLUTIONvariable == thisChoiceRESOULTION || ((RESOLUTIONvariable &lt; 1) &amp;&amp; (calcRESOLUTIONvariable == thisChoiceRESOULTION)))
-            {
-                choiceEnabled = true;
+                if (calcRESOLUTIONvariable == thisChoiceRESOLUTION)
+                {
+                    choiceEnabled = true;
+                }
             }
 
             toReturn.Add(choiceEnabled);
@@ -10569,41 +10549,18 @@ The race leader has been replaced in their position.  Such a thing is more likel
             IFPop raceLeader = (IFPop)getAPI().getSO(&quot;pops&quot;, raceLeaderUID);
             Int64 competitorUID = variableHandler.getInt(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_competitorUID&quot; + inEventReport.getUID(), out success);
             IFPop competitor = (IFPop)getAPI().getSO(&quot;pops&quot;, competitorUID);
-            //RESOLUTION = -1 means EXPIRE has not yet happened
-            //RESOLUTION = 1 means at time of EXPIRE, the competitor is dead/disloyal and the race leader is not (and is still the race leader)
-            //RESOLUTION = 2 means at time of EXPIRE, race leader was dead/disloyal/no longer the race leader
-            //RESOLUTION = 3 means at time of EXPIRE, both competitor and race leader were valid, and replacement = true
-            //RESOLUTION = 4 means at time of EXPIRE, both competitor and race leader were valid, and replacement = false
-            Int64 RESOLUTIONvariable = variableHandler.getInt(&quot;evt_&quot; + &quot;Fear of Race Leader Competitor&quot; + &quot;_RESOLUTIONvariable&quot; + inEventReport.getUID(), out success);
-            //we only care about RESOLUTIONvariable here because if it is -1 or 0, we need to call the common failure script
             bool allNecessaryVariablesFetched = (raceLeader != null) &amp;&amp; (competitor != null);
 
             //fetching information complete.  Calculations (aka make changes based on this choice):
             if (allNecessaryVariablesFetched)
             {
-                if (RESOLUTIONvariable &lt; 1)
-                {
-                    /*
-                    //add unhappiness to race leader&apos;s race:
-                    string happinessName = customConsts.getStringConst(&quot;Fear of Race Leader Competitor nohelp happiness_name before_replace_text&quot;, out success);
-                    if (!success) happinessName = &quot;Race Leader Instigation&quot;;
-                    string happinessDesc = customConsts.getStringConst(&quot;Fear of Race Leader Competitor nohelp happiness_desc before_replace_text&quot;, out success);
-                    if (!success) happinessDesc = &quot;Our Race Leader has made it clear how the City Leader attempted to control us: the City Leader supported a bid for race leadership by one puppet [0].  We must take action!&quot;;
-                    happinessDesc.Replace(&quot;[0]&quot;, raceLeader.getRace().getSingleNoun());
-                    double happinessVal = customConsts.getDoubleConst(&quot;Fear of Race Leader Competitor nohelp happiness_val&quot;, out success);
-                    if (!success) happinessVal = -30.0;
-
-                    localCommunity.getDomesticComponent().getHappinessCollection().addNewHappinessCauseToday(raceLeader.getRace(), happinessName, happinessDesc, happinessVal, false);
-                    */
-                    //call the common failure script:
-                    customScripts.runCustomScript(&quot;Fear of Race Leader Competitor failure_common&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID() }, out _);
-                }
+                //through calc_resolutionvariable in the choice gating script (or in the EXPIRE script, whichever happened first), this has already happened
             }
 
             //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
             if (allNecessaryVariablesFetched)
             {
-                //happiness was added either by failure_common or upon expiry
+                //through calc_resolutionvariable in the choice gating script (or in the EXPIRE script, whichever happened first), this has already happened
             }
 
             //internal logic complete.  Assemble the resolution text the player will see:
@@ -10632,7 +10589,7 @@ The race leader has been replaced in their position.  Such a thing is more likel
             }
 
             //lastly, cleanup (if any):
-            customScripts.runCustomScript(&quot;Fear of Race Leader Competitor cleanup&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _);
+            customScripts.runCustomScript(&quot;Fear of Race Leader Competitor cleanup&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID() }, out _);
 
             return null;
         </selection_script>
@@ -10687,7 +10644,7 @@ return new List&lt;object&gt;() { true };
             }
 
             //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
-            //commonUponHappeningScriptForEXPIRE and rejection_common does that
+            //commonUponHappeningScriptForEXPIRE and expire does that
 
             //internal logic complete.  Assemble the report text the player will see:
             //invisible event, so no report text
@@ -10754,10 +10711,13 @@ N/A
             if (evtEnabled)
             {
                 //there must be a sufficient gap between leader and average skill for an industry
-                double minLeaderSkillGap = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_minLeaderSkillGap&quot;, out success);
-                if (!success) minLeaderSkillGap = 0.075d;
+                double minLeaderSkillGapProp = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_minLeaderSkillGap&quot;, out success);
+                if (!success) minLeaderSkillGapProp = 0.075d;
 
-                evtEnabled = false;
+				double skillMin = consts.getWorkerSkillMin();
+				double skillMax = consts.getWorkerSkillMax();
+				double minLeaderSkillGap = (skillMax - skillMin) * minLeaderSkillGapProp;
+
                 List&lt;IFPop&gt; toRemove = new List&lt;IFPop&gt;();
                 foreach (IFPop pop in enabledIndustryLeaders)
                 {
@@ -10767,6 +10727,7 @@ N/A
                     if (!(avgSkill + minLeaderSkillGap &lt;= leaderSkill))
                     {
                         toRemove.Add(pop);
+						addDebugMessage(inScriptInstance, "for removed industry " + (industry == null ? "null" : industry.getDebugName()) + " avgSkill=" + avgSkill + " leaderSkill=" + leaderSkill + " minLeaderSkillGap=" + minLeaderSkillGap);
                     }
                 }
                 foreach(IFPop pop in toRemove)
@@ -10783,7 +10744,7 @@ N/A
             {
                 //there must be enough resources in the local pool to take
                 double minAmountToTakeFromPool = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_minAmountToTakeFromPool&quot;, out success);
-                if (!success) minAmountToTakeFromPool = 100.0d;
+                if (!success) minAmountToTakeFromPool = 150.0d;
                 double skewAllowed = 0.1d;
 
                 if (customScripts.runCustomScriptCheckTypes(&quot;fetchOrConsumeResources&quot;, new List&lt;object&gt;() { localCommunity.getResourcePool(), false, false, null, minAmountToTakeFromPool, false, false, false, false, false, false, false },
@@ -10826,7 +10787,7 @@ N/A
             if (!success) minAmountToTakeFromPool = 150.0d;
             double maxAmountToTakeFromPool = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_maxAmountToTakeFromPool&quot;, out success);
             if (!success) maxAmountToTakeFromPool = 400.0d;
-            double amountToTakeFromPool = minAmountToTakeFromPool * (maxAmountToTakeFromPool - minAmountToTakeFromPool) * getAPI().calcRand();
+            double amountToTakeFromPool = minAmountToTakeFromPool + (maxAmountToTakeFromPool - minAmountToTakeFromPool) * getAPI().calcRand();
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequestedFromPool = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
             if (customScripts.runCustomScriptCheckTypes(&quot;fetchOrConsumeResources&quot;, new List&lt;object&gt;() { localCommunity.getResourcePool(), false, false, null, amountToTakeFromPool, false, false, false, false, false, false, false },
                 out List&lt;object&gt; returnVals, false, typeof(double), typeof(double), typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)))
@@ -10850,7 +10811,7 @@ N/A
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_theftIfNotZero&quot; + inEventReport.getUID(), theft ? 1 : 0);
             variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_dayOffIfNotZero&quot; + inEventReport.getUID(), dayOff ? 1 : 0);
             //also store the resources:
-            customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), true, resourcesRequestedFromPool, &quot;&quot;, Int64.MaxValue, false }, out _);
+            customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, resourcesRequestedFromPool, &quot;&quot;, Int64.MaxValue, false }, out _);
 
             //internal logic complete.  Assemble the report text:
             string reportText = customConsts.getStringConst(&quot;Training Day Request report_text before_replace_text&quot;, out success);
@@ -10938,7 +10899,7 @@ An Industry Leader requests resources in order to train the community in their i
             Int64 theftIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_theftIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 dayOffIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_dayOffIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -11039,7 +11000,7 @@ The city cannot spare the resources now, so this training will not go ahead.
             Int64 theftIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_theftIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 dayOffIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_dayOffIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -11134,7 +11095,7 @@ This proposal is not something which can be done now.  The time to take advantag
             if(choiceEnabled)
             {
                 //if the local resource pool does not have the resources, this choice cannot be made:
-                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
+                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
                     false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
                 {
                     Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -11171,7 +11132,7 @@ This proposal is not something which can be done now.  The time to take advantag
             Int64 theftIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_theftIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 dayOffIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_dayOffIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -11181,6 +11142,10 @@ This proposal is not something which can be done now.  The time to take advantag
             //fetching information complete.  Calculations (aka make changes based on this choice):
             if (allNecessaryVariablesFetched)
             {
+                //necessary for the RESOLVE event:
+                inEventStatus.setEnabled(false);
+                variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot; report_UID&quot;, inEventReport.getUID());
+                variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_industryLeaderUID&quot;, leaderUID);
                 //set theft and dayoff false:
                 variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_theftIfNotZero&quot;, 0L);
                 variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_dayOffIfNotZero&quot;, 0L);
@@ -11193,7 +11158,7 @@ This proposal is not something which can be done now.  The time to take advantag
                 }
                 //enable the resolution event:
                 IFEvent evt = (IFEvent)getAPI().getMOFromInternalName(&quot;events&quot;, &quot;Training Day Request RESOLVE&quot;);
-                IFEventStatus evtStatus = (IFEventStatus)getAPI().getSO(&quot;eventStatus&quot;, evt.getMOID());
+                IFEventStatus evtStatus = (IFEventStatus)getAPI().getSO(&quot;eventStatuses&quot;, evt.getMOID());
                 evtStatus.setEnabled(true);
                 evtStatus.setForceDate(getAPI().getCalendar().getCurrentDate() + 1);
             }
@@ -11202,7 +11167,7 @@ This proposal is not something which can be done now.  The time to take advantag
             if (allNecessaryVariablesFetched)
             {
                 //re-store qualities of resources (since it may have changed since event fired and this choice chosen):
-                customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), true, resourcesConsumed, &quot;&quot;, Int64.MaxValue, false }, out _);
+                customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, resourcesConsumed, &quot;&quot;, Int64.MaxValue, false }, out _);
                 //add unhappiness to industry leader race:
                 string happinessName = customConsts.getStringConst(&quot;Training Day Request force_no_theft happiness_name before_replace_text&quot;, out success);
                 if (!success) happinessName = &quot;Industry Leader Mistrust&quot;;
@@ -11292,7 +11257,7 @@ The resources were delivered directly to the training grounds, City Leader.  Tra
             if(choiceEnabled)
             {
                 //if the local resource pool does not have the resources, this choice cannot be made:
-                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
+                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
                     false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
                 {
                     Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -11329,7 +11294,7 @@ The resources were delivered directly to the training grounds, City Leader.  Tra
             Int64 theftIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_theftIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 dayOffIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_dayOffIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -11339,6 +11304,10 @@ The resources were delivered directly to the training grounds, City Leader.  Tra
             //fetching information complete.  Calculations (aka make changes based on this choice):
             if (allNecessaryVariablesFetched)
             {
+                //necessary for the RESOLVE event:
+                inEventStatus.setEnabled(false);
+                variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot; report_UID&quot;, inEventReport.getUID());
+                variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_industryLeaderUID&quot;, leaderUID);
                 //set theft and dayoff false:
                 variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_theftIfNotZero&quot;, 0L);
                 variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_dayOffIfNotZero&quot;, 0L);
@@ -11351,7 +11320,7 @@ The resources were delivered directly to the training grounds, City Leader.  Tra
                 }
                 //enable the resolution event:
                 IFEvent evt = (IFEvent)getAPI().getMOFromInternalName(&quot;events&quot;, &quot;Training Day Request RESOLVE&quot;);
-                IFEventStatus evtStatus = (IFEventStatus)getAPI().getSO(&quot;eventStatus&quot;, evt.getMOID());
+                IFEventStatus evtStatus = (IFEventStatus)getAPI().getSO(&quot;eventStatuses&quot;, evt.getMOID());
                 evtStatus.setEnabled(true);
                 evtStatus.setForceDate(getAPI().getCalendar().getCurrentDate() + 1);
             }
@@ -11360,7 +11329,7 @@ The resources were delivered directly to the training grounds, City Leader.  Tra
             if (allNecessaryVariablesFetched)
             {
                 //re-store qualities of resources (since it may have changed since event fired and this choice chosen):
-                customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), true, resourcesConsumed, &quot;&quot;, Int64.MaxValue, false }, out _);
+                customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, resourcesConsumed, &quot;&quot;, Int64.MaxValue, false }, out _);
                 //add unhappiness to industry leader race:
                 string happinessName = customConsts.getStringConst(&quot;Training Day Request force_no_dayoff happiness_name before_replace_text&quot;, out success);
                 if (!success) happinessName = &quot;Industry Leader Forcibly Handled&quot;;
@@ -11442,7 +11411,7 @@ The resources, and the Industry Leader, were delivered directly to the training 
             if(choiceEnabled)
             {
                 //if the local resource pool does not have the resources, this choice cannot be made:
-                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
+                if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
                     false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
                 {
                     Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesRequested = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -11479,7 +11448,7 @@ The resources, and the Industry Leader, were delivered directly to the training 
             Int64 theftIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_theftIfNotZero&quot; + inEventReport.getUID(), out success);
             Int64 dayOffIfNotZero = variableHandler.getInt(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_dayOffIfNotZero&quot; + inEventReport.getUID(), out success);
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, true }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -11498,7 +11467,7 @@ The resources, and the Industry Leader, were delivered directly to the training 
                 }
                 //enable the resolution event:
                 IFEvent evt = (IFEvent)getAPI().getMOFromInternalName(&quot;events&quot;, &quot;Training Day Request RESOLVE&quot;);
-                IFEventStatus evtStatus = (IFEventStatus)getAPI().getSO(&quot;eventStatus&quot;, evt.getMOID());
+                IFEventStatus evtStatus = (IFEventStatus)getAPI().getSO(&quot;eventStatuses&quot;, evt.getMOID());
                 evtStatus.setEnabled(true);
                 evtStatus.setForceDate(getAPI().getCalendar().getCurrentDate() + 1);
             }
@@ -11506,8 +11475,15 @@ The resources, and the Industry Leader, were delivered directly to the training 
             //calculations complete.  Store necessary variables, trigger alerts, change happiness, store history, and enable/trigger secondary events:
             if (allNecessaryVariablesFetched)
             {
+                //necessary for the RESOLVE event:
+                inEventStatus.setEnabled(false);
+                variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot; report_UID&quot;, inEventReport.getUID());
+                variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_industryLeaderUID&quot;, leaderUID);
+                //store the theft and day-off variables in a way that they can be fetched by the RESOLVE event
+                variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_theftIfNotZero&quot;, theftIfNotZero);
+                variableHandler.storeIntVariable(Int64.MaxValue, &quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_dayOffIfNotZero&quot;, dayOffIfNotZero);
                 //re-store qualities of resources (since it may have changed since event fired and this choice chosen):
-                customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), true, resourcesConsumed, &quot;&quot;, Int64.MaxValue, false }, out _);
+                customScripts.runCustomScript(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, (Int64)inEventReport.getUID(), true, resourcesConsumed, &quot;&quot;, Int64.MaxValue, false }, out _);
             }
 
             //internal logic complete.  Assemble the resolution text the player will see:
@@ -11584,8 +11560,12 @@ return new List&lt;object&gt;() { true };
             IFIndustry industry = leaders.getIndustryLedByPop(industryLeader);
 
             //fetch the resources:
+            IFEvent originalEvt = (IFEvent)getAPI().getMOFromInternalName(&quot;events&quot;, &quot;Training Day Request&quot;);
+            IFEventStatus status = (IFEventStatus)getAPI().getSO(&quot;eventstatuses&quot;, originalEvt.getMOID());
+            Int64 originalEvtReportUID = variableHandler.getInt(&quot;Training Day Request report_UID&quot;, out success);
+
             Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt; resourcesConsumed = new Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;();
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport.getUID(), false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeOrFetchResourcesForEvent&quot;, new List&lt;object&gt;() { status, originalEvtReportUID, false, null, &quot;&quot;, Int64.MaxValue, false }, out List&lt;object&gt; returnVals,
                 false, typeof(Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;), typeof(string)))
             {
                 resourcesConsumed = (Dictionary&lt;IFResource, Tuple&lt;double, double&gt;&gt;)returnVals[0];
@@ -11613,7 +11593,7 @@ return new List&lt;object&gt;() { true };
 
             //based on the resources, unemployed worker count, and theft/dayoff, calculate and apply skill bonus to industry:
             double amountSkillIncreased = 0.0d;
-            if(dayOffIfNotZero == 0)
+            if (dayOffIfNotZero == 0)
             {
                 double workerRatio = ((double)countOfUnemployedCurrentWorkers) / localCommunity.getPopsLoyalToCommunity(true, false).Count;
                 double theftModifier = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_theftSkillGainModifier&quot;, out success);
@@ -11624,23 +11604,30 @@ return new List&lt;object&gt;() { true };
                 //calc the average weighted quality of the inputs:
                 double totalQuan = 0.0d;
                 double totalQuanByQual = 0.0d;
-                foreach(var kvpair in resourcesConsumed)
+                foreach (var kvpair in resourcesConsumed)
                 {
                     totalQuan += kvpair.Value.Item1;
                     totalQuanByQual += kvpair.Value.Item2 * kvpair.Value.Item1;
                 }
-                
+
                 double averageQual = totalQuanByQual / totalQuan;
-                double minQual = consts.getResourceQualityMin();
-                double maxQual = consts.getResourceQualityMax();
-                averageQual -= minQual;
-                averageQual /= (maxQual - minQual);
+				if(totalQuan == 0)
+				{
+					averageQual = 0;
+				}
+				else
+				{
+					double minQual = consts.getResourceQualityMin();
+					double maxQual = consts.getResourceQualityMax();
+					averageQual -= minQual;
+					averageQual /= (maxQual - minQual);
+				}
 
                 double minSkillGain = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_minSkillGain&quot;, out success);
                 if (!success) minSkillGain = 0.01d;
                 double maxSkillGain = customConsts.getDoubleConst(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_maxSkillGain&quot;, out success);
                 if (!success) maxSkillGain = 0.125d;
-                
+
                 double skillGain = averageQual * (maxSkillGain - minSkillGain) + minSkillGain;
                 double minSkill = consts.getWorkerSkillMin();
                 double maxSkill = consts.getWorkerSkillMax();
@@ -11648,11 +11635,13 @@ return new List&lt;object&gt;() { true };
                 skillGain *= theftModifier;
                 amountSkillIncreased = skillGain;
 
+				addDebugMessage(inScriptInstance, "amountSkillIncreased = " + amountSkillIncreased + " averageQual=" + averageQual + " totalQuan=" + totalQuan + " totalQuanByQual=" + totalQuanByQual + " theftModifier=" + theftModifier);
+
                 localCommunity.getDomesticComponent().getIndustrySkills().setAverageSkill(localCommunity.getDomesticComponent().getIndustrySkills().getAverageSkill(industry) + skillGain, industry);
             }
 
             //lastly, clear up variables from the event:
-            customScripts.runCustomScript(&quot;Training Day Request cleanup_common&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _); //TODO this will also turn off Training Day Request RESOLVE
+            customScripts.runCustomScript(&quot;Training Day Request cleanup_resolve&quot;, new List&lt;object&gt;() { inEventStatus, inEventReport }, out _); //this will also turn off Training Day Request RESOLVE and call Trainig Day Request cleanup
 
             //calculations complete.  Store necessary variables:
             string actionTextNoDayOff = customConsts.getStringConst(&quot;evt_&quot; + &quot;Training Day Request&quot; + &quot;_actionText no_day_off before_replace_text&quot;, out success);
@@ -11673,7 +11662,7 @@ return new List&lt;object&gt;() { true };
                 dayOffIfNotZero == 0 ? cbValNoDayOff : cbValDayOff, null);
 
             //internal logic complete.  Assemble the report text:
-            string reportText = customConsts.getStringConst(&quot;Training Day Request report_text before_replace_text&quot;, out success);
+            string reportText = customConsts.getStringConst(&quot;Training Day Request RESOLVE report_text before_replace_text&quot;, out success);
             if (!success)
             {
                 reportText = &quot;City Leader [0], yesterday you granted resources for [2]&apos;s training of our unemployed workers in [1].\n\n[3]&quot;;
@@ -11682,27 +11671,21 @@ return new List&lt;object&gt;() { true };
             string reportTextAdditional = &quot;&quot;;
             if (dayOffIfNotZero != 0)
             {
-                reportTextAdditional = customConsts.getStringConst(&quot;Training Day Request report_text day_off before_replace_text&quot;, out success);
-                if(!success)
-                {
-                    reportTextAdditional = &quot;It seems no one knew about the [1] training that was supposed to occur.  [2] denied ever receiving the resources!  The perfidious, lazy fool couldn&apos;t suppress giddiness at our questions.  May the Lady damn [one_pop|target_3ppronoun_phrase:[4]]!&quot;;
-                }
+                string reportTextAdditional1 = customConsts.getStringConst(&quot;Training Day Request report_text day_off before_replace_text&quot;, out success);
+                if (!success) reportTextAdditional1 = &quot;It seems no one knew about the [1] training that was supposed to occur.  [2] denied ever receiving the resources!  The perfidious, lazy fool couldn&apos;;t suppress giddiness at our questions.  May the Lady damn [one_pop|target_3ppronoun_phrase:[4]]!&quot;;
+                reportTextAdditional += reportTextAdditional1;
             }
-            else if(theftIfNotZero != 0)
+            else if (theftIfNotZero != 0)
             {
-                reportTextAdditional = customConsts.getStringConst(&quot;Training Day Request report_text theft before_replace_text&quot;, out success);
-                if (!success)
-                {
-                    reportTextAdditional = &quot;People attending the training complained about the lack of actual practice.  It seems [2] led them in theoretical exercises and claimed never to receive any resources from the City Leader!  Despite this damnable theft, training of a sort has completed, and the skills of [5] workers have improved by [6].&quot;;
-                }
+                string reportTextAdditional2 = customConsts.getStringConst(&quot;Training Day Request report_text theft before_replace_text&quot;, out success);
+                if (!success) reportTextAdditional2 = &quot;People attending the training complained about the lack of actual practice.  It seems [2] led them in theoretical exercises and claimed never to receive any resources from the City Leader!  Despite this damnable theft, training of a sort has completed, and the skills of [5] workers have improved by [6].&quot;;
+                reportTextAdditional += reportTextAdditional2;
             }
             else
             {
-                reportTextAdditional = customConsts.getStringConst(&quot;Training Day Request report_text success before_replace_text&quot;, out success);
-                if (!success)
-                {
-                    reportTextAdditional = &quot;There were no problems of any sort.  Training has completed as expected, and the skills of [5] workers have improved by [6].&quot;;
-                }
+                string reportTextAdditional3 = customConsts.getStringConst(&quot;Training Day Request report_text success before_replace_text&quot;, out success);
+                if (!success) reportTextAdditional3 = &quot;There were no problems of any sort.  Training has completed as expected, and the skills of [5] workers have improved by [6].&quot;;
+                reportTextAdditional += reportTextAdditional3;
             }
 
             reportText = reportText.Replace(&quot;[3]&quot;, reportTextAdditional);
@@ -11899,7 +11882,7 @@ The day of training has passed.
             //calculations complete.  Store necessary variables:
 
             //internal logic complete.  Assemble the report text:
-            string reportText = customConsts.getStringConst(&quot;Training Day Request report_text before_replace_text&quot;, out success);
+            string reportText = customConsts.getStringConst(&quot;Demand for City and Race Leader Role Split report_text before_replace_text&quot;, out success);
             if (!success)
             {
                 reportText = &quot;City Leader [0]!  We are the collected Race Leaders of the races of the community, besides your [1].  We demand that your people accept your resignation as [2] Leader, and elect another!  Our trust in you to perform both roles without compromise of the duties of City Leadership is too low to allow anything else.&quot;;
@@ -11949,12 +11932,13 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
             IFPop cityLeader = localCommunity.getLeaderCollection().getCityLeader();
             //determine the replacement Race Leader:
             IFPop raceLeaderReplacement = null;
-            if (customScripts.runCustomScriptCheckTypes(&quot;storeFetchOrClearForcedLeader&quot;, new List&lt;object&gt;() { localCommunity, 1, 1, null, cityLeader, null, 0L }, out List&lt;object&gt; returnVals, false,
+            if (customScripts.runCustomScriptCheckTypes(&quot;storeFetchOrClearForcedLeader&quot;, new List&lt;object&gt;() { localCommunity, 1, 1, null, null, cityLeader, 0L }, out List&lt;object&gt; returnVals, false,
                 typeof(List&lt;IFPop&gt;), typeof(List&lt;IFPop&gt;), typeof(bool)))
             {
-                raceLeaderReplacement = ((List&lt;IFPop&gt;)returnVals[0])[0];
+				List&lt;IFPop&gt; raceLeaderReplacementInList = (List&lt;IFPop&gt;)returnVals[0];
+                raceLeaderReplacement = raceLeaderReplacementInList.Count != 0 ? raceLeaderReplacementInList[0] : null;
             }
-            else
+            if(raceLeaderReplacement == null)
             {
                 List&lt;IFPop&gt; potentialReplacers = new List&lt;IFPop&gt;();
                 foreach(IFPop pop in localCommunity.getLoyalPopsByRace(true, false)[cityLeader.getRace()])
@@ -11998,7 +11982,7 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
                     if (!success) happinessName1 = &quot;City Leader Possibly Leads All&quot;;
                     string happinessDesc1 = customConsts.getStringConst(&quot;Demand for City and Race Leader Role Split accept diff_race happiness_desc before_replace_text&quot;, out success);
                     if (!success) happinessDesc1 = &quot;The City Leader stepped down from the position of Race Leader of their race.  We can hope this means the City Leader will work for all of us, not just [0].&quot;;
-                    happinessDesc1.Replace(&quot;[0]&quot;, cityLeader.getRace().getPluralNoun());
+                    happinessDesc1 = happinessDesc1.Replace(&quot;[0]&quot;, cityLeader.getRace().getPluralNoun());
                     double happinessVal1 = customConsts.getDoubleConst(&quot;Demand for City and Race Leader Role Split accept diff_race happiness_val&quot;, out success);
                     if (!success) happinessVal1 = 8.5;
 
@@ -12014,7 +11998,7 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
                 if (!success)
                 {
                     resolution_text = &quot;The [0] are disappointed in you, [1].  You led our people with our assent, not anyone else&apos;s.  Certainly not the assent of [2]!  Our people will be led by [3] now.&quot;
-                                    + &quot;We can only hope that others will not grow emboldened, knowing [4] can be intimidated so easily.&quot;;
+                                    + &quot;  We can only hope that others will not grow emboldened, knowing [4] can be intimidated so easily.&quot;;
                 }
 
                 List&lt;IFPop&gt; otherRaceLeaders = new List&lt;IFPop&gt;(localCommunity.getLeaderCollection().getRaceLeaders());
@@ -12104,8 +12088,8 @@ List&lt;object&gt; toReturn = new List&lt;object&gt;();
                     if (!success) happinessName1 = &quot;City Leader Works For Own Kind&quot;;
                     string happinessDesc1 = customConsts.getStringConst(&quot;Demand for City and Race Leader Role Split reject diff_race happiness_desc before_replace_text&quot;, out success);
                     if (!success) happinessDesc1 = &quot;The City Leader rejected our demand to step down from the position of [0] Leader.  In the City Leader&apos;s mind, all of us must work for [1].  We should show the City Leader how wrong such a notion is.&quot;;
-                    happinessDesc1.Replace(&quot;[0]&quot;, cityLeader.getRace().getAdjective());
-                    happinessDesc1.Replace(&quot;[0]&quot;, cityLeader.getRace().getPluralNoun());
+                    happinessDesc1 = happinessDesc1.Replace(&quot;[0]&quot;, cityLeader.getRace().getAdjective());
+                    happinessDesc1 = happinessDesc1.Replace(&quot;[0]&quot;, cityLeader.getRace().getPluralNoun());
                     double happinessVal1 = customConsts.getDoubleConst(&quot;Demand for City and Race Leader Role Split reject diff_race happiness_val&quot;, out success);
                     if (!success) happinessVal1 = -13.5;
 

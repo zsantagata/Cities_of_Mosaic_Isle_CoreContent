@@ -19,24 +19,20 @@
 	<mPopDaysToBuild>7</mPopDaysToBuild>
 	<mBaseDurability>275</mBaseDurability>
 	
-	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive)  -->
-	  <i1>
-	    <a>TAG:woody</a>
-		<b>175</b>
-	  </i1>
-	  <i1>
-	    <a>TAG:stony</a>
-		<b>175</b>
-	  </i1>
-	  <i1>
-	    <a>TAG:metallic</a>
-		<b>125</b>
-	  </i1>
-	  <i1>
-	    <a>Monument</a> <!-- when indicating that a building can be built without resources but there are other values in this list, you need to have a resource of 0 quantity that the building can be built with -->
-		<b>0</b>
-	  </i1>
-	</mResourcesToBuild>
+	<mResourceCombinationsToBuild> <!-- this is a list of lists.  The inner list elements are pairs of Resource, double quantity.  If nothing exists, this building does not require any resources to build.  If one entry has a sum quantity of 0, then this building can be built with resources or not. -->
+		<i1>
+			<i1>
+				<a>TAG:hard construction</a>
+				<b>125</b>
+			</i1>
+		</i1>
+		<i1>
+			<i1>
+				<a>Monument</a>
+				<b>0</b>
+			</i1>
+		</i1>
+	</mResourceCombinationsToBuild>
 	
 	<mOutputMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, double value -->
 	  <i1>
@@ -46,10 +42,6 @@
 	  <i1>
 	    <a>TAG:metallic</a>
 		<b>1.2</b>
-	  </i1>
-	  <i1>
-	    <a>Monument</a>
-		<b>0.85</b>
 	  </i1>
 	</mOutputMultBasedOnConstructionResources>
 	
@@ -114,7 +106,7 @@
 	  <i1>Raw Wood</i1>
 	</mOutputResources>
 	
-	<mOutputResourceQuanDailyFactor>0.545</mOutputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make output goods per day approximately equal to 1 for a single unskilled worker using one perfectly-average common good, for a workplace that does not work the land. -->
+	<mOutputResourceQuanDailyFactor>2.725</mOutputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make output goods per day approximately equal to 5 for a single unskilled worker using one perfectly-average common good, for a workplace that does not work the land. -->
 	<mInputResourceQuanDailyFactor>1</mInputResourceQuanDailyFactor> <!-- TODO double check this once everything is established.  This value will make input goods per day per worker approximately equal to 1, spread over all inputs (not counting those which are required to be consumed TODO figure that out?). -->
 	
 	<mIsHousing>0</mIsHousing> <!-- bool, true if nonzero -->

@@ -126,7 +126,7 @@
 			//there will be only one name in variablesInQuestionNames if we have reached here
 			if(customScripts.runCustomScriptCheckTypes("isPopValidToBeLeader", new List&lt;object&gt;()
 				{ inCommunityInQuestion, inLeaderType, inIndustryInQuestion, inPopInQuestion },
-				out List&lt;object&gt; popValid, false, typeof(List&lt;bool&gt;)))
+				out List&lt;object&gt; popValid, false, typeof(bool)))
 			{
 				if((bool)popValid[0])
 				{
@@ -163,7 +163,7 @@
 						}
 						if(customScripts.runCustomScriptCheckTypes("isPopValidToBeLeader", new List&lt;object&gt;()
 							{ inCommunityInQuestion, inLeaderType, industryToCheckFor, popFetched },
-							out List&lt;object&gt; popValid, false, typeof(List&lt;bool&gt;)))
+							out List&lt;object&gt; popValid, false, typeof(bool)))
 						{
 							if((bool)popValid[0])
 							{

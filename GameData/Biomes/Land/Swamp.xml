@@ -18,7 +18,7 @@
   <igTerrainBiome name="Swamp">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Swamp</full_path>
-	  <body_text>Swamp.  Put encyclopedia description here.</body_text>
+	  <body_text>Also called marshes or bogland, Swamps are places where standing water covers a fair portion of the ground.  Vegetation covers the area, including some trees.  Travel is greatly difficult here, and frequent disease leaves few people willing to fight over the right to these wetlands.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

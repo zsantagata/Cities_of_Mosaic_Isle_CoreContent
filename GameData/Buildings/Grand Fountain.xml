@@ -26,25 +26,25 @@
 	<mPopDaysToBuild>8</mPopDaysToBuild>
 	<mBaseDurability>200</mBaseDurability>
 	
-	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive).  If nothing exists, this building does not require any resources to build.  If one entry has a quantity of 0, then this building can be built with resources or not. -->
-	  <i1>
-	    <a>TAG:stony</a>
-		<b>350</b>
-	  </i1>
-	  <i1>
-	    <a>TAG:metallic</a>
-		<b>300</b>
-	  </i1>
-	</mResourcesToBuild>
+	<mResourceCombinationsToBuild> <!-- this is a list of lists.  The inner list elements are pairs of Resource, double quantity.  If nothing exists, this building does not require any resources to build.  If one entry has a sum quantity of 0, then this building can be built with resources or not. -->
+		<i1>
+			<i1>
+				<a>TAG:stony</a>
+				<b>250</b>
+			</i1>
+		</i1>
+		<i1>
+			<i1>
+				<a>TAG:metallic</a>
+				<b>250</b>
+			</i1>
+		</i1>
+	</mResourceCombinationsToBuild>
 	
 	<mOutputMultBasedOnConstructionResources>
 	</mOutputMultBasedOnConstructionResources>
 	
 	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value -->
-	  <i1>
-	    <a>TAG:woody</a>
-		<b>1.25</b>
-	  </i1>
 	  <i1>
 	    <a>TAG:stony</a>
 		<b>2.5</b>

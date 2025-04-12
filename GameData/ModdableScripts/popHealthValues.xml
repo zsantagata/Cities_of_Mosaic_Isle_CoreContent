@@ -72,14 +72,19 @@
 	  if(pop.hasHomeBuilding())
 	  {
 		  IFBuilding building = pop.getHomeBuilding();
-		  for(int i=1; i &lt; getAPI().getTotalCountOfMO("industries"); i++)
+		  waterProvidedByHousing = building.getBuildingWaterStatus() != IFBuilding.eBuildingWaterStatus.cOverwaterEntirely;
+		  
+		  if(!waterProvidedByHousing)
 		  {
-			IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", i);
-			if(industry.hasTag("water bearing") &amp;&amp; (building.calcServiceQualityForIndustry((UInt64)i) != consts.getResourceQualityMin()))
-			{
-				waterProvidedByHousing = true;
-				break;
-			}
+			  for(int i=1; i &lt; getAPI().getTotalCountOfMO("industries"); i++)
+			  {
+				IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", i);
+				if(industry.hasTag("water bearing") &amp;&amp; (building.calcServiceQualityForIndustry((UInt64)i) != consts.getResourceQualityMin()))
+				{
+					waterProvidedByHousing = true;
+					break;
+				}
+			  }
 		  }
 	  }
 	  

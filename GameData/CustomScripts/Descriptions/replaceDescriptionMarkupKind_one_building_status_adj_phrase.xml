@@ -121,7 +121,13 @@
 	}
 	
 	//building materials:
-	IFResource constructionResource = inBuilding.getMadeOfResource();
+	var constructionResources = inBuilding.getConstructionResources();
+	IFResource constructionResource = null;
+	if(constructionResources.Count != 0)
+	{
+		var randomElem = getAPI().getOneRandomItemFromList(constructionResources);
+		constructionResource = randomElem.Item1;
+	}
 	if(constructionResource != null)
 	{
 		Int64 constructionRandSelMax = customConsts.getIntConst("replaceDescriptionMarkupKind_one_building_status_adj_phrase building_materials rand_selection_count", out success);

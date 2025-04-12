@@ -18,7 +18,7 @@
   <igTerrainBiome name="Hills">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Hills</full_path>
-	  <body_text>Hills.  Put encyclopedia description here.</body_text>
+	  <body_text>Mosaic Isle's Hills are one of its most resource-rich regions.  Fertile soils and grazeland where the ground is flat, wooded slopes for Lumber and animal hunting, and outcroppings of mineral resources can be found in many places.  Despite the difficulty of traversing the land, this makes Hills a contested grounds for communities who are capable of fighting for a home here.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

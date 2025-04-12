@@ -14,14 +14,24 @@
     <mWidth>6</mWidth>
     <mHeight>4</mHeight>
 	
-	<mResourcesToBuild>
-		<i1><a>Leather</a><b>40</b></i1>
-		<i1><a>Spider Silk</a><b>40</b></i1>
-		<i1><a>Wool</a><b>40</b></i1>
-		<i1><a>Cotton</a><b>40</b></i1>
-		<i1><a>Hemp</a><b>40</b></i1>
-		<i1><a>Ladyhair</a><b>40</b></i1>
-	</mResourcesToBuild>
+	<mResourceCombinationsToBuild> <!-- this is a list of lists.  The inner list elements are pairs of Resource, double quantity.  If nothing exists, this building does not require any resources to build.  If one entry has a sum quantity of 0, then this building can be built with resources or not. -->
+		<i1>
+			<i1>
+				<a>TAG:flexible construction</a>
+				<b>40</b>
+			</i1>
+		</i1>
+		<i1>
+			<i1>
+				<a>TAG:hard construction</a>
+				<b>10</b>
+			</i1>
+			<i1>
+				<a>TAG:flexible construction</a>
+				<b>30</b>
+			</i1>
+		</i1>
+	</mResourceCombinationsToBuild>
 	
 	<mDurabilityMultBasedOnConstructionResources>
 		<i1><a>Leather</a><b>1.5</b></i1>

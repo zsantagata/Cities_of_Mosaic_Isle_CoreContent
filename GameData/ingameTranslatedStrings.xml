@@ -47,12 +47,20 @@
 	<!-- sandbox generation text: -->
 	<i1><a>location_nobiome_text</a>
 	<b>None</b></i1>
-	<i1><a>location_info_text</a>
-	<b>Location: ([0], [1])\nLand Biome: [2]\nWater Biome: [3]\n[4]</b></i1>
+	<i1><a>sandbox_location_info_text</a>
+	<b>Location: ([0], [1])[2]</b></i1>
+	<i1><a>sandbox_land_biome_text</a>
+	<b>Land Biome: [0]</b></i1>
+	<i1><a>sandbox_water_biome_text</a>
+	<b>Water Biome: [0]</b></i1>
 	<i1><a>location_coastal_text</a>
-	<b>Coastal</b></i1>
+	<b>\nCoastal</b></i1>
 	<i1><a>location_nocoastal_text</a>
 	<b></b></i1>
+	<i1><a>sandbox_encyclopedia_land_button_label</a>
+	<b>Encyclopedia</b></i1>
+	<i1><a>sandbox_encyclopedia_water_button_label</a>
+	<b>Encyclopedia</b></i1>
 	
 	<!-- in game text: -->
 	<i1><a>nosave_confirm_text</a>
@@ -628,9 +636,13 @@
 	<i1><a>industryview_allindustries_detailstext_description</a>
 	<b>There are [0] total workplaces in the city, and [1] total pops of the selected race working.</b></i1>
 	<i1><a>industryview_selectedindustry_detailstext_description</a>
-	<b>There are [0] workplaces of the selected industry in the city, and [1] pops of the selected race work in this industry.  The industry is led by [2], and the building being led is [3].</b></i1>
+	<b>There are [0] workplaces of the selected industry in the city, and [1] pops of the selected race work in this industry.  The industry is led by [2], and the building being led is [3].  [4]</b></i1>
 	<i1><a>industryview_selectedindustry_detailstext_noleader_description</a>
 	<b>no one</b></i1>
+	<i1><a>industryview_selectedindustry_detailstext_noleader_skill_description</a>
+	<b>The average skill of workers in our community is [0]% of its potential.</b></i1>
+	<i1><a>industryview_selectedindustry_detailstext_leader_skill_description</a>
+	<b>The average skill of workers in our community is [0]% of its potential.  The skill of our leader is [1]% of its potential.</b></i1>
 	<i1><a>industryview_selectedindustry_detailstext_leader_description</a>
 	<b>[0]</b></i1>
 	<i1><a>industryview_selectedindustry_detailstext_nobuildingled_description</a>
@@ -960,9 +972,11 @@
 	<i1><a>building_equipmentcommand_label</a>
 	<b>Equipment Command:</b></i1>
 	<i1><a>building_nameandbuildtime_text</a>
-	<b>[0]   Built [1]</b></i1>
+	<b>[0] named [1]\nBuilt [2]</b></i1>
 	<i1><a>building_constructionmaterial_text</a>
 	<b>Construction Material: [0]</b></i1>
+	<i1><a>building_noconstructionmaterial_text</a>
+	<b>No Construction Material</b></i1>
 	<i1><a>building_durability_text</a>
 	<b>Durability: [0] of [1]</b></i1>
 	<i1><a>building_markedfordestruction_text</a>
@@ -996,7 +1010,7 @@
 	<i1><a>building_housing_popspregnant_text</a>
 	<b>[0] pregnant</b></i1>
 	<i1><a>building_housing_foreigners_text</a>
-	<b>[0] foreign pops from [1], [2]</b></i1> <!-- [0] = count, [1] = community, [2] = delegation -->
+	<b>[0] foreign pops from [1], [2]\n</b></i1> <!-- [0] = count, [1] = community, [2] = delegation -->
 	<i1><a>building_housing_foreignersnodelegation_text</a>
 	<b>no delegation</b></i1>
 	
@@ -1501,6 +1515,26 @@
 	<b>These tiles cannot be built upon.</b></i1>
 	<i1><a>buildingconstruction_failurealert_noresources_text</a>
 	<b>Not enough of selected resources to build building.</b></i1>
+	
+	<!-- resource pool tooltips -->
+	<i1><a>resourcepool_food_toggleon_text</a>
+	<b>Show Only Food</b></i1>
+	<i1><a>resourcepool_military_toggleon_text</a>
+	<b>Show Only Equipment</b></i1>
+	<i1><a>resourcepool_healing_toggleon_text</a>
+	<b>Show Only Healing</b></i1>
+	<i1><a>resourcepool_Trade_toggleon_text</a>
+	<b>Show Only Trade</b></i1>
+	<i1><a>resourcepool_food_description_text</a>
+	<b>Food</b></i1>
+	<i1><a>resourcepool_military_description_text</a>
+	<b>Equipment</b></i1>
+	<i1><a>resourcepool_healing_description_text</a>
+	<b>Healing</b></i1>
+	<i1><a>resourcepool_Trade_description_text</a>
+	<b>Trade</b></i1>
+	<i1><a>resourcepool_toggleoff_text</a>
+	<b>Show All</b></i1>
 	
 	</mTranslationStrings>
 	

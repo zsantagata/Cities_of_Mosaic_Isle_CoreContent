@@ -808,7 +808,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -883,7 +883,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -960,7 +960,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1037,7 +1037,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1112,7 +1112,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1187,7 +1187,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1262,7 +1262,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1354,7 +1354,7 @@
 		{
 			variableHandler.storeIntVariable(currentDate + 1 + consts.getPopKeepAfterDeadDaysGeneral(), "popDeathRecord_wasIndustryLeader_pop" + pop.getUID(), 1L);
 			variableHandler.storeIntVariable(currentDate + 1 + consts.getPopKeepAfterDeadDaysGeneral(), "popDeathRecord_industryMOIDLedByPop_pop" + pop.getUID(), 
-				leaders.getIndustryLedByPop(pop).getUID());
+				leaders.getIndustryLedByPop(pop).getMOID());
 		}
 	  }
 	
@@ -1382,7 +1382,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1460,7 +1460,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1538,7 +1538,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1616,7 +1616,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1694,7 +1694,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1772,7 +1772,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1847,7 +1847,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1922,7 +1922,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -1997,7 +1997,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2072,7 +2072,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2147,7 +2147,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2222,7 +2222,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2297,7 +2297,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2372,7 +2372,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2447,7 +2447,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2522,7 +2522,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2597,7 +2597,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2672,7 +2672,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2747,7 +2747,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2822,7 +2822,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2851,7 +2851,7 @@
 		if(del != null)
 		{
 			string kindName = getAPI().getTranslatedStrings().getDisplayStringOfName(
-				IFDelegation.cDelegationTypeNames[(int)]del.getDelegationType());
+				IFDelegation.cDelegationTypeNames[(int)del.getDelegationType()]);
 			for(int i = 0; i &lt; minorAdjList.Count; i++)
 			{
 				minorAdjList[i] = minorAdjList[i].Replace("[0]", kindName);
@@ -2920,7 +2920,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -2949,7 +2949,7 @@
 		if(del != null)
 		{
 			string kindName = getAPI().getTranslatedStrings().getDisplayStringOfName(
-				IFDelegation.cDelegationTypeNames[(int)]del.getDelegationType());
+				IFDelegation.cDelegationTypeNames[(int)del.getDelegationType()]);
 			for(int i = 0; i &lt; minorAdjList.Count; i++)
 			{
 				minorAdjList[i] = minorAdjList[i].Replace("[0]", kindName);
@@ -3018,7 +3018,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3047,7 +3047,7 @@
 		if(del != null)
 		{
 			string kindName = getAPI().getTranslatedStrings().getDisplayStringOfName(
-				IFDelegation.cDelegationTypeNames[(int)]del.getDelegationType());
+				IFDelegation.cDelegationTypeNames[(int)del.getDelegationType()]);
 			for(int i = 0; i &lt; minorAdjList.Count; i++)
 			{
 				minorAdjList[i] = minorAdjList[i].Replace("[0]", kindName);
@@ -3116,7 +3116,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3145,7 +3145,7 @@
 		if(del != null)
 		{
 			string kindName = getAPI().getTranslatedStrings().getDisplayStringOfName(
-				IFDelegation.cDelegationTypeNames[(int)]del.getDelegationType());
+				IFDelegation.cDelegationTypeNames[(int)del.getDelegationType()]);
 			for(int i = 0; i &lt; minorAdjList.Count; i++)
 			{
 				minorAdjList[i] = minorAdjList[i].Replace("[0]", kindName);
@@ -3214,7 +3214,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3289,7 +3289,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3364,7 +3364,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3439,7 +3439,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3514,7 +3514,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3589,7 +3589,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3664,7 +3664,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3739,7 +3739,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3814,7 +3814,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3889,7 +3889,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -3964,7 +3964,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4039,7 +4039,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4114,7 +4114,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4189,7 +4189,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4264,7 +4264,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4339,7 +4339,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4436,7 +4436,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4533,7 +4533,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4630,7 +4630,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4727,7 +4727,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4802,7 +4802,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4877,7 +4877,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -4952,7 +4952,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -5027,7 +5027,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  
@@ -5102,7 +5102,7 @@
 	  Int64 inDate = (Int64)inArguments[1];
 	  IFHistoryActor.eActorKind inActorKind = (IFHistoryActor.eActorKind)inArguments[2];
 	  UInt64 inActorID = (UInt64)inArguments[3];
-	  IFHistoryTarget.eTargetKind inDate = (IFHistoryTarget.eTargetKind)inArguments[4];
+	  IFHistoryTarget.eTargetKind inTargetKind = (IFHistoryTarget.eTargetKind)inArguments[4];
 	  UInt64 inTargetID = (UInt64)inArguments[5];
 	  Int64 inImpactOverride = (Int64)inArguments[6];
 	  

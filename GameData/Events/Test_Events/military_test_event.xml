@@ -256,7 +256,7 @@
 			}
 			else
 			{
-				List&lt;UInt64&gt; allCommunityUIDs = getAPI().getUIDsOfAllSO("communities");
+				ReadOnlyCollection&lt;UInt64&gt; allCommunityUIDs = getAPI().getUIDsOfAllSO("communities");
 				while(community == null)
 				{
 					community = (IFCommunity)getAPI().getSO("communities", allCommunityUIDs[(int)getAPI().calcRandIntUnder(allCommunityUIDs.Count)]);

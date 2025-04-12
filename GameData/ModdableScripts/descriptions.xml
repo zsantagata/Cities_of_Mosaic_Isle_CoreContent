@@ -144,7 +144,7 @@
 	}
 	if(inTileUnderCursor.hasResourceParcel())
 	{
-		outTooltipText += resourceParcelElement.Replace("[0]", inTileUnderCursor.getResourceParcel().getDisplayName()) + "\n";
+		outTooltipText += resourceParcelElement.Replace("[0]", inTileUnderCursor.getResourceParcel().getTerrainSource().getDisplayName()) + "\n";
 	}
 	if(inTileUnderCursor.hasDoodad())
 	{

@@ -18,7 +18,7 @@
   <igTerrainBiome name="Grassland">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Grassland</full_path>
-	  <body_text>Grassland.  Put encyclopedia description here.</body_text>
+	  <body_text>While Grasslands are rich with fertile soil, large groups of grazing animals and lower rainfall prevent tree growth that would turn the region into a Forest.  Animals are happy to feed on the ever-present grass, and hunters on the ever-present animals, but be warned: communities in this region travel quickly across the plains and are used to violence.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

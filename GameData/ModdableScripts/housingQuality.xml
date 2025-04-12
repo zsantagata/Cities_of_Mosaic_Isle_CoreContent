@@ -187,21 +187,30 @@
 	  if(!success) water_penalty = 0.25d;
 	  water_penalty *= (consts.getResourceQualityMax() - consts.getResourceQualityMin());
 	  
-	  for(int i=1; i &lt; getAPI().getTotalCountOfMO("industries"); i++)
+	  bool waterAccess = building.getBuildingWaterStatus() != IFBuilding.eBuildingWaterStatus.cOverwaterEntirely;
+	  IFIndustry firstIndustryDetected = null;
+	  if(!waterAccess)
 	  {
-	    IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", i);
-		if(industry.hasTag("water bearing") &amp;&amp; (building.calcServiceQualityForIndustry((UInt64)i) != consts.getResourceQualityMin()))
-    {
-    water_penalty = 0;
-    addDebugMessage(inScriptInstance, "water is being provided to home " + building.getDebugName() + ", first industry detected=" + industry.getDebugName());
-    break;
-    }
-    }
-
-    if(water_penalty != 0)
-    {
-    addDebugMessage(inScriptInstance, "water is not being provided to home " + building.getDebugName());
-    }
+		  for(int i=1; i &lt; getAPI().getTotalCountOfMO("industries"); i++)
+		  {
+			IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", i);
+			if(industry.hasTag("water bearing") &amp;&amp; (building.calcServiceQualityForIndustry((UInt64)i) != consts.getResourceQualityMin()))
+			{
+				waterAccess = true;
+				firstIndustryDetected = industry;
+				break;
+			}
+		  }
+	  }
+	  if(waterAccess)
+	  {
+		water_penalty = 0;
+		addDebugMessage(inScriptInstance, "water is being provided to home " + building.getDebugName() + ", first industry detected=" + (firstIndustryDetected == null ? "null" : firstIndustryDetected.getDebugName()));
+	  }
+	  else
+      {
+		addDebugMessage(inScriptInstance, "water is not being provided to home " + building.getDebugName());
+      }
 
     List&lt;object&gt; toReturn = new List&lt;object&gt;();
     addDebugMessage(inScriptInstance, "water (or its lack) bonus of " + 0 + " and penalty of " + water_penalty + " to quality of housing " + building.getDebugName());

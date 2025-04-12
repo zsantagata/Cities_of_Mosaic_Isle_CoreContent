@@ -82,7 +82,7 @@
 		if(nonExpireEvt != null)
 		{
 			string expireName = nonExpireEvt.getInternalName() + " EXPIRE";
-			addDebugMessage(inScriptInstance, "looking for event with internal name " + expireName);
+			addDebugMessage(inScriptInstance, "looking for event with internal name " + expireName + ", mode=" + (inSetup ? "setup" : (inClear ? "clear" : "fetch")));
 			IFEvent expireEvt = (IFEvent)getAPI().getMOFromInternalName("events", expireName);
 			if(expireEvt != null)
 			{
@@ -223,7 +223,7 @@
 								//no matter what, add the eventReportUID to the dictionary:
 								outLoyalOnMapPopsAssociated.Add(eventReportUID, popsToAdd);
 								
-								Int64 directTimer = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_directTimer" + inEventReportUID, out success);
+								Int64 directTimer = variableHandler.getInt("evt_" + expireEvt.getInternalName() + "_directTimer" + eventReportUID, out success);
 								if(!success) directTimer = -1L;
 								
 								//no matter what, add the eventReportUID to the dictionary:

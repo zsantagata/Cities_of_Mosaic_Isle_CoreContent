@@ -18,7 +18,7 @@
   <igTerrainBiome name="Tundra">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Tundra</full_path>
-	  <body_text>Tundra.  Put encyclopedia description here.</body_text>
+	  <body_text>Snowy temperatures and limited vegetation blanket the Tundra.  What plant life survives in a Tundra makes the most of the short summer season, blooming into vibrant colors for a time, but otherwise remains subdued.  Large fields of Deer can be found here, as can mineral wealth, if one is willing to trudge through snow to acquire either.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

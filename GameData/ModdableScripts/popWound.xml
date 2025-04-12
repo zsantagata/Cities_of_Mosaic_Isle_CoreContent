@@ -11,8 +11,14 @@
 		<i1><a>popWound exposure days min</a> <b>int</b> <c>1</c></i1> <!-- this is the minimum days wounded from an exposure wound -->
 		<i1><a>popWound exposure days max</a> <b>int</b> <c>20</c></i1> <!-- this is the maximum days wounded from an exposure wound -->
 		
+		<i1><a>popWound workplace days min</a> <b>int</b> <c>1</c></i1> <!-- this is the minimum days wounded from a workplace wound -->
+		<i1><a>popWound workplace days max</a> <b>int</b> <c>40</c></i1> <!-- this is the maximum days wounded from a workplace wound -->
+		
 		<i1><a>popWound illness days min</a> <b>int</b> <c>2</c></i1> <!-- this is the minimum days wounded from an illness wound -->
 		<i1><a>popWound illness days max</a> <b>int</b> <c>8</c></i1> <!-- this is the maximum days wounded from an illness wound -->
+		
+		<i1><a>popwound combat days min</a> <b>int</b> <c>5</c></i1> <!-- this is the minimum days wounded from a combat wound -->
+		<i1><a>popwound combat days max</a> <b>int</b> <c>30</c></i1> <!-- this is the maximum days wounded from a combat wound -->
 	
 	</mCustomVariableList>
   </customconsts>

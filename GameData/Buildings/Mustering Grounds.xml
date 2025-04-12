@@ -17,7 +17,7 @@
 	<mPopDaysToBuild>1</mPopDaysToBuild> <!-- values below 1 will be treated as 1 -->
 	<mBaseDurability>500</mBaseDurability>
 	
-	<mResourcesToBuild></mResourcesToBuild>
+	<mResourceCombinationsToBuild></mResourceCombinationsToBuild>
 	
 	<mOutputMultBasedOnConstructionResources></mOutputMultBasedOnConstructionResources>
 	

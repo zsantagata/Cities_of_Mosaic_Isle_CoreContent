@@ -78,6 +78,8 @@
 		<i1>fibrous</i1>
 		<i1>soil-growable</i1>
 		<i1>flammable</i1>
+		<i1>flexible construction</i1>
+		<i1>soft construction</i1>
 		
 		<!-- description tags: -->
 		<i1>use_adj:raw</i1>
@@ -110,6 +112,7 @@
 		<i1>fibrous</i1>
 		<i1>soil-growable</i1>
 		<i1>flammable</i1>
+		<i1>flexible construction</i1>
 		
 		<!-- description tags: -->
 		<i1>use_adj:raw</i1>
@@ -142,6 +145,8 @@
 		<i1>fibrous</i1>
 		<i1>soil-growable</i1>
 		<i1>flammable</i1>
+		<i1>flexible construction</i1>
+		<i1>soft construction</i1>
 		
 		<!-- description tags: -->
 		<i1>use_adj:raw</i1>

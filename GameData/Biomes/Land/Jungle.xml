@@ -18,7 +18,7 @@
   <igTerrainBiome name="Jungle">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Jungle</full_path>
-	  <body_text>Jungle.  Put encyclopedia description here.</body_text>
+	  <body_text>Muggy and dense, a Jungle holds life in every corner.  Rich soil, humid conditions, and heat have given rise to trees and all manner of plant life from horizon to horizon.  Communities here know the rule here is to hunt or be hunted: fell a boar for today's meal and smile, but tomorrow you may fall to a wild predator or parasitic disease.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

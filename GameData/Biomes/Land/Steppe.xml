@@ -18,7 +18,7 @@
   <igTerrainBiome name="Steppe">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Steppe</full_path>
-	  <body_text>Steppe.  Put encyclopedia description here.</body_text>
+	  <body_text>Rocky outcrops, less rainfall, and more frequent wildfires distinguish the Steppe from Grassland, but to many the distinction is minimal.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

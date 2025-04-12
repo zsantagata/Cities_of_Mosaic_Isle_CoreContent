@@ -18,7 +18,7 @@
   <igTerrainBiome name="Forest">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Forest</full_path>
-	  <body_text>Forest.  Put encyclopedia description here.</body_text>
+	  <body_text>Dependable rainfall and moderate temperature give rise to Forests full of trees.  The fertile soil, hunting grounds, and easily available Lumber help Forest communities thrive.  Travel through the thick woods can be difficult, however, so these communities can go a long time without contact.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

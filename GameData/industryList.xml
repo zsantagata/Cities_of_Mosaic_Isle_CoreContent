@@ -286,10 +286,8 @@
 	  <!-- nothing in this list of entries -->
 	  </related_entries_full_paths>
 	</Encyclopedia_Entry>
-    <mTagList>
-	  <i1>water bearing</i1> <!-- water bearing industries serve water needs of pops in houses -->
-	</mTagList>
 	<mTagList>
+	    <i1>water bearing</i1> <!-- water bearing industries serve water needs of pops in houses -->
 		<!-- description tags: -->
 		<i>description_adj:humble</i>
 		<i>description_adj:important</i>

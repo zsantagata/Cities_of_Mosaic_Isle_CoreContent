@@ -9,8 +9,8 @@
 	  <c>A new community called [0] has been discovered.</c></i1>
 		
 		<!-- diplo pixels are at a higher scale than world map pixels; these are in diplo pixels -->
-	  <i1><a>createNewRandomCommunity radius_from_others min</a> <b>double</b> <c>15</c></i1>
-	  <i1><a>createNewRandomCommunity radius_from_local_community min</a> <b>double</b> <c>15</c></i1>
+	  <i1><a>createNewRandomCommunity radius_from_others min</a> <b>double</b> <c>55</c></i1>
+	  <i1><a>createNewRandomCommunity radius_from_local_community min</a> <b>double</b> <c>55</c></i1>
 	  <i1><a>createNewRandomCommunity radius_from_local_community max</a> <b>double</b> <c>800</c></i1>
 	  <i1><a>createNewRandomCommunity location_attempts max</a> <b>int</b> <c>50</c></i1>
 	  

@@ -1,0 +1,690 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- The above is a default, but its inclusion should be everywhere just to indicate that all files, for our purposes, are UTF-8 encoded.  Also, as a reminder, the less than, greater than, ampersand, apostrophe, and quotation mark are invalid XML and must be replaced with the literal text &lt; &gt; &amp; &apos; &quot; with the semicolons -->
+<core_data>
+	<customconsts name="default">
+		<mCustomVariableList kind="add">
+			<!-- strictly speaking, an igEvent could check anything.  I can't add enough custom variables to setup "anything", so these are mostly the common bits. -->
+		
+			<i1><a>local_normal_event_test name_of_event</a> <b>string</b> <c>Demand for City and Race Leader Role Split</c></i1> <!-- the event by this name is the event under test by local_normal_event_test -->
+			
+			<i1><a>local_normal_event_test set_mtth_to_1 if_not_zero</a> <b>int</b> <c>0</c></i1> <!-- if this is not zero, the event under test will have its MTTH set to 1.  (This is not as "reliable" as forcing date tomorrow, but causes the event to repeat.) -->
+			<i1><a>local_normal_event_test force_date_tomorrow if_not_zero</a> <b>int</b> <c>0</c></i1> <!-- if this is not zero, the event under test will have its force date set to tomorrow -->
+			
+			<i1><a>local_normal_event_test evoke_immediately if_not_zero</a> <b>int</b> <c>1</c></i1> <!-- if this is not zero, the event under test will be directly invoked -->
+			<i1><a>local_normal_event_test evoke_immediately bypass_gate_script if_not_zero</a> <b>int</b> <c>0</c></i1> <!-- if this is not zero, and the event is being evoked immediately, then the event's gating script will be bypassed -->
+			
+			<!-- whether or not the event will be evoked immediately/have mtth set to 1/force date tomorrow, these scripts (with no arguments and no returns) are run before them, in the order listed -->
+			<i1><a>local_normal_event_test scripts_to_run_before_event_evoked</a> <b>list</b> <c>debugscript_equalize_race_counts_add,debugscript_assign_cityleader,debugscript_assign_raceleaders,debugscript_set_all_industry_skill,debugscript_set_all_leader_industry_skill,debugscript_assign_industryleaders,debugscript_add_housing_with_distro,debugscript_force_housing,debugscript_set_all_resources,debugscript_set_prediction_strength,debugscript_assign_cityleader_as_raceleader</c></i1>
+			<i1><a>local_normal_event_test scripts_to_run_after_event_evoked</a> <b>list</b> <c></c></i1> <!-- if and only if the event is evoked immediately, these scripts will run after the event is evoked -->
+			
+			<!-- these are the scripts meant for use by this event which currently exist:
+			"debugscript_equalize_race_counts_add" : adds monsters of all nonhidden races to the local community until all race counts are equal
+			"debugscript_assign_cityleader" : assigns city leader if there is none
+			"debugscript_assign_raceleaders" : assigns race leaders for all races that exist in local community if they have none
+			"debugscript_assign_industryleaders" : assigns industry leaders for all industries if they have none (up until all pops are leaders of some sort)
+			"debugscript_add_housing_with_distro" : adds housing buildings around one distribution building (also added) until there are more open pop slots than housing
+			"debugscript_force_housing" : forces pops into housing even if it doesn't make sense (such as their race cannot house there, or it's only Wanderer/foreign/leader housing)
+			"debugscript_set_all_resources" : sets non-immediate-degrade resource quantities and qualities to one value, determined by custom consts
+			"debugscript_set_all_industry_skill" : sets all average industry skill to one value, determined by custom consts
+			"debugscript_set_all_leader_industry_skill" : sets all leader industry skill to one value, determined by custom consts
+			"debugscript_set_prediction_strength" : sets prediction strength to a value, determined by custom consts
+			"debugscript_kill_all_race_leaders" : kills all race leaders (probably more useful after the event is evoked than before)
+			"debugscript_kill_all_industry_leaders" : kills all industry leaders (probably more useful after the event is evoked than before)
+			"debugscript_assign_cityleader_as_raceleader" : assigns the city leader to be the race leader of their race
+			
+			TODO "debugscript_make_dominant_race_with_small_others" : adds monsters of the currently-highest-count race in large quantity, then monsters of N other races in small quantity.  N determined by custom consts
+			
+			-->
+		
+			<i1><a>debugscript_set_all_resources quantity</a> <b>double</b> <c>1000.0</c></i1>
+			<i1><a>debugscript_set_all_resources quality</a> <b>double</b> <c>0.0</c></i1> <!-- direct, not "proportion of range" -->
+			<i1><a>debugscript_set_all_industry_skill proportion</a> <b>double</b> <c>0.5</c></i1> <!-- proportion of range -->
+			<i1><a>debugscript_set_all_leader_industry_skill proportion</a> <b>double</b> <c>0.8</c></i1> <!-- proportion of range -->
+			<i1><a>debugscript_set_prediction_strength value</a> <b>double</b> <c>100.0</c></i1> <!-- pred str goes from 0 to 100 -->
+			
+			<i1><a>debugscript_make_dominant_race_with_small_others count_minor_races</a> <b>int</b> <c>2</c></i1>
+			
+			<!-- logging const for an event's upon-happening script is always "log_script_event undercase_event_name upon happening" where undercase_event_name is the thing you put as the name, but with all capitals made lowercase -->
+			<i1><a>log_script_event Training Day Request gate</a> <b>int</b> <c>1</c></i1>
+			<i1><a>log_script_event local_normal_event_test upon happening</a> <b>int</b> <c>1</c></i1>
+		</mCustomVariableList>
+	</customconsts>
+
+  <igEvent name="local_normal_event_test">
+  <mTypeOfEvent>0</mTypeOfEvent> <!-- 0 = normal event (happens in community over time), 1 = player-sourced delegation arrives at foreign location event, 2 = player-sourced delegation while traveling event, 3 = simultaneous with other occurrence event -->
+  <mSimultaneousWithOccurrence>0x0</mSimultaneousWithOccurrence> <!-- does not matter unless mTypeOfEvent is 3 -->
+  
+  <mDefaultEnabled>0</mDefaultEnabled> <!-- enable the event -->
+  <mDefaultMTTH>0x1</mDefaultMTTH> <!-- trigger the event on every day -->
+  
+  <!-- no gate conditions for the test event: -->
+  <mScriptWhichGatesHappening>
+	List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	toReturn.Add(true);
+	return toReturn;
+  </mScriptWhichGatesHappening>
+  
+  <mInvisible>0</mInvisible>
+  <mDefaultMenuText>
+	The local normal event test has been set up.  If you are seeing this text, local_normal_event_test did not correctly override its default text.
+  </mDefaultMenuText>
+  
+  <mStopTimeAndForceEvaluate>1</mStopTimeAndForceEvaluate>
+  <mCanHappenWhileReportPending>1</mCanHappenWhileReportPending>
+  
+  
+  <mScriptUponHappening>
+    //input count check:
+    if (inArguments.Length &lt; 2)
+    {
+		return null;
+    }
+			
+    var consts = getAPI().getConsts();
+	var customConsts = getAPI().getCustomConsts();
+	var customScripts = getAPI().getCustomScripts();
+	var variableHandler = getAPI().getVariableHandler();
+	
+	IFEventStatus inEventStatus = (IFEventStatus)inArguments[0];
+	IFEventReport inEventReport = (IFEventReport)inArguments[1];
+	
+	bool success = false;
+	string toDisplay = "";
+	
+	//first, fetch all appropriate custom consts:
+	string eventUnderTestName = customConsts.getStringConst("local_normal_event_test name_of_event", out success);
+	
+	Int64 setMTTHTo1IfNonZero = customConsts.getIntConst("local_normal_event_test set_mtth_to_1 if_not_zero", out success);
+	if(!success) setMTTHTo1IfNonZero = 0;
+	Int64 forceDateTomorrowIfNonZero = customConsts.getIntConst("local_normal_event_test force_date_tomorrow if_not_zero", out success);
+	if(!success) forceDateTomorrowIfNonZero = 0;
+	Int64 evokeImmediatelyIfNonZero = customConsts.getIntConst("local_normal_event_test evoke_immediately if_not_zero", out success);
+	if(!success) evokeImmediatelyIfNonZero = 0;
+	Int64 evokeBypassGateScriptIfNonZero = customConsts.getIntConst("local_normal_event_test evoke_immediately bypass_gate_script if_not_zero", out success);
+	if(!success) evokeBypassGateScriptIfNonZero = 0;
+	
+	ReadOnlyCollection&lt;string&gt; scriptNamesToEvokeBeforehand = customConsts.getListConst("local_normal_event_test scripts_to_run_before_event_evoked", out success);
+	ReadOnlyCollection&lt;string&gt; scriptNamesToEvokeAfter = customConsts.getListConst("local_normal_event_test scripts_to_run_after_event_evoked", out success);
+	
+	//fetch the event:
+	IFEvent eventUnderTest = (IFEvent)getAPI().getMOFromInternalName("events", eventUnderTestName);
+	IFEventStatus status = (IFEventStatus)getAPI().getSO("eventstatuses", eventUnderTest.getMOID());
+	toDisplay += "Event under test name = \"" + eventUnderTest.getInternalName() + "\"\n";
+	
+	foreach(string name in scriptNamesToEvokeBeforehand)
+	{
+		if(name != "")
+		{
+			if(customScripts.runCustomScript(name, new List&lt;object&gt;() { }, out _))
+			{
+				toDisplay += "Pre-event script " + name + " ran correctly\n";
+			}
+			else
+			{
+				toDisplay += "Pre-event script " + name + " FAILED!!!\n";
+			}
+		}
+	}
+	
+	if(evokeImmediatelyIfNonZero != 0)
+	{
+		toDisplay += "Evoking event directly (by the time you see this the event should also have occurred).\n";
+	
+		eventUnderTest.evokeEventImmediately(evokeBypassGateScriptIfNonZero != 0, true); //bypass the "is not enabled" status bool
+	
+		foreach(string name in scriptNamesToEvokeAfter)
+		{
+			if(name != "")
+			{
+				if(customScripts.runCustomScript(name, new List&lt;object&gt;() { }, out _))
+				{
+					toDisplay += "Post-evoke script " + name + " ran correctly\n";
+				}
+				else
+				{
+					toDisplay += "Post-evoke script " + name + " FAILED!!!\n";
+				}
+			}
+		}
+	}
+	if(setMTTHTo1IfNonZero != 0)
+	{
+		toDisplay += "Setting MTTH to 1 (the event should occur frequently).\n";
+		status.setEnabled(true); //necessary
+		status.setMTTH(1);
+	}
+	if(forceDateTomorrowIfNonZero != 0)
+	{
+		toDisplay += "Setting force date to tomorrow (the event should occur soon).\n";
+		status.setEnabled(true); //necessary
+		status.setForceDate(getAPI().getCalendar().getCurrentDate() + 1);
+	}
+	
+	inEventReport.setReportTextOverride(toDisplay);
+	inEventStatus.setEnabled(false); //local_normal_event_test should only run once
+	
+	List&lt;object&gt; toReturn = new List&lt;object&gt;();
+	return toReturn;
+  </mScriptUponHappening>
+  
+    <mChoiceCombo>
+      <i>
+        <name>Dismiss</name>
+        <appears_script>
+					List&lt;object&gt; toReturn = new List&lt;object&gt;();
+                         toReturn.Add(true);
+                     return toReturn;
+        </appears_script>
+        <selection_script>
+
+        </selection_script>
+        <predict_diff>0</predict_diff>
+        <prechoice>
+			Go to the event report resolution screen.
+        </prechoice>
+        <resolution>
+			The event has occurred or should soon.
+        </resolution>
+      </i>
+    </mChoiceCombo>
+  
+  </igEvent>
+  
+  <customscripts name="default">
+	<mCustomScriptsList kind="add">
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_equalize_race_counts_add</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		//find the count of the most populous race:
+		var racesByCounts = localCommunity.getLoyalPopsByRace(true, false);
+		Int64 highestCount = 0;
+		foreach(var kvpair in racesByCounts)
+		{
+			highestCount = Math.Max(highestCount, (Int64)kvpair.Value.Count);
+		}
+		
+		IFMap map = localCommunity.getDomesticComponent().getMap();
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("races"); moid++)
+		{
+			IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+			if(!race.isHiddenFromPlayerSight())
+			{
+				Int64 countOfPopsToAdd = highestCount - (Int64)localCommunity.getPopCountOfRace(race);
+			
+				for(int i = 0; i &lt; countOfPopsToAdd; i++)
+				{
+					double mapLocX = getAPI().calcRand() * map.getMapDimensions().Item1;
+					double mapLocY = getAPI().calcRand() * map.getMapDimensions().Item2;
+					IFPop popAdded = getAPI().generateNewPop(
+						race, localCommunity, "", Int64.MinValue, double.MinValue, IFPop.ePopSex.cUnisexNone, null, null,
+						true, mapLocX, mapLocY
+						//for the rest, default values are okay
+					);
+				}
+			}
+		}
+	
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_assign_cityleader</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		if(localCommunity.getLeaderCollection().getCityLeader() == null)
+		{
+			foreach(UInt64 uid in getAPI().getUIDsOfAllSO("pops"))
+			{
+				IFPop pop = (IFPop)getAPI().getSO("pops", uid);
+				if(pop.getCommunity() == localCommunity)
+				{
+					localCommunity.getLeaderCollection().setCityLeader(pop);
+					break;
+				}
+			}
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_assign_raceleaders</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		foreach(UInt64 uid in getAPI().getUIDsOfAllSO("pops"))
+		{
+			IFPop pop = (IFPop)getAPI().getSO("pops", uid);
+			if(pop.getCommunity() == localCommunity)
+			{
+				if(localCommunity.getLeaderCollection().getRaceLeader(pop.getRace()) == null)
+				{
+					localCommunity.getLeaderCollection().setRaceLeader(pop);
+				}
+			}
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_assign_industryleaders</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		List&lt;IFIndustry&gt; listOfIndustriesToAssign = new List&lt;IFIndustry&gt;();
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("industries"); moid++)
+		{
+			IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", moid);
+			if(localCommunity.getLeaderCollection().getIndustryLeader(industry) == null)
+			{
+				listOfIndustriesToAssign.Add(industry);
+			}
+		}
+		
+		foreach(UInt64 uid in getAPI().getUIDsOfAllSO("pops"))
+		{
+			IFPop pop = (IFPop)getAPI().getSO("pops", uid);
+			if(pop.getCommunity() == localCommunity)
+			{
+				if(localCommunity.getLeaderCollection().getLeaderFlagsForPop(pop) == IFLeaderCollection.eLeaderFlags.cNone)
+				{
+					localCommunity.getLeaderCollection().setIndustryLeader(pop, listOfIndustriesToAssign[0]);
+					listOfIndustriesToAssign.RemoveAt(0);
+					if(listOfIndustriesToAssign.Count == 0)
+					{
+						break;
+					}
+				}
+			}
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_add_housing_with_distro</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		IFMap map = localCommunity.getDomesticComponent().getMap();
+		
+		List&lt;IFBuildingKind> distributionBuildingPossibles = new List&lt;IFBuildingKind>();
+		List&lt;IFBuildingKind> housingPossibles = new List&lt;IFBuildingKind>();
+		IFIndustry distIndustry = null;
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("industries"); moid++)
+		{
+			IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", moid);
+			if(industry.isDistribution())
+			{
+				distIndustry = industry;
+				break;
+			}
+		}
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("buildingkinds"); moid++)
+		{
+			IFBuildingKind buildingKind = (IFBuildingKind)getAPI().getMOFromMOID("buildingkinds", moid);
+			if(!buildingKind.hasTag("sandbox startup enable"))
+			{
+				continue;
+			}
+			if(buildingKind.getIndustry() == distIndustry)
+			{
+				distributionBuildingPossibles.Add(buildingKind);
+			}
+			if(buildingKind.isHousing())
+			{
+				housingPossibles.Add(buildingKind);
+			}
+		}
+
+		IFBuildingKind distKind = getAPI().getOneRandomItemFromList(distributionBuildingPossibles);
+		bool possible = (distKind != null) &amp;&amp; (housingPossibles.Count > 0);
+
+		IFBuilding distBuilding = null;
+		if(possible)
+		{
+			//attempt to build the distribution building
+			possible = false;
+			IFBuildingKind bkind = distKind;
+			for(int attempt = 0; attempt &lt; 200; attempt++)
+			{
+				int x_origin = (int)(getAPI().calcRandIntUnder(map.getMapDimensions().Item1));
+				int y_origin = (int)(getAPI().calcRandIntUnder(map.getMapDimensions().Item2));
+				int x_max = (int)(x_origin + bkind.getWidth());
+				int y_max = (int)(y_origin + bkind.getHeight());
+				if(x_max &gt;= map.getMapDimensions().Item1)
+					continue;
+				if(y_max &gt;= map.getMapDimensions().Item2)
+					continue;
+				//check all tiles:
+				bool cannotBuild = false;
+				List&lt;IFMapTile&gt; allTiles = new List&lt;IFMapTile&gt;();
+				for(int x = x_origin; (x &lt; x_max) &amp;&amp; !cannotBuild; x++)
+				{
+					for(int y = y_origin; (y &lt; y_max) &amp;&amp; !cannotBuild; y++)
+					{
+						IFMapTile tile = map.getMapTiles()[x][y];
+						if(!tile.isBuildable())
+						{
+							cannotBuild = true;
+						}
+						allTiles.Add(tile);
+					}
+				}
+				if(cannotBuild)
+					continue;
+				//create the new building:
+				distBuilding = getAPI().createBuildingNotPlaced(bkind, x_origin, y_origin, null);
+				distBuilding.setBuildingFullyBuilt();
+				for(int i = 0; i &lt; allTiles.Count; i++)
+				{
+					allTiles[i].setBuilding(distBuilding, i == 0, IFMapTileObject.eMapItemOrientation.cOriginal);
+				}
+				possible = true;
+				break;
+			}
+		}
+		List&lt;IFBuilding> housingBuildings = new List&lt;IFBuilding>();
+		Tuple&lt;Int64, Int64> loc = distBuilding.getMapLocation();
+		if (possible)
+		{
+			//count how many pops there are:
+			Int64 currentPopCount = localCommunity.getPopsLoyalToCommunity(true, false).Count;
+			Int64 housingAvailable = 0;
+			Int64 housedPops = 0;
+			
+			foreach(UInt64 uid in getAPI().getUIDsOfAllSO("pops"))
+			{
+				IFPop pop = (IFPop)getAPI().getSO("pops", uid);
+				if(pop.getCommunity() == localCommunity)
+				{
+					if(pop.hasHomeBuilding())
+					{
+						housedPops++;
+					}
+				}
+			}
+			foreach(IFBuilding building in map.getAllBuildingsOnMap())
+			{
+				if(building.isBuildingFullyBuilt() &amp;&amp; !building.isBuildingDestroyed() &amp;&amp; building.isHousing())
+				{
+					housingAvailable += (building.getBuildingKind().getHousingCapacity() - building.getHousingComponent().getHousedPops().Count);
+				}
+			}
+		
+			//attempt to build buildings until enough pops can be housed:
+			Int64 awayMax = (Int64)(distBuilding.getBuildingKind().getRadius() * 0.8d);
+			for(int attempt = 0; attempt &lt; 200; attempt++)
+			{
+				if(housingAvailable + housedPops &gt;= currentPopCount)
+				{
+					break;
+				}
+			
+				IFBuildingKind housingKind = getAPI().getOneRandomItemFromList(housingPossibles);
+				int x_origin = (int)(loc.Item1 + getAPI().calcRandIntUnder(awayMax * 2 + 1) - awayMax);
+				int y_origin = (int)(loc.Item2 + getAPI().calcRandIntUnder(awayMax * 2 + 1) - awayMax);
+				int x_max = (int)(x_origin + housingKind.getWidth());
+				int y_max = (int)(y_origin + housingKind.getHeight());
+				if(x_max &gt;= map.getMapDimensions().Item1)
+					continue;
+				if(y_max &gt;= map.getMapDimensions().Item2)
+					continue;
+				//check all tiles:
+				bool cannotBuild = false;
+				List&lt;IFMapTile&gt; allTiles = new List&lt;IFMapTile&gt;();
+				for(int x = x_origin; (x &lt; x_max) &amp;&amp; !cannotBuild; x++)
+				{
+					for(int y = y_origin; (y &lt; y_max) &amp;&amp; !cannotBuild; y++)
+					{
+						IFMapTile tile = map.getMapTiles()[x][y];
+						if(!tile.isBuildable())
+						{
+							cannotBuild = true;
+						}
+						allTiles.Add(tile);
+					}
+				}
+				if(cannotBuild)
+					continue;
+				//create the new building:
+				housingBuildings.Add(getAPI().createBuildingNotPlaced(housingKind, x_origin, y_origin, null));
+				housingBuildings[housingBuildings.Count - 1].setBuildingFullyBuilt();
+				for(int i = 0; i &lt; allTiles.Count; i++)
+				{
+					allTiles[i].setBuilding(housingBuildings[housingBuildings.Count - 1], i == 0, IFMapTileObject.eMapItemOrientation.cOriginal);
+				}
+				housingAvailable += housingKind.getHousingCapacity();
+			}
+		}
+			
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_force_housing</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		List&lt;IFPop&gt; popsThatNeedHousing = new List&lt;IFPop&gt;();
+		
+		foreach(UInt64 uid in getAPI().getUIDsOfAllSO("pops"))
+		{
+			IFPop pop = (IFPop)getAPI().getSO("pops", uid);
+			if(!pop.hasHomeBuilding())
+			{
+				popsThatNeedHousing.Add(pop);
+			}
+		}
+		
+		List&lt;IFBuilding&gt; housingBuildings = new List&lt;IFBuilding&gt;();
+		
+		IFMap map = localCommunity.getDomesticComponent().getMap();
+		foreach(IFBuilding building in map.getAllBuildingsOnMap())
+		{
+			if(building.isBuildingFullyBuilt() &amp;&amp; !building.isBuildingDestroyed() &amp;&amp; building.isHousing())
+			{
+				housingBuildings.Add(building);
+			}
+		}
+		
+		while(popsThatNeedHousing.Count != 0 &amp;&amp; housingBuildings.Count != 0)
+		{
+			if(housingBuildings[0].getBuildingKind().getHousingCapacity() &gt; housingBuildings[0].getHousingComponent().getHousedPops().Count)
+			{
+				popsThatNeedHousing[0].setHomeBuilding(housingBuildings[0]);
+				popsThatNeedHousing.RemoveAt(0);
+			}
+			else
+			{
+				housingBuildings.RemoveAt(0);
+			}
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_set_all_resources</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		IFResourcePool pool = localCommunity.getResourcePool();
+		bool success = false;
+		
+		var customConsts = getAPI().getCustomConsts();
+		
+		double resourceQuan = customConsts.getDoubleConst("debugscript_set_all_resources quantity", out success);
+		double resourceQual = customConsts.getDoubleConst("debugscript_set_all_resources quality", out success);
+		
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("resources"); moid++)
+		{
+			IFResource res = (IFResource)getAPI().getMOFromMOID("resources", moid);
+			if(!res.isNotInResourcePool())
+			{
+				pool.subtractResource(res, pool.getResourceQuantity(res));
+				pool.addResourcesOfQuality(res, resourceQuan, resourceQual);
+			}
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_set_all_industry_skill</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		IFIndustrySkills skills = localCommunity.getDomesticComponent().getIndustrySkills();
+		bool success = false;
+		
+		var customConsts = getAPI().getCustomConsts();
+		
+		double proportion = customConsts.getDoubleConst("debugscript_set_all_industry_skill proportion", out success);
+		double skillMin = getAPI().getConsts().getWorkerSkillMin();
+		double skillMax = getAPI().getConsts().getWorkerSkillMax();
+		double value = skillMin + (skillMax - skillMin) * proportion;
+		
+		List&lt;IFIndustry&gt; listOfIndustriesToAssign = new List&lt;IFIndustry&gt;();
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("industries"); moid++)
+		{
+			IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", moid);
+			skills.setAverageSkill(value, industry);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_set_all_leader_industry_skill</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		IFIndustrySkills skills = localCommunity.getDomesticComponent().getIndustrySkills();
+		bool success = false;
+		
+		var customConsts = getAPI().getCustomConsts();
+		
+		double proportion = customConsts.getDoubleConst("debugscript_set_all_leader_industry_skill proportion", out success);
+		double skillMin = getAPI().getConsts().getWorkerSkillMin();
+		double skillMax = getAPI().getConsts().getWorkerSkillMax();
+		double value = skillMin + (skillMax - skillMin) * proportion;
+		
+		List&lt;IFIndustry&gt; listOfIndustriesToAssign = new List&lt;IFIndustry&gt;();
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("industries"); moid++)
+		{
+			IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", moid);
+			skills.setLeaderSkill(value, industry);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_set_prediction_strength</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		bool success = false;
+		
+		var customConsts = getAPI().getCustomConsts();
+		
+		double value = customConsts.getDoubleConst("debugscript_set_prediction_strength value", out success);
+		localCommunity.getDomesticComponent().setPredictionStrength(value);
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_kill_all_race_leaders</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("races"); moid++)
+		{
+			IFRace race = (IFRace)getAPI().getMOFromMOID("races", moid);
+			IFPop pop = localCommunity.getLeaderCollection().getRaceLeader(race);
+			if(pop != null)
+			{
+				pop.setIsDead(true, IFPop.ePopDeathReason.cUnspecified);
+			}
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_kill_all_industry_leaders</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		for(int moid = 1; moid &lt; getAPI().getTotalCountOfMO("industries"); moid++)
+		{
+			IFIndustry industry = (IFIndustry)getAPI().getMOFromMOID("industries", moid);
+			IFPop pop = localCommunity.getLeaderCollection().getIndustryLeader(industry);
+			if(pop != null)
+				pop.setIsDead(true, IFPop.ePopDeathReason.cUnspecified);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	<!-- inputs to the function: none.
+	there is no output.
+	-->
+	<i1><a>debugscript_assign_cityleader_as_raceleader</a>
+	<b>
+		IFCommunity localCommunity = getAPI().getLocalCommunity();
+		
+		IFPop leader = localCommunity.getLeaderCollection().getCityLeader();
+		if(leader != null)
+		{
+			localCommunity.getLeaderCollection().setRaceLeader(leader);
+		}
+		
+		return null;
+	</b>
+	</i1>
+	
+	
+	
+	</mCustomScriptsList>
+  </customscripts>
+  
+</core_data>

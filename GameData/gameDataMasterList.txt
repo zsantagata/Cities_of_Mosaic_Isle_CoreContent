@@ -14,6 +14,7 @@ Content/GameData/ModdableScripts/delegationForeignHandling.xml
 Content/GameData/ModdableScripts/descriptions.xml
 Content/GameData/ModdableScripts/enterExitBattle.xml
 Content/GameData/ModdableScripts/happiness.xml
+Content/GameData/ModdableScripts/history.xml
 Content/GameData/ModdableScripts/housingQuality.xml
 Content/GameData/ModdableScripts/leaders.xml
 Content/GameData/ModdableScripts/mapGen.xml
@@ -137,10 +138,13 @@ Content/GameData/Events/Delegation_Arrival/Trade/placeholder1.xml
 Content/GameData/Events/Delegation_Arrival/Emigration/placeholder1.xml
 Content/GameData/Events/Delegation_Arrival/Settlement/placeholder1.xml
 Content/GameData/Events/Delegation_Travel_MTTH/placeholder1.xml
-Content/GameData/Events/LocalCommunity/Leader Events.xml
+Content/GameData/Events/LocalCommunity/Leader_Events.xml
+Content/GameData/Events/LocalCommunity/Leader_Events_Consts.xml
+Content/GameData/Events/LocalCommunity/Leader_Events_Scripts.xml
 Content/GameData/Events/Simultaneous/Foreign_Delegation_Arrival/Basic_Foreign_Delegation_Arrival_Events.xml
 Content/GameData/Events/Simultaneous/Foreign_Delegation_Arrival/Basic_Foreign_Delegation_Arrival_Events_ConstsAndScripts.xml
 Content/GameData/Events/Test_Events/foreignDelegation_test_event.xml
+Content/GameData/Events/Test_Events/local_normal_event_test.xml
 Content/GameData/Events/Test_Events/military_test_event.xml
 Content/GameData/Events/Test_Events/wanderers_test_event.xml
 Content/GameData/CustomScripts/attemptPathfindStateTransition.xml

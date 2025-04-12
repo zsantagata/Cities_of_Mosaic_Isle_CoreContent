@@ -626,7 +626,7 @@
 		if(rebelsWon)
 		{
 			//hardcoded history has this:
-			customScripts.runCustomScript("hardcodedHistory_rebels_succeed", new List&lt;object&gt;() { localCommunity, currentDate, IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(), IFHistoryTarget.eTargetKind.cPop, (newRebelLeader ?? localCommunity.getLeaderCollection().getCityLeader()).getUID()}, out _);
+			customScripts.runCustomScript("hardcodedHistory_rebels_succeed", new List&lt;object&gt;() { localCommunity, currentDate, IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(), IFHistoryTarget.eTargetKind.cPop, (UInt64)(newRebelLeader ?? localCommunity.getLeaderCollection().getCityLeader()).getUID(), -1L}, out _);
 			
 			//now happiness:
 			string happinessName = customConsts.getStringConst("battle rebel_success happiness_name before_replace_text", out success);
@@ -660,7 +660,7 @@
 			
 			if(mostPopulousRace != null)
 			{
-				customScripts.runCustomScript("hardcodedHistory_rebels_failure", new List&lt;object&gt;() { localCommunity, currentDate, IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(), IFHistoryTarget.eTargetKind.cRace, mostPopulousRace.getMOID()}, out _);
+				customScripts.runCustomScript("hardcodedHistory_rebels_failure", new List&lt;object&gt;() { localCommunity, currentDate, IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(), IFHistoryTarget.eTargetKind.cRace, (UInt64)mostPopulousRace.getMOID(), -1L }, out _);
 			}
 			
 			//now happiness:

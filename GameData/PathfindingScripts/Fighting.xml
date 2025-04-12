@@ -180,7 +180,7 @@
 						bool third_fighter_on_first_side = (fighter3 == null ? false : (getAPI().isHostileCommunity(fighter1.getCommunity()) == getAPI().isHostileCommunity(fighter3.getCommunity())));
 						
 						//call combat resolve:
-						customScripts.runCustomScript("combatResolve", new List&lt;object&gt;() { fighter1, fighter2, fighter3, third_fighter_on_first_side, (double)x_loc, (double)y_loc }, out _);
+						customScripts.runCustomScript("combatResolveAndRelocatePops", new List&lt;object&gt;() { fighter1, fighter2, fighter3, third_fighter_on_first_side, (double)x_loc, (double)y_loc }, out _);
 						
 						//combat resolve will set wounds/deaths and place all combatants at exactly x_loc,y_loc, but it does not manage the connectedVariables.  Do that here.
 						List&lt;IFConnectedVariable&gt; vblsToCleanUp = new List&lt;IFConnectedVariable&gt;(correctFightCV.getLowers()); //make a copy because we cannot iterate over getLowers() while changing it

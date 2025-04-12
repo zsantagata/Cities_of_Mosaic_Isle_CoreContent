@@ -183,7 +183,7 @@ N) if the size of the IFEventReport list from K and C are the same, disable the 
 			Dictionary&lt;Int64, List&lt;IFPop&gt;&gt; listsOfVisitingPops = (Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;)variablesForEventUID[0];
 			Dictionary&lt;Int64, List&lt;IFPop&gt;&gt; listsOfLoyalOnMapPops = (Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;)variablesForEventUID[1];
 			Dictionary&lt;Int64, Int64&gt; directTimers = (Dictionary&lt;Int64, Int64&gt;)variablesForEventUID[2];
-			addDebugMessage(inScriptInstance, "found lists associated with event " + nonExpireEvt.getInternalName() + ", count=" + directTimers.Count);
+			addDebugMessage(inScriptInstance, "found lists associated with event " + nonExpireEvt.getInternalName() + ", count=" + directTimers.Count + " (should match listOfUIDs count=" + listOfUIDs.Count + ")");
 		
 			foreach(Int64 uid in listOfUIDs)
 			{
@@ -318,12 +318,19 @@ N) if the size of the IFEventReport list from K and C are the same, disable the 
 				if(directTimerValidAndExpired || popsVisitingValidAndExpired || popsLoyalOnMapValidAndExpired)
 				{
 					//J, K, L
+					addDebugMessage(inScriptInstance, "eventReportUID=" + uid + " is now expired because: directTimer?" + (directTimerValidAndExpired ? "yes" : "no")
+						+ " visitorsExpired?" + (popsVisitingValidAndExpired ? "yes" : "no")
+						+ " loyalPopsNotValid?" + (popsLoyalOnMapValidAndExpired ? "yes" : "no"));
 					outEventReportUIDsNowExpired.Add(uid);
 					
 					//M
 					customScripts.runCustomScriptCheckTypes("setupFetchOrClearVariablesForEventForEXPIRE", new List&lt;object&gt;() { nonExpireEvtStatus, uid, false, true, null, null, 0L }, out _, false,
 						typeof(Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;), typeof(Dictionary&lt;Int64, List&lt;IFPop&gt;&gt;), typeof(Dictionary&lt;Int64, Int64&gt;));
 					customScripts.runCustomScript("clearPopsWantToStayFromEvent", new List&lt;object&gt;() { nonExpireEvtStatus, uid, "" }, out _);
+				}
+				else
+				{
+					addDebugMessage(inScriptInstance, "eventReportUID=" + uid + " is not yet expired (directTimer=" + (directTimers.ContainsKey(uid) ? directTimers[uid] : "N/A") + ")" );
 				}
 			}
 		}

@@ -19,29 +19,33 @@
 	<mPopDaysToBuild>2</mPopDaysToBuild>
 	<mBaseDurability>75</mBaseDurability>
 	
-	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive).  If nothing exists, this building does not require any resources to build.  If one entry has a quantity of 0, then this building can be built with resources or not. -->
-	  <i1>
-	    <a>TAG:woody</a>
-		<b>75</b>
-	  </i1>
-	  <i1>
-	    <a>Monument</a>
-		<b>0</b>
-	  </i1>
-	</mResourcesToBuild>
+	<mResourceCombinationsToBuild> <!-- this is a list of lists.  The inner list elements are pairs of Resource, double quantity.  If nothing exists, this building does not require any resources to build.  If one entry has a sum quantity of 0, then this building can be built with resources or not. -->
+		<i1>
+			<i1>
+				<a>Monument</a>
+				<b>0</b>
+			</i1>
+		</i1>
+		<i1>
+			<i1>
+				<a>TAG:woody</a>
+				<b>60</b>
+			</i1>
+			<i1>
+				<a>TAG:flexible construction</a>
+				<b>25</b>
+			</i1>
+		</i1>
+	</mResourceCombinationsToBuild>
 	
 	<mOutputMultBasedOnConstructionResources>
 	  <i1>
 	    <a>TAG:woody</a>
 		<b>1.05</b>
 	  </i1>
-	  <i1>
-	    <a>Monument</a>
-		<b>0.95</b>
-	  </i1>
 	</mOutputMultBasedOnConstructionResources>
 	
-	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value.  If nothing exists, this building does not shift durability based on construction resources.  Names here that do not appear in mResourcesToBuild will have no effect -->
+	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value.  If nothing exists, this building does not shift durability based on construction resources.  Names here that do not appear in mResourceCombinationsToBuild will have no effect -->
 	  <i1>
 	    <a>TAG:woody</a>
 		<b>1.25</b>

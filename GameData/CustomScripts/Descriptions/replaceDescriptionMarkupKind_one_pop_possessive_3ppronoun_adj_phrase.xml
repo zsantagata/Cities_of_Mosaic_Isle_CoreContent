@@ -59,22 +59,22 @@
 	{
 		default:
 		case IFPop.ePopSex.cUnisexNone:
-			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_possessive_3ppronoun_adj_phrase unisex_none", out success);
+			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_possessive_3ppronoun_adj_phrase unisex_none before_replace_text", out success);
 			if(!success) outDescription = "their";
 		break;
 		
 		case IFPop.ePopSex.cUnisexBoth:
-			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_possessive_3ppronoun_adj_phrase unisex_both", out success);
+			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_possessive_3ppronoun_adj_phrase unisex_both before_replace_text", out success);
 			if(!success) outDescription = "their";
 		break;
 		
 		case IFPop.ePopSex.cMale:
-			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_possessive_3ppronoun_adj_phrase unisex_male", out success);
+			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_possessive_3ppronoun_adj_phrase unisex_male before_replace_text", out success);
 			if(!success) outDescription = "his";
 		break;
 		
 		case IFPop.ePopSex.cFemale:
-			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_possessive_3ppronoun_adj_phrase unisex_female", out success);
+			outDescription = customConsts.getStringConst("replaceDescriptionMarkupKind_one_pop_possessive_3ppronoun_adj_phrase unisex_female before_replace_text", out success);
 			if(!success) outDescription = "her";
 		break;
 	}

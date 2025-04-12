@@ -175,9 +175,16 @@
 	replacers[1] = inBuilding.getBuildingKind().getDisplayName().ToLower();
 	
 	//[2] = construction material resource name, if it exists
-	if(inBuilding.getMadeOfResource() != null)
+	var constructionResources = inBuilding.getConstructionResources();
+	IFResource constructionResource = null;
+	if(constructionResources.Count != 0)
 	{
-		replacers[2] = inBuilding.getMadeOfResource().getDisplayName().ToLower();
+		var randomElem = getAPI().getOneRandomItemFromList(constructionResources);
+		constructionResource = randomElem.Item1;
+	}
+	if(constructionResource != null)
+	{
+		replacers[2] = constructionResource.getDisplayName().ToLower();
 	}
 	
 	//[3] = UNUSED

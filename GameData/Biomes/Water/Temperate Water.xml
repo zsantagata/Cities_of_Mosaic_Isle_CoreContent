@@ -18,7 +18,8 @@
   <igTerrainBiome name="Temperate Water">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Temperate Water</full_path>
-	  <body_text>Temperate Water.  Put encyclopedia description here.</body_text>
+	  <body_text>Temperate Waters in middle latitudes contain flows between cold polar waters and the warm tropics, so temperature and weather can vary daily.  Muck along the seabed obscures smaller outcroppings of mineral resources but gives rise to masses of seaweed that hide large schools of fish.
+Only water-breathing monsters can settle in open waters, and some buildings can only be built on land.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

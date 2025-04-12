@@ -23,6 +23,7 @@
 	<mTagList>
 		<i1>cannot be made in a building</i1>
 		<i1>stony</i1>
+		<i1>hard construction</i1>
 		
 		<!-- description tags: -->
 		<i1>use_adj:stony</i1>
@@ -58,6 +59,7 @@
 		<i1>cannot be made in a building</i1>
 		<i1>woody</i1>
 		<i1>flammable</i1>
+		<i1>hard construction</i1>
 		
 		<!-- description tags: -->
 		<i1>use_adj:wooden</i1>
@@ -88,6 +90,7 @@
 	<mTagList>
 		<i1>cannot be made in a building</i1>
 		<i1>stony</i1>
+		<i1>hard construction</i1>
 		
 		<!-- description tags: -->
 		<i1>use_adj:stony</i1>
@@ -116,6 +119,7 @@
 		<i1>cannot be made in a building</i1>
 		<i1>woody</i1>
 		<i1>flammable</i1>
+		<i1>hard construction</i1>
 		
 		<!-- description tags: -->
 		<i1>use_adj:wooden</i1>
@@ -152,6 +156,7 @@
 	<mTagList>
 		<i1>cannot be made in a building</i1>
 		<i1>stony</i1>
+		<i1>hard construction</i1>
 		
 		<!-- description tags: -->
 		<i1>use_adj:stony</i1>
@@ -179,6 +184,7 @@
 	<mTagList>
 		<i1>cannot be made in a building</i1>
 		<i1>stony</i1>
+		<i1>hard construction</i1>
 		
 		<!-- description tags: -->
 		<i1>use_adj:stony</i1>

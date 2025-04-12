@@ -221,13 +221,13 @@
 	<mPopDaysToBuild>1</mPopDaysToBuild> <!-- values below 1 will be treated as 1.  This many pops must spend one many day of effort (or one pop must spend this many days, or whatever multiplication gets to this) to create a building of this buildingkind -->
 	<mBaseDurability>100</mBaseDurability>
 	
-	<mResourcesToBuild> <!-- this is a list of: reference to resource, int value (positive).  If nothing exists, this building does not require any resources to build.  If one entry has a quantity of 0, then this building can be built with resources or not. -->
-	</mResourcesToBuild>
+	<mResourceCombinationsToBuild> <!-- this is a list of lists.  The inner list elements are pairs of Resource, double quantity.  If nothing exists, this building does not require any resources to build.  If one entry has a sum quantity of 0, then this building can be built with resources or not. -->
+	</mResourceCombinationsToBuild>
 	
-	<mOutputMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, double value.  If nothing exists, the mult is 1.0d.  Names here that do not appear in mResourcesToBuild will have no effect -->
+	<mOutputMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, double value.  If nothing exists, the mult is 1.0d.  Names here that do not appear in mResourceCombinationsToBuild will have no effect -->
 	</mOutputMultBasedOnConstructionResources>
 	
-	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value.  If nothing exists, this building does not shift durability based on construction resources.  Names here that do not appear in mResourcesToBuild will have no effect -->
+	<mDurabilityMultBasedOnConstructionResources> <!-- this is a list of: reference to resource, floating pt value.  If nothing exists, this building does not shift durability based on construction resources.  Names here that do not appear in mResourceCombinationsToBuild will have no effect -->
 	</mDurabilityMultBasedOnConstructionResources>
 	
 	<mBeautyValue>0</mBeautyValue>

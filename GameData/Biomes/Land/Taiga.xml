@@ -18,7 +18,7 @@
   <igTerrainBiome name="Taiga">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Taiga</full_path>
-	  <body_text>Taiga.  Put encyclopedia description here.</body_text>
+	  <body_text>Summer rainfall and cold winter shape the Taiga, also known as a boreal forest.  Hunters can catch animals here which have put on much fat to last the winter, but raising livestock is greatly difficult.  The cold and difficulty of travel makes neighboring communities more hesitant to cause trouble than those living in Forest.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

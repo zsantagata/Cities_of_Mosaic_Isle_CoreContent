@@ -24,7 +24,7 @@
 		<i>Sleeping Spot</i>
 	</mSSIDs>
 	
-	<mHousingCapacity>8</mHousingCapacity>
+	<mHousingCapacity>999</mHousingCapacity> <!-- TODO this is debug only; change this back to a value of 8 -->
 	<mHousingQualityFactor>0.0</mHousingQualityFactor>
 	
 	<mIsHousing>1</mIsHousing>
@@ -34,6 +34,8 @@
 	  <i1>housing hstasis malus</i1>
 	  <i1>disable repair</i1>
 	  <i1>no construction</i1> <!-- this is to indicate that this "building" isn't a real construction but more like designating an area -->
+	  <i1>do not show durability</i1>
+	  <i1>no durability loss over time</i1>
 	  <i1>sandbox startup enable</i1>
 	  
 	  <!-- description tags: -->

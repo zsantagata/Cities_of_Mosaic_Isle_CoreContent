@@ -18,7 +18,8 @@
   <igTerrainBiome name="Warm Water">
     <Encyclopedia_Entry>
 	  <full_path>Biomes/Warm Water</full_path>
-	  <body_text>Warm Water.  Put encyclopedia description here.</body_text>
+	  <body_text>Warm Waters near the tropics are rich with animal life, and comfortably warm year-round near the surface.  Dense muck covers the seabed, obscuring smaller outcroppings of mineral resources but giving rise to colorful coral and fields of seaweed.
+Only water-breathing monsters can settle in open waters, and some buildings can only be built on land.</body_text>
 	  <image_SS></image_SS>
 	  <related_entries_full_paths>
 	  <!-- nothing in this list of entries -->

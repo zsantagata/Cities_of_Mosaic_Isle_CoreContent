@@ -55,11 +55,6 @@
 		<c>The [0] [1] is now dead!</c></i1>
 		<i1><a>log_script_custom script hardcodedAlert_leader_dead</a> <b>int</b> <c>1</c></i1>
 	
-		<i1><a>mHardCodedAlert leader_dead alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
-		<i1><a>mHardCodedAlert leader_dead alert before_replace_text</a> <b>string</b>
-		<c>The [0] [1] is now dead!</c></i1>
-		<i1><a>log_script_custom script hardcodedAlert_leader_dead</a> <b>int</b> <c>1</c></i1>
-	
 		<i1><a>mHardCodedAlert leader_stepdown alert enable_if_not_zero</a> <b>int</b> <c>1</c></i1>
 		<i1><a>mHardCodedAlert leader_stepdown alert before_replace_text</a> <b>string</b>
 		<c>The [0] [1] has been stripped of the title.</c></i1>
