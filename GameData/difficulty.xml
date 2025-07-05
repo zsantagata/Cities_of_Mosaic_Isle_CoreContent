@@ -34,7 +34,8 @@
 		<i1>internal strife danger</i1> <!-- event-based -->
 		<i1>impersonal world danger</i1> <!-- event-based -->
 		
-		<i1>base happiness expectation</i1>
+		<i1>long-term happiness expectation</i1>
+		<i1>base happiness offset</i1>
 		<i1>base foreign opinion expectation</i1> <!-- TODO -->
 		
 		<i1>pop health decay</i1>
@@ -101,8 +102,10 @@
 	<i1><a>options_difficulty_impersonal world danger_text</a>
 	<b>Impersonal World Danger: [0]%</b></i1>
 	
-	<i1><a>options_difficulty_base happiness expectation_text</a>
-	<b>Happiness Expectation: [0]%</b></i1>
+	<i1><a>options_difficulty_long-term happiness expectation_text</a>
+	<b>Long-Term Happiness Difficulty: [0]%</b></i1>
+	<i1><a>options_difficulty_base happiness offset_text</a>
+	<b>Happiness Base-point Difficulty: [0]%</b></i1>
 	<i1><a>options_difficulty_base foreign opinion expectation_text</a>
 	<b>Foreign Opinion Suspicion: [0]%</b></i1>
 	

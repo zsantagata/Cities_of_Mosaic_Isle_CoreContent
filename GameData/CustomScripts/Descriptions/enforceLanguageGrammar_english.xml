@@ -270,9 +270,18 @@
 	
 	if(firstCharacterCapitalizationInt != 0)
 	{
-		//look at every character that is after a newline, a period-then-spaces, or either of those then a "
+		//look at every character that is after a newline, a period-then-spaces, an exclamation mark-then-spaces, a question mark-then-spaces, or any of those then a "
 		//if that character is an alphabetic letter, make sure it is capitalized
-		List&lt;string&gt; searchForMe = new List&lt;string&gt;() { "\n", "\n\"", ". ", ".  ", ". \"", ".  \"" };
+		List&lt;string&gt; searchForMe = new List&lt;string&gt;()
+		{
+		"\n", "\n\"",
+		". ", ".  ",
+		". \"", ".  \"",
+		"! ", "!  ",
+		"! \"", "!  \"",
+		"? ", "?  ",
+		"? \"", "?  \""
+		};
 		
 		foreach(string sfm in searchForMe)
 		{

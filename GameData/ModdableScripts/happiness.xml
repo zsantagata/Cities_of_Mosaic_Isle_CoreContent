@@ -6,13 +6,15 @@
 			<!-- consts related to this file's scripts can have any name (though they probably shouldn't overwrite other consts) -->
 			
 			<!-- note that the following consts are "proportions of the full happiness range" instead of direct values: -->
-			<i1><a>happiness from_health max</a> <b>double</b> <c>0.075</c></i1>
+			<!-- explanation for values: pops expect the City Leader to let them be healthy and not starve.  The quality of housing and resources otherwise make up their base happiness (besides racial offset) -->
+			<i1><a>happiness from_health max</a> <b>double</b> <c>0.125</c></i1>
 			<i1><a>happiness from_health min</a> <b>double</b> <c>-0.6</c></i1>
-			<i1><a>happiness from_resources max</a> <b>double</b> <c>0.35</c></i1>
+			<i1><a>happiness from_resources max</a> <b>double</b> <c>0.45</c></i1>
 			<i1><a>happiness from_resources min</a> <b>double</b> <c>-0.25</c></i1>
-			<i1><a>happiness from_housing max</a> <b>double</b> <c>0.45</c></i1>
+			<i1><a>happiness from_housing max</a> <b>double</b> <c>0.55</c></i1>
 			<i1><a>happiness from_housing min</a> <b>double</b> <c>-0.45</c></i1>
 			<i1><a>happiness starving penalty</a> <b>double</b> <c>-0.5</c></i1>
+			<i1><a>happiness base point offset</a> <b>double</b> <c>0.35</c></i1> <!-- unlike other things, this is modified by "base happiness offset" rather than "long-term happiness expectation" difficulty -->
 			
 			<i1><a>happiness unemployed per_pop bonus</a> <b>double</b> <c>0.005</c></i1>
 			
@@ -21,7 +23,7 @@
 			<i1><a>happiness kin neighbor per_pop bonus</a> <b>double</b> <c>0.0005</c></i1>
 			<i1><a>happiness kin neighbor per_pop penalty</a> <b>double</b> <c>0</c></i1>
 			<i1><a>happiness kin neighbor radius</a> <b>double</b> <c>5</c></i1>
-			<i1><a>happiness kin community absolute threshold</a> <b>int</b> <c>75</c></i1>
+			<i1><a>happiness kin community absolute threshold</a> <b>int</b> <c>75</c></i1> <!-- pop count -->
 			<i1><a>happiness kin community proportion threshold</a> <b>double</b> <c>0.25</c></i1>
 			<i1><a>happiness kin community bonus</a> <b>double</b> <c>0.075</c></i1>
 			<i1><a>happiness kin community penalty</a> <b>double</b> <c>-0.075</c></i1>
@@ -39,13 +41,14 @@
 			<i1><a>happiness jealousy race_worse_threat penalty per_race</a> <b>double</b> <c>-0.025</c></i1>
 			<i1><a>happiness jealousy race_worse_nothreat bonus per_race</a> <b>double</b> <c>0.025</c></i1>
 			
-			<i1><a>happiness industry_leader bonus per_leader</a> <b>double</b> <c>0.005</c></i1>
+			<i1><a>happiness industry_leader bonus per_leader</a> <b>double</b> <c>0.0075</c></i1>
 			
 			<i1><a>happiness illness different_race_penalty per_pop</a> <b>double</b> <c>-0.0025</c></i1>
 			<i1><a>happiness illness same_race_penalty per_pop</a> <b>double</b> <c>-0.005</c></i1>
 			
 			<i1><a>happiness death same_race starting_value</a> <b>double</b> <c>-0.0125</c></i1>
 			
+			<!-- all of these are in proportion of the whole range -->
 			<i1><a>happiness cause_decay decrease_per_day absolute_value max</a> <b>double</b> <c>0.0175</c></i1> <!-- a single happiness cause's impact can only decrease by this much per day -->
 			<i1><a>happiness cause_decay decrease_per_day absolute_value per_day max</a> <b>double</b> <c>0.0025</c></i1> <!-- a single happiness cause's impact can only decrease by (this much * days since it happened) per day -->
 			<i1><a>happiness cause_decay exponential decrease ratio</a> <b>double</b> <c>0.2</c></i1> <!-- a single happiness cause's impact, day over day, becomes (1 - this) * previous day's impact, with the above max and below threshold taken into account -->
@@ -63,7 +66,7 @@
 	<!-- all the above scripts are called for one race, then the next race is considered.  These scripts are called at midnight.  However, happiness from temporal events is reflected in racial happiness immediately. -->
 	<!-- then, mHappinessSpecificCauseDecay is called on all non-permanent happiness causes, and mHappinessDeathsOfPops is called exactly once -->
   
-	<!-- happiness individual combination has three inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation, and a Dictionary<IFResource,double> of resources those pops consume -->
+	<!-- happiness individual combination has three inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or outside the community, and a Dictionary<IFResource,double> of resources those pops consume -->
 	<!-- there is one output: the new value for individual combination's contribution to happiness -->
 	<mHappinessIndividualCombinationBase>
             //input count check:
@@ -90,19 +93,18 @@
 			//this is a combination of housing quality, health, and resources consumed
 			//TODO any racial considerations
 			
-			double min_mcal_for_health = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out bool success);
-			if(!success) min_mcal_for_health = 2.0d;
-			double expectedFoodConsumed = min_mcal_for_health * inPops.Count;
 			double averageHousingQuality = 0.0d;
 			double totalResourcesConsumed = 0.0d;
 			double averageResourceConsumedQuality = 0.0d;
 			double averageOverallHealth = 0.0d;
 			
+			Int64 countOfPopsHoused = 0;
 			for(int i = 0; i &lt; inPops.Count; i++)
 			{
 				if(inPops[i].hasHomeBuilding())
 				{
 					averageHousingQuality += inPops[i].getHomeBuilding().getHousingComponent().getHousingQuality();
+					countOfPopsHoused++;
 				}
 				else
 				{
@@ -113,23 +115,28 @@
 			averageHousingQuality /= inPops.Count;
 			averageOverallHealth /= inPops.Count;
 			
+			//pops who are roughing it do not consume from city stockpiles and instead forage, so they should not be considered "starving".  Their lack of housing will cause unhappiness in other ways (min housing quality, no resource consumption, decreasing health)
+			double min_mcal_for_health = customConsts.getDoubleConst("popHealth_MCal mcal_daily min", out bool success);
+			if(!success) min_mcal_for_health = 2.0d;
+			double slewPercentage = 0.995d;//this is just for off-by-one errors which can happen with doubles
+			double expectedFoodConsumed = min_mcal_for_health * countOfPopsHoused * slewPercentage;
 			IFResourcePool resPool = inPops[0].getCommunity().getResourcePool();
 			foreach(var kvpair in inResourcesConsumed)
 			{
-				if(kvpair.Value &lt;= 0)
+				if(kvpair.Value &gt;= 0) //consumed resources are negative, produced are positive
 				{
 					continue;
 				}
 				if(kvpair.Key.isFood())
 				{
-					expectedFoodConsumed -= kvpair.Value;
+					expectedFoodConsumed += kvpair.Value; //plus the value makes it a subtraction
 				}
 				double resQual = resPool.getResourceQuality(kvpair.Key);
-				averageResourceConsumedQuality = (averageResourceConsumedQuality * totalResourcesConsumed + kvpair.Value * resQual) / (totalResourcesConsumed + kvpair.Value);
-				totalResourcesConsumed += kvpair.Value;
+				averageResourceConsumedQuality = (averageResourceConsumedQuality * totalResourcesConsumed - kvpair.Value * resQual) / (totalResourcesConsumed - kvpair.Value); //minus the value makes it positive
+				totalResourcesConsumed -= kvpair.Value; //minus the value makes it positive
 			}
 
-			addDebugMessage(inScriptInstance, "for race " + inRace.getDebugName() + ", averageHousingQuality=" + averageHousingQuality + " averageOverallHealth=" + averageHousingQuality + " expectedFoodConsumed=" + expectedFoodConsumed + " averageResourceConsumedQuality=" + averageResourceConsumedQuality);
+			addDebugMessage(inScriptInstance, "for race " + inRace.getDebugName() + ", averageHousingQuality=" + averageHousingQuality + " averageOverallHealth=" + averageOverallHealth + " expectedFoodConsumed=" + expectedFoodConsumed + " averageResourceConsumedQuality=" + averageResourceConsumedQuality);
 			bool notEnoughFood = (expectedFoodConsumed &gt; 0);
 			
 			//now we must translate housing quality and resource quality into happiness
@@ -147,7 +154,7 @@
 			if(!success) resourcesImpactMax = 0.35d;
 			double resourcesImpactMin = customConsts.getDoubleConst("happiness from_resources min", out success);
 			if(!success) resourcesImpactMin = -0.25d;
-			double resourcesImpact = (resourcesImpactMax - resourcesImpactMin) * averageHousingQuality + resourcesImpactMin;
+			double resourcesImpact = (resourcesImpactMax - resourcesImpactMin) * averageResourceConsumedQuality + resourcesImpactMin;
 			
 			//now we must translate health into happiness:
 			double healthMax = (double)consts.getHealthMax();
@@ -164,7 +171,7 @@
 			if(!success) starvingImpact = -0.5d;
 			if(!notEnoughFood) starvingImpact = 0.0d;
 			
-			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("base happiness expectation");
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("long-term happiness expectation");
 			double outHappiness = 0.0d;
 			if(difficulty &lt;= 0.0d)
 			{
@@ -194,11 +201,28 @@
 					
 				outHappiness = (housingImpact + resourcesImpact + healthImpact + starvingImpact) * (maxHappiness - minHappiness);
 			}
+			//base happiness offset is not modified by long-term happiness expectation difficulty; difficulties should not interact like that
+			double baseOffset = customConsts.getDoubleConst("happiness base point offset", out success);
+			if(!success) baseOffset = 0.35d;
+			difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("base happiness offset");
+			if(difficulty &lt;= 0.0d)
+			{
+				baseOffset = maxHappiness - minHappiness;
+			}
+			else
+			{
+				if(baseOffset &lt; 0.0d)
+					baseOffset *= difficulty;
+				else
+					baseOffset /= difficulty;
+			}
+			outHappiness += baseOffset * (maxHappiness - minHappiness);
+			
 			//limit between max and -max
 			outHappiness = Math.Min(maxHappiness - minHappiness, outHappiness);
 			outHappiness = Math.Max(minHappiness - maxHappiness, outHappiness);
 			
-			addDebugMessage(inScriptInstance, "from 0 to 1 (of full happiness range), after difficulty adjustment, housingImpact=" + housingImpact + " resourcesImpact=" + resourcesImpact + " healthImpact=" + healthImpact + " starvingImpact=" + starvingImpact);
+			addDebugMessage(inScriptInstance, "from 0 to 1 (of full happiness range), after difficulty adjustment, housingImpact=" + housingImpact + " resourcesImpact=" + resourcesImpact + " healthImpact=" + healthImpact + " starvingImpact=" + starvingImpact + " baseOffset=" + baseOffset);
 			
 			return new List&lt;object&gt;() { outHappiness };
 	</mHappinessIndividualCombinationBase>
@@ -240,6 +264,19 @@
 			addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " unemployedImpact=" + unemployedImpact);
 			
 			double outHappiness = (unemployedImpact) * (maxHappiness - minHappiness);
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("long-term happiness expectation");
+			addDebugMessage(inScriptInstance, "modifying out long-term happiness by difficulty = " + difficulty);
+			if(difficulty &lt;= 0.0d)
+			{
+				outHappiness = maxHappiness - minHappiness;
+			}
+			else
+			{
+				if(outHappiness &lt; 0.0d)
+					outHappiness *= difficulty;
+				else
+					outHappiness /= difficulty;
+			}
 			return new List&lt;object&gt;() { outHappiness };
 	</mHappinessEmploymentFactor>
 	
@@ -367,9 +404,25 @@
 			if(!success) yesNeighborBonusPerPop = 0.0005d;
 			double neighborImpact = noNeighborPenaltyPerPop * countNoNeighbors + yesNeighborBonusPerPop * countNeighbors;
 			
-			addDebugMessage(inScriptInstance, "countAloneInHome=" + countAloneInHome + " countWithOtherInHome=" + countWithOtherInHome + " countNeighbors=" + countNeighbors + " countNoNeighbors=" + countNoNeighbors + " which makes sameHousingImpact=" + sameHousingImpact + " and neighborImpact=" + neighborImpact);
-			
 			double outHappiness = (communityKinImpact + sameHousingImpact + neighborImpact) * (maxHappiness - minHappiness);
+			
+			addDebugMessage(inScriptInstance, "countAloneInHome=" + countAloneInHome + " countWithOtherInHome=" + countWithOtherInHome + " countNeighbors=" + countNeighbors + " countNoNeighbors=" + countNoNeighbors + " which makes sameHousingImpact=" + sameHousingImpact + " and neighborImpact=" + neighborImpact +
+				" make outHappiness=" + outHappiness);
+			
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("long-term happiness expectation");
+			addDebugMessage(inScriptInstance, "modifying out long-term happiness by difficulty = " + difficulty);
+			if(difficulty &lt;= 0.0d)
+			{
+				outHappiness = maxHappiness - minHappiness;
+			}
+			else
+			{
+				if(outHappiness &lt; 0.0d)
+					outHappiness *= difficulty;
+				else
+					outHappiness /= difficulty;
+			}
+			
 			return new List&lt;object&gt;() { outHappiness };
 	</mHappinessKinFactor>
 	
@@ -520,13 +573,27 @@
 			}
 			double housedMatesBonus = housedMatesPerPopBonus * countOfPopsHousedWithPotentialMates;
 			if(housedMatesBonus &gt; housedMatesMaxBonus)
-    {
-    housedMatesBonus = housedMatesMaxBonus;
-    }
-    addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " has " + countOfWantingPops + " pops without mates and " + countOfPopsHousedWithPotentialMates + " pops with mates in the same housing, making penalty of " + noMatesPenalty + " and bonus of " + housedMatesBonus);
+			{
+				housedMatesBonus = housedMatesMaxBonus;
+			}
+			addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " has " + countOfWantingPops + " pops without mates and " + countOfPopsHousedWithPotentialMates + " pops with mates in the same housing, making penalty of " + noMatesPenalty + " and bonus of " + housedMatesBonus);
 
-    double outHappiness = (noMatesPenalty + housedMatesBonus) * (maxHappiness - minHappiness);
-    return new List&lt;object&gt;() { outHappiness };
+			double outHappiness = (noMatesPenalty + housedMatesBonus) * (maxHappiness - minHappiness);
+	
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("long-term happiness expectation");
+			addDebugMessage(inScriptInstance, "modifying out long-term happiness by difficulty = " + difficulty);
+			if(difficulty &lt;= 0.0d)
+			{
+				outHappiness = maxHappiness - minHappiness;
+			}
+			else
+			{
+				if(outHappiness &lt; 0.0d)
+					outHappiness *= difficulty;
+				else
+					outHappiness /= difficulty;
+			}
+			return new List&lt;object&gt;() { outHappiness };
 	</mHappinessMatesFactor>
 	
 	<!-- happiness jealousy factor has two inputs: the IFRace in question, the List<IFPop> of this race in the community that are not dead or in a delegation -->
@@ -709,6 +776,20 @@
     addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " othersDoingWorseNoThreatBonus=" + othersDoingWorseNoThreatBonus + " othersDoingWorseThreatPenalty=" + othersDoingWorseThreatPenalty + " othersDoingBetterPenalty=" + othersDoingBetterPenalty + " deniedHousingPenalty=" + deniedHousingPenalty + " deniedResourcePenalty=" + deniedResourcePenalty);
 
     double outHappiness = (othersDoingWorseNoThreatBonus + othersDoingWorseThreatPenalty + othersDoingBetterPenalty + deniedHousingPenalty + deniedResourcePenalty) * (maxHappiness - minHappiness);
+
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("long-term happiness expectation");
+			addDebugMessage(inScriptInstance, "modifying out long-term happiness by difficulty = " + difficulty);
+			if(difficulty &lt;= 0.0d)
+			{
+				outHappiness = maxHappiness - minHappiness;
+			}
+			else
+			{
+				if(outHappiness &lt; 0.0d)
+					outHappiness *= difficulty;
+				else
+					outHappiness /= difficulty;
+			}
     return new List&lt;object&gt;() { outHappiness };
 	</mHappinessJealousyFactor>
   
@@ -739,6 +820,19 @@
     addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " gets bonus of " + totalBonus + " from industry leader count of " + inLeaderPops.Count);
 
     double outHappiness = totalBonus * (maxHappiness - minHappiness);
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("long-term happiness expectation");
+			addDebugMessage(inScriptInstance, "modifying out long-term happiness by difficulty = " + difficulty);
+			if(difficulty &lt;= 0.0d)
+			{
+				outHappiness = maxHappiness - minHappiness;
+			}
+			else
+			{
+				if(outHappiness &lt; 0.0d)
+					outHappiness *= difficulty;
+				else
+					outHappiness /= difficulty;
+			}
     return new List&lt;object&gt;() { outHappiness };
 	</mHappinessIndustryLeaderCountFactor>
 	
@@ -775,6 +869,19 @@
     addDebugMessage(inScriptInstance, "race " + inRace.getDebugName() + " has happiness penalty of " + totalPenalty + " due to " + inSickPopsThisRace.Count + " sick pops of race and " + inAllSickPops.Count + " sick pops total");
 
     double outHappiness = (totalPenalty) * (maxHappiness - minHappiness);
+			double difficulty = getAPI().getSaveableDifficulty().getDifficultyValueFromInternalName("long-term happiness expectation");
+			addDebugMessage(inScriptInstance, "modifying out long-term happiness by difficulty = " + difficulty);
+			if(difficulty &lt;= 0.0d)
+			{
+				outHappiness = maxHappiness - minHappiness;
+			}
+			else
+			{
+				if(outHappiness &lt; 0.0d)
+					outHappiness *= difficulty;
+				else
+					outHappiness /= difficulty;
+			}
     return new List&lt;object&gt;() { outHappiness };
 	</mHappinessIllnessCommunityFactor>
 	
@@ -861,7 +968,7 @@
 			
 			bool anyPopsLeft = (getAPI().getLocalCommunity().getPopCountOfRace(inRace) != 0);
 			
-			if((newImpactOfThisCause &lt; absValThresholdRemoval) || !anyPopsLeft)
+			if((Math.Abs(newImpactOfThisCause) &lt; (absValThresholdRemoval * (maxHappiness - minHappiness))) || !anyPopsLeft)
 			{
 				happinessCollection.removeHappinessCause(inRace, cause);
 			}

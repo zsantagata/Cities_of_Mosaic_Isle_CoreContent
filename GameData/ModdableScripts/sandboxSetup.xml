@@ -71,6 +71,9 @@
 				IFPop toAdd = getAPI().generateNewPop(inRace, localCommunity);
 				//place the pop on the map:
 				toAdd.placePopOnMapLocation(getAPI().calcRand() * mapWidth, getAPI().calcRand() * mapHeight);
+				
+				//announce that the newly-created community has gained this pop's loyalty (so founding pops are recorded in history):
+				customScripts.runCustomScript("hardcodedHistory_pop_change_loyaltygain", new List&lt;object&gt;() { localCommunity, 0, IFHistoryActor.eActorKind.cCommunity, localCommunity.getUID(), IFHistoryTarget.eTargetKind.cPop, toAdd.getUID(), -1L }, out _);
 			}
 			
 			return null;

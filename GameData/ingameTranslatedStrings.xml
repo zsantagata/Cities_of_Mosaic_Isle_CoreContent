@@ -428,6 +428,10 @@
 	<b>Order Mustered Pops</b></i1>
 	<i1><a>options_command_hoveroverinspection_name</a>
 	<b>Toggle Mouse Inspection</b></i1>
+	<i1><a>options_command_speedup_name</a>
+	<b>Speed Up In-Game Time</b></i1>
+	<i1><a>options_command_speeddown_name</a>
+	<b>Slow Down In-Game Time</b></i1>
 	<i1><a>options_setkeystodefault_name</a>
 	<b>Reset to Defaults</b></i1>
 	<!-- options menu change or add key text -->
@@ -675,6 +679,8 @@
 	<!-- race happiness buttons -->
 	<i1><a>racehappinessview_details_label</a>
 	<b>Details</b></i1>
+	<i1><a>racehappinessview_overall_happiness_text</a>
+	<b>Support for the City Leader among the [1] is at [0]%.</b></i1>
 	
 	<!-- race happiness text -->
 	<i1><a>racehappinessview_basehappiness_description_default</a>

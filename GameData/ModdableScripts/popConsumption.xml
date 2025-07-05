@@ -12,11 +12,11 @@
 	<!-- 4) after 3), the pop gets together a list of additional food to eat (even portions from all available, whatever its protein ratio) until its MCal need is met or there is no more food to consume, whichever comes first -->
 	<!-- 5) the total sum of protein & MCal is calculated by simple addition (and weighting in the case of protein), while the total quality of each are calculated using calcOutputFromInputs.  The quality multiplier and total sums are fed into PopHealth scripts. -->
 	<!-- 6) the highest quality HStasis, Wound Recovery, and Illness Recovery items accessible (assuming they have greater than 1.0 quantity) are fed into the PopHealth scripts (min quality is used if none are available) -->
-	<!-- 7) resources are decremented from the resourcepool automatically, outside of scripts. -->
+	<!-- 7) some resources are decremented from the resourcepool by the custom scripts called, and others in health calclation (namely those that primarily impact health) -->
 	<!-- 8) when each component of a pop's health has been calculated, some overlap and some boundary conditions are calculated, and total health calculated -->
 	
 	<!-- pops consuming resources each day has two inputs: IFPop inPop, IFResourcePool inResPool.  There are eleven outputs: bool outRoughingIt, double outProteinConsumed, double outProteinMult, double outMCalConsumed, double outMCalMult, Int64 outHStasisMOID, double outQualOfHStasisItem, Int64 outWoundCureMOID, double outQualOfWoundCureItem, Int64 outIllCureMOID, double outQualOfIllCureItem -->
-	<!-- This script must determine what resources the pop consumes, and actually consume (FOOD ONLY) resources by subtracting them from the resourcePool (other resources being consumed has a gate in other PopHealth* scripts, so don't jump the gun here; those scripts return a bool to indicate something should be consumed, and C# code takes care of it).  This script must also determine the inputs for the other popHealth* scripts.  -->
+	<!-- This script must determine what resources the pop consumes, and actually consume (FOOD ONLY) resources by subtracting them from the resourcePool (other resources being consumed has a gate in other PopHealth* scripts, so don't jump the gun here; those scripts return a bool to indicate something should be consumed, and C# code takes care of it).  This script must also determine the inputs for the other popHealth* scripts (those are some of the many outputs).  -->
 	<mPopConsumeDaily>
 		//input count check:
 		if (inArguments.Length &lt; 2)
